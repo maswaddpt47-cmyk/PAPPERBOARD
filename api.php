@@ -283,7 +283,7 @@ function api_question_delete(array $b): void
     wl_update(api_code($b), function (array &$s) use ($b) {
         $i = wl_question_index($s, $b['qid'] ?? '');
         array_splice($s['questions'], $i, 1);
-        $s['current'] = max(0, min($s['current'], count($s['questions']) - 1));
+        $s['current'] = max(-1, min($s['current'], count($s['questions']) - 1));
     });
     wl_json(['ok' => true]);
 }
@@ -313,7 +313,11 @@ function api_control(array $b): void
                 'next' => $s['current'] + 1, 'prev' => $s['current'] - 1,
                 'goto' => wl_question_index($s, $b['qid'] ?? ''),
             };
-            $s['current'] = max(0, min($target, count($s['questions']) - 1));
+            $s['current'] = max(-1, min($target, count($s['questions']) - 1));
+            // Arriver sur une question jamais ouverte ouvre le vote (un clic de moins).
+            if (($s['questions'][$s['current']]['state'] ?? '') === 'draft') {
+                api_apply_op($s['questions'][$s['current']], 'open');
+            }
             return;
         }
         if ($op === 'end' || $op === 'reopen') {

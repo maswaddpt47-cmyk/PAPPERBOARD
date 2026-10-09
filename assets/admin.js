@@ -140,10 +140,13 @@
     var q = d.questions[d.current];
     var has = !!q;
     ['open-btn', 'show-btn'].forEach(function (id) { $(id).disabled = !has; });
-    document.querySelectorAll('#live [data-op]').forEach(function (b) { b.disabled = !has; });
+    document.querySelector('#live [data-op="reset"]').disabled = !has;
+    document.querySelector('#live [data-op="prev"]').disabled = d.current < 0;
+    document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
     if (!has) {
-      $('live-pos').textContent = 'Aucune question : ajoutez-en une ci-dessous.';
-      $('live-text').textContent = '';
+      $('live-pos').textContent = d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code.'
+        : 'Aucune question : ajoutez-en une ci-dessous.';
+      $('live-text').textContent = d.questions.length ? '« Suivante » lance la première question et ouvre le vote.' : '';
       $('live-state').textContent = '';
       WL.clear($('live-results'));
       return;
@@ -258,7 +261,15 @@
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
-    if (editing) question.id = editing.id;
+    if (editing) {
+      question.id = editing.id;
+      // Même règle que wl_structure_changed() côté serveur.
+      var relevant = { mcq: 'multi', scale: 'scaleMax', points: 'budget' }[question.type];
+      var changed = question.type !== editing.type || question.options.length !== editing.options.length
+        || (relevant && question[relevant] !== editing[relevant]);
+      if (changed && editing.results.total && !confirm('Cette modification efface les '
+        + WL.plural(editing.results.total, 'réponse') + ' déjà reçues. Continuer ?')) return;
+    }
     WL.api('question_save', { body: { s: code, question: question }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       if (r.status !== 200) { $('qf-error').textContent = r.data.error; return; }
       $('q-dialog').close();

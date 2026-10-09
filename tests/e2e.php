@@ -73,13 +73,18 @@ check($p[0]->token !== $p[1]->token, 'jetons différents par participant');
 $again = $p[0]->join($code);
 check(($again['json']['token'] ?? '') === $p[0]->token, 'même jeton en rejoignant à nouveau');
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
-check($st['joined'] === true && $st['question']['id'] === $qid['yesno'], 'état participant : première question');
+check($st['joined'] === true && $st['question'] === null, 'état participant : accueil, aucune question');
+check($admin->get("api.php?action=screen&s=$code")['json']['question'] === null, 'projection : accueil');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'next']), 200, 'première question');
+$st = $p[0]->get("api.php?action=state&s=$code")['json'];
+check($st['question']['id'] === $qid['yesno'] && $st['question']['state'] === 'open', 'question suivante jamais ouverte : vote ouvert automatiquement');
 check($st['question']['correct'] === [], 'bonne réponse cachée avant affichage');
 
 /** Ouvre une question, fait voter, ferme, affiche ; renvoie les résultats. */
 function play(Client $admin, array $p, string $code, string $qid, array $votes): array
 {
     expect_status($admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid]), 200, 'aller à la question');
+    $admin->post('control', ['s' => $code, 'op' => 'reset']); // brouillon : vote fermé
     expect_status($p[0]->vote($code, $qid, $votes[0]), 409, 'vote avant ouverture refusé');
     expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'ouvrir le vote');
     foreach ($votes as $i => $v) {
@@ -92,7 +97,7 @@ function play(Client $admin, array $p, string $code, string $qid, array $votes):
 }
 
 // Oui / Non, modification interdite.
-expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'ouvrir oui/non');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'rouvrir oui/non (sans effet)');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'vote oui');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'même vote renvoyé (reprise réseau) accepté');
 expect_status($p[0]->vote($code, $qid['yesno'], 1), 409, 'double vote différent refusé');
@@ -149,6 +154,16 @@ $admin->post('control', ['s' => $code, 'op' => 'open']);
 expect_status($p[0]->vote($code, $qid['points'], [8, 8, 0]), 400, 'dépassement du budget refusé');
 expect_status($p[0]->vote($code, $qid['points'], [0, 0, 0]), 400, 'aucun point refusé');
 $admin->post('control', ['s' => $code, 'op' => 'close']);
+
+// --- Modifier une question qui a des votes ---------------------------------
+$admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'text' => 'Votre usage ? (renommé)'] + $questions['poll']]);
+$adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
+check($adm['questions'][3]['results']['total'] === 3, 'intitulé modifié : votes conservés');
+$admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'options' => ['Peu', 'Beaucoup']] + $questions['poll']]);
+$adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
+check($adm['questions'][3]['results']['total'] === 0 && $adm['questions'][3]['state'] === 'draft', 'un choix retiré : votes effacés');
+expect_status($admin->get("api.php?action=export&s=$code"), 200, 'export après modification');
+$admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll']] + $questions['poll']]);
 
 // --- Durée : vote refusé une fois le temps écoulé ----------------------------
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'duration' => 30] + $questions['poll']]);

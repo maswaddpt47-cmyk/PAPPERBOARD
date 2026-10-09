@@ -46,7 +46,7 @@ function check(cond, label) {
   await admin.fill('#qf-text', 'Un mot ?');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
-  await admin.click('#open-btn');
+  await admin.click('#live [data-op="next"]'); // quitte l'accueil et ouvre le vote
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
 
   // --- Projection ------------------------------------------------------------------
@@ -90,7 +90,6 @@ function check(cond, label) {
   // Nuage de mots, puis reconnexion après coupure réseau.
   await admin.click('#live [data-op="next"]');
   await admin.waitForFunction(() => /Un mot/.test(document.getElementById('live-text').textContent));
-  await admin.click('#open-btn');
   await phone.waitForSelector('#free:not([disabled])');
   await phoneCtx.setOffline(true);
   await phone.fill('#free', 'Écran');

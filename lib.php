@@ -298,7 +298,8 @@ function wl_create_session(string $title, array $questions = []): array
     $now = time();
     $s = [
         'code' => $code, 'title' => $title, 'created' => $now, 'updated' => $now,
-        'version' => 1, 'pversion' => 1, 'current' => 0, 'ended' => false,
+        // current = -1 : écran d'accueil (adresse et code projetés en grand).
+        'version' => 1, 'pversion' => 1, 'current' => -1, 'ended' => false,
         'participants' => [], 'questions' => $questions,
     ];
     wl_write_atomic(wl_session_file($code), $s);
@@ -435,7 +436,19 @@ function wl_clean_question(array $in, ?array $old = null): array
         'hidden' => $old['hidden'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
+    if ($old && wl_structure_changed($old, $q)) {
+        // Les réponses déjà reçues ne correspondent plus aux choix : on repart de zéro.
+        [$q['state'], $q['showResults'], $q['closesAt'], $q['answers'], $q['hidden']] = ['draft', false, null, [], []];
+    }
     return $q;
+}
+
+/** Vrai si une modification rend les réponses existantes incohérentes. */
+function wl_structure_changed(array $old, array $new): bool
+{
+    $relevant = ['mcq' => 'multi', 'scale' => 'scaleMax', 'points' => 'budget'][$new['type']] ?? null;
+    return $old['type'] !== $new['type'] || count($old['options']) !== count($new['options'])
+        || ($relevant && $old[$relevant] !== $new[$relevant]);
 }
 
 function wl_clean_options(string $type, mixed $options): array
