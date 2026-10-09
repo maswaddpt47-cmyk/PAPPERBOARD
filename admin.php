@@ -101,18 +101,23 @@ header('Cache-Control: no-store');
           <option value="text">Réponse libre</option>
           <option value="scale">Échelle</option>
           <option value="points">Classement par points</option>
+          <option value="wall">Mur collaboratif</option>
+          <option value="postit">Post-it collectif</option>
+          <option value="dots">Vote par gommettes</option>
         </select>
         <label for="qf-text">Intitulé</label>
         <textarea id="qf-text" rows="2" maxlength="200" required></textarea>
         <div id="qf-options-box">
-          <label for="qf-options">Choix (un par ligne, 2 à 10)</label>
+          <label for="qf-options" id="qf-options-label">Choix (un par ligne, 2 à 10)</label>
           <textarea id="qf-options" rows="4"></textarea>
         </div>
         <label id="qf-multi-box" class="check"><input id="qf-multi" type="checkbox"> Plusieurs réponses possibles</label>
         <fieldset id="qf-correct-box"><legend>Bonne(s) réponse(s) (optionnel, pour un quiz)</legend><div id="qf-correct"></div></fieldset>
         <div id="qf-scale-box"><label for="qf-scale">Échelle</label>
           <select id="qf-scale"><option value="5">de 1 à 5</option><option value="10">de 1 à 10</option></select></div>
-        <div id="qf-budget-box"><label for="qf-budget">Points à répartir</label>
+        <div id="qf-source-box"><label for="qf-source">Idées à départager : celles de la question</label>
+          <select id="qf-source"></select></div>
+        <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
         <label for="qf-duration">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">

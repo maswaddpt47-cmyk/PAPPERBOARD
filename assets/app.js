@@ -96,11 +96,15 @@
     if (!data.question) { view('wait'); return; }
     view('question');
     var q = data.question;
-    var key = [q.id, q.state, q.showResults, q.closesAt, JSON.stringify(data.mine), JSON.stringify(data.result)].join('|');
+    // Les contributions (mur, post-it) n'entrent pas dans la clé : elles
+    // s'affichent à part, sans effacer un texte en cours de saisie.
+    var key = [q.id, q.state, q.showResults, q.closesAt, JSON.stringify(data.mine), JSON.stringify(data.result),
+      JSON.stringify(data.items)].join('|');
     if (key !== renderKey) {
       renderKey = key;
       renderQuestion(q, data.mine);
     }
+    renderPosts(q, data.posts);
     flushPending();
   }
 
@@ -117,7 +121,8 @@
     var open = isOpen(q);
     var locked = !open || (mine !== null && !q.allowChange);
     var builder = { yesno: choices, truefalse: choices, poll: choices, mcq: q.multi ? checkboxes : choices,
-      wordcloud: freeText, text: freeText, scale: scale, points: points }[q.type];
+      wordcloud: freeText, text: freeText, scale: scale, points: points,
+      wall: composer, postit: composer, dots: dots }[q.type];
     builder(form, q, mine, locked);
     status(q, mine);
     renderMyResult(q, mine);
@@ -126,7 +131,8 @@
 
   function status(q, mine) {
     var s = $('answer-status');
-    if (pendingFor(q)) s.textContent = 'Réponse en attente d\'envoi (réseau)…';
+    if (q.type === 'wall' || q.type === 'postit') s.textContent = postStatus(q);
+    else if (pendingFor(q)) s.textContent = 'Réponse en attente d\'envoi (réseau)…';
     else if (q.state === 'draft') s.textContent = 'Le vote n\'est pas encore ouvert.';
     else if (!isOpen(q)) s.textContent = mine !== null ? '✓ Votre réponse a été enregistrée. Le vote est fermé.' : 'Le vote est fermé.';
     else if (mine !== null) s.textContent = '✓ Réponse enregistrée.' + (q.allowChange ? ' Vous pouvez la modifier tant que le vote est ouvert.' : '');
@@ -196,37 +202,162 @@
     form.appendChild(el('p', { class: 'meta scale-legend' }, el('span', null, '1 = pas du tout'), el('span', null, q.scaleMax + ' = tout à fait')));
   }
 
-  /** Répartition d'un budget de points avec des boutons − / +. */
+  /** Classement par points : répartir le budget entre les choix. */
   function points(form, q, mine, locked) {
     var values = Array.isArray(mine) ? mine.slice() : q.options.map(function () { return 0; });
+    stepper(form, q.options, values, q.budget, locked, 'point', function () { send(q, values); });
+  }
+
+  /** Gommettes : coller N gommettes sur les idées (plusieurs sur une même idée possible). */
+  function dots(form, q, mine, locked) {
+    var items = state.items || [];
+    if (!items.length) {
+      form.appendChild(el('p', { class: 'meta' }, 'Aucune idée à départager pour le moment.'));
+      return;
+    }
+    var values = items.map(function (it) { return (mine && mine[it.id]) || 0; });
+    var labels = items.map(function (it) {
+      return it.grouped.length ? it.text + ' (+ ' + it.grouped.join(' ; ') + ')' : it.text;
+    });
+    stepper(form, labels, values, q.budget, locked, 'gommette', function () {
+      var v = {};
+      items.forEach(function (it, i) { if (values[i]) v[it.id] = values[i]; });
+      send(q, v);
+    });
+  }
+
+  /** Boutons − / + pour répartir un budget ; values est modifié sur place. */
+  function stepper(form, labels, values, budget, locked, unit, onSend) {
     var left = el('p', { class: 'points-left', 'aria-live': 'polite' });
     var rows = [];
     function refresh() {
-      var rest = q.budget - values.reduce(function (a, b) { return a + b; }, 0);
-      left.textContent = 'Points restants : ' + rest + ' / ' + q.budget;
+      var rest = budget - values.reduce(function (a, b) { return a + b; }, 0);
+      left.textContent = WL.plural(rest, unit) + ' à placer sur ' + budget;
       rows.forEach(function (r, i) {
         r.value.textContent = values[i];
         r.minus.disabled = locked || values[i] === 0;
         r.plus.disabled = locked || rest === 0;
+        WL.clear(r.pills);
+        for (var k = 0; k < values[i] && unit === 'gommette'; k++) r.pills.appendChild(el('span', { class: 'dot' }));
       });
     }
     form.appendChild(left);
-    q.options.forEach(function (label, i) {
+    labels.forEach(function (label, i) {
       var row = {
-        value: el('output', { class: 'points-value', 'aria-label': 'Points pour ' + label }),
-        minus: el('button', { type: 'button', class: 'btn btn-step', 'aria-label': 'Retirer un point à ' + label,
+        value: el('output', { class: 'points-value', 'aria-label': unit + 's pour ' + label }),
+        pills: el('span', { class: 'dots', 'aria-hidden': 'true' }),
+        minus: el('button', { type: 'button', class: 'btn btn-step', 'aria-label': 'Retirer une ' + unit + ' à ' + label,
           onclick: function () { values[i]--; refresh(); } }, '−'),
-        plus: el('button', { type: 'button', class: 'btn btn-step', 'aria-label': 'Ajouter un point à ' + label,
+        plus: el('button', { type: 'button', class: 'btn btn-step', 'aria-label': 'Ajouter une ' + unit + ' à ' + label,
           onclick: function () { values[i]++; refresh(); } }, '+')
       };
       rows.push(row);
-      form.appendChild(el('div', { class: 'points-row' }, el('span', { class: 'points-label' }, label), row.minus, row.value, row.plus));
+      form.appendChild(el('div', { class: 'points-row' },
+        el('span', { class: 'points-label' }, label, row.pills), row.minus, row.value, row.plus));
     });
     refresh();
     submit(form, locked, function () {
-      if (!values.some(Boolean)) return 'Attribuez au moins un point.';
-      send(q, values);
+      if (!values.some(Boolean)) return 'Placez au moins une ' + unit + '.';
+      onSend();
     });
+  }
+
+  // --- Mur collaboratif et post-it collectif -------------------------------------
+
+  function myPosts() {
+    return (state.posts || []).filter(function (p) { return p.mine; }).length;
+  }
+
+  function postStatus(q) {
+    if (q.state === 'draft') return 'Les contributions ne sont pas encore ouvertes.';
+    if (!isOpen(q)) return 'Les contributions sont fermées.';
+    var rest = state.maxPosts - myPosts();
+    return rest > 0 ? 'Vous pouvez encore publier ' + WL.plural(rest, 'contribution') + '.' : 'Vous avez publié le maximum de contributions.';
+  }
+
+  /** Saisie d'un message (mur) ou d'un post-it (choix de la colonne). */
+  function composer(form, q, mine, locked) {
+    var max = state.maxText || 80;
+    var cols = q.type === 'postit' && q.options.length > 1 ? el('fieldset', { class: 'checks' }, el('legend', null, 'Colonne')) : null;
+    if (cols) {
+      q.options.forEach(function (name, c) {
+        cols.appendChild(el('label', { class: 'check-big' },
+          el('input', { type: 'radio', name: 'col', value: c, checked: c === 0, disabled: locked }), el('span', null, name)));
+      });
+      form.appendChild(cols);
+    }
+    var input = el('textarea', { id: 'free', rows: 2, maxlength: max, disabled: locked, 'aria-label': q.text,
+      placeholder: q.type === 'postit' ? 'Écrivez votre post-it' : 'Écrivez votre message' });
+    var count = el('p', { class: 'meta' });
+    var update = function () { count.textContent = input.value.length + ' / ' + max + ' caractères'; };
+    input.addEventListener('input', update);
+    update();
+    form.appendChild(input);
+    form.appendChild(count);
+    form.appendChild(el('p', { class: 'meta' }, 'N\'écrivez pas de nom ni d\'information personnelle.'));
+    var err = el('p', { class: 'error', role: 'alert' });
+    form.appendChild(err);
+    var button = el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked },
+      q.type === 'postit' ? 'Coller le post-it' : 'Publier');
+    form.appendChild(button);
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      if (!input.value.trim()) { err.textContent = 'Écrivez quelque chose avant de publier.'; return; }
+      var picked = cols ? cols.querySelector('input:checked') : null;
+      button.disabled = true;
+      postAction('post', { qid: q.id, text: input.value, col: picked ? Number(picked.value) : 0 }, err).then(function (ok) {
+        button.disabled = false;
+        if (ok) { input.value = ''; update(); }
+      });
+    };
+  }
+
+  /** Envoi direct (pas de file d'attente : le texte reste dans le champ si le réseau manque). */
+  function postAction(action, body, errBox) {
+    return WL.api(action, { body: Object.assign({ s: code }, body), headers: headers() }).then(function (r) {
+      if (r.status !== 200) { errBox.textContent = r.data.error || 'Refusé.'; return false; }
+      errBox.textContent = '';
+      poller.refresh();
+      return true;
+    }, function () {
+      errBox.textContent = 'Pas de connexion : votre texte est gardé, réessayez dans un instant.';
+      return false;
+    });
+  }
+
+  /** Contributions sous le formulaire : les siennes, et celles des autres
+   *  une fois publiées par l'animateur. */
+  function renderPosts(q, posts) {
+    var box = WL.clear($('posts'));
+    if (!posts) { WL.show(box, false); return; }
+    WL.show(box, true);
+    $('answer-status').textContent = postStatus(q);
+    var open = isOpen(q);
+    var err = el('p', { class: 'error', role: 'alert' });
+    box.appendChild(el('h2', null, q.showResults ? 'Contributions de tous' : 'Vos contributions'));
+    if (!posts.length) box.appendChild(el('p', { class: 'meta' }, 'Rien pour le moment.'));
+    var columns = q.type === 'postit' ? q.options : [null];
+    columns.forEach(function (name, c) {
+      var mineHere = posts.filter(function (p) { return q.type !== 'postit' || p.col === c; });
+      if (!mineHere.length) return;
+      if (name && columns.length > 1) box.appendChild(el('h3', { class: 'board-title' }, name));
+      var list = el('ul', { class: 'wall' });
+      mineHere.forEach(function (p) {
+        var item = el('li', { class: 'wall-item' + (q.type === 'postit' ? ' note board-c' + (c % 6) : '') }, el('span', { class: 'post-text' }, p.text));
+        if (q.type === 'wall' && q.showResults) {
+          item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-like', 'aria-pressed': String(p.liked), disabled: !open,
+            'aria-label': (p.liked ? 'Ne plus aimer' : 'Aimer') + ' : ' + p.text,
+            onclick: function () { postAction('like', { qid: q.id, pid: p.id }, err); } }, '♥ ' + p.likes));
+        }
+        if (p.mine && open) {
+          item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-danger', 'aria-label': 'Retirer : ' + p.text,
+            onclick: function () { postAction('post_delete', { qid: q.id, pid: p.id }, err); } }, 'Retirer'));
+        }
+        list.appendChild(item);
+      });
+      box.appendChild(list);
+    });
+    box.appendChild(err);
   }
 
   function submit(form, locked, onSubmit) {

@@ -160,9 +160,15 @@
     $('open-btn').dataset.next = open ? 'close' : 'open';
     $('show-btn').textContent = q.showResults ? 'Masquer les résultats' : 'Afficher les résultats';
     $('show-btn').dataset.next = q.showResults ? 'hide' : 'show';
-    WL.renderResults($('live-results'), q, q.results, q.type === 'text' ? function (aid, hidden) {
-      act('answer_hide', { qid: q.id, aid: aid, hidden: hidden });
-    } : null);
+    // Modération (masquer) pour les textes libres ; outils post-it en plus.
+    var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
+    WL.renderResults($('live-results'), q, q.results, {
+      onHide: moderated ? function (aid, hidden) { act('answer_hide', { qid: q.id, aid: aid, hidden: hidden }); } : null,
+      onAdmin: q.type === 'postit' ? function (pid, op, arg) { act('post_admin', { qid: q.id, pid: pid, op: op, arg: arg }); } : null
+    });
+    if (q.type === 'wall' || q.type === 'postit') {
+      $('show-btn').textContent = q.showResults ? 'Masquer aux participants' : 'Publier (projection et téléphones)';
+    }
   }
 
   ['open-btn', 'show-btn'].forEach(function (id) {
@@ -216,10 +222,14 @@
   /** Affiche les champs utiles au type choisi, et les cases « bonne réponse ». */
   function syncForm(correct) {
     var type = $('qf-type').value;
-    WL.show($('qf-options-box'), ['mcq', 'poll', 'points'].indexOf(type) !== -1);
+    WL.show($('qf-options-box'), ['mcq', 'poll', 'points', 'postit'].indexOf(type) !== -1);
+    $('qf-options-label').textContent = type === 'postit' ? 'Colonnes (une par ligne, 6 au plus ; vide = une seule colonne « Idées »)'
+      : 'Choix (un par ligne, 2 à 10)';
+    WL.show($('qf-source-box'), type === 'dots');
+    $('qf-budget-label').textContent = type === 'dots' ? 'Gommettes par participant' : 'Points à répartir';
     WL.show($('qf-multi-box'), type === 'mcq');
     WL.show($('qf-scale-box'), type === 'scale');
-    WL.show($('qf-budget-box'), type === 'points');
+    WL.show($('qf-budget-box'), type === 'points' || type === 'dots');
     var quiz = ['yesno', 'truefalse', 'mcq'].indexOf(type) !== -1;
     WL.show($('qf-correct-box'), quiz);
     if (!quiz) return;
@@ -240,6 +250,13 @@
     $('qf-multi').checked = !!(q && q.multi);
     $('qf-scale').value = q ? String(q.scaleMax) : '5';
     $('qf-budget').value = q ? q.budget : 10;
+    var sources = WL.clear($('qf-source'));
+    data.questions.forEach(function (o, i) {
+      if ((o.type === 'wall' || o.type === 'postit') && (!q || o.id !== q.id)) {
+        sources.appendChild(el('option', { value: o.id, selected: q && q.source === o.id }, (i + 1) + '. ' + o.text));
+      }
+    });
+    if (!sources.options.length) sources.appendChild(el('option', { value: '' }, 'Créez d\'abord un post-it collectif ou un mur'));
     $('qf-duration').value = q ? q.duration : 0;
     $('qf-change').checked = q ? q.allowChange : true;
     $('qf-error').textContent = '';
@@ -249,7 +266,10 @@
   }
 
   $('add-q-btn').addEventListener('click', function () { openDialog(null); });
-  $('qf-type').addEventListener('change', function () { syncForm([]); });
+  $('qf-type').addEventListener('change', function () {
+    if ($('qf-type').value === 'dots' && !editing) $('qf-budget').value = 3;
+    syncForm([]);
+  });
   $('qf-options').addEventListener('input', function () { syncForm(); });
   $('qf-cancel').addEventListener('click', function () { $('q-dialog').close(); });
 
@@ -258,15 +278,18 @@
     var question = {
       type: $('qf-type').value, text: $('qf-text').value, options: optionLines(),
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
+      source: $('qf-source').value,
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
     if (editing) {
       question.id = editing.id;
       // Même règle que wl_structure_changed() côté serveur.
-      var relevant = { mcq: 'multi', scale: 'scaleMax', points: 'budget' }[question.type];
-      var changed = question.type !== editing.type || question.options.length !== editing.options.length
-        || (relevant && question[relevant] !== editing[relevant]);
+      var relevant = { mcq: 'multi', scale: 'scaleMax', points: 'budget', dots: 'budget' }[question.type];
+      var changed = question.type !== editing.type
+        || (question.type !== 'postit' && question.options.length !== editing.options.length)
+        || (relevant && question[relevant] !== editing[relevant])
+        || (question.type === 'dots' && question.source !== editing.source);
       if (changed && editing.results.total && !confirm('Cette modification efface les '
         + WL.plural(editing.results.total, 'réponse') + ' déjà reçues. Continuer ?')) return;
     }
