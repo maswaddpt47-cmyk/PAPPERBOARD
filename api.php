@@ -9,10 +9,10 @@ require __DIR__ . '/lib.php';
 wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
-const WL_PUBLIC_POST = ['join', 'vote'];
+const WL_PUBLIC_POST = ['join', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'question_save', 'question_delete', 'question_move', 'control', 'answer_hide'];
+    'session_rename', 'question_save', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -136,13 +136,19 @@ function api_state(): void
         'joined' => isset($s['participants'][$pkey]),
         'question' => $q ? wl_public_question($q) : null,
         'mine' => $q['answers'][$pkey]['v'] ?? null,
+        'posts' => $q && in_array($q['type'], WL_POST_TYPES, true) ? wl_participant_posts($q, $pkey) : null,
+        'items' => $q && $q['type'] === 'dots' ? wl_dot_items($s, $q) : null,
+        'maxPosts' => (int)wl_config()['max_posts'],
         'result' => $q && $q['showResults'] && in_array($q['type'], ['yesno', 'truefalse', 'mcq', 'poll', 'scale'], true)
             ? wl_results($q) : null,
         'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'], 'maxText' => (int)wl_config()['max_text'],
     ]);
 }
 
-function api_vote(array $b): void
+/** Écriture d'un participant : CSRF, limites de taux, participant inscrit.
+ *  $fn reçoit la session et la clé du participant. $public : les autres
+ *  téléphones doivent-ils se rafraîchir ? */
+function api_participant_write(array $b, callable $fn, bool $public): mixed
 {
     $token = api_token();
     if (!$token || !hash_equals(wl_participant_csrf($token), api_csrf_header())) {
@@ -150,15 +156,43 @@ function api_vote(array $b): void
     }
     wl_rate('ip|' . wl_ip_hash(), (int)wl_config()['rate_ip']);
     wl_rate('tk|' . $token, (int)wl_config()['rate_token']);
-    $code = api_code($b);
     $pkey = wl_participant_key($token);
-    $mine = wl_update($code, function (array &$s) use ($pkey, $b) {
+    return wl_update(api_code($b), function (array &$s) use ($pkey, $fn) {
         if (!isset($s['participants'][$pkey])) {
             throw new WlError('Rejoignez d\'abord la session avec son code.', 403);
         }
-        return wl_vote($s, $pkey, (string)($b['qid'] ?? ''), $b['value'] ?? null);
-    }, false);
+        return $fn($s, $pkey);
+    }, $public);
+}
+
+function api_vote(array $b): void
+{
+    $mine = api_participant_write($b, fn(array &$s, string $pkey) =>
+        wl_vote($s, $pkey, (string)($b['qid'] ?? ''), $b['value'] ?? null), false);
     wl_json(['ok' => true, 'mine' => $mine]);
+}
+
+/** Mur et post-it : chaque contribution rafraîchit les téléphones (ils
+ *  affichent la leur, et celles des autres une fois publiées). */
+function api_post(array $b): void
+{
+    $post = api_participant_write($b, fn(array &$s, string $pkey) =>
+        wl_post_add($s, $pkey, (string)($b['qid'] ?? ''), $b['text'] ?? '', $b['col'] ?? 0), true);
+    wl_json(['ok' => true, 'id' => $post['id']]);
+}
+
+function api_post_delete(array $b): void
+{
+    api_participant_write($b, fn(array &$s, string $pkey) =>
+        wl_post_delete($s, $pkey, (string)($b['qid'] ?? ''), (string)($b['pid'] ?? '')), true);
+    wl_json(['ok' => true]);
+}
+
+function api_like(array $b): void
+{
+    $liked = api_participant_write($b, fn(array &$s, string $pkey) =>
+        wl_like($s, $pkey, (string)($b['qid'] ?? ''), (string)($b['pid'] ?? '')), true);
+    wl_json(['ok' => true, 'liked' => $liked]);
 }
 
 // ---------------------------------------------------------------------------
@@ -208,7 +242,7 @@ function api_admin_state(): void
     $s = wl_load_or_fail(api_code($_GET));
     wl_json_etag('a' . $s['version'], function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
-            'showResults' => $q['showResults'], 'results' => wl_results($q, true),
+            'showResults' => $q['showResults'], 'results' => wl_results($q, true, $s),
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
             'current' => $s['current'], 'participants' => count($s['participants']),
@@ -232,12 +266,21 @@ function api_session_create(array $b): void
     wl_json(['ok' => true, 'code' => $s['code']]);
 }
 
-/** Copie les questions, sans les votes ni les participants. */
+/** Copie les questions, sans les votes, contributions ni participants.
+ *  Les gommettes suivent leur question source sous son nouvel identifiant. */
 function api_session_duplicate(array $b): void
 {
     $src = wl_load_or_fail(api_code($b));
-    $questions = array_map(fn($q) => ['id' => bin2hex(random_bytes(4)), 'state' => 'draft',
-        'showResults' => false, 'closesAt' => null, 'answers' => [], 'hidden' => []] + $q, $src['questions']);
+    $ids = [];
+    foreach ($src['questions'] as $q) {
+        $ids[$q['id']] = bin2hex(random_bytes(4));
+    }
+    $questions = array_map(function ($q) use ($ids) {
+        wl_reset_question($q);
+        $q['id'] = $ids[$q['id']];
+        $q['source'] = $ids[$q['source'] ?? ''] ?? '';
+        return $q;
+    }, $src['questions']);
     $title = preg_replace('/^(.{0,120}).*$/us', '$1', 'Copie de ' . $src['title']);
     $s = wl_create_session($title, $questions);
     wl_json(['ok' => true, 'code' => $s['code']]);
@@ -263,6 +306,9 @@ function api_question_save(array $b): void
 {
     $in = is_array($b['question'] ?? null) ? $b['question'] : throw new WlError('Question manquante.');
     $id = wl_update(api_code($b), function (array &$s) use ($in) {
+        if (($in['type'] ?? '') === 'dots') {
+            api_check_source($s, (string)($in['source'] ?? ''), (string)($in['id'] ?? ''));
+        }
         if (!empty($in['id'])) {
             $i = wl_question_index($s, $in['id']);
             $s['questions'][$i] = wl_clean_question($in, $s['questions'][$i]);
@@ -276,6 +322,25 @@ function api_question_save(array $b): void
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** La question source des gommettes doit être un mur ou un post-it de la session. */
+function api_check_source(array $s, string $source, string $self): void
+{
+    foreach ($s['questions'] as $q) {
+        if ($q['id'] === $source && $q['id'] !== $self && in_array($q['type'], WL_POST_TYPES, true)) {
+            return;
+        }
+    }
+    throw new WlError('Choisissez le post-it collectif (ou le mur) dont les idées seront départagées.');
+}
+
+/** Animateur : déplacer, regrouper, détacher ou supprimer un post-it. */
+function api_post_admin(array $b): void
+{
+    wl_update(api_code($b), fn(array &$s) => wl_post_admin($s, (string)($b['qid'] ?? ''),
+        (string)($b['pid'] ?? ''), (string)($b['op'] ?? ''), $b['arg'] ?? null));
+    wl_json(['ok' => true]);
 }
 
 function api_question_delete(array $b): void
@@ -348,8 +413,7 @@ function api_apply_op(array &$q, string $op): void
             $q['showResults'] = $op === 'show';
             break;
         case 'reset':
-            [$q['state'], $q['showResults'], $q['closesAt'], $q['answers'], $q['hidden']]
-                = ['draft', false, null, [], []];
+            wl_reset_question($q);
             break;
         default:
             throw new WlError('Commande inconnue.');
@@ -388,7 +452,7 @@ function api_export_rows(array $s): array
 {
     $rows = [];
     foreach ($s['questions'] as $n => $q) {
-        $res = wl_results($q, true);
+        $res = wl_results($q, true, $s);
         foreach (api_result_lines($q, $res) as [$label, $value]) {
             $rows[] = [$n + 1, $q['text'], api_type_label($q['type']), $label, $value, $res['total']];
         }
@@ -403,6 +467,14 @@ function api_result_lines(array $q, array $res): array
             return array_map(fn($w) => [$w['text'], $w['n']], $res['words']);
         case 'text':
             return array_map(fn($t) => [$t['text'], $t['hidden'] ? 'masquée' : ''], $res['texts']);
+        case 'wall':
+            return array_map(fn($p) => [$p['text'] . ($p['hidden'] ? ' (masqué)' : ''), $p['likes'] . ' j\'aime'], $res['posts']);
+        case 'postit':
+            return array_map(fn($p) => [$res['columns'][$p['col']] . ' : ' . $p['text']
+                . ($p['parent'] ? ' (regroupé)' : '') . ($p['hidden'] ? ' (masqué)' : ''), ''], $res['posts']);
+        case 'dots':
+            return array_map(fn($it) => [$it['text'] . ($it['grouped'] ? ' (+ ' . implode(' ; ', $it['grouped']) . ')' : ''),
+                $it['n']], $res['items']);
         case 'scale':
             $lines = array_map(fn($c, $i) => [(string)($i + 1), $c], $res['counts'], array_keys($res['counts']));
             return [...$lines, ['Moyenne', $res['average'] === null ? '' : str_replace('.', ',', (string)$res['average'])]];
@@ -415,7 +487,8 @@ function api_type_label(string $type): string
 {
     return ['yesno' => 'Oui / Non', 'truefalse' => 'Vrai / Faux', 'mcq' => 'QCM', 'poll' => 'Sondage',
         'wordcloud' => 'Nuage de mots', 'text' => 'Réponse libre', 'scale' => 'Échelle',
-        'points' => 'Classement par points'][$type] ?? $type;
+        'points' => 'Classement par points', 'wall' => 'Mur collaboratif', 'postit' => 'Post-it collectif',
+        'dots' => 'Vote par gommettes'][$type] ?? $type;
 }
 
 /** Neutralise les formules dans Excel (cellule commençant par = + - @). */

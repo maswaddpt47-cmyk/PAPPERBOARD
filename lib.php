@@ -4,7 +4,9 @@
 
 declare(strict_types=1);
 
-const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points'];
+const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots'];
+const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
+const WL_MAX_COLUMNS = 6;
 const WL_CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // sans 0/O, 1/I/L
 const WL_MAX_OPTIONS = 10;
 const WL_MAX_QUESTIONS = 50;
@@ -39,7 +41,7 @@ function wl_config(): array
     }
     $defaults = [
         'data_dir' => '', 'base_url' => '', 'poll_ms' => 2000, 'max_participants' => 150,
-        'purge_days' => 30, 'max_text' => 80, 'rate_ip' => 900, 'rate_token' => 30,
+        'purge_days' => 30, 'max_text' => 80, 'max_posts' => 5, 'rate_ip' => 900, 'rate_token' => 30,
         'banned_words' => [],
     ];
     $cfg = array_merge($defaults, $user);
@@ -424,7 +426,8 @@ function wl_clean_question(array $in, ?array $old = null): array
         'multi' => $type === 'mcq' && !empty($in['multi']),
         'correct' => [],
         'scaleMax' => ($in['scaleMax'] ?? 5) == 10 ? 10 : 5,
-        'budget' => max(1, min(100, (int)($in['budget'] ?? 10))),
+        'budget' => max(1, min(100, (int)($in['budget'] ?? ($type === 'dots' ? 3 : 10)))),
+        'source' => $type === 'dots' ? (string)($in['source'] ?? '') : '',
         'duration' => wl_clean_duration($in['duration'] ?? 0),
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
         'anonymous' => true,
@@ -434,21 +437,35 @@ function wl_clean_question(array $in, ?array $old = null): array
         'closesAt' => $old['closesAt'] ?? null,
         'answers' => $old['answers'] ?? [],
         'hidden' => $old['hidden'] ?? [],
+        'posts' => $old['posts'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
     if ($old && wl_structure_changed($old, $q)) {
         // Les réponses déjà reçues ne correspondent plus aux choix : on repart de zéro.
-        [$q['state'], $q['showResults'], $q['closesAt'], $q['answers'], $q['hidden']] = ['draft', false, null, [], []];
+        wl_reset_question($q);
     }
     return $q;
 }
 
-/** Vrai si une modification rend les réponses existantes incohérentes. */
+/** Efface les réponses et contributions d'une question, vote fermé. */
+function wl_reset_question(array &$q): void
+{
+    [$q['state'], $q['showResults'], $q['closesAt'], $q['answers'], $q['hidden'], $q['posts']]
+        = ['draft', false, null, [], [], []];
+}
+
+/** Vrai si une modification rend les réponses existantes incohérentes.
+ *  Post-it : ajouter ou retirer une colonne ne casse rien (une note d'une
+ *  colonne disparue s'affiche dans la dernière). */
 function wl_structure_changed(array $old, array $new): bool
 {
-    $relevant = ['mcq' => 'multi', 'scale' => 'scaleMax', 'points' => 'budget'][$new['type']] ?? null;
-    return $old['type'] !== $new['type'] || count($old['options']) !== count($new['options'])
-        || ($relevant && $old[$relevant] !== $new[$relevant]);
+    if ($old['type'] !== $new['type']) {
+        return true;
+    }
+    $relevant = ['mcq' => 'multi', 'scale' => 'scaleMax', 'points' => 'budget', 'dots' => 'budget'][$new['type']] ?? null;
+    return ($new['type'] !== 'postit' && count($old['options']) !== count($new['options']))
+        || ($relevant && $old[$relevant] !== $new[$relevant])
+        || ($new['type'] === 'dots' && ($old['source'] ?? '') !== $new['source']);
 }
 
 function wl_clean_options(string $type, mixed $options): array
@@ -458,6 +475,9 @@ function wl_clean_options(string $type, mixed $options): array
     }
     if ($type === 'truefalse') {
         return ['Vrai', 'Faux'];
+    }
+    if ($type === 'postit') {
+        return wl_clean_columns($options);
     }
     if (!in_array($type, ['mcq', 'poll', 'points'], true)) {
         return [];
@@ -473,6 +493,21 @@ function wl_clean_options(string $type, mixed $options): array
         throw new WlError('Il faut entre 2 et ' . WL_MAX_OPTIONS . ' choix.');
     }
     return $clean;
+}
+
+/** Colonnes d'un post-it collectif (1 à 6) ; aucune saisie = une colonne « Idées ». */
+function wl_clean_columns(mixed $options): array
+{
+    $cols = array_values(array_filter(array_map('wl_clean_text', is_array($options) ? $options : []), 'strlen'));
+    foreach ($cols as $c) {
+        if (wl_strlen($c) > 40) {
+            throw new WlError('Un nom de colonne dépasse 40 caractères.');
+        }
+    }
+    if (count($cols) > WL_MAX_COLUMNS) {
+        throw new WlError('6 colonnes au plus.');
+    }
+    return $cols ?: ['Idées'];
 }
 
 function wl_clean_duration(mixed $d): int
@@ -592,7 +627,10 @@ function wl_vote(array &$s, string $pkey, string $qid, mixed $value): mixed
     if ($i !== $s['current'] || wl_effective_state($q) !== 'open') {
         throw new WlError('Le vote est fermé pour cette question.', 409);
     }
-    $clean = wl_clean_answer($q, $value);
+    if (in_array($q['type'], WL_POST_TYPES, true)) {
+        throw new WlError('Publiez votre contribution avec le bouton prévu.');
+    }
+    $clean = $q['type'] === 'dots' ? wl_clean_dots($value, wl_dot_items($s, $q), $q['budget']) : wl_clean_answer($q, $value);
     $prev = $q['answers'][$pkey]['v'] ?? null;
     if ($prev !== null && $prev !== $clean && !$q['allowChange']) {
         throw new WlError('Vous avez déjà répondu à cette question.', 409);
@@ -618,12 +656,19 @@ function wl_question_index(array $s, mixed $qid): int
 // Résultats
 // ---------------------------------------------------------------------------
 
-/** Résultats agrégés d'une question. $admin : inclut les réponses masquées. */
-function wl_results(array $q, bool $admin = false): array
+/** Résultats agrégés d'une question. $admin : inclut les réponses masquées.
+ *  $s (la session) n'est utile qu'aux gommettes, qui votent sur une autre question. */
+function wl_results(array $q, bool $admin = false, ?array $s = null): array
 {
     $answers = array_column($q['answers'], 'v');
     $r = ['total' => count($answers)];
     switch ($q['type']) {
+        case 'wall':
+            return ['total' => count($q['posts'])] + ['posts' => wl_wall_results($q, $admin)];
+        case 'postit':
+            return ['total' => count($q['posts']), 'columns' => $q['options'], 'posts' => wl_postit_results($q, $admin)];
+        case 'dots':
+            return $r + ['items' => wl_dots_results($q, $s ? wl_dot_items($s, $q) : [])];
         case 'wordcloud':
             return $r + ['words' => wl_word_counts($answers)];
         case 'text':
@@ -713,7 +758,7 @@ function wl_public_question(array $q): array
         'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'],
         'multi' => $q['multi'], 'scaleMax' => $q['scaleMax'], 'budget' => $q['budget'],
         'duration' => $q['duration'], 'closesAt' => $q['closesAt'], 'state' => $q['state'],
-        'allowChange' => $q['allowChange'], 'showResults' => $show,
+        'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '',
         'correct' => $show ? $q['correct'] : [],
     ];
 }
@@ -732,8 +777,8 @@ function wl_screen_view(array $s): array
         'participants' => count($s['participants']),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
         'question' => $q ? wl_public_question($q) : null,
-        'results' => $q && $q['showResults'] ? wl_results($q) : null,
-        'answered' => $q ? count($q['answers']) : 0,
+        'results' => $q && $q['showResults'] ? wl_results($q, false, $s) : null,
+        'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
@@ -813,4 +858,238 @@ function wl_participant_csrf(string $token): string
 function wl_participant_key(string $token): string
 {
     return 'p' . wl_hash('p|' . $token, 15);
+}
+
+// ---------------------------------------------------------------------------
+// Mur collaboratif, post-it collectif, vote par gommettes
+// ---------------------------------------------------------------------------
+
+/** Question courante, ouverte, du bon type : sinon WlError. */
+function &wl_open_question(array &$s, string $qid, array $types): array
+{
+    if ($s['ended']) {
+        throw new WlError('La session est terminée.', 409);
+    }
+    $i = wl_question_index($s, $qid);
+    if (!in_array($s['questions'][$i]['type'], $types, true)) {
+        throw new WlError('Action impossible pour cette question.');
+    }
+    if ($i !== $s['current'] || wl_effective_state($s['questions'][$i]) !== 'open') {
+        throw new WlError('Les contributions sont fermées pour cette question.', 409);
+    }
+    return $s['questions'][$i];
+}
+
+function wl_post_index(array $q, string $pid): int
+{
+    foreach ($q['posts'] as $i => $p) {
+        if ($p['id'] === $pid) {
+            return $i;
+        }
+    }
+    throw new WlError('Contribution introuvable.', 404);
+}
+
+/** Ajoute un message (mur) ou un post-it (colonne $col) d'un participant. */
+function wl_post_add(array &$s, string $pkey, string $qid, mixed $text, mixed $col): array
+{
+    $q = &wl_open_question($s, $qid, WL_POST_TYPES);
+    $max = (int)wl_config()['max_posts'];
+    if (count(array_filter($q['posts'], fn($p) => $p['p'] === $pkey)) >= $max) {
+        throw new WlError("Vous avez déjà publié $max contributions sur cette question.", 409);
+    }
+    $post = ['id' => 'n' . bin2hex(random_bytes(5)), // préfixe : jamais une clé numérique en JSON
+        'p' => $pkey, 'text' => wl_clean_free_text($text),
+        'col' => $q['type'] === 'postit' ? wl_index($col, count($q['options'])) : 0,
+        't' => time(), 'likes' => [], 'parent' => null];
+    $q['posts'][] = $post;
+    return $post;
+}
+
+/** Un participant retire sa propre contribution tant que c'est ouvert. */
+function wl_post_delete(array &$s, string $pkey, string $qid, string $pid): void
+{
+    $q = &wl_open_question($s, $qid, WL_POST_TYPES);
+    $i = wl_post_index($q, $pid);
+    if ($q['posts'][$i]['p'] !== $pkey) {
+        throw new WlError('Vous ne pouvez retirer que vos propres contributions.', 403);
+    }
+    wl_post_remove($q, $i);
+}
+
+function wl_post_remove(array &$q, int $i): void
+{
+    $pid = $q['posts'][$i]['id'];
+    array_splice($q['posts'], $i, 1);
+    foreach ($q['posts'] as &$p) {
+        if ($p['parent'] === $pid) {
+            $p['parent'] = null;
+        }
+    }
+}
+
+/** « J'aime » sur le mur : un par participant et par message, bascule. */
+function wl_like(array &$s, string $pkey, string $qid, string $pid): bool
+{
+    $q = &wl_open_question($s, $qid, ['wall']);
+    $i = wl_post_index($q, $pid);
+    if (!$q['showResults'] || in_array($pid, $q['hidden'], true)) {
+        throw new WlError('Ce message n\'est pas affiché.', 409);
+    }
+    $likes = &$q['posts'][$i]['likes'];
+    $liked = !in_array($pkey, $likes, true);
+    $likes = $liked ? [...$likes, $pkey] : array_values(array_diff($likes, [$pkey]));
+    return $liked;
+}
+
+/** Animateur : déplacer un post-it de colonne, le regrouper sous un autre, le détacher. */
+function wl_post_admin(array &$s, string $qid, string $pid, string $op, mixed $arg): void
+{
+    $q = &$s['questions'][wl_question_index($s, $qid)];
+    $i = wl_post_index($q, $pid);
+    switch ($op) {
+        case 'move':
+            $col = wl_index($arg, max(1, count($q['options'])));
+            foreach ($q['posts'] as &$p) {
+                if ($p['id'] === $pid || $p['parent'] === $pid) {
+                    $p['col'] = $col; // le groupe suit son post-it principal
+                }
+            }
+            return;
+        case 'group':
+            $target = $q['posts'][wl_post_index($q, (string)$arg)];
+            if ($target['id'] === $pid || $target['parent'] !== null) {
+                throw new WlError('Regroupez sous un post-it principal.');
+            }
+            foreach ($q['posts'] as &$p) {
+                if ($p['id'] === $pid || $p['parent'] === $pid) {
+                    [$p['parent'], $p['col']] = [$target['id'], $target['col']];
+                }
+            }
+            return;
+        case 'ungroup':
+            $q['posts'][$i]['parent'] = null;
+            return;
+        case 'delete':
+            wl_post_remove($q, $i);
+            return;
+    }
+    throw new WlError('Commande inconnue.');
+}
+
+/** Contributions vues par un participant : les siennes toujours, celles des
+ *  autres seulement quand l'animateur a affiché les résultats (il a pu relire
+ *  et masquer avant : une réponse peut contenir un nom). */
+function wl_participant_posts(array $q, string $pkey): array
+{
+    $out = [];
+    foreach ($q['posts'] as $p) {
+        $mine = $p['p'] === $pkey;
+        if ($mine || ($q['showResults'] && !in_array($p['id'], $q['hidden'], true))) {
+            $out[] = ['id' => $p['id'], 'text' => $p['text'], 'col' => min($p['col'], max(0, count($q['options']) - 1)),
+                'likes' => count($p['likes']), 'liked' => in_array($pkey, $p['likes'], true), 'mine' => $mine];
+        }
+    }
+    return $out;
+}
+
+/** Mur : plus aimés d'abord, puis plus récents. */
+function wl_wall_results(array $q, bool $admin): array
+{
+    $out = [];
+    foreach ($q['posts'] as $p) {
+        $hidden = in_array($p['id'], $q['hidden'], true);
+        if ($admin || !$hidden) {
+            $out[] = ['id' => $p['id'], 'text' => $p['text'], 'likes' => count($p['likes']), 't' => $p['t']]
+                + ($admin ? ['hidden' => $hidden] : []);
+        }
+    }
+    usort($out, fn($a, $b) => $b['likes'] <=> $a['likes'] ?: $b['t'] <=> $a['t']);
+    return array_map(function ($p) {
+        unset($p['t']);
+        return $p;
+    }, $out);
+}
+
+/** Post-it : ordre d'arrivée ; colonne ramenée dans les bornes si une colonne a été retirée. */
+function wl_postit_results(array $q, bool $admin): array
+{
+    $last = max(0, count($q['options']) - 1);
+    $out = [];
+    foreach ($q['posts'] as $p) {
+        $hidden = in_array($p['id'], $q['hidden'], true);
+        if ($admin || !$hidden) {
+            $out[] = ['id' => $p['id'], 'text' => $p['text'], 'col' => min($p['col'], $last), 'parent' => $p['parent']]
+                + ($admin ? ['hidden' => $hidden] : []);
+        }
+    }
+    return $out;
+}
+
+/** Idées soumises aux gommettes : post-its (ou messages) principaux visibles
+ *  de la question source, avec le texte des post-its regroupés dessous. */
+function wl_dot_items(array $s, array $q): array
+{
+    $src = null;
+    foreach ($s['questions'] as $c) {
+        if ($c['id'] === $q['source'] && in_array($c['type'], WL_POST_TYPES, true)) {
+            $src = $c;
+        }
+    }
+    if (!$src) {
+        return [];
+    }
+    $items = [];
+    foreach ($src['posts'] as $p) {
+        if ($p['parent'] === null && !in_array($p['id'], $src['hidden'], true)) {
+            $items[$p['id']] = ['id' => $p['id'], 'text' => $p['text'], 'grouped' => []];
+        }
+    }
+    foreach ($src['posts'] as $p) {
+        if ($p['parent'] !== null && isset($items[$p['parent']]) && !in_array($p['id'], $src['hidden'], true)) {
+            $items[$p['parent']]['grouped'][] = $p['text'];
+        }
+    }
+    return array_values($items);
+}
+
+/** Gommettes : {id d'idée: nombre}, entre 1 et budget au total, plusieurs sur une même idée permises. */
+function wl_clean_dots(mixed $v, array $items, int $budget): array
+{
+    $ids = array_column($items, 'id');
+    if (!is_array($v) || !$ids) {
+        throw new WlError('Aucune idée à départager.');
+    }
+    $clean = [];
+    foreach ($v as $id => $n) {
+        if (!in_array((string)$id, $ids, true)) {
+            throw new WlError('Idée inconnue : rechargez la page.');
+        }
+        $n = wl_index($n, $budget + 1);
+        if ($n > 0) {
+            $clean[(string)$id] = $n;
+        }
+    }
+    $sum = array_sum($clean);
+    if ($sum < 1 || $sum > $budget) {
+        throw new WlError("Collez entre 1 et $budget gommettes.");
+    }
+    ksort($clean);
+    return $clean;
+}
+
+/** Classement des idées par gommettes reçues. */
+function wl_dots_results(array $q, array $items): array
+{
+    $counts = array_fill_keys(array_column($items, 'id'), 0);
+    foreach ($q['answers'] as $a) {
+        foreach ($a['v'] as $id => $n) {
+            if (isset($counts[$id])) {
+                $counts[$id] += $n;
+            }
+        }
+    }
+    $out = array_map(fn($it) => $it + ['n' => $counts[$it['id']]], $items);
+    usort($out, fn($a, $b) => $b['n'] <=> $a['n']);
+    return $out;
 }
