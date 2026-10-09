@@ -180,6 +180,67 @@ file_put_contents($file, json_encode($json));
 expect_status($p[1]->vote($code, $qid['poll'], 1), 409, 'vote après la fin du compte à rebours refusé');
 $admin->post('control', ['s' => $code, 'op' => 'close']);
 
+// --- Mur collaboratif, post-it collectif, gommettes -----------------------------
+$save = fn(array $q) => $admin->post('question_save', ['s' => $code, 'question' => $q])['json']['id'] ?? '';
+$wallId = $save(['type' => 'wall', 'text' => 'Ce que vous retenez']);
+$postitId = $save(['type' => 'postit', 'text' => 'Bilan', 'options' => ['Points forts', 'Difficultés']]);
+expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'dots', 'text' => 'Priorités', 'source' => $qid['poll']]]), 400, 'gommettes sur une question qui n\'est pas un post-it refusées');
+$dotsId = $save(['type' => 'dots', 'text' => 'Vos priorités', 'source' => $postitId, 'budget' => 3]);
+$admin->post('control', ['s' => $code, 'op' => 'reopen']);
+$post = fn(Client $c, string $q, string $text, int $col = 0) => $c->post('post', ['s' => $code, 'qid' => $q, 'text' => $text, 'col' => $col]);
+$wstate = fn(Client $c) => $c->get("api.php?action=state&s=$code")['json'];
+
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $wallId]);
+$r = $post($p[0], $wallId, 'Les mots de passe');
+expect_status($r, 200, 'mur : message publié');
+$mineId = $r['json']['id'] ?? '';
+$otherId = $post($p[1], $wallId, 'Le QR code')['json']['id'] ?? '';
+for ($i = 0; $i < 4; $i++) {
+    $post($p[0], $wallId, "Idée $i");
+}
+expect_status($post($p[0], $wallId, 'Une de trop'), 409, 'mur : 6e message refusé (5 au plus)');
+expect_status($p[0]->vote($code, $wallId, 0), 400, 'mur : pas de vote simple');
+check(count($wstate($p[1])['posts']) === 1, 'mur non publié : chacun ne voit que ses messages');
+expect_status($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId]), 409, 'aimer avant publication refusé');
+$admin->post('control', ['s' => $code, 'op' => 'show']);
+check(count($wstate($p[1])['posts']) === 6, 'mur publié : tous les messages visibles');
+check(($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId])['json']['liked'] ?? null) === true, 'j\'aime');
+check(($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId])['json']['liked'] ?? null) === false, 'j\'aime retiré');
+$p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId]);
+$p[2]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId]);
+$res = $admin->get("api.php?action=screen&s=$code")['json']['results'];
+check($res['posts'][0]['id'] === $mineId && $res['posts'][0]['likes'] === 2, 'mur : le plus aimé en tête');
+expect_status($p[0]->post('post_delete', ['s' => $code, 'qid' => $wallId, 'pid' => $otherId]), 403, 'retirer le message d\'un autre refusé');
+expect_status($p[1]->post('post_delete', ['s' => $code, 'qid' => $wallId, 'pid' => $otherId]), 200, 'retirer son message');
+$admin->post('answer_hide', ['s' => $code, 'qid' => $wallId, 'aid' => $mineId, 'hidden' => true]);
+check(!in_array($mineId, array_column($wstate($p[1])['posts'], 'id'), true), 'message masqué invisible des autres');
+check(in_array($mineId, array_column($wstate($p[0])['posts'], 'id'), true), 'son auteur le voit encore');
+check(count($admin->get("api.php?action=screen&s=$code")['json']['results']['posts']) === 4, 'message masqué absent de la projection');
+
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $postitId]);
+$a = $post($p[0], $postitId, 'Accès internet', 0)['json']['id'] ?? '';
+$b = $post($p[1], $postitId, 'Mots de passe', 1)['json']['id'] ?? '';
+$c = $post($p[2], $postitId, 'Identifiants oubliés', 1)['json']['id'] ?? '';
+expect_status($post($p[2], $postitId, 'Colonne inconnue', 5), 400, 'post-it : colonne inconnue refusée');
+expect_status($admin->post('post_admin', ['s' => $code, 'qid' => $postitId, 'pid' => $c, 'op' => 'group', 'arg' => $b]), 200, 'regrouper deux post-its');
+expect_status($admin->post('post_admin', ['s' => $code, 'qid' => $postitId, 'pid' => $a, 'op' => 'group', 'arg' => $c]), 400, 'regrouper sous un post-it déjà regroupé refusé');
+expect_status($admin->post('post_admin', ['s' => $code, 'qid' => $postitId, 'pid' => $b, 'op' => 'move', 'arg' => 0]), 200, 'déplacer un post-it');
+$res = $admin->get("api.php?action=admin_state&s=$code")['json']['questions'][9]['results'];
+$byId = array_column($res['posts'], null, 'id');
+check($byId[$c]['parent'] === $b && $byId[$c]['col'] === 0 && $byId[$b]['col'] === 0, 'le groupe suit son post-it principal');
+expect_status($p[0]->post('post', ['s' => $code, 'qid' => $postitId, 'text' => 'x'], false), 403, 'post-it sans CSRF refusé');
+
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
+$st = $wstate($p[0]);
+check(count($st['items']) === 2 && in_array('Identifiants oubliés', array_merge(...array_column($st['items'], 'grouped')), true), 'gommettes : idées principales, regroupées dessous');
+expect_status($p[0]->vote($code, $dotsId, [$b => 2, $a => 1]), 200, 'coller 3 gommettes');
+expect_status($p[1]->vote($code, $dotsId, [$b => 4]), 400, 'plus de gommettes que permis refusé');
+expect_status($p[1]->vote($code, $dotsId, ['nzzzz' => 1]), 400, 'idée inconnue refusée');
+expect_status($p[1]->vote($code, $dotsId, [$b => 1]), 200, 'une seule gommette acceptée');
+$admin->post('control', ['s' => $code, 'op' => 'show']);
+$res = $admin->get("api.php?action=screen&s=$code")['json']['results'];
+check($res['items'][0]['id'] === $b && $res['items'][0]['n'] === 3 && $res['total'] === 2, 'gommettes : classement');
+
 // --- Coût : 30 rafraîchissements sans changement = 0 corps renvoyé -----------
 $path = "api.php?action=state&s=$code";
 $first = $p[0]->poll($path);
@@ -219,6 +280,7 @@ expect_status($csv, 200, 'export CSV');
 check(str_starts_with($csv['body'], "\xEF\xBB\xBF") && str_contains($csv['body'], '";"'), 'CSV : BOM UTF-8 et point-virgule');
 check(str_contains($csv['body'], "\"'=1+1\""), 'CSV : formule neutralisée');
 check(str_contains($csv['body'], 'Firefox (bonne réponse)'), 'CSV : bonne réponse signalée');
+check(str_contains($csv['body'], 'Points forts : Mots de passe') && str_contains($csv['body'], 'Vote par gommettes'), 'CSV : post-its et gommettes');
 $print = $admin->get("api.php?action=export&s=$code&format=print");
 check($print['status'] === 200 && str_contains($print['body'], 'Atelier test &lt;b&gt;'), 'version imprimable échappée');
 expect_status((new Client($base))->get("api.php?action=export&s=$code"), 401, 'export sans connexion refusé');
@@ -230,7 +292,7 @@ check($adm['questions'][0]['id'] === $qid['truefalse'], 'question remontée');
 $r = $admin->post('session_duplicate', ['s' => $code]);
 $copy = $r['json']['code'] ?? '';
 $dup = $admin->get("api.php?action=admin_state&s=$copy")['json'];
-check(count($dup['questions']) === 8 && $dup['questions'][0]['results']['total'] === 0 && $dup['participants'] === 0, 'copie sans votes ni participants');
+check(count($dup['questions']) === 11 && $dup['questions'][10]['source'] === $dup['questions'][9]['id'] && $dup['questions'][0]['results']['total'] === 0 && $dup['participants'] === 0, 'copie sans votes ni participants');
 $admin->post('control', ['s' => $code, 'op' => 'end']);
 check($p[0]->get($path)['json']['ended'] === true, 'session terminée visible des participants');
 expect_status((new Client($base))->join($code), 409, 'rejoindre une session terminée refusé');

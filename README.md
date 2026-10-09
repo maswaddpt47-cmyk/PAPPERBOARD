@@ -8,8 +8,21 @@ téléphone, sans compte, avec un QR code ou un code de 5 caractères.
 - **Participant** : `index.php` (ou le QR code) — une question à la fois, réponse en un geste.
 - **Projection** : `screen.php?s=CODE` — plein écran, résultats en direct, QR code permanent.
 
-Types de questions : Oui/Non, Vrai/Faux, QCM (avec bonne réponse), sondage,
-nuage de mots, réponse libre, échelle 1-5 ou 1-10, classement par points.
+Types de questions : Oui/Non, Vrai/Faux (quiz avec correction), QCM (avec
+bonne réponse), sondage, nuage de mots, réponse libre, échelle 1-5 ou 1-10,
+classement par points, et trois modules d'atelier :
+
+- **Mur collaboratif** : chacun publie jusqu'à 5 messages, puis « aime » ceux
+  des autres ; les plus aimés passent en tête.
+- **Post-it collectif** : notes de couleur dans des colonnes choisies par
+  l'animateur (ex. Points forts / Difficultés / Envies) ; l'animateur déplace
+  et regroupe les post-its depuis son écran.
+- **Vote par gommettes** : chacun colle ses gommettes (3 par défaut) sur les
+  idées d'un post-it collectif ou d'un mur précédent ; le classement s'affiche.
+
+Mur et post-it : les participants ne voient que leurs propres contributions
+tant que l'animateur n'a pas cliqué **Publier** (le temps de relire et de
+masquer un nom ou une donnée personnelle).
 
 PHP 8 sans base de données ni bibliothèque à installer : les données sont des
 fichiers JSON dans un dossier hors du site.
@@ -168,6 +181,10 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 - Réponses libres : relire avant d'afficher, **Masquer** toute réponse contenant
   un nom ou une donnée personnelle.
 - **Suivante →** pour enchaîner.
+
+**Variante bilan (15 min)** : Post-it collectif « Points forts / Difficultés /
+Envies » → regrouper les doublons depuis l'écran animateur → **Publier** →
+Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 
 **Après**
 - **Exporter en CSV** ou **Version imprimable** pour le bilan.

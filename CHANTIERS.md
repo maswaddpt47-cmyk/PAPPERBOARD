@@ -2,7 +2,7 @@
 
 État au **09/10/2026** — commit de référence : voir `git log -1 main`.
 Application complète, tests verts en local (`bash tests/run.sh`, 09/10/2026 :
-e2e 172 vérifications, charge, données, navigateur 15). Pas encore en ligne.
+e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Restant, par priorité
 
@@ -60,6 +60,15 @@ e2e 172 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   Renseigner `base_url` en production.
 
 ## Points à ne pas défaire
+
+- Mur et post-it : les contributions des autres ne sont visibles (téléphones
+  et projection) qu'après **Publier** — relecture et masquage d'abord, une
+  contribution peut contenir un nom. Chaque contribution rafraîchit les
+  téléphones (`pversion`), contrairement aux votes : coût accepté, les
+  contributions sont bien plus rares que les rafraîchissements.
+- Gommettes : elles visent les post-its **principaux** visibles de la question
+  source ; un post-it regroupé compte pour son principal. Identifiants de post
+  préfixés `n` : jamais de clé numérique en JSON.
 
 - Session = écran d'accueil d'abord (`current = -1`) ; « Suivante » vers une
   question jamais ouverte **ouvre le vote** (choix de l'utilisateur, 09/10/2026).

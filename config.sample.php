@@ -23,6 +23,7 @@ return [
     'max_participants' => 150,  // par session
     'purge_days' => 30,         // sessions supprimées après N jours sans activité
     'max_text' => 80,           // longueur maximale d'une réponse libre
+    'max_posts' => 5,           // messages ou post-its par participant et par question
 
     // Limites de taux (par minute). Dans un atelier, tous les téléphones
     // partagent souvent la même IP publique (wifi) : la limite par IP doit

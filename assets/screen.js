@@ -62,9 +62,10 @@
       WL.renderResults($('s-results'), q, d.results);
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
-        : q.state === 'open' ? 'Votez sur votre téléphone !' : 'Les votes sont fermés.';
+        : q.state === 'open' ? 'Répondez sur votre téléphone !' : 'Les votes sont fermés.';
+      var unit = { wall: 'message', postit: 'post-it' }[q.type] || 'réponse';
       WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
-        el('p', null, msg), el('p', { class: 's-answered' }, WL.plural(d.answered, 'réponse'))));
+        el('p', null, msg), el('p', { class: 's-answered' }, WL.plural(d.answered, unit))));
     }
   }
 

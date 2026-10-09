@@ -101,7 +101,7 @@ input, select, textarea {
   font: inherit; color: inherit; width: 100%; min-height: var(--wl-cible);
   padding: .5rem .75rem; border: 2px solid var(--wl-texte-doux); border-radius: var(--wl-rayon); background: #FFFFFF;
 }
-input[type="checkbox"] { width: 1.5rem; height: 1.5rem; min-height: 0; margin: 0; accent-color: var(--wl-bleu-texte); }
+input[type="checkbox"], input[type="radio"] { width: 1.5rem; height: 1.5rem; min-height: 0; margin: 0; accent-color: var(--wl-bleu-texte); }
 .check { display: flex; gap: .6rem; align-items: center; font-weight: normal; min-height: var(--wl-cible); }
 fieldset { border: 1px solid var(--wl-bord); border-radius: var(--wl-rayon); margin: .75rem 0; padding: .5rem 1rem; }
 legend { font-weight: bold; padding: 0 .25rem; }
@@ -188,6 +188,40 @@ legend { font-weight: bold; padding: 0 .25rem; }
   border-radius: 6px; overflow-wrap: anywhere;
 }
 .wall-hidden { opacity: .5; text-decoration: line-through; }
+
+/* Mur collaboratif, post-it collectif, gommettes. Les post-its gardent un
+ * fond clair et un texte foncé dans les deux thèmes (contraste > 12:1). */
+.post-text { flex: 1; min-width: 0; }
+.wall-item .btn { flex-shrink: 0; white-space: nowrap; }
+.wall-collab { grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+.likes { font-weight: bold; white-space: nowrap; color: var(--wl-ko); }
+[data-theme="dark"] .screen .likes { color: #F4A9A3; }
+.btn-like[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-ko); border-color: var(--wl-ko); }
+.board { display: grid; gap: .75rem; align-items: start; overflow-x: auto; }
+.board-col { background: rgba(111, 111, 110, .1); border-radius: var(--wl-rayon); padding: .5rem; min-height: 6rem; }
+.board-title { font-size: 1em; margin: .25rem .25rem .5rem; }
+.note {
+  color: #1F2A30; background: #FFF1A8; border-radius: 4px; padding: .5rem .6rem; margin-bottom: .5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .25); overflow-wrap: anywhere;
+}
+.note-text { margin: 0; font-weight: bold; }
+.note-sub { margin: .35rem 0 0; padding-top: .35rem; border-top: 1px dashed rgba(31, 42, 48, .4); }
+.note-tools { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.note-tools select { width: auto; min-height: 2.5rem; font-size: .85rem; padding: .2rem .4rem; }
+.board-c0 .note, .note.board-c0 { background: #FFF1A8; }
+.board-c1 .note, .note.board-c1 { background: #D6EEF6; }
+.board-c2 .note, .note.board-c2 { background: #EEF3C9; }
+.board-c3 .note, .note.board-c3 { background: #D3E8EB; }
+.board-c4 .note, .note.board-c4 { background: #E9EEF3; }
+.board-c5 .note, .note.board-c5 { background: #F9DCC8; }
+.posts { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
+.posts h2 { font-size: 1.05rem; }
+.posts .wall { grid-template-columns: 1fr; }
+.dots-rank { margin: 0; padding-left: 1.6em; display: grid; gap: .6rem; }
+.dots-row { display: grid; grid-template-columns: minmax(8rem, 40%) 1fr auto; gap: .75rem; align-items: center; }
+.dots-grouped { color: var(--wl-texte-doux); font-weight: normal; }
+.dots { display: inline-flex; flex-wrap: wrap; gap: .2em; vertical-align: middle; margin-left: .3em; }
+.dot { width: .9em; height: .9em; border-radius: 50%; background: var(--cd47-vert); border: 2px solid #5A6B12; }
 
 @keyframes wl-pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {

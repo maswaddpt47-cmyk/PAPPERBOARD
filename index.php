@@ -48,6 +48,7 @@ $days = (int)wl_config()['purge_days'];
     <form id="answer-form" novalidate></form>
     <p id="answer-status" class="answer-status" role="status" aria-live="polite"></p>
     <div id="my-result" class="my-result" hidden></div>
+    <div id="posts" class="posts" hidden></div>
   </section>
 </main>
 <footer class="footer">

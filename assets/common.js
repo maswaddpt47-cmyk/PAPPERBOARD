@@ -119,7 +119,8 @@ var WL = (function () {
 
   var TYPES = {
     yesno: 'Oui / Non', truefalse: 'Vrai / Faux', mcq: 'QCM', poll: 'Sondage',
-    wordcloud: 'Nuage de mots', text: 'Réponse libre', scale: 'Échelle', points: 'Classement par points'
+    wordcloud: 'Nuage de mots', text: 'Réponse libre', scale: 'Échelle', points: 'Classement par points',
+    wall: 'Mur collaboratif', postit: 'Post-it collectif', dots: 'Vote par gommettes'
   };
 
   function plural(n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); }
@@ -229,11 +230,107 @@ var WL = (function () {
     return list;
   }
 
-  /** Affiche les résultats d'une question dans container. */
-  function renderResults(container, q, res, onHide) {
+  /** Mur collaboratif : cartes, les plus aimées d'abord. */
+  function wallCards(container, q, posts, opts) {
+    var nodes = memory(container, q);
+    var list = el('ul', { class: 'wall wall-collab' });
+    posts.forEach(function (p) {
+      var item = keep(nodes, p.id, function () { return el('li', { class: 'wall-item' }); });
+      clear(item).appendChild(el('span', { class: 'post-text' }, p.text));
+      item.classList.toggle('wall-hidden', !!p.hidden);
+      item.appendChild(el('span', { class: 'likes', 'aria-label': p.likes + ' j\'aime' }, '♥ ' + p.likes));
+      if (opts.onHide) item.appendChild(hideButton(p, opts.onHide));
+      list.appendChild(item);
+    });
+    return list;
+  }
+
+  function hideButton(p, onHide) {
+    return el('button', { type: 'button', class: 'btn btn-small', onclick: function () { onHide(p.id, !p.hidden); } },
+      p.hidden ? 'Réafficher' : 'Masquer');
+  }
+
+  /** Post-it collectif : une colonne par catégorie, post-its regroupés empilés
+   *  sous leur post-it principal. opts.onAdmin(pid, op, arg) : outils animateur. */
+  function board(container, q, res, opts) {
+    var nodes = memory(container, q);
+    var top = res.posts.filter(function (p) { return !p.parent; });
+    var grid = el('div', { class: 'board' });
+    grid.style.gridTemplateColumns = 'repeat(' + res.columns.length + ', minmax(10rem, 1fr))';
+    res.columns.forEach(function (name, c) {
+      var col = el('section', { class: 'board-col board-c' + (c % 6) }, el('h3', { class: 'board-title' }, name));
+      top.filter(function (p) { return p.col === c; }).forEach(function (p) {
+        var note = keep(nodes, p.id, function () { return el('div', { class: 'note' }); });
+        clear(note).appendChild(el('p', { class: 'note-text' }, p.text));
+        note.classList.toggle('wall-hidden', !!p.hidden);
+        if (opts.onAdmin) note.appendChild(noteTools(p, top, res.columns, opts));
+        res.posts.filter(function (ch) { return ch.parent === p.id; }).forEach(function (ch) {
+          var sub = el('p', { class: 'note-sub' + (ch.hidden ? ' wall-hidden' : '') }, '+ ' + ch.text);
+          if (opts.onAdmin) {
+            sub.appendChild(el('button', { type: 'button', class: 'btn btn-small', onclick: function () { opts.onAdmin(ch.id, 'ungroup'); } }, 'Détacher'));
+            sub.appendChild(hideButton(ch, opts.onHide));
+          }
+          note.appendChild(sub);
+        });
+        col.appendChild(note);
+      });
+      grid.appendChild(col);
+    });
+    return grid;
+  }
+
+  /** Outils animateur d'un post-it : masquer, changer de colonne, regrouper. */
+  function noteTools(p, top, columns, opts) {
+    var tools = el('div', { class: 'note-tools' }, hideButton(p, opts.onHide));
+    if (columns.length > 1) {
+      var move = el('select', { 'aria-label': 'Déplacer vers la colonne', onchange: function () { opts.onAdmin(p.id, 'move', Number(move.value)); } },
+        el('option', { value: '' }, 'Déplacer…'));
+      columns.forEach(function (name, c) { if (c !== p.col) move.appendChild(el('option', { value: c }, name)); });
+      tools.appendChild(move);
+    }
+    var others = top.filter(function (o) { return o.id !== p.id; });
+    if (others.length) {
+      var group = el('select', { 'aria-label': 'Regrouper sous un autre post-it', onchange: function () { opts.onAdmin(p.id, 'group', group.value); } },
+        el('option', { value: '' }, 'Regrouper sous…'));
+      others.forEach(function (o) { group.appendChild(el('option', { value: o.id }, o.text.slice(0, 40))); });
+      tools.appendChild(group);
+    }
+    return tools;
+  }
+
+  /** Gommettes : classement des idées, une pastille par gommette reçue. */
+  function dotsRanking(container, q, items) {
+    var nodes = memory(container, q);
+    var list = el('ol', { class: 'dots-rank' });
+    items.forEach(function (it) {
+      var row = keep(nodes, it.id, function () { return el('li', { class: 'dots-row' }); });
+      var pills = el('span', { class: 'dots', 'aria-hidden': 'true' });
+      for (var i = 0; i < Math.min(it.n, 40); i++) pills.appendChild(el('span', { class: 'dot' }));
+      clear(row).appendChild(el('span', { class: 'dots-text' }, it.text,
+        it.grouped.length ? el('small', { class: 'dots-grouped' }, ' (+ ' + it.grouped.join(' ; ') + ')') : null));
+      row.appendChild(pills);
+      row.appendChild(el('span', { class: 'bar-value' }, plural(it.n, 'gommette')));
+      list.appendChild(row);
+    });
+    return list;
+  }
+
+  /** Affiche les résultats d'une question dans container. opts : onHide
+   *  (modération, animateur), onAdmin (outils post-it, animateur). Une
+   *  fonction seule vaut onHide. */
+  function renderResults(container, q, res, opts) {
+    opts = typeof opts === 'function' ? { onHide: opts } : (opts || {});
+    var onHide = opts.onHide;
     if (!res) { clear(container); return; }
     var node;
-    if (q.type === 'wordcloud') {
+    var none = function (text) { return el('p', { class: 'meta' }, text); };
+    if (q.type === 'wall') {
+      node = res.posts.length ? wallCards(container, q, res.posts, opts) : none('Aucun message pour le moment.');
+    } else if (q.type === 'postit') {
+      node = board(container, q, res, opts);
+    } else if (q.type === 'dots') {
+      node = res.items.length ? dotsRanking(container, q, res.items) : none('Aucune idée à départager : la question source est vide.');
+    } else if (q.type === 'wordcloud') {
       node = res.words.length ? cloud(container, q, res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.');
     } else if (q.type === 'text') {
       node = res.texts.length ? wall(container, q, res.texts, onHide) : el('p', { class: 'meta' }, 'Aucune réponse pour le moment.');
@@ -248,7 +345,7 @@ var WL = (function () {
     } else {
       clear(container).appendChild(node);
     }
-    var foot = plural(res.total, 'réponse');
+    var foot = plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
     container.appendChild(el('p', { class: 'results-foot' }, foot));
   }
@@ -264,7 +361,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, show: show, api: api, Poller: Poller, qr: qr,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };
