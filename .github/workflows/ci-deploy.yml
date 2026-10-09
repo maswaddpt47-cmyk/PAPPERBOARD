@@ -1,0 +1,121 @@
+# Tests à chaque push ; déploiement chez Alwaysdata seulement depuis main et
+# seulement si les tests passent. Paquet zip (plan B FTP) produit sur main.
+#
+# Secrets du dépôt (Settings > Secrets and variables > Actions), saisis par
+# l'utilisateur, jamais vus par Claude :
+#   ALWAYSDATA_COMPTE   nom du compte Alwaysdata
+#   ALWAYSDATA_SSH_KEY  clé privée SSH de déploiement (accès par clé seule)
+# Variables (onglet « Variables », facultatives) :
+#   WOOCLIGHT_CHEMIN    dossier cible sur le serveur (défaut : www/wooclight/)
+#   WOOCLIGHT_URL       adresse publique (défaut : https://<compte>.alwaysdata.net/wooclight)
+# Hypothèses non vérifiées sur ce compte (reprises du déploiement de l'API
+# des Ateliers, confirmées là-bas le 23/09/2026) : hôte SSH
+# ssh-<compte>.alwaysdata.net, utilisateur SSH = nom du compte, site servi
+# depuis ~/www/.
+name: Tests et déploiement
+
+permissions:
+  contents: read
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: wooclight-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntaxe, bout en bout, coût, charge
+        run: bash tests/run.sh
+
+  paquet:
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construire le zip (plan B, envoi FTP manuel)
+        run: |
+          mkdir -p paquet
+          zip -qr paquet/wooclight.zip . -x 'paquet/*' '.git*' 'data/*' 'config.php' \
+            'tests/*' 'scripts/*' 'docs/*' '.claude/*' '*.md'
+          unzip -l paquet/wooclight.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wooclight
+          path: paquet/wooclight.zip
+          retention-days: 30
+
+  deploy:
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier les secrets
+        id: secrets
+        env:
+          COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
+          CLE: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+        run: |
+          if [ -z "$COMPTE" ] || [ -z "$CLE" ]; then
+            echo "::warning::Secrets ALWAYSDATA_COMPTE / ALWAYSDATA_SSH_KEY absents : déploiement non lancé (voir README)."
+            echo "pret=non" >> "$GITHUB_OUTPUT"
+          else
+            echo "pret=oui" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Préparer l'accès SSH
+        if: steps.secrets.outputs.pret == 'oui'
+        env:
+          CLE: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CLE" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      # Pas de --delete : config.php et éventuellement data/ vivent sur le
+      # serveur hors dépôt, rsync ne doit jamais les effacer.
+      - name: Copier l'application
+        if: steps.secrets.outputs.pret == 'oui'
+        env:
+          COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
+          CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new "$COMPTE@ssh-$COMPTE.alwaysdata.net" "mkdir -p '$CHEMIN'"
+          rsync -az -e "ssh -o StrictHostKeyChecking=accept-new" \
+            --exclude 'data/' --exclude 'config.php' --exclude '.git*' --exclude 'tests/' \
+            --exclude 'scripts/' --exclude 'docs/' --exclude '.claude/' --exclude '*.md' \
+            ./ "$COMPTE@ssh-$COMPTE.alwaysdata.net:$CHEMIN"
+
+      # Vérifie sur le vrai Apache ce que php -S ne peut pas tester :
+      # .htaccess actif, fichiers internes refusés, en-têtes de sécurité.
+      - name: Vérifier la mise en ligne
+        if: steps.secrets.outputs.pret == 'oui'
+        env:
+          COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
+          URL: ${{ vars.WOOCLIGHT_URL }}
+        run: |
+          URL="${URL:-https://$COMPTE.alwaysdata.net/wooclight}"
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/index.php")
+          echo "index.php → HTTP $code"
+          if [ "$code" = "503" ]; then
+            echo "::warning::config.php absent sur le serveur : créer config.php (README, étape 4)."
+          elif [ "$code" != "200" ]; then
+            echo "::error::index.php ne répond pas (HTTP $code)"; exit 1
+          else
+            curl -sI "$URL/index.php" | grep -qi "content-security-policy: default-src 'none'" \
+              || { echo "::error::en-tête CSP absent"; exit 1; }
+          fi
+          for f in lib.php config.php config.sample.php data/ data/sessions/ tests/e2e.php CHANTIERS.md .htaccess; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/$f")
+            echo "$f → HTTP $code"
+            if [ "$code" = "200" ]; then echo "::error::$f est accessible depuis internet (.htaccess ignoré ?)"; exit 1; fi
+          done

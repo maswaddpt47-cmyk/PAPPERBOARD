@@ -1,0 +1,12 @@
+# WoocLight — Apache (Alwaysdata). Les en-têtes de sécurité sont envoyés par
+# PHP (lib.php) pour ne pas dépendre de mod_headers.
+Options -Indexes
+DirectoryIndex index.php
+
+# Fichiers internes : jamais servis.
+<FilesMatch "^(lib\.php|config\.php|config\.sample\.php|.*\.md|.*\.sh|.*\.json|.*\.lock|.*\.tmp)$">
+    Require all denied
+</FilesMatch>
+
+# Dossiers internes (data/ si DATA_DIR est laissé vide, tests, scripts…).
+RedirectMatch 404 ^.*/(data|tests|scripts|docs|\.git|\.github|\.claude)(/.*)?$
