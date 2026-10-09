@@ -6,15 +6,20 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Restant, par priorité
 
-1. **Mise en ligne** : secrets `ALWAYSDATA_COMPTE` et `ALWAYSDATA_SSH_KEY` à
-   créer par l'utilisateur, puis `config.php` sur le serveur (README §1).
-2. **Audit Codex ponctuel** avant d'annoncer l'outil (`agora.md` §12, règle 4 :
-   nouvelle page publique + mot de passe). Consigne prête, donnée en session
-   le 09/10/2026 ; le rapport vérifié se range hors du dépôt.
-3. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
-   PAPPERBOARD — modifiable par l'utilisateur seul, texte préparé en session.
-4. **Contrôle visuel** par l'utilisateur sur téléphone et projection (README §3).
-5. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
+1. **Mise en ligne** (utilisateur, procédure README §1) : clé SSH, secrets
+   `ALWAYSDATA_COMPTE` et `ALWAYSDATA_SSH_KEY`, puis `config.php` sur le
+   serveur. Sans les secrets, le déploiement est sauté (avertissement jaune).
+2. **Couper GitHub Pages** sur le dépôt (Settings > Pages > Source : None) :
+   une publication Pages a tourné sur `main` le 09/10/2026, elle expose une
+   copie statique inutile du code.
+3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
+   mur, post-it et gommettes (déroulé « variante bilan », README §5).
+4. **Audit Codex ponctuel** avant d'annoncer l'outil (`agora.md` §12, règle 4 :
+   nouvelle page publique + mot de passe). Consigne **pas encore rédigée**
+   (09/10/2026) ; le rapport vérifié se range hors du dépôt.
+5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
+   PAPPERBOARD — modifiable par l'utilisateur seul, texte à préparer.
+6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
    `.claude/settings.json` + `.claude/hooks/session-start.sh` ont été refusés à
    Claude par la plateforme (09/10/2026). À créer par l'utilisateur : même
    `settings.json` que NEWGEN, hook réduit à
@@ -34,6 +39,9 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 - **Emplacement** : `www/wooclight/` du compte Alwaysdata (défaut du workflow,
   variable `WOOCLIGHT_CHEMIN`). Même compte que l'API des Ateliers ou compte
   séparé : à décider par l'utilisateur.
+- **Mur et post-it : affichage différé** (décision prise seule le 09/10/2026) :
+  les contributions des autres n'apparaissent qu'après « Publier ». Affichage
+  immédiat possible si l'utilisateur le préfère (moins de contrôle des noms).
 - **Questions de la charte IA** encore ouvertes (06/10/2026) : Claude
   figure-t-il parmi les outils autorisés (§8) ?
 
