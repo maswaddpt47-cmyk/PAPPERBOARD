@@ -2,7 +2,7 @@
 
 État au **09/10/2026** — commit de référence : voir `git log -1 main`.
 Application complète, tests verts en local (`bash tests/run.sh`, 09/10/2026 :
-e2e 166 vérifications, charge, données, navigateur 15). Pas encore en ligne.
+e2e 172 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Restant, par priorité
 
@@ -61,6 +61,15 @@ e2e 166 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Points à ne pas défaire
 
+- Session = écran d'accueil d'abord (`current = -1`) ; « Suivante » vers une
+  question jamais ouverte **ouvre le vote** (choix de l'utilisateur, 09/10/2026).
+- Modifier le type, le nombre de choix, l'échelle, le budget ou le choix
+  multiple d'une question **efface ses réponses** (`wl_structure_changed()`,
+  même règle dans `admin.js`) : sinon les résultats plantent. Tenu par e2e.
+- Animations : barres mises à jour sur place (jamais détachées du DOM, sinon
+  la transition saute) ; mots et réponses libres réutilisés, seul un élément
+  nouveau porte `is-new` et joue l'apparition (sinon tout clignote à chaque vote).
+
 - **Polling** : deux versions par session. `pversion` (ce que voit un
   téléphone) ne bouge pas quand un autre participant vote ; `version`
   (projection, animateur) bouge à chaque vote. Sinon 150 téléphones
@@ -81,5 +90,7 @@ e2e 166 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Pistes d'amélioration
 
-*Proposées, en attente :* aucune.
+*Proposées, en attente :*
+- 09/10/2026 — Classement par points : trier les barres du plus au moins de
+  points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.
