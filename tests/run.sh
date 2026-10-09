@@ -36,5 +36,13 @@ php tests/charge.php || fail=1
 echo "=== Données dans la racine web ==="
 php tests/protect.php || fail=1
 
+echo "=== Navigateur ==="
+export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
+if node -e "require('playwright')" 2>/dev/null; then
+  node tests/navigateur.js || fail=1
+else
+  echo "⏭  Playwright absent : parcours navigateur non lancé"
+fi
+
 [ "$fail" -eq 0 ] && echo "=== ✅ Tout passe ===" || { echo "=== ❌ Échecs ==="; tail -20 "$TMP/server.log"; }
 exit $fail
