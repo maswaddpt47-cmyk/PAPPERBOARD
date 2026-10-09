@@ -348,6 +348,10 @@ function wl_maybe_purge(): int
             $count++;
         }
     }
+    $login = wl_data_dir() . '/login.json';
+    if (is_file($login) && filemtime($login) < time() - 900) {
+        @unlink($login); // échecs de connexion : utiles 15 minutes seulement
+    }
     foreach (glob(wl_data_dir() . '/rl/*') ?: [] as $file) {
         if (filemtime($file) < time() - 3600) {
             @unlink($file);
