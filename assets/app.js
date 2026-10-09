@@ -148,7 +148,7 @@
   /** Classe CSS de correction, une fois les résultats affichés. */
   function markClass(q, i) {
     if (!q.showResults || !q.correct.length) return '';
-    return q.correct.indexOf(i) !== -1 ? ' is-correct' : ' is-wrong';
+    return q.correct.indexOf(i) !== -1 ? ' is-correct' : '';
   }
 
   function checkboxes(form, q, mine, locked) {

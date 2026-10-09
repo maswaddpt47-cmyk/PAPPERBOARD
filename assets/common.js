@@ -132,17 +132,19 @@ var WL = (function () {
     return out;
   }
 
-  /** Barres horizontales (choix, sondage, échelle, points). Si les barres de
-   *  la même question sont déjà affichées, elles sont mises à jour sur place
-   *  pour que la largeur s'anime (transition CSS) au lieu de sauter. */
+  /** Barres (choix, sondage, points) ou colonnes (échelle, pour que 10 notes
+   *  tiennent sur la projection). Si les barres de la même question sont déjà
+   *  affichées, elles sont mises à jour sur place : la longueur s'anime
+   *  (transition CSS) au lieu de repartir de zéro. */
   function bars(container, q, res) {
     var max = Math.max.apply(null, res.counts.concat([1]));
     var sum = res.counts.reduce(function (a, b) { return a + b; }, 0);
     var names = labels(q);
+    var columns = q.type === 'scale';
     var list = container.querySelector('ul.bars');
     var fresh = !list || list.getAttribute('data-q') !== q.id + names.length;
     if (fresh) {
-      list = el('ul', { class: 'bars' + (q.type === 'scale' ? ' bars-scale' : ''), 'data-q': q.id + names.length });
+      list = el('ul', { class: 'bars' + (columns ? ' bars-scale' : ''), 'data-q': q.id + names.length });
       names.forEach(function () {
         list.appendChild(el('li', { class: 'bar' }, el('span', { class: 'bar-label' }),
           el('span', { class: 'bar-track' }, el('span', { class: 'bar-fill' })), el('span', { class: 'bar-value' })));
@@ -156,21 +158,50 @@ var WL = (function () {
       var li = list.children[i];
       li.className = 'bar' + (good ? ' bar-good' : '');
       li.children[0].textContent = (good ? '✓ ' : '') + label;
-      li.children[2].textContent = q.type === 'points' ? plural(n, 'point') : n + ' (' + pct + ' %)';
+      li.children[2].textContent = columns ? String(n) : q.type === 'points' ? plural(n, 'point') : n + ' (' + pct + ' %)';
       var fill = li.children[1].firstChild;
-      var width = Math.round(100 * n / max) + '%';
-      if (fresh) requestAnimationFrame(function () { requestAnimationFrame(function () { fill.style.width = width; }); });
-      else fill.style.width = width;
+      var size = Math.round(100 * n / max) + '%';
+      var apply = function () { fill.style[columns ? 'height' : 'width'] = size; };
+      if (fresh) requestAnimationFrame(function () { requestAnimationFrame(apply); });
+      else apply();
     });
     return list;
   }
 
+  /** Mémoire des éléments déjà affichés pour une question : seuls les
+   *  nouveaux mots ou nouvelles réponses jouent l'animation d'apparition. */
+  function memory(container, q) {
+    if (!container.wlMemory || container.wlMemory.q !== q.id) container.wlMemory = { q: q.id, nodes: {} };
+    return container.wlMemory.nodes;
+  }
+
+  function keep(nodes, key, make) {
+    if (nodes[key]) return nodes[key];
+    var node = make();
+    node.classList.add('is-new');
+    node.addEventListener('animationend', function () { node.classList.remove('is-new'); });
+    nodes[key] = node;
+    return node;
+  }
+
+  /** Couleur stable d'un mot (elle ne change pas quand l'ordre change). */
+  function colorOf(text) {
+    var h = 0;
+    for (var i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) % 997;
+    return 'cloud-c' + (h % 4);
+  }
+
   /** Nuage : taille de police proportionnelle à la fréquence (1 à 4 em). */
-  function cloud(words) {
+  function cloud(container, q, words) {
+    var nodes = memory(container, q);
     var max = words.reduce(function (m, w) { return Math.max(m, w.n); }, 1);
     var box = el('p', { class: 'cloud' });
-    words.forEach(function (w, i) {
-      var span = el('span', { class: 'cloud-word cloud-c' + (i % 4), title: w.n + ' fois' }, w.text);
+    words.forEach(function (w) {
+      var span = keep(nodes, w.text.toLowerCase(), function () {
+        return el('span', { class: 'cloud-word ' + colorOf(w.text.toLowerCase()) }, w.text);
+      });
+      span.textContent = w.text;
+      span.title = w.n + ' fois';
       span.style.fontSize = (1 + 3 * w.n / max).toFixed(2) + 'em';
       box.appendChild(span);
       box.appendChild(document.createTextNode(' '));
@@ -179,10 +210,14 @@ var WL = (function () {
   }
 
   /** Mur de réponses libres. onHide(id, hidden) : boutons de modération (animateur). */
-  function wall(texts, onHide) {
+  function wall(container, q, texts, onHide) {
+    var nodes = memory(container, q);
     var list = el('ul', { class: 'wall' });
     texts.forEach(function (t) {
-      var item = el('li', { class: 'wall-item' + (t.hidden ? ' wall-hidden' : '') }, el('span', null, t.text));
+      var item = keep(nodes, t.id, function () { return el('li', { class: 'wall-item' }, el('span')); });
+      item.classList.toggle('wall-hidden', !!t.hidden);
+      item.firstChild.textContent = t.text;
+      if (item.childNodes[1]) item.removeChild(item.childNodes[1]);
       if (onHide) {
         item.appendChild(el('button', {
           type: 'button', class: 'btn btn-small',
@@ -197,13 +232,21 @@ var WL = (function () {
   /** Affiche les résultats d'une question dans container. */
   function renderResults(container, q, res, onHide) {
     if (!res) { clear(container); return; }
-    if (['wordcloud', 'text'].indexOf(q.type) === -1) {
-      var list = bars(container, q, res);
-      clear(container).appendChild(list);
-    } else if (q.type === 'wordcloud') {
-      clear(container).appendChild(res.words.length ? cloud(res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.'));
+    var node;
+    if (q.type === 'wordcloud') {
+      node = res.words.length ? cloud(container, q, res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.');
+    } else if (q.type === 'text') {
+      node = res.texts.length ? wall(container, q, res.texts, onHide) : el('p', { class: 'meta' }, 'Aucune réponse pour le moment.');
     } else {
-      clear(container).appendChild(res.texts.length ? wall(res.texts, onHide) : el('p', { class: 'meta' }, 'Aucune réponse pour le moment.'));
+      node = bars(container, q, res);
+    }
+    // Des barres déjà en place restent attachées : retirées puis remises,
+    // elles perdraient leur transition.
+    if (node.parentNode === container) {
+      while (container.lastChild !== node) container.removeChild(container.lastChild);
+      while (container.firstChild !== node) container.removeChild(container.firstChild);
+    } else {
+      clear(container).appendChild(node);
     }
     var foot = plural(res.total, 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
