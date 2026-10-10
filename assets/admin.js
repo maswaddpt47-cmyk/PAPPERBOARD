@@ -128,6 +128,7 @@
     $('ed-print').href = 'api.php?action=export&format=print&s=' + d.code;
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' connecté' + (d.participants > 1 ? 's' : '');
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
+    $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
     if (qrFor !== d.joinUrl) {
       WL.qr($('ed-qr'), d.joinUrl, 4);
       qrFor = d.joinUrl;
@@ -184,6 +185,7 @@
     if (!data.ended && !confirm('Terminer la session ? Les participants ne pourront plus répondre.')) return;
     control(data.ended ? 'reopen' : 'end');
   });
+  $('lock-btn').addEventListener('click', function () { control(data.locked ? 'unlock' : 'lock'); });
   $('rename-btn').addEventListener('click', function () {
     var title = prompt('Nouveau titre', data.title);
     if (title) act('session_rename', { title: title });

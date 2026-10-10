@@ -102,6 +102,11 @@ function check(cond, label) {
   await admin.click('#show-btn');
   await screen.waitForSelector('.cloud-word');
   check((await screen.textContent('.cloud-word')) === 'Écran', 'mot affiché dans le nuage');
+  // Un mot qui porte le nom d'une propriété JS ne doit pas casser l'affichage.
+  await phone.fill('#free', 'constructor');
+  await phone.click('#answer-form button[type=submit]');
+  await screen.waitForFunction(() => /constructor/.test(document.getElementById('s-results').textContent), null, { timeout: 10000 });
+  check(true, 'mot « constructor » affiché sans erreur');
 
   // Session terminée.
   admin.once('dialog', d => d.accept());

@@ -54,13 +54,23 @@ $days = (int)wl_config()['purge_days'];
 <footer class="footer">
   <details>
     <summary>Confidentialité</summary>
-    <p>WoocLight ne demande ni nom, ni adresse e-mail, ni compte. Votre téléphone reçoit un
-    identifiant aléatoire qui sert seulement à éviter les votes en double. Votre adresse IP
-    n'est pas enregistrée en clair : elle est transformée de façon irréversible pour limiter
-    les abus. N'écrivez pas de nom ni d'information personnelle dans les réponses libres.
-    Les réponses sont supprimées automatiquement <?= $days ?> jours après la dernière activité de la session.
-    Responsable : Conseil départemental de Lot-et-Garonne — délégué à la protection des données :
-    contact-dpd@lotetgaronne.fr.</p>
+    <p><strong>En bref.</strong> Pas de nom, pas de compte. N'écrivez pas votre nom ni celui de
+    quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
+    devant tout le groupe. Tout est effacé automatiquement <?= $days ?> jours après l'atelier.</p>
+    <p><strong>Responsable</strong> : Conseil départemental de Lot-et-Garonne.
+    <strong>But</strong> : animer l'atelier et en faire le bilan.
+    <strong>Base légale</strong> : mission d'intérêt public du Département (médiation numérique).</p>
+    <p><strong>Données</strong> : vos réponses ; un identifiant au hasard enregistré sur ce téléphone
+    pour une journée, qui évite les votes en double ; votre adresse IP, gardée seulement sous forme
+    codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
+    ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées.</p>
+    <p><strong>Qui les voit</strong> : l'animateur ; les réponses qu'il publie sont projetées et
+    visibles des participants ; il peut exporter les résultats pour le bilan du service.
+    <strong>Hébergement</strong> : Alwaysdata, en France.
+    <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression.</p>
+    <p><strong>Vos droits</strong> (accès, effacement, opposition…) : pendant l'atelier, demandez à
+    l'animateur de retirer une réponse ; ensuite, écrivez au délégué à la protection des données :
+    contact-dpd@lotetgaronne.fr. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </details>
 </footer>
 <script src="assets/common.js"></script>

@@ -61,7 +61,8 @@ header('Cache-Control: no-store');
           <a id="ed-print" class="btn" target="_blank" rel="noopener">Version imprimable</a>
         </p>
         <p><span id="ed-participants"></span></p>
-        <p><button id="end-btn" class="btn" type="button"></button></p>
+        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>
+          <button id="end-btn" class="btn" type="button"></button></p>
       </div>
 
       <div class="card" id="live">
@@ -116,13 +117,14 @@ header('Cache-Control: no-store');
         <div id="qf-scale-box"><label for="qf-scale">Échelle</label>
           <select id="qf-scale"><option value="5">de 1 à 5</option><option value="10">de 1 à 10</option></select></div>
         <div id="qf-source-box"><label for="qf-source">Idées à départager : celles de la question</label>
-          <select id="qf-source"></select></div>
+          <select id="qf-source"></select>
+          <p class="meta">Les idées n'apparaissent qu'une fois cette question publiée.</p></div>
         <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
         <label for="qf-duration">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">
         <label class="check"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
-        <p class="meta">Réponses toujours anonymes.</p>
+        <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>
         <div class="row">
           <button class="btn btn-primary" id="qf-save" value="save" type="submit">Enregistrer</button>
