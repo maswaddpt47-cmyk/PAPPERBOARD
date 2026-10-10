@@ -23,6 +23,16 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    `ALWAYSDATA_KNOWN_HOSTS` ; redirection HTTPS ; tâche planifiée de purge ;
    faire valider par le DPD la base légale et le texte « Confidentialité »
    (cas des mineurs).
+4bis. **Second audit Codex (10/10/2026, réflexion maximale)** : aucun point
+   critique ni haut ; 8 points vérifiés et confirmés. Corrigés : 1 (purge
+   revérifiée sous verrou), 2 (verrous de limitation fixes), 3 (inscriptions
+   limitées à 60/min/IP, `rate_join`), 4 (jeton signé et daté, 24 h vérifiées
+   par le serveur ; bouton « Quitter et effacer ce téléphone »), 6 (réponse en
+   attente valable 1 h, effacée en fin de session), plus les remarques groupe
+   masqué, CSV à diffuser, création de session exclusive, texte « Tout est
+   effacé ». **Reste à l'utilisateur** : 5 (ruleset sur `main`), 7 (faire
+   reconnaître ses appareils avant l'atelier), 8 (tâche planifiée **horaire**),
+   journaux Apache et sauvegardes d'Alwaysdata à vérifier, validation DPD.
 5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
    PAPPERBOARD — modifiable par l'utilisateur seul, texte à préparer.
 6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
@@ -125,6 +135,10 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   appareil connu (cookie signé `wl_dev`), sinon par IP.
 - Rétention : seule l'activité de l'animateur (`activity`) repousse la purge ;
   `purge.php` (ligne de commande seulement) la lance chaque nuit.
+- Les « 2 heures au plus » de traces d'IP annoncées aux participants tiennent
+  à la tâche planifiée **horaire** de `purge.php` : ne pas l'espacer.
+- Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
+  purge n'efface que les compteurs `rl/*.json`.
 - Clé participant dérivée du code de session : deux sessions ne se relient pas.
 
 ## Pistes d'amélioration

@@ -43,6 +43,7 @@
 
   function showJoin(message) {
     if (poller) poller.stop();
+    pendingStore.del('pending'); // session introuvable ou quittée : rien ne repartira
     code = null;
     view('join');
     $('join-error').textContent = message || '';
@@ -101,7 +102,7 @@
     state = data;
     offset = data.now - Date.now() / 1000;
     $('session-title').textContent = data.title;
-    if (data.ended) { view('ended'); poller.stop(); return; }
+    if (data.ended) { view('ended'); poller.stop(); pendingStore.del('pending'); return; }
     if (!data.joined) { join(code); return; } // données purgées ou cookie perdu
     if (!data.question) { view('wait'); return; }
     view('question');
@@ -382,19 +383,26 @@
 
   // --- Envoi, avec reprise si le réseau tombe ----------------------------------
 
-  function pendingFor(q) {
+  /** Réponse en attente : valable une heure, pour la session en cours seulement. */
+  function readPending() {
     var p = JSON.parse(pendingStore.get('pending') || 'null');
+    if (p && Date.now() - (p.at || 0) > 3600000) { pendingStore.del('pending'); return null; }
+    return p;
+  }
+
+  function pendingFor(q) {
+    var p = readPending();
     return p && p.code === code && p.qid === q.id ? p : null;
   }
 
   function send(q, value) {
-    pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value }));
+    pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value, at: Date.now() }));
     $('answer-status').textContent = 'Envoi…';
     flushPending();
   }
 
   function flushPending() {
-    var p = JSON.parse(pendingStore.get('pending') || 'null');
+    var p = readPending();
     if (!p || sending || p.code !== code) return;
     sending = true;
     WL.api('vote', { body: { s: p.code, qid: p.qid, value: p.value }, headers: headers() }).then(function (r) {
@@ -455,6 +463,19 @@
       if (tick() === 0) { clearInterval(timer); renderKey = ''; onState(state); }
     }, 1000);
   }
+
+  // --- Quitter : effacer ce que le téléphone garde -------------------------------
+
+  $('leave-btn').addEventListener('click', function () {
+    WL.api('leave', { body: {} }).then(function () {}, function () {}).then(function () {
+      ['code', 'token', 'csrf', 'since'].forEach(store.del);
+      pendingStore.del('pending');
+      csrf = null;
+      $('session-title').textContent = '';
+      if (history.replaceState) history.replaceState(null, '', location.pathname);
+      showJoin('Vous avez quitté l\'atelier. Ce téléphone ne garde plus rien de WoocLight.');
+    });
+  });
 
   // --- Démarrage ---------------------------------------------------------------
 

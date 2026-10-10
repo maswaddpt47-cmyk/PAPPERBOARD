@@ -126,13 +126,21 @@ ni écrits dans le dépôt (charte IA du CD47, §5).
 2. **Approbation du déploiement** : GitHub > Settings > Environments >
    `production` (créé au premier déploiement) > **Required reviewers** : soi-même.
    Chaque mise en ligne attend alors un clic « Approve » dans l'onglet Actions.
-3. **Protéger `main`** : Settings > Branches > Add rule (ou Rulesets) sur `main` :
-   interdire la suppression et le force-push.
+3. **Protéger `main`** : Settings > Rules > Rulesets > New branch ruleset, cible
+   `main` : cocher « Restrict deletions », « Block force pushes » et « Require
+   status checks to pass » (contrôle `tests`). Seul sur le dépôt, une revue
+   indépendante est impossible : c'est l'approbation de l'étape 2 qui en tient lieu.
 4. **HTTPS obligatoire** : interface Alwaysdata > Sites > le site > activer la
    redirection HTTP → HTTPS. Le déploiement signale en jaune si ce n'est pas fait.
-5. **Purge planifiée** : Alwaysdata > Tâches planifiées > ajouter une commande
-   quotidienne `php ~/www/purge.php` (adapter le chemin si l'appli est dans un
-   sous-dossier). Sans elle, la purge ne tourne que lorsque l'appli est utilisée.
+5. **Purge planifiée** : Alwaysdata > Tâches planifiées > ajouter la commande
+   `php ~/www/purge.php` **toutes les heures** (adapter le chemin si l'appli est
+   dans un sous-dossier). Elle supprime les sessions expirées et les traces
+   d'IP de plus d'une heure : c'est elle qui garantit les « 2 heures au plus »
+   annoncées aux participants.
+6. **Faire reconnaître ses appareils** : se connecter une fois à `admin.php`
+   depuis chaque ordinateur ou téléphone d'animation, **avant** l'atelier. Un
+   appareil reconnu ne peut pas être bloqué par les erreurs de mot de passe
+   d'un participant sur le même wifi.
 
 ### Étape 6 — Vérifier
 
@@ -207,7 +215,9 @@ Envies » → regrouper les doublons depuis l'écran animateur → **Publier** �
 Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 
 **Après**
-- **Exporter en CSV** ou **Version imprimable** pour le bilan.
+- **Exporter en CSV (tout)** pour le bilan interne, ou **CSV à diffuser** (sans
+  les réponses masquées) pour un partage. Les exports ne sont pas effacés par la
+  purge : les ranger et les supprimer selon les règles du service.
 - **Terminer la session** : les téléphones affichent « Session terminée ».
 - Les données sont effacées automatiquement après 30 jours sans activité, ou
   tout de suite avec **Supprimer** dans « Mes sessions ».

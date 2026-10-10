@@ -57,7 +57,8 @@ header('Cache-Control: no-store');
         <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
         <p><a id="ed-screen" class="btn" target="_blank" rel="noopener">Ouvrir la projection</a></p>
         <p class="row wrap">
-          <a id="ed-csv" class="btn">Exporter en CSV</a>
+          <a id="ed-csv" class="btn">Exporter en CSV (tout)</a>
+          <a id="ed-csv-public" class="btn">CSV à diffuser (sans réponses masquées)</a>
           <a id="ed-print" class="btn" target="_blank" rel="noopener">Version imprimable</a>
         </p>
         <p><span id="ed-participants"></span></p>

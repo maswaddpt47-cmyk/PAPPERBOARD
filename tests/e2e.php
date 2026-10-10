@@ -292,6 +292,23 @@ check(str_contains($csv['body'], 'Firefox (bonne réponse)'), 'CSV : bonne répo
 check(str_contains($csv['body'], 'Points forts : Mots de passe') && str_contains($csv['body'], 'Vote par gommettes'), 'CSV : post-its et gommettes');
 $print = $admin->get("api.php?action=export&s=$code&format=print");
 check($print['status'] === 200 && str_contains($print['body'], 'Atelier test &lt;b&gt;'), 'version imprimable échappée');
+$admin->post('answer_hide', ['s' => $code, 'qid' => $postitId, 'aid' => $b, 'hidden' => true]);
+$public = $admin->get("api.php?action=export&public=1&s=$code")['body'];
+check(str_contains($csv['body'], 'Dupont') && !str_contains($public, 'Dupont'), 'CSV à diffuser : réponse masquée absente');
+check(!str_contains($public, 'Identifiants oubliés'), 'CSV à diffuser : post-it regroupé sous un post-it masqué absent');
+
+// --- Jeton participant : signé, daté, une journée --------------------------------
+$cfg = require getenv('WOOCLIGHT_CONFIG');
+$sign = fn(string $body) => substr(hash_hmac('sha256', 'tok|' . $body, $cfg['secret']), 0, 16);
+$oldBody = str_repeat('a', 32) . '.' . (time() - 2 * 86400);
+$oldTok = new Client($base);
+$r = $oldTok->request('POST', 'api.php?action=join', ['s' => $code], ['X-WL: 1', 'X-WL-Token: ' . $oldBody . '.' . $sign($oldBody)]);
+check(($r['json']['token'] ?? '') !== '' && !str_starts_with($r['json']['token'], str_repeat('a', 32)), 'jeton de plus d\'une journée remplacé');
+$fake = new Client($base);
+$r = $fake->request('POST', 'api.php?action=join', ['s' => $code], ['X-WL: 1', 'X-WL-Token: ' . str_repeat('b', 32) . '.' . time() . '.' . str_repeat('0', 16)]);
+check(!str_starts_with($r['json']['token'] ?? 'bbbb', str_repeat('b', 32)), 'jeton à signature fausse refusé');
+$r = $fake->post('leave', []);
+check(str_contains($r['headers']['set-cookie'] ?? '', 'wl_p=deleted') || str_contains($r['headers']['set-cookie'] ?? '', 'wl_p=;'), 'quitter : cookie du téléphone effacé');
 expect_status((new Client($base))->get("api.php?action=export&s=$code"), 401, 'export sans connexion refusé');
 
 // --- Réordonner, dupliquer, terminer, supprimer --------------------------------
