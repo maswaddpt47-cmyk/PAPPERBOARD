@@ -30,6 +30,7 @@ return [
     // rester large, la limite par participant est la vraie protection.
     'rate_ip' => 900,
     'rate_token' => 30,
+    'rate_join' => 60,   // nouvelles inscriptions par minute et par IP (ralentit les faux participants)
 
     // Mots refusés dans les réponses libres et le nuage de mots
     // (comparaison sans casse ni accents, mot entier).

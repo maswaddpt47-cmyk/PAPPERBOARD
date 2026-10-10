@@ -42,6 +42,7 @@ function wl_config(): array
     $defaults = [
         'data_dir' => '', 'base_url' => '', 'poll_ms' => 2000, 'max_participants' => 150,
         'purge_days' => 30, 'max_text' => 80, 'max_posts' => 5, 'rate_ip' => 900, 'rate_token' => 30,
+        'rate_join' => 60,
         'banned_words' => [],
     ];
     $cfg = array_merge($defaults, $user);
@@ -162,20 +163,32 @@ function wl_ip_hash(): string
     return wl_hash('ip|' . ($_SERVER['REMOTE_ADDR'] ?? ''));
 }
 
+const WL_TOKEN_TTL = 86400; // un jeton participant vaut une journée, vérifié par le serveur
+
+/** Jeton participant : aléa + date d'émission + signature (non falsifiable). */
 function wl_new_token(): string
 {
-    return bin2hex(random_bytes(16));
+    $body = bin2hex(random_bytes(16)) . '.' . time();
+    return $body . '.' . wl_hash('tok|' . $body, 16);
 }
 
+/** Jeton bien formé, signé par ce serveur et émis il y a moins d'une journée. */
 function wl_valid_token(?string $t): bool
 {
-    return is_string($t) && preg_match('/^[a-f0-9]{32}$/', $t) === 1;
+    if (!is_string($t) || !preg_match('/^([a-f0-9]{32}\.(\d{10}))\.([a-f0-9]{16})$/', $t, $m)) {
+        return false;
+    }
+    return hash_equals(wl_hash('tok|' . $m[1], 16), $m[3]) && (int)$m[2] > time() - WL_TOKEN_TTL;
 }
 
 /** Compte les écritures par fenêtre d'une minute ; WlError 429 au-delà. */
 function wl_rate(string $bucket, int $limit): void
 {
-    $file = wl_data_dir() . '/rl/' . wl_hash('rl|' . $bucket, 24) . '.json';
+    $key = wl_hash('rl|' . $bucket, 24);
+    $file = wl_data_dir() . '/rl/' . $key . '.json';
+    // 16 verrous fixes, jamais supprimés : la purge peut effacer un compteur
+    // ancien sans retirer un verrou qu'un autre processus tient ouvert.
+    $lock = wl_data_dir() . '/rl/shard-' . $key[0] . '.lock';
     $window = intdiv(time(), 60);
     wl_locked_json($file, function (array &$d) use ($window, $limit) {
         if (($d['w'] ?? 0) !== $window) {
@@ -184,7 +197,7 @@ function wl_rate(string $bucket, int $limit): void
         if (++$d['n'] > $limit) {
             throw new WlError('Trop de requêtes, patientez quelques secondes.', 429);
         }
-    });
+    }, false, $lock);
 }
 
 // ---------------------------------------------------------------------------
@@ -194,9 +207,9 @@ function wl_rate(string $bucket, int $limit): void
 /** Lit un JSON, le passe à $fn par référence sous verrou exclusif, et
  *  l'écrit atomiquement (fichier temporaire + rename). Retourne ce que
  *  renvoie $fn. Une exception dans $fn annule l'écriture. */
-function wl_locked_json(string $file, callable $fn, bool $mustExist = false): mixed
+function wl_locked_json(string $file, callable $fn, bool $mustExist = false, ?string $lockFile = null): mixed
 {
-    $lock = fopen($file . '.lock', 'c');
+    $lock = fopen($lockFile ?? $file . '.lock', 'c');
     if ($lock === false || !flock($lock, LOCK_EX)) {
         throw new WlError('Stockage indisponible.', 500);
     }
@@ -306,7 +319,13 @@ function wl_new_code(): string
 
 function wl_create_session(string $title, array $questions = []): array
 {
-    $code = wl_new_code();
+    // Réservation exclusive : deux créations simultanées ne prennent pas le même code.
+    for ($try = 0; ($reserved = @fopen(wl_session_file($code = wl_new_code()), 'x')) === false; $try++) {
+        if ($try >= 5) {
+            throw new WlError('Impossible de créer la session.', 500);
+        }
+    }
+    fclose($reserved);
     $now = time();
     $s = [
         'code' => $code, 'title' => $title, 'created' => $now, 'updated' => $now,
@@ -339,18 +358,25 @@ function wl_list_sessions(): array
 /** Suppression sous le même verrou que les écritures : une écriture en
  *  cours ne peut pas recréer la session après coup (elle trouve le fichier
  *  absent et s'arrête). Le verrou reste ; la purge retire les verrous orphelins. */
-function wl_delete_session(string $code): void
+function wl_delete_session(string $code, ?int $expiredBefore = null): bool
 {
     $file = wl_session_file($code);
     if (!is_file($file)) {
-        return;
+        return false;
     }
     $lock = fopen($file . '.lock', 'c');
     if ($lock === false || !flock($lock, LOCK_EX)) {
         throw new WlError('Stockage indisponible.', 500);
     }
     try {
-        @unlink($file);
+        if ($expiredBefore !== null) {
+            // Purge : relire sous verrou, l'animateur a pu agir entre-temps.
+            $s = json_decode((string)@file_get_contents($file), true);
+            if (is_array($s) && wl_retention_start($s) >= $expiredBefore) {
+                return false;
+            }
+        }
+        return @unlink($file);
     } finally {
         flock($lock, LOCK_UN);
         fclose($lock);
@@ -385,8 +411,7 @@ function wl_purge(): int
     $count = 0;
     foreach (glob(wl_data_dir() . '/sessions/*.json') ?: [] as $file) {
         $s = json_decode((string)file_get_contents($file), true);
-        if (!is_array($s) || wl_retention_start($s) < $limit) {
-            wl_delete_session(basename($file, '.json'));
+        if ((!is_array($s) || wl_retention_start($s) < $limit) && wl_delete_session(basename($file, '.json'), $limit)) {
             $count++;
         }
     }
@@ -399,9 +424,9 @@ function wl_purge(): int
     if (is_file($login) && filemtime($login) < time() - 900) {
         @unlink($login); // échecs de connexion : utiles 15 minutes seulement
     }
-    foreach (glob(wl_data_dir() . '/rl/*') ?: [] as $file) {
+    foreach (glob(wl_data_dir() . '/rl/*.json') ?: [] as $file) {
         if (filemtime($file) < time() - 3600) {
-            @unlink($file);
+            @unlink($file); // compteurs seulement ; les verrous shard-*.lock restent
         }
     }
     return $count;
@@ -1061,7 +1086,9 @@ function wl_participant_posts(array $q, string $pkey): array
     $out = [];
     foreach ($q['posts'] as $p) {
         $mine = $p['p'] === $pkey;
-        if ($mine || ($q['showResults'] && !in_array($p['id'], $q['hidden'], true))) {
+        // Masquer un post-it principal masque aussi ceux regroupés dessous.
+        $hidden = in_array($p['id'], $q['hidden'], true) || in_array($p['parent'], $q['hidden'], true);
+        if ($mine || ($q['showResults'] && !$hidden)) {
             $out[] = ['id' => $p['id'], 'text' => $p['text'], 'col' => min($p['col'], max(0, count($q['options']) - 1)),
                 'likes' => count($p['likes']), 'liked' => in_array($pkey, $p['likes'], true), 'mine' => $mine];
         }
@@ -1093,7 +1120,7 @@ function wl_postit_results(array $q, bool $admin): array
     $last = max(0, count($q['options']) - 1);
     $out = [];
     foreach ($q['posts'] as $p) {
-        $hidden = in_array($p['id'], $q['hidden'], true);
+        $hidden = in_array($p['id'], $q['hidden'], true) || in_array($p['parent'], $q['hidden'], true);
         if ($admin || !$hidden) {
             $out[] = ['id' => $p['id'], 'text' => $p['text'], 'col' => min($p['col'], $last), 'parent' => $p['parent']]
                 + ($admin ? ['hidden' => $hidden] : []);

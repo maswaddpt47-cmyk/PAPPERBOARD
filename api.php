@@ -9,7 +9,7 @@ require __DIR__ . '/lib.php';
 wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
-const WL_PUBLIC_POST = ['join', 'vote', 'post', 'post_delete', 'like'];
+const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
     'session_rename', 'question_save', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
@@ -138,6 +138,7 @@ function api_join(array $b): void
             if (count($s['participants']) >= (int)wl_config()['max_participants']) {
                 throw new WlError('La session est complète.', 409);
             }
+            wl_rate('join|' . wl_ip_hash(), (int)wl_config()['rate_join']);
             $s['participants'][$pkey] = time();
         }
         return $s['title'];
@@ -145,6 +146,18 @@ function api_join(array $b): void
     api_set_token_cookie($token);
     wl_json(['ok' => true, 'code' => $code, 'title' => $title, 'token' => $token,
         'csrf' => wl_participant_csrf($token)]);
+}
+
+/** Quitter : efface le cookie du téléphone (le navigateur efface le reste).
+ *  Les réponses déjà envoyées restent dans la session jusqu'à sa suppression. */
+function api_leave(array $b): void
+{
+    if (($_SERVER['HTTP_X_WL'] ?? '') !== '1') {
+        throw new WlError('Requête refusée.', 403);
+    }
+    setcookie('wl_p', '', ['expires' => 1, 'path' => wl_base_path() . '/', 'secure' => wl_https(),
+        'httponly' => true, 'samesite' => 'Lax']);
+    wl_json(['ok' => true]);
 }
 
 /** Ce que voit le participant. 304 tant que rien de visible n'a changé. */
@@ -475,18 +488,20 @@ function api_answer_hide(array $b): void
 function api_export(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
+    // public=1 : version à diffuser, sans les réponses masquées par l'animateur.
+    $all = empty($_GET['public']);
     if (($_GET['format'] ?? '') === 'print') {
-        api_export_print($s);
+        api_export_print($s, $all);
     }
-    api_export_csv($s);
+    api_export_csv($s, $all);
 }
 
 /** Lignes communes au CSV et à la version imprimable. */
-function api_export_rows(array $s): array
+function api_export_rows(array $s, bool $all): array
 {
     $rows = [];
     foreach ($s['questions'] as $n => $q) {
-        $res = wl_results($q, true, $s);
+        $res = wl_results($q, $all, $s);
         foreach (api_result_lines($q, $res) as [$label, $value]) {
             $rows[] = [$n + 1, $q['text'], api_type_label($q['type']), $label, $value, $res['total']];
         }
@@ -500,12 +515,12 @@ function api_result_lines(array $q, array $res): array
         case 'wordcloud':
             return array_map(fn($w) => [$w['text'], $w['n']], $res['words']);
         case 'text':
-            return array_map(fn($t) => [$t['text'], $t['hidden'] ? 'masquée' : ''], $res['texts']);
+            return array_map(fn($t) => [$t['text'], ($t['hidden'] ?? false) ? 'masquée' : ''], $res['texts']);
         case 'wall':
-            return array_map(fn($p) => [$p['text'] . ($p['hidden'] ? ' (masqué)' : ''), $p['likes'] . ' j\'aime'], $res['posts']);
+            return array_map(fn($p) => [$p['text'] . (($p['hidden'] ?? false) ? ' (masqué)' : ''), $p['likes'] . ' j\'aime'], $res['posts']);
         case 'postit':
             return array_map(fn($p) => [$res['columns'][$p['col']] . ' : ' . $p['text']
-                . ($p['parent'] ? ' (regroupé)' : '') . ($p['hidden'] ? ' (masqué)' : ''), ''], $res['posts']);
+                . ($p['parent'] ? ' (regroupé)' : '') . (($p['hidden'] ?? false) ? ' (masqué)' : ''), ''], $res['posts']);
         case 'dots':
             return array_map(fn($it) => [$it['text'] . ($it['grouped'] ? ' (+ ' . implode(' ; ', $it['grouped']) . ')' : ''),
                 $it['n']], $res['items']);
@@ -536,20 +551,20 @@ function api_csv_cell(mixed $v): string
 }
 
 /** CSV lisible dans Excel : UTF-8 avec BOM, séparateur point-virgule. */
-function api_export_csv(array $s): never
+function api_export_csv(array $s, bool $all): never
 {
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="wooclight-' . $s['code'] . '-' . date('Y-m-d') . '.csv"');
+    header('Content-Disposition: attachment; filename="wooclight-' . $s['code'] . ($all ? '' : '-diffusion') . '-' . date('Y-m-d') . '.csv"');
     header('Cache-Control: no-store');
     echo "\xEF\xBB\xBF";
     $head = ['N°', 'Question', 'Type', 'Réponse', 'Nombre', 'Participants ayant répondu'];
-    foreach ([$head, ...api_export_rows($s)] as $row) {
+    foreach ([$head, ...api_export_rows($s, $all)] as $row) {
         echo implode(';', array_map('api_csv_cell', $row)), "\r\n";
     }
     exit;
 }
 
-function api_export_print(array $s): never
+function api_export_print(array $s, bool $all): never
 {
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-store');
@@ -559,7 +574,7 @@ function api_export_print(array $s): never
         . "<h1>$title</h1><p>Code " . wl_h($s['code']) . ' — exporté le ' . date('d/m/Y à H:i')
         . ' — ' . count($s['participants']) . ' participant(s)</p>';
     $byQuestion = [];
-    foreach (api_export_rows($s) as $r) {
+    foreach (api_export_rows($s, $all) as $r) {
         $byQuestion[$r[0]][] = $r;
     }
     foreach ($byQuestion as $n => $rows) {

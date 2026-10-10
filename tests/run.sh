@@ -17,7 +17,7 @@ export WL_DATA="$TMP/data" WL_PASSWORD="mot-de-passe-de-test" WL_BASE="http://12
 php -r '
 $c = ["admin_hash" => password_hash(getenv("WL_PASSWORD"), PASSWORD_DEFAULT),
       "secret" => bin2hex(random_bytes(32)), "data_dir" => getenv("WL_DATA"),
-      "banned_words" => ["zut"], "rate_token" => 50];
+      "banned_words" => ["zut"], "rate_token" => 50, "rate_join" => 200];
 file_put_contents($argv[1], "<?php return " . var_export($c, true) . ";");' "$TMP/config.php"
 export WOOCLIGHT_CONFIG="$TMP/config.php"
 
