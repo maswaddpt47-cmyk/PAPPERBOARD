@@ -65,6 +65,7 @@ expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type'
 
 // --- Participants --------------------------------------------------------------
 expect_status($p[0]->join('ZZZZZ'), 404, 'code inconnu');
+check(!file_exists("$data/sessions/ZZZZZ.json.lock"), 'aucun verrou créé pour un code inconnu');
 expect_status($p[0]->request('POST', 'api.php?action=join', ['s' => $code]), 403, 'rejoindre sans en-tête X-WL');
 foreach ($p as $i => $c) {
     expect_status($c->join(strtolower($code)), 200, "participant $i rejoint (code en minuscules)");
@@ -72,6 +73,10 @@ foreach ($p as $i => $c) {
 check($p[0]->token !== $p[1]->token, 'jetons différents par participant');
 $again = $p[0]->join($code);
 check(($again['json']['token'] ?? '') === $p[0]->token, 'même jeton en rejoignant à nouveau');
+$admin->post('control', ['s' => $code, 'op' => 'lock']);
+expect_status((new Client($base))->join($code), 409, 'inscriptions fermées : nouveau participant refusé');
+expect_status($p[1]->join($code), 200, 'inscriptions fermées : un inscrit revient');
+$admin->post('control', ['s' => $code, 'op' => 'unlock']);
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['joined'] === true && $st['question'] === null, 'état participant : accueil, aucune question');
 check($admin->get("api.php?action=screen&s=$code")['json']['question'] === null, 'projection : accueil');
@@ -231,6 +236,10 @@ check($byId[$c]['parent'] === $b && $byId[$c]['col'] === 0 && $byId[$b]['col'] =
 expect_status($p[0]->post('post', ['s' => $code, 'qid' => $postitId, 'text' => 'x'], false), 403, 'post-it sans CSRF refusé');
 
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
+check($wstate($p[0])['items'] === [], 'gommettes : idées d\'un post-it non publié invisibles');
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $postitId]);
+$admin->post('control', ['s' => $code, 'op' => 'show']); // publier la source
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
 $st = $wstate($p[0]);
 check(count($st['items']) === 2 && in_array('Identifiants oubliés', array_merge(...array_column($st['items'], 'grouped')), true), 'gommettes : idées principales, regroupées dessous');
 expect_status($p[0]->vote($code, $dotsId, [$b => 2, $a => 1]), 200, 'coller 3 gommettes');
@@ -296,6 +305,8 @@ check(count($dup['questions']) === 11 && $dup['questions'][10]['source'] === $du
 $admin->post('control', ['s' => $code, 'op' => 'end']);
 check($p[0]->get($path)['json']['ended'] === true, 'session terminée visible des participants');
 expect_status((new Client($base))->join($code), 409, 'rejoindre une session terminée refusé');
+check($p[0]->get("api.php?action=state&s=$code")['json']['question'] === null, 'session terminée : plus de question servie');
+check(!isset($admin->get("api.php?action=screen&s=$code")['json']['results']), 'session terminée : projection vide');
 expect_status($p[0]->vote($code, $qid['poll'], 0), 409, 'vote dans une session terminée refusé');
 expect_status($admin->post('session_delete', ['s' => $copy]), 200, 'suppression');
 expect_status($p[0]->get("api.php?action=state&s=$copy"), 404, 'session supprimée introuvable');
@@ -303,11 +314,12 @@ expect_status($p[0]->get("api.php?action=state&s=$copy"), 404, 'session supprim�
 // --- Purge automatique -------------------------------------------------------
 $file = "$data/sessions/$code.json";
 $json = json_decode(file_get_contents($file), true);
-$json['updated'] = time() - 31 * 86400;
+$json['activity'] = time() - 31 * 86400; // dernière action de l'animateur
+$json['updated'] = time();                // un participant est encore passé : ne compte pas
 file_put_contents($file, json_encode($json));
 touch("$data/last-purge", time() - 7200);
 $admin->get('api.php?action=me');
-check(!is_file($file), 'session inactive depuis 31 jours purgée');
+check(!is_file($file), 'sans action de l\'animateur depuis 31 jours : purgée, même avec un passage récent');
 expect_status($p[0]->get($path), 404, 'session purgée : code inconnu');
 
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
@@ -325,5 +337,13 @@ for ($i = 0; $i < 5; $i++) {
     $intrus->post('login', ['password' => 'essai' . $i]);
 }
 expect_status($intrus->post('login', ['password' => getenv('WL_PASSWORD')]), 429, 'bon mot de passe refusé après 5 échecs');
+expect_status($admin->post('login', ['password' => getenv('WL_PASSWORD')]), 200, 'appareil déjà connu : pas bloqué par les échecs d\'un autre sur la même IP');
+
+// --- Essais de codes en série (en dernier : bloque l'IP locale) -------------------
+$codes = [];
+for ($i = 0; $i < 32; $i++) {
+    $codes[] = $intrus->get('api.php?action=state&s=' . substr(str_shuffle('ABCDEFGHJKMNPQRSTUVWXYZ'), 0, 5))['status'];
+}
+check(in_array(429, $codes, true), 'plus de 30 codes inconnus par minute : 429');
 
 finish('e2e');

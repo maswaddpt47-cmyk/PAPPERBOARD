@@ -5,11 +5,20 @@
 
 (function () {
   var el = WL.el, $ = WL.$;
-  var store = {
-    get: function (k) { try { return localStorage.getItem('wl_' + k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem('wl_' + k, v); } catch (e) { /* navigation privée */ } },
-    del: function (k) { try { localStorage.removeItem('wl_' + k); } catch (e) { /* idem */ } }
-  };
+  function storage(area) {
+    return {
+      get: function (k) { try { return area().getItem('wl_' + k); } catch (e) { return null; } },
+      set: function (k, v) { try { area().setItem('wl_' + k, v); } catch (e) { /* navigation privée */ } },
+      del: function (k) { try { area().removeItem('wl_' + k); } catch (e) { /* idem */ } }
+    };
+  }
+  // Code et jeton : localStorage, une journée au plus (téléphone partagé).
+  // Réponse en attente : sessionStorage, oubliée à la fermeture de l'onglet.
+  var store = storage(function () { return localStorage; });
+  var pendingStore = storage(function () { return sessionStorage; });
+  if (Date.now() - Number(store.get('since') || 0) > 86400000) {
+    ['code', 'token', 'csrf', 'since', 'pending'].forEach(store.del);
+  }
 
   var code = null, csrf = store.get('csrf'), poller = null;
   var state = null, renderKey = '', offset = 0, timer = null, sending = false;
@@ -54,6 +63,7 @@
       code = r.data.code;
       csrf = r.data.csrf;
       store.set('code', code);
+      if (store.get('token') !== r.data.token) store.set('since', String(Date.now()));
       store.set('token', r.data.token);
       store.set('csrf', csrf);
       $('session-title').textContent = r.data.title;
@@ -212,7 +222,7 @@
   function dots(form, q, mine, locked) {
     var items = state.items || [];
     if (!items.length) {
-      form.appendChild(el('p', { class: 'meta' }, 'Aucune idée à départager pour le moment.'));
+      form.appendChild(el('p', { class: 'meta' }, 'Les idées apparaîtront quand l\'animateur aura publié le post-it.'));
       return;
     }
     var values = items.map(function (it) { return (mine && mine[it.id]) || 0; });
@@ -373,29 +383,29 @@
   // --- Envoi, avec reprise si le réseau tombe ----------------------------------
 
   function pendingFor(q) {
-    var p = JSON.parse(store.get('pending') || 'null');
+    var p = JSON.parse(pendingStore.get('pending') || 'null');
     return p && p.code === code && p.qid === q.id ? p : null;
   }
 
   function send(q, value) {
-    store.set('pending', JSON.stringify({ code: code, qid: q.id, value: value }));
+    pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value }));
     $('answer-status').textContent = 'Envoi…';
     flushPending();
   }
 
   function flushPending() {
-    var p = JSON.parse(store.get('pending') || 'null');
+    var p = JSON.parse(pendingStore.get('pending') || 'null');
     if (!p || sending || p.code !== code) return;
     sending = true;
     WL.api('vote', { body: { s: p.code, qid: p.qid, value: p.value }, headers: headers() }).then(function (r) {
       sending = false;
-      store.del('pending');
+      pendingStore.del('pending');
       if (r.status === 200) {
         state.mine = r.data.mine;
         renderKey = '';
         if (state.question && state.question.id === p.qid) onState(state);
       } else if (r.status === 403 && /Rejoignez/.test(r.data.error)) {
-        store.set('pending', JSON.stringify(p));
+        pendingStore.set('pending', JSON.stringify(p));
         join(code);
       } else {
         $('answer-status').textContent = r.data.error || 'Réponse refusée.';

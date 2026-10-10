@@ -5,6 +5,9 @@
 # l'utilisateur, jamais vus par Claude :
 #   ALWAYSDATA_COMPTE   nom du compte Alwaysdata
 #   ALWAYSDATA_SSH_KEY  clé privée SSH de déploiement (accès par clé seule)
+#   ALWAYSDATA_KNOWN_HOSTS  ligne(s) known_hosts du serveur SSH, relevée(s) par
+#                       l'utilisateur (README) : sans elle, la première
+#                       connexion accepte la clé du serveur sans la vérifier.
 # Variables (onglet « Variables », facultatives) :
 #   WOOCLIGHT_CHEMIN    dossier cible sur le serveur (défaut : www/wooclight/)
 #   WOOCLIGHT_URL       adresse publique (défaut : https://<compte>.alwaysdata.net/wooclight)
@@ -30,7 +33,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Syntaxe, bout en bout, coût, charge
         run: bash tests/run.sh
 
@@ -39,14 +42,14 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Construire le zip (plan B, envoi FTP manuel)
         run: |
           mkdir -p paquet
           zip -qr paquet/wooclight.zip . -x 'paquet/*' '.git*' 'data/*' 'config.php' \
             'tests/*' 'scripts/*' 'docs/*' '.claude/*' '*.md'
           unzip -l paquet/wooclight.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: wooclight
           path: paquet/wooclight.zip
@@ -56,8 +59,11 @@ jobs:
     needs: tests
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    # Environnement GitHub « production » : y ajouter une approbation manuelle
+    # (Settings > Environments) pour qu'aucun push ne déploie seul.
+    environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Vérifier les secrets
         id: secrets
@@ -76,10 +82,23 @@ jobs:
         if: steps.secrets.outputs.pret == 'oui'
         env:
           CLE: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          HOTES: ${{ secrets.ALWAYSDATA_KNOWN_HOSTS }}
+          CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
         run: |
+          # Chemin cible : lettres, chiffres, - _ . / seulement (il est passé à une commande distante).
+          if ! printf '%s' "$CHEMIN" | grep -Eq '^[A-Za-z0-9_./-]+/$' || printf '%s' "$CHEMIN" | grep -q '\.\.'; then
+            echo "::error::WOOCLIGHT_CHEMIN invalide (ex. www/ ou www/wooclight/)"; exit 1
+          fi
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$CLE" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          if [ -n "$HOTES" ]; then
+            printf '%s\n' "$HOTES" | tr -d '\r' > ~/.ssh/known_hosts
+            echo "SSH_VERIF=yes" >> "$GITHUB_ENV"
+          else
+            echo "::warning::ALWAYSDATA_KNOWN_HOSTS absent : clé du serveur acceptée sans vérification (README)."
+            echo "SSH_VERIF=accept-new" >> "$GITHUB_ENV"
+          fi
 
       # Pas de --delete : config.php et éventuellement data/ vivent sur le
       # serveur hors dépôt, rsync ne doit jamais les effacer.
@@ -89,8 +108,8 @@ jobs:
           COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
           CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
         run: |
-          ssh -o StrictHostKeyChecking=accept-new "$COMPTE@ssh-$COMPTE.alwaysdata.net" "mkdir -p '$CHEMIN'"
-          rsync -az -e "ssh -o StrictHostKeyChecking=accept-new" \
+          ssh -o StrictHostKeyChecking=$SSH_VERIF "$COMPTE@ssh-$COMPTE.alwaysdata.net" "mkdir -p '$CHEMIN'"
+          rsync -az -e "ssh -o StrictHostKeyChecking=$SSH_VERIF" \
             --exclude 'data/' --exclude 'config.php' --exclude '.git*' --exclude 'tests/' \
             --exclude 'scripts/' --exclude 'docs/' --exclude '.claude/' --exclude '*.md' \
             ./ "$COMPTE@ssh-$COMPTE.alwaysdata.net:$CHEMIN"
@@ -114,7 +133,11 @@ jobs:
             curl -sI "$URL/index.php" | grep -qi "content-security-policy: default-src 'none'" \
               || { echo "::error::en-tête CSP absent"; exit 1; }
           fi
-          for f in lib.php config.php config.sample.php data/ data/sessions/ tests/e2e.php CHANTIERS.md .htaccess; do
+          # HTTP doit renvoyer vers HTTPS (mots de passe et jetons).
+          code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/index.php")
+          echo "http://…/index.php → HTTP $code"
+          case "$code" in 301|302|307|308) ;; *) echo "::warning::HTTP ne redirige pas vers HTTPS : activer la redirection dans le site Alwaysdata." ;; esac
+          for f in lib.php purge.php config.php config.sample.php data/ data/sessions/ tests/e2e.php CHANTIERS.md .htaccess; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/$f")
             echo "$f → HTTP $code"
             if [ "$code" = "200" ]; then echo "::error::$f est accessible depuis internet (.htaccess ignoré ?)"; exit 1; fi

@@ -65,6 +65,28 @@ function api_require_admin(bool $checkCsrf = false): void
     if ($checkCsrf && !hash_equals($_SESSION['csrf'], api_csrf_header())) {
         throw new WlError('Jeton de sécurité manquant ou expiré : rechargez la page.', 403);
     }
+    if ($checkCsrf) {
+        wl_admin_acted();
+    }
+}
+
+/** Session publique par son code. Les codes inconnus sont comptés par IP :
+ *  au-delà de 30 par minute, 429 (essais de codes en série). */
+function api_public_session(string $code): array
+{
+    $s = wl_load($code);
+    if ($s === null) {
+        wl_rate('miss|' . wl_ip_hash(), 30);
+        throw new WlError('Code inconnu ou session expirée.', 404);
+    }
+    return $s;
+}
+
+/** Session terminée : plus aucun contenu servi publiquement. */
+function api_ended_view(array $s): array
+{
+    return ['ok' => true, 'title' => $s['title'], 'ended' => true, 'question' => null,
+        'pollMs' => (int)wl_config()['poll_ms'], 'now' => time()];
 }
 
 /** Jeton du participant : cookie, ou en-tête si le cookie a été effacé
@@ -78,7 +100,7 @@ function api_token(): ?string
 function api_set_token_cookie(string $token): void
 {
     setcookie('wl_p', $token, [
-        'expires' => time() + 86400 * 30, 'path' => wl_base_path() . '/',
+        'expires' => time() + 86400, 'path' => wl_base_path() . '/', // une journée d'atelier
         'secure' => wl_https(), 'httponly' => true, 'samesite' => 'Lax',
     ]);
 }
@@ -102,20 +124,24 @@ function api_join(array $b): void
     }
     wl_rate('ip|' . wl_ip_hash(), (int)wl_config()['rate_ip']);
     $code = api_code($b);
+    api_public_session($code);
     $token = api_token() ?? wl_new_token();
-    $pkey = wl_participant_key($token);
+    $pkey = wl_participant_key($token, $code);
     $title = wl_update($code, function (array &$s) use ($pkey) {
         if ($s['ended']) {
             throw new WlError('Cette session est terminée.', 409);
         }
         if (!isset($s['participants'][$pkey])) {
+            if (!empty($s['locked'])) {
+                throw new WlError('Les inscriptions sont fermées : demandez à l\'animateur.', 409);
+            }
             if (count($s['participants']) >= (int)wl_config()['max_participants']) {
                 throw new WlError('La session est complète.', 409);
             }
             $s['participants'][$pkey] = time();
         }
         return $s['title'];
-    }, false);
+    }, false, false);
     api_set_token_cookie($token);
     wl_json(['ok' => true, 'code' => $code, 'title' => $title, 'token' => $token,
         'csrf' => wl_participant_csrf($token)]);
@@ -125,9 +151,12 @@ function api_join(array $b): void
 function api_state(): void
 {
     $code = api_code($_GET);
-    $s = wl_load_or_fail($code);
+    $s = api_public_session($code);
+    if ($s['ended']) {
+        wl_json_etag('e' . $s['pversion'], fn() => api_ended_view($s));
+    }
     $token = api_token();
-    $pkey = $token ? wl_participant_key($token) : '';
+    $pkey = $token ? wl_participant_key($token, $code) : '';
     $q = wl_current_question($s);
     // La version publique change avec la question ; la réponse du participant
     // n'en fait pas partie (le téléphone la connaît déjà après son vote).
@@ -156,13 +185,14 @@ function api_participant_write(array $b, callable $fn, bool $public): mixed
     }
     wl_rate('ip|' . wl_ip_hash(), (int)wl_config()['rate_ip']);
     wl_rate('tk|' . $token, (int)wl_config()['rate_token']);
-    $pkey = wl_participant_key($token);
-    return wl_update(api_code($b), function (array &$s) use ($pkey, $fn) {
+    $code = api_code($b);
+    $pkey = wl_participant_key($token, $code);
+    return wl_update($code, function (array &$s) use ($pkey, $fn) {
         if (!isset($s['participants'][$pkey])) {
             throw new WlError('Rejoignez d\'abord la session avec son code.', 403);
         }
         return $fn($s, $pkey);
-    }, $public);
+    }, $public, false);
 }
 
 function api_vote(array $b): void
@@ -201,8 +231,8 @@ function api_like(array $b): void
 
 function api_screen(): void
 {
-    $s = wl_load_or_fail(api_code($_GET));
-    wl_json_etag('s' . $s['version'], fn() => ['ok' => true] + wl_screen_view($s));
+    $s = api_public_session(api_code($_GET));
+    wl_json_etag('s' . $s['version'], fn() => $s['ended'] ? api_ended_view($s) : ['ok' => true] + wl_screen_view($s));
 }
 
 // ---------------------------------------------------------------------------
@@ -244,7 +274,7 @@ function api_admin_state(): void
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
             'showResults' => $q['showResults'], 'results' => wl_results($q, true, $s),
         ]), $s['questions']);
-        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
+        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'current' => $s['current'], 'participants' => count($s['participants']),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
@@ -387,6 +417,10 @@ function api_control(array $b): void
         }
         if ($op === 'end' || $op === 'reopen') {
             $s['ended'] = $op === 'end';
+            return;
+        }
+        if ($op === 'lock' || $op === 'unlock') {
+            $s['locked'] = $op === 'lock'; // fermer les inscriptions (les inscrits continuent)
             return;
         }
         if (!isset($s['questions'][$s['current']])) {

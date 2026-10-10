@@ -14,10 +14,15 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    copie statique inutile du code.
 3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
    mur, post-it et gommettes (déroulé « variante bilan », README §5).
-4. **Audit Codex ponctuel**, à faire **avant la mise en ligne** (choix de
-   l'utilisateur, 10/10/2026 ; `agora.md` §12, règle 4). Consigne prête :
-   `docs/consigne-audit-codex.md`. Le rapport vérifié se range hors du dépôt ;
-   chaque point est vérifié dans le code avant correction.
+4. **Après l'audit Codex du 10/10/2026** (14 points, tous vérifiés dans le
+   code et confirmés ; rapport complet hors dépôt). Corrigé dans le code :
+   2 (fermer les inscriptions), 3, 4 (session terminée + essais de codes),
+   5, 6, 7, 8, 9, 10, 12 (texte à valider DPD), 13, 14, chemin et SHA du
+   workflow. **Reste à l'utilisateur** (README §1, étape 5) : 1 protéger
+   `main` + approbation de l'environnement `production` ; 11 secret
+   `ALWAYSDATA_KNOWN_HOSTS` ; redirection HTTPS ; tâche planifiée de purge ;
+   faire valider par le DPD la base légale et le texte « Confidentialité »
+   (cas des mineurs).
 5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
    PAPPERBOARD — modifiable par l'utilisateur seul, texte à préparer.
 6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
@@ -27,6 +32,10 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
 ## Décisions à trancher
+
+- ⚠️ **Base légale et information des mineurs** : le texte « Confidentialité »
+  annonce « mission d'intérêt public » — à faire confirmer par le DPD
+  (`contact-dpd@lotetgaronne.fr`) avant la mise en ligne.
 
 - ⚠️ **Durée de purge (30 jours)** : élimination d'archives publiques. À
   valider avec les Archives départementales et le DPD (tableau de gestion).
@@ -105,6 +114,18 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   `#2F6A96` (5,80:1). Bleu ciel (2,37) et vert (1,84) : jamais de texte blanc
   dessus. Sarcelle (4,84) et gris (5,03) passent sur blanc ; sarcelle sur
   fond `#F3F6F9` : 4,47, à éviter pour du texte courant.
+
+- **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
+  multiples (point 2) — inhérent à un vote sans compte ; atténué par
+  « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
+  Secret de projection séparé du code (point 4) — la projection ne montre que
+  ce que voient les participants dans la salle ; écarté.
+- Session animateur : 2 h sans **écriture** (le rafraîchissement automatique
+  ne compte pas), 12 h au plus depuis la connexion. Blocage de connexion par
+  appareil connu (cookie signé `wl_dev`), sinon par IP.
+- Rétention : seule l'activité de l'animateur (`activity`) repousse la purge ;
+  `purge.php` (ligne de commande seulement) la lance chaque nuit.
+- Clé participant dérivée du code de session : deux sessions ne se relient pas.
 
 ## Pistes d'amélioration
 

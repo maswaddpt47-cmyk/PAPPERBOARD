@@ -4,7 +4,7 @@ Options -Indexes
 DirectoryIndex index.php
 
 # Fichiers internes : jamais servis.
-<FilesMatch "^(lib\.php|config\.php|config\.sample\.php|.*\.md|.*\.sh|.*\.json|.*\.lock|.*\.tmp)$">
+<FilesMatch "^(lib\.php|purge\.php|config\.php|config\.sample\.php|.*\.md|.*\.sh|.*\.json|.*\.lock|.*\.tmp)$">
     Require all denied
 </FilesMatch>
 

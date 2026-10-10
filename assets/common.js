@@ -172,16 +172,18 @@ var WL = (function () {
   /** Mémoire des éléments déjà affichés pour une question : seuls les
    *  nouveaux mots ou nouvelles réponses jouent l'animation d'apparition. */
   function memory(container, q) {
-    if (!container.wlMemory || container.wlMemory.q !== q.id) container.wlMemory = { q: q.id, nodes: {} };
+    // Map et non objet : un mot saisi comme « constructor » ou « __proto__ »
+    // ne doit pas tomber sur une propriété héritée.
+    if (!container.wlMemory || container.wlMemory.q !== q.id) container.wlMemory = { q: q.id, nodes: new Map() };
     return container.wlMemory.nodes;
   }
 
   function keep(nodes, key, make) {
-    if (nodes[key]) return nodes[key];
+    if (nodes.has(key)) return nodes.get(key);
     var node = make();
     node.classList.add('is-new');
     node.addEventListener('animationend', function () { node.classList.remove('is-new'); });
-    nodes[key] = node;
+    nodes.set(key, node);
     return node;
   }
 
@@ -329,7 +331,7 @@ var WL = (function () {
     } else if (q.type === 'postit') {
       node = board(container, q, res, opts);
     } else if (q.type === 'dots') {
-      node = res.items.length ? dotsRanking(container, q, res.items) : none('Aucune idée à départager : la question source est vide.');
+      node = res.items.length ? dotsRanking(container, q, res.items) : none('Aucune idée à départager : publiez d\'abord le post-it (ou le mur) source.');
     } else if (q.type === 'wordcloud') {
       node = res.words.length ? cloud(container, q, res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.');
     } else if (q.type === 'text') {
