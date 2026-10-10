@@ -118,7 +118,23 @@ Puis `nano config.php` et renseigner :
 Le mot de passe, le hash et le secret ne doivent jamais être envoyés à une IA
 ni écrits dans le dépôt (charte IA du CD47, §5).
 
-### Étape 5 — Vérifier
+### Étape 5 — Sécuriser (avant la première séance)
+
+1. **Empreinte du serveur SSH** (évite qu'un imposteur reçoive le déploiement) :
+   en SSH sur le serveur, `ssh-keyscan ssh-COMPTE.alwaysdata.net 2>/dev/null`.
+   Copier les lignes obtenues dans un secret GitHub `ALWAYSDATA_KNOWN_HOSTS`.
+2. **Approbation du déploiement** : GitHub > Settings > Environments >
+   `production` (créé au premier déploiement) > **Required reviewers** : soi-même.
+   Chaque mise en ligne attend alors un clic « Approve » dans l'onglet Actions.
+3. **Protéger `main`** : Settings > Branches > Add rule (ou Rulesets) sur `main` :
+   interdire la suppression et le force-push.
+4. **HTTPS obligatoire** : interface Alwaysdata > Sites > le site > activer la
+   redirection HTTP → HTTPS. Le déploiement signale en jaune si ce n'est pas fait.
+5. **Purge planifiée** : Alwaysdata > Tâches planifiées > ajouter une commande
+   quotidienne `php ~/www/purge.php` (adapter le chemin si l'appli est dans un
+   sous-dossier). Sans elle, la purge ne tourne que lorsque l'appli est utilisée.
+
+### Étape 6 — Vérifier
 
 - `https://COMPTE.alwaysdata.net/wooclight/admin.php` : la page de connexion s'affiche.
 - Le déploiement suivant vérifie tout seul que `lib.php`, `config.php`, `data/`
@@ -152,7 +168,9 @@ Si le déploiement automatique est impossible :
 |---|---|---|
 | « WoocLight n'est pas encore configuré » | `config.php` absent ou incomplet | Étape 4 |
 | « Mot de passe incorrect » alors qu'il est juste | hash mal copié (guillemets, espace) | Regénérer le hash, le coller entre apostrophes `'…'` |
-| « Trop de tentatives » | 5 erreurs en 15 minutes | Attendre 15 minutes |
+| « Trop de tentatives » | 5 erreurs en 15 minutes depuis cet appareil (ou cette IP pour un appareil jamais connecté) | Attendre 15 minutes, ou en SSH : `rm ~/wooclight-data/login.json` |
+| Reconnexion demandée en pleine séance | 2 h sans action, ou 12 h depuis la connexion | Se reconnecter (sécurité d'un poste partagé) |
+| « Les inscriptions sont fermées » | bouton **Fermer les inscriptions** activé | Le rouvrir dans l'espace animateur |
 | Le QR code mène à une mauvaise adresse | `base_url` vide ou faux | Renseigner `base_url` dans `config.php` |
 | « Connexion perdue » sur les téléphones | wifi de la salle saturé ou coupé | Les téléphones se reconnectent seuls ; les réponses en attente partent au retour du réseau |
 | « Trop de requêtes » | plus de 30 envois par minute pour un téléphone | Attendre quelques secondes |
@@ -181,6 +199,8 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 - Réponses libres : relire avant d'afficher, **Masquer** toute réponse contenant
   un nom ou une donnée personnelle.
 - **Suivante →** pour enchaîner.
+- Une fois tout le monde connecté : **Fermer les inscriptions** (évite qu'une
+  personne extérieure ou un faux participant rejoigne avec le code).
 
 **Variante bilan (15 min)** : Post-it collectif « Points forts / Difficultés /
 Envies » → regrouper les doublons depuis l'écran animateur → **Publier** →
