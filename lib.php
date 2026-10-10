@@ -266,16 +266,26 @@ function wl_load_or_fail(string $code): array
 }
 
 /** Modifie une session sous verrou. $public : la modification change ce que
- *  voit le participant (sinon seul l'écran de projection est rafraîchi). */
-function wl_update(string $code, callable $fn, bool $public = true): mixed
+ *  voit le participant (sinon seul l'écran de projection est rafraîchi).
+ *  $admin : seule l'activité de l'animateur repousse la purge — un
+ *  participant ne peut pas prolonger la conservation des réponses. */
+function wl_update(string $code, callable $fn, bool $public = true, bool $admin = true): mixed
 {
-    return wl_locked_json(wl_session_file($code), function (array &$s) use ($fn, $public) {
+    $file = wl_session_file($code);
+    if (!is_file($file)) {
+        // Pas de fichier de verrou créé pour un code qui n'existe pas.
+        throw new WlError('Session introuvable ou expirée.', 404);
+    }
+    return wl_locked_json($file, function (array &$s) use ($fn, $public, $admin) {
         $result = $fn($s);
         $s['version'] = ($s['version'] ?? 0) + 1;
         if ($public) {
             $s['pversion'] = ($s['pversion'] ?? 0) + 1;
         }
         $s['updated'] = time();
+        if ($admin) {
+            $s['activity'] = time();
+        }
         return $result;
     }, true);
 }
@@ -301,7 +311,8 @@ function wl_create_session(string $title, array $questions = []): array
     $s = [
         'code' => $code, 'title' => $title, 'created' => $now, 'updated' => $now,
         // current = -1 : écran d'accueil (adresse et code projetés en grand).
-        'version' => 1, 'pversion' => 1, 'current' => -1, 'ended' => false,
+        'version' => 1, 'pversion' => 1, 'current' => -1, 'ended' => false, 'locked' => false,
+        'activity' => $now,
         'participants' => [], 'questions' => $questions,
     ];
     wl_write_atomic(wl_session_file($code), $s);
@@ -325,16 +336,36 @@ function wl_list_sessions(): array
     return $list;
 }
 
+/** Suppression sous le même verrou que les écritures : une écriture en
+ *  cours ne peut pas recréer la session après coup (elle trouve le fichier
+ *  absent et s'arrête). Le verrou reste ; la purge retire les verrous orphelins. */
 function wl_delete_session(string $code): void
 {
     $file = wl_session_file($code);
-    @unlink($file);
-    @unlink($file . '.lock');
+    if (!is_file($file)) {
+        return;
+    }
+    $lock = fopen($file . '.lock', 'c');
+    if ($lock === false || !flock($lock, LOCK_EX)) {
+        throw new WlError('Stockage indisponible.', 500);
+    }
+    try {
+        @unlink($file);
+    } finally {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+    }
 }
 
-/** Purge automatique des sessions inactives depuis purge_days jours, au plus
- *  une fois par heure. Élimination d'archives publiques : la durée doit être
- *  validée avec les Archives départementales (voir CHANTIERS.md). */
+/** Date qui fait foi pour la purge : dernière action de l'animateur. */
+function wl_retention_start(array $s): int
+{
+    return (int)($s['activity'] ?? $s['created'] ?? 0);
+}
+
+/** Purge au fil des requêtes, au plus une fois par heure. Complétée par
+ *  purge.php, lancé chaque nuit par une tâche planifiée, pour que la durée
+ *  soit tenue même sans visite. */
 function wl_maybe_purge(): int
 {
     $marker = wl_data_dir() . '/last-purge';
@@ -342,13 +373,26 @@ function wl_maybe_purge(): int
         return 0;
     }
     touch($marker);
+    return wl_purge();
+}
+
+/** Supprime les sessions sans action de l'animateur depuis purge_days jours.
+ *  Élimination d'archives publiques : la durée doit être validée avec les
+ *  Archives départementales (voir CHANTIERS.md). */
+function wl_purge(): int
+{
     $limit = time() - 86400 * max(1, (int)wl_config()['purge_days']);
     $count = 0;
     foreach (glob(wl_data_dir() . '/sessions/*.json') ?: [] as $file) {
         $s = json_decode((string)file_get_contents($file), true);
-        if (!is_array($s) || ($s['updated'] ?? 0) < $limit) {
+        if (!is_array($s) || wl_retention_start($s) < $limit) {
             wl_delete_session(basename($file, '.json'));
             $count++;
+        }
+    }
+    foreach (glob(wl_data_dir() . '/sessions/*.lock') ?: [] as $lock) {
+        if (!is_file(substr($lock, 0, -5)) && filemtime($lock) < time() - 3600) {
+            @unlink($lock); // verrou d'une session supprimée depuis plus d'une heure
         }
     }
     $login = wl_data_dir() . '/login.json';
@@ -808,22 +852,52 @@ function wl_admin_session(): void
     $_SESSION['csrf'] ??= bin2hex(random_bytes(32));
 }
 
-/** Connecté, et actif depuis moins de 8 heures. */
+const WL_ADMIN_IDLE = 2 * 3600;   // sans action de l'animateur (le rafraîchissement automatique ne compte pas)
+const WL_ADMIN_MAX = 12 * 3600;   // depuis la connexion, quoi qu'il arrive
+
+/** Connecté depuis moins de 12 h, et dernière action de moins de 2 h. */
 function wl_is_admin(): bool
 {
     wl_admin_session();
-    if (empty($_SESSION['admin']) || ($_SESSION['seen'] ?? 0) < time() - 8 * 3600) {
-        return false;
-    }
-    $_SESSION['seen'] = time();
-    return true;
+    $now = time();
+    return !empty($_SESSION['admin'])
+        && ($_SESSION['since'] ?? 0) > $now - WL_ADMIN_MAX
+        && ($_SESSION['acted'] ?? 0) > $now - WL_ADMIN_IDLE;
 }
 
-/** 5 échecs en 15 minutes depuis une même IP bloquent les tentatives 15 minutes. */
+/** Une écriture de l'animateur prolonge sa session ; une lecture, non. */
+function wl_admin_acted(): void
+{
+    $_SESSION['acted'] = time();
+}
+
+/** Appareil déjà connecté avec succès : cookie signé « wl_dev ». */
+function wl_known_device(): ?string
+{
+    $c = (string)($_COOKIE['wl_dev'] ?? '');
+    if (preg_match('/^([a-f0-9]{32})\.([a-f0-9]{32})$/', $c, $m) && hash_equals(wl_hash('dev|' . $m[1]), $m[2])) {
+        return $m[1];
+    }
+    return null;
+}
+
+function wl_remember_device(): void
+{
+    $id = wl_known_device() ?? bin2hex(random_bytes(16));
+    setcookie('wl_dev', $id . '.' . wl_hash('dev|' . $id), [
+        'expires' => time() + 86400 * 180, 'path' => wl_base_path() . '/',
+        'secure' => wl_https(), 'httponly' => true, 'samesite' => 'Strict',
+    ]);
+}
+
+/** 5 échecs en 15 minutes bloquent 15 minutes. Le compteur est celui de
+ *  l'appareil s'il s'est déjà connecté (cookie signé), sinon celui de l'IP :
+ *  un participant sur le même wifi ne peut pas bloquer l'animateur. */
 function wl_login(string $password): void
 {
     $file = wl_data_dir() . '/login.json';
-    $ip = wl_ip_hash();
+    $device = wl_known_device();
+    $ip = $device ? 'dev|' . wl_hash('dev-bucket|' . $device) : wl_ip_hash();
     $ok = wl_locked_json($file, function (array &$d) use ($ip, $password) {
         $now = time();
         $d = array_filter($d, fn($e) => $e['first'] > $now - 900);
@@ -844,8 +918,9 @@ function wl_login(string $password): void
     wl_admin_session();
     session_regenerate_id(true);
     $_SESSION['admin'] = true;
-    $_SESSION['seen'] = time();
+    $_SESSION['since'] = $_SESSION['acted'] = time();
     $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    wl_remember_device();
 }
 
 /** CSRF participant : dérivé du jeton, renvoyé en en-tête X-CSRF-Token. */
@@ -854,10 +929,11 @@ function wl_participant_csrf(string $token): string
     return wl_hash('csrf|' . $token);
 }
 
-/** Clé d'un participant dans une session (le jeton n'est jamais stocké). */
-function wl_participant_key(string $token): string
+/** Clé d'un participant dans une session (le jeton n'est jamais stocké).
+ *  Dérivée aussi du code : deux sessions ne peuvent pas être reliées. */
+function wl_participant_key(string $token, string $code): string
 {
-    return 'p' . wl_hash('p|' . $token, 15);
+    return 'p' . wl_hash('p|' . $code . '|' . $token, 15);
 }
 
 // ---------------------------------------------------------------------------
@@ -1032,7 +1108,8 @@ function wl_dot_items(array $s, array $q): array
 {
     $src = null;
     foreach ($s['questions'] as $c) {
-        if ($c['id'] === $q['source'] && in_array($c['type'], WL_POST_TYPES, true)) {
+        // Source publiée seulement : avant, ses contributions n'ont pas été relues.
+        if ($c['id'] === $q['source'] && in_array($c['type'], WL_POST_TYPES, true) && $c['showResults']) {
             $src = $c;
         }
     }
