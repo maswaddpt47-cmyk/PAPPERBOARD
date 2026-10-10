@@ -1,7 +1,8 @@
 # Consigne d'audit Codex — WoocLight (dépôt PAPPERBOARD)
 
-Rédigée le 10/10/2026 à partir de MD-LIB `consigne-audit-externe.md`, pour
-l'audit ponctuel avant mise en production (`agora.md` §12, règle 4 : nouvelle
+Rédigée le 10/10/2026 à partir de MD-LIB `consigne-audit-externe.md`, mise à
+jour le même jour après les corrections du premier audit (contexte seulement,
+sans dire ce qui a été corrigé), pour l'audit ponctuel avant mise en production (`agora.md` §12, règle 4 : nouvelle
 page publique et mot de passe). Le contexte ne contient que des faits, aucune
 conclusion. À coller telle quelle dans Codex.
 
@@ -32,18 +33,22 @@ temporaire + rename. Pas de base de données.
 Types de questions : oui/non, vrai/faux, QCM, sondage, nuage de mots, réponse
 libre, échelle, points, mur collaboratif (messages + « j'aime »), post-it
 collectif (colonnes, déplacement et regroupement par l'animateur), vote par
-gommettes (sur les post-its d'une autre question).
+gommettes (sur les post-its d'une autre question). L'animateur peut fermer
+les inscriptions et terminer une session.
 Authentification : un seul rôle connecté, l'animateur, par mot de passe
-(hash dans config.php, password_verify, session PHP). Les participants
-reçoivent un jeton aléatoire (cookie + localStorage) sans identité.
+(hash dans config.php, password_verify, session PHP, cookie d'appareil
+signé pour le blocage après échecs). Les participants reçoivent un jeton
+aléatoire (cookie + localStorage) sans identité.
 config.php (hash, secret servant de sel) n'est pas dans le dépôt :
 config.sample.php en donne le modèle.
 Hébergement prévu : Alwaysdata (mutualisé, Apache, .htaccess), compte dédié.
 Déploiement : .github/workflows/ci-deploy.yml, tests puis rsync par SSH
-(clé dans les Secrets GitHub) sur push de main. Pas encore en ligne.
+(clé et empreinte du serveur dans les Secrets GitHub) sur push de main,
+via un environnement GitHub « production ». Pas encore en ligne.
 Données personnelles : aucune demandée ; IP hachée pour les limites de taux ;
 les réponses libres, messages et post-its peuvent contenir un nom tapé par un
-participant. Purge automatique des sessions après N jours (config.php).
+participant. Purge automatique des sessions après N jours (config.php), au
+fil des requêtes et par purge.php lancé en tâche planifiée.
 
 RÈGLE DE MÉTHODE
 Ne lis PAS les fichiers .md du dépôt (CLAUDE.md, CHANTIERS.md, README.md,
@@ -63,11 +68,15 @@ lire à la fin, uniquement pour signaler un désaccord avec eux.
    possibles, données exposées (réponses masquées par l'animateur, bonne
    réponse d'un quiz avant affichage, contributions non publiées, jetons).
 5. Secrets et configuration : secret en clair, fichiers internes servis par
-   Apache (.htaccess), erreurs trop bavardes, en-têtes de sécurité.
-6. Workflow de déploiement : injections, permissions, secrets.
+   Apache (.htaccess, purge.php), erreurs trop bavardes, en-têtes de sécurité.
+6. Workflow de déploiement et réglages du dépôt GitHub : injections,
+   permissions, secrets, protection de main, approbation de l'environnement.
 7. Bibliothèque embarquée assets/qrcode.js : version et failles connues.
 8. RGPD : minimisation, purge réellement appliquée, données personnelles
-   dans les journaux, le stockage et les exports ; cas des mineurs.
+   dans les journaux, le stockage (serveur et navigateur) et les exports ;
+   information affichée aux participants ; cas des mineurs.
+9. Concurrence : écritures, suppressions et purge simultanées sur les
+   fichiers JSON.
 
 FORMAT DE RÉPONSE (en français)
 Un tableau, un problème par ligne, du plus grave au moins grave :
