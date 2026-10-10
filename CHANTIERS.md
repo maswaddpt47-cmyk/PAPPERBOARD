@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **09/10/2026** — commit de référence : voir `git log -1 main`.
+État au **10/10/2026** — commit de référence : voir `git log -1 main`.
 Application complète, tests verts en local (`bash tests/run.sh`, 09/10/2026 :
 e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
@@ -14,9 +14,10 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    copie statique inutile du code.
 3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
    mur, post-it et gommettes (déroulé « variante bilan », README §5).
-4. **Audit Codex ponctuel** avant d'annoncer l'outil (`agora.md` §12, règle 4 :
-   nouvelle page publique + mot de passe). Consigne **pas encore rédigée**
-   (09/10/2026) ; le rapport vérifié se range hors du dépôt.
+4. **Audit Codex ponctuel**, à faire **avant la mise en ligne** (choix de
+   l'utilisateur, 10/10/2026 ; `agora.md` §12, règle 4). Consigne prête :
+   `docs/consigne-audit-codex.md`. Le rapport vérifié se range hors du dépôt ;
+   chaque point est vérifié dans le code avant correction.
 5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
    PAPPERBOARD — modifiable par l'utilisateur seul, texte à préparer.
 6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
