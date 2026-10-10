@@ -33,13 +33,12 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    effacé ». **Reste à l'utilisateur** : 5 (ruleset sur `main`), 7 (faire
    reconnaître ses appareils avant l'atelier), 8 (tâche planifiée **horaire**),
    journaux Apache et sauvegardes d'Alwaysdata à vérifier, validation DPD.
-5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`) : ajouter
-   PAPPERBOARD — modifiable par l'utilisateur seul ; bloc prêt dans
-   `docs/routine-audit-trimestriel.md` (10/10/2026). Cette routine n'apparaît
-   pas dans `list_triggers` ; l'ancienne `trig_018SBR4ihGT8Y2ud7sP5kxYm`
-   (consigne GAS périmée, censée supprimée le 01/10/2026) y est **encore active**
-   (constaté le 10/10/2026) : à supprimer ou désactiver par l'utilisateur. Les
-   deux rappels Codex (`trig_01XC6…`, `trig_012uC…`) ne citent pas PAPPERBOARD.
+5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, créée dans
+   l'interface, invisible et non modifiable par Claude) : coller le bloc de
+   `docs/routine-audit-trimestriel.md` à la fin de ses instructions et lui
+   attacher le dépôt — utilisateur. Fait le 10/10/2026 par Claude : ancienne
+   routine `trig_018SBR4ihGT8Y2ud7sP5kxYm` (consigne GAS périmée) **désactivée**,
+   PAPPERBOARD ajouté aux deux rappels d'audit Codex.
 6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
    `.claude/settings.json` + `.claude/hooks/session-start.sh` ont été refusés à
    Claude par la plateforme (09/10/2026). À créer par l'utilisateur : même
