@@ -56,7 +56,8 @@ $days = (int)wl_config()['purge_days'];
     <summary>Confidentialité</summary>
     <p><strong>En bref.</strong> Pas de nom, pas de compte. N'écrivez pas votre nom ni celui de
     quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
-    devant tout le groupe. Tout est effacé automatiquement <?= $days ?> jours après l'atelier.</p>
+    devant tout le groupe. Tout est effacé du serveur <?= $days ?> jours après l'atelier ; les résultats
+    que l'animateur a exportés pour le bilan suivent les règles de conservation du service.</p>
     <p><strong>Responsable</strong> : Conseil départemental de Lot-et-Garonne.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
     <strong>Base légale</strong> : mission d'intérêt public du Département (médiation numérique).</p>
@@ -72,6 +73,7 @@ $days = (int)wl_config()['purge_days'];
     l'animateur de retirer une réponse ; ensuite, écrivez au délégué à la protection des données :
     contact-dpd@lotetgaronne.fr. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </details>
+  <p><button id="leave-btn" class="btn btn-ghost" type="button">Quitter et effacer ce téléphone</button></p>
 </footer>
 <script src="assets/common.js"></script>
 <script src="assets/app.js"></script>
