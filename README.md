@@ -77,6 +77,12 @@ Dépôt GitHub > **Settings** > **Secrets and variables** > **Actions** >
 | `ALWAYSDATA_COMPTE` | le nom du compte (ex. `ateliers-numeriques`) |
 | `ALWAYSDATA_SSH_KEY` | tout le contenu du fichier **privé** `wooclight-deploy` |
 
+Une fois le secret enregistré, **supprimer les deux fichiers de clé** là où
+ils ont été créés (`rm wooclight-deploy wooclight-deploy.pub`) et toute copie
+dans un Bloc-notes : la clé privée vit dans le secret GitHub, la publique dans
+`authorized_keys`. Rien à conserver ; en cas de souci, refaire les étapes 2 et 3
+avec une nouvelle clé.
+
 Facultatif, onglet **Variables** : `WOOCLIGHT_CHEMIN` (dossier cible, défaut
 `www/wooclight/`) et `WOOCLIGHT_URL` (adresse publique, défaut
 `https://COMPTE.alwaysdata.net/wooclight`).
