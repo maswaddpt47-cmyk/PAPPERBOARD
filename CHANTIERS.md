@@ -142,6 +142,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   Pendant une saisie (nuage, réponse libre, mur, post-it), le bouton d'envoi
   est ramené à l'écran (le clavier du téléphone le cachait, hypothèse du
   14/10/2026) ; sur mur et post-it, Entrée publie.
+- **Projection en direct** (choix de l'utilisateur, 14/10/2026) : sondage,
+  nuage, échelle, points (`WL_LIVE_TYPES`) projetés dès l'ouverture du vote,
+  case décochable par question. Quiz, réponse libre, mur, post-it attendent le
+  clic (correction, relecture des noms). Les **téléphones** n'affichent toujours
+  les résultats qu'après « Afficher » : sinon chaque vote les ferait tous
+  recharger. Tenu par `tests/e2e.php` (« Projection en direct »).
 - Génération par une IA (14/10/2026) : copier-coller, WoocLight n'appelle aucune
   IA. La réponse collée est lue et validée **côté serveur** (`wl_import_parse`,
   mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**

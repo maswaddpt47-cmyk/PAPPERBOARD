@@ -199,7 +199,12 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 
 **Pendant (questions)**
 - **Ouvrir le vote** → « Votez sur votre téléphone ! » et le nombre de réponses s'affichent.
-- Quand le compteur approche 20 : **Fermer le vote**, puis **Afficher les résultats**.
+- Sondage, nuage de mots, échelle et points : les réponses s'affichent **en
+  direct** sur la projection dès l'ouverture du vote (case « Afficher les
+  réponses en direct », cochée par défaut).
+- Quiz, réponse libre, mur et post-it : rien n'est projeté avant le clic. Quand
+  le compteur approche 20 : **Fermer le vote**, puis **Afficher les résultats**
+  (ou **Publier** pour le mur et le post-it).
 - Réponses libres : relire avant d'afficher, **Masquer** toute réponse contenant
   un nom ou une donnée personnelle.
 - **Suivante →** pour enchaîner.
