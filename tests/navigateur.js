@@ -65,9 +65,14 @@ function check(cond, label) {
   await phone.fill('#code', code.toLowerCase());
   await phone.click('#join-form button');
   await phone.waitForSelector('#question:not([hidden]) .btn-choice');
+  const votes = [];
+  phone.on('request', r => { if (r.url().includes('action=vote')) votes.push(r.url()); });
   await phone.click('.btn-choice >> text=Oui');
+  await phone.waitForTimeout(300);
+  check(votes.length === 0, 'choisir n\'envoie rien avant « Envoyer »');
+  await phone.click('#answer-form button[type="submit"]');
   await phone.waitForFunction(() => /Réponse enregistrée/.test(document.getElementById('answer-status').textContent));
-  check(true, 'vote en un geste');
+  check(votes.length === 1, 'vote envoyé par le bouton « Envoyer »');
   check(await phone.getAttribute('.btn-choice >> text=Oui', 'aria-pressed') === 'true', 'choix marqué');
 
   // Coût : requêtes du téléphone pendant 10 s sans changement.

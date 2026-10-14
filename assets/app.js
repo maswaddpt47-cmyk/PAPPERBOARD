@@ -150,16 +150,32 @@
     else s.textContent = '';
   }
 
-  /** Un bouton par choix : un appui = un vote. */
+  /** Un bouton par choix : un appui sélectionne, « Envoyer » vote (un appui
+   *  direct envoyait sans confirmation et déroutait les participants). */
   function choices(form, q, mine, locked) {
     var grid = el('div', { class: 'choices' + (q.type === 'yesno' || q.type === 'truefalse' ? ' choices-2' : '') });
-    q.options.forEach(function (label, i) {
-      grid.appendChild(el('button', {
-        type: 'button', class: 'btn btn-choice' + markClass(q, i), 'aria-pressed': String(mine === i),
-        disabled: locked, onclick: function () { send(q, i); }
-      }, label));
+    pickOne(form, grid, q, mine, locked, q.options.map(function (label, i) { return { value: i, label: label, mark: markClass(q, i) }; }));
+  }
+
+  /** Boutons à choix unique + « Envoyer ». Rien ne part avant l'appui sur Envoyer. */
+  function pickOne(form, grid, q, mine, locked, items) {
+    var picked = mine;
+    var buttons = items.map(function (it) {
+      return el('button', {
+        type: 'button', class: 'btn btn-choice' + (it.mark || ''), 'aria-pressed': String(mine === it.value),
+        disabled: locked, onclick: function () {
+          picked = it.value;
+          buttons.forEach(function (b, j) { b.setAttribute('aria-pressed', String(items[j].value === picked)); });
+          if (picked !== mine) $('answer-status').textContent = 'Appuyez sur « Envoyer » pour valider votre réponse.';
+        }
+      }, it.label);
     });
+    buttons.forEach(function (b) { grid.appendChild(b); });
     form.appendChild(grid);
+    return submit(form, locked, function () {
+      if (picked === null || picked === undefined) return 'Choisissez une réponse avant d\'envoyer.';
+      send(q, picked);
+    });
   }
 
   /** Classe CSS de correction, une fois les résultats affichés. */
@@ -203,14 +219,11 @@
 
   function scale(form, q, mine, locked) {
     var grid = el('div', { class: 'choices choices-scale', role: 'group', 'aria-label': 'Note de 1 à ' + q.scaleMax });
-    for (var i = 1; i <= q.scaleMax; i++) {
-      (function (n) {
-        grid.appendChild(el('button', { type: 'button', class: 'btn btn-choice', 'aria-pressed': String(mine === n),
-          disabled: locked, onclick: function () { send(q, n); } }, String(n)));
-      }(i));
-    }
-    form.appendChild(grid);
-    form.appendChild(el('p', { class: 'meta scale-legend' }, el('span', null, '1 = pas du tout'), el('span', null, q.scaleMax + ' = tout à fait')));
+    var items = [];
+    for (var n = 1; n <= q.scaleMax; n++) items.push({ value: n, label: String(n) });
+    var legend = el('p', { class: 'meta scale-legend' }, el('span', null, '1 = pas du tout'), el('span', null, q.scaleMax + ' = tout à fait'));
+    pickOne(form, grid, q, mine, locked, items);
+    form.insertBefore(legend, grid.nextSibling);
   }
 
   /** Classement par points : répartir le budget entre les choix. */
