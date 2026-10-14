@@ -1,0 +1,126 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>WoocLight — mode d'emploi pour tester</title>
+<style>
+@page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+body { font-family: Verdana, "DejaVu Sans", sans-serif; font-size: 10.5pt; color: #1F2A30; line-height: 1.45; }
+h1 { font-size: 22pt; margin: 0 0 4pt; color: #2F6A96; }
+.sub { color: #4A5560; margin: 0 0 14pt; }
+h2 { font-size: 13.5pt; color: #fff; background: #2F6A96; padding: 4pt 8pt; border-radius: 4pt; margin: 16pt 0 8pt; break-after: avoid; }
+h3 { font-size: 11pt; margin: 10pt 0 4pt; color: #197D89; break-after: avoid; }
+p { margin: 4pt 0; }
+ol, ul { margin: 4pt 0 4pt 16pt; padding: 0; } li { margin: 2pt 0; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0; break-inside: avoid; }
+th, td { border: 1px solid #B9C6D0; padding: 4pt 6pt; vertical-align: top; text-align: left; }
+th { background: #E6EFF6; }
+.box { border: 1.5pt solid #197D89; border-radius: 5pt; padding: 6pt 9pt; margin: 8pt 0; background: #F3F8F9; break-inside: avoid; }
+.warn { border-color: #8A6100; background: #FFF8E6; }
+.btn { display: inline-block; border: 1pt solid #2F6A96; border-radius: 3pt; padding: 0 4pt; color: #2F6A96; font-weight: bold; font-size: 9.5pt; }
+.chk td:first-child { width: 14pt; text-align: center; font-size: 12pt; }
+code { font-family: "DejaVu Sans Mono", monospace; font-size: 9.5pt; background: #EEF2F5; padding: 0 2pt; }
+.small { font-size: 9pt; color: #4A5560; }
+.page { break-before: page; }
+</style></head><body>
+
+<h1>WoocLight</h1>
+<p class="sub">Mode d'emploi pour tester l'application — version du 14/10/2026</p>
+
+<div class="box">
+<p><strong>Adresses</strong></p>
+<ul>
+<li>Espace animateur : <code>https://wooclight.alwaysdata.net/admin.php</code></li>
+<li>Participants : <code>https://wooclight.alwaysdata.net</code> (ou le QR code)</li>
+<li>Projection : bouton <span class="btn">Ouvrir la projection</span> dans l'espace animateur</li>
+</ul>
+<p><strong>Pour un test complet</strong> : un ordinateur (animateur + projection dans deux onglets ou deux écrans) et deux téléphones (vous et un collègue), pour voir plusieurs réponses.</p>
+</div>
+
+<h2>1. Préparer une session</h2>
+<ol>
+<li>Connectez-vous à l'espace animateur avec votre mot de passe.</li>
+<li>Tapez un titre dans « Titre de la nouvelle session », puis <span class="btn">Créer</span>. Un code de 5 caractères et un QR code sont générés.</li>
+<li><span class="btn">+ Ajouter une question</span> : choisissez le <strong>type</strong>, écrivez l'<strong>intitulé</strong>, complétez les champs proposés, puis <span class="btn">Enregistrer</span>.</li>
+<li>Réordonnez avec <span class="btn">↑</span> <span class="btn">↓</span>, corrigez avec <span class="btn">Modifier</span>.</li>
+</ol>
+
+<h3>Les types de questions</h3>
+<table>
+<tr><th style="width:27%">Type</th><th>À quoi ça sert</th><th style="width:33%">Ce qu'il faut remplir</th></tr>
+<tr><td>Oui / Non, Vrai / Faux</td><td>Question rapide, quiz</td><td>Cocher la bonne réponse (facultatif)</td></tr>
+<tr><td>QCM (quiz)</td><td>Plusieurs choix, une ou plusieurs bonnes réponses</td><td>Un choix par ligne ; cocher « plusieurs réponses » si besoin</td></tr>
+<tr><td>Sondage</td><td>Recueillir un avis, sans bonne réponse</td><td>Un choix par ligne</td></tr>
+<tr><td>Nuage de mots</td><td>Un mot ou une courte expression ; les mots fréquents grossissent</td><td>Rien de plus</td></tr>
+<tr><td>Réponse libre</td><td>Mur de réponses courtes, à relire</td><td>Rien de plus</td></tr>
+<tr><td>Échelle</td><td>Note de 1 à 5 ou de 1 à 10, avec moyenne</td><td>Choisir 1-5 ou 1-10</td></tr>
+<tr><td>Classement par points</td><td>Répartir un budget (ex. 10 points)</td><td>Un choix par ligne, nombre de points</td></tr>
+<tr><td>Mur collaboratif</td><td>Plusieurs messages par personne, « j'aime »</td><td>Rien de plus</td></tr>
+<tr><td>Post-it collectif</td><td>Post-its en colonnes (ex. Points forts / Difficultés)</td><td>Une colonne par ligne (6 au plus)</td></tr>
+<tr><td>Vote par gommettes</td><td>Départager les idées d'un post-it ou d'un mur</td><td>La question source, le nombre de gommettes</td></tr>
+</table>
+
+<h3>Quand la bonne réponse s'affiche-t-elle ?</h3>
+<table>
+<tr><th style="width:36%">Réglage « Correction et résultats »</th><th>Effet</th></tr>
+<tr><td><strong>Quand je clique sur « Afficher les résultats »</strong> (par défaut)</td><td>Vous choisissez le moment : la correction et les barres apparaissent ensemble, sur la projection et les téléphones.</td></tr>
+<tr><td><strong>Automatiquement à la fin du temps</strong></td><td>Différé : dès que le compte à rebours atteint zéro, tout s'affiche sans clic. Une durée est obligatoire.</td></tr>
+<tr><td><strong>Immédiate</strong></td><td>Chaque participant voit « Bonne réponse ! » ou la correction dès qu'il a répondu ; sa réponse est alors figée. La projection, elle, attend votre clic.</td></tr>
+</table>
+<p class="small">« Durée » : 0 = pas de compte à rebours. « Modifier sa réponse » : autorisé par défaut tant que le vote est ouvert (sauf correction immédiate).</p>
+
+<h2 class="page">2. Animer en direct</h2>
+<ol>
+<li><span class="btn">Ouvrir la projection</span> puis <span class="btn">Plein écran</span>. L'écran d'accueil affiche l'adresse, le code en grand et le QR code. <span class="btn">Thème clair</span> si la salle est lumineuse.</li>
+<li>Les participants scannent le QR code (appareil photo du téléphone) ou tapent l'adresse puis le code. Le nombre de participants s'affiche en haut de la projection.</li>
+<li>Quand tout le monde est là : <span class="btn">Fermer les inscriptions</span> (personne d'autre ne peut rejoindre).</li>
+<li><span class="btn">Suivante →</span> projette la question <strong>et ouvre le vote</strong>. Le nombre de réponses s'affiche en direct.</li>
+<li><span class="btn">Fermer le vote</span>, puis <span class="btn">Afficher les résultats</span>.</li>
+<li><span class="btn">Suivante →</span> pour enchaîner. <span class="btn">← Précédente</span> revient en arrière (une question déjà jouée n'est pas rouverte). <span class="btn">Réinitialiser</span> efface les réponses de la question projetée.</li>
+</ol>
+<div class="box warn"><strong>Réponses écrites</strong> (réponse libre, mur, post-it) : relisez avant d'afficher. <span class="btn">Masquer</span> retire une réponse qui contient un nom ou une information personnelle. Pour le mur et le post-it, les participants ne voient les contributions des autres qu'après <span class="btn">Publier</span>.</div>
+
+<h3>Enchaînement « bilan » en 15 minutes</h3>
+<ol>
+<li>Post-it collectif « Bilan » avec 3 colonnes : Points forts / Difficultés / Envies.</li>
+<li>Pendant que les post-its arrivent, regroupez les doublons : sous un post-it, liste <em>Regrouper sous…</em> ; changez de colonne avec <em>Déplacer…</em>.</li>
+<li><span class="btn">Publier</span> : tout le monde voit le tableau.</li>
+<li>Question suivante « Vote par gommettes » dont la source est ce post-it : chacun place 3 gommettes, le classement s'affiche.</li>
+</ol>
+
+<h2>3. Après l'atelier</h2>
+<ul>
+<li><span class="btn">Exporter en CSV (tout)</span> pour votre bilan (s'ouvre dans Excel) ; <span class="btn">CSV à diffuser</span> exclut les réponses masquées ; <span class="btn">Version imprimable</span> pour un PDF.</li>
+<li><span class="btn">Terminer la session</span> : les téléphones affichent « Session terminée ».</li>
+<li>Les sessions sont supprimées automatiquement 30 jours après votre dernière action, ou tout de suite avec <span class="btn">Supprimer</span> dans « Mes sessions ». <span class="btn">Dupliquer</span> réutilise les questions sans les réponses.</li>
+</ul>
+
+<h2 class="page">4. Parcours de test (à cocher)</h2>
+<table class="chk">
+<tr><th></th><th>Action</th><th style="width:40%">Résultat attendu</th></tr>
+<tr><td>☐</td><td>Créer une session « Test », ouvrir la projection</td><td>Accueil avec adresse, code et QR code</td></tr>
+<tr><td>☐</td><td>Rejoindre avec le téléphone 1 par le QR code, le téléphone 2 en tapant le code</td><td>« 2 participants » sur la projection</td></tr>
+<tr><td>☐</td><td>Vrai/Faux, bonne réponse cochée, correction « quand je clique » ; <span class="btn">Suivante</span>, répondre avec les 2 téléphones</td><td>« 2 réponses » ; rien n'est révélé</td></tr>
+<tr><td>☐</td><td><span class="btn">Fermer le vote</span> puis <span class="btn">Afficher les résultats</span></td><td>Barres + ✓ sur la projection ; « Bonne réponse ! » ou correction sur les téléphones</td></tr>
+<tr><td>☐</td><td>Oui/Non, correction <strong>immédiate</strong></td><td>Correction sur le téléphone dès le vote, boutons verrouillés</td></tr>
+<tr><td>☐</td><td>Oui/Non, durée 20 s, correction <strong>à la fin du temps</strong></td><td>Compte à rebours ; à zéro, résultats et correction sans clic</td></tr>
+<tr><td>☐</td><td>Nuage de mots : « Écran », « ecran », « ÉCRAN »</td><td>Un seul mot, plus gros</td></tr>
+<tr><td>☐</td><td>Réponse libre avec un faux nom, puis <span class="btn">Masquer</span></td><td>Disparaît de la projection</td></tr>
+<tr><td>☐</td><td>Échelle 1-10</td><td>Colonnes + moyenne, tout tient à l'écran</td></tr>
+<tr><td>☐</td><td>Mur : 2 messages par téléphone, <span class="btn">Publier</span>, « j'aime »</td><td>Le plus aimé passe en tête</td></tr>
+<tr><td>☐</td><td>Post-it 3 colonnes, regrouper deux post-its, <span class="btn">Publier</span>, puis gommettes</td><td>Groupe empilé ; classement des idées</td></tr>
+<tr><td>☐</td><td>Couper le wifi d'un téléphone, répondre, rallumer</td><td>« Connexion perdue », puis réponse envoyée</td></tr>
+<tr><td>☐</td><td><span class="btn">Fermer les inscriptions</span>, essayer de rejoindre avec un 3ᵉ appareil</td><td>« Les inscriptions sont fermées »</td></tr>
+<tr><td>☐</td><td>Export CSV, ouvrir dans Excel</td><td>Accents corrects, une ligne par réponse</td></tr>
+<tr><td>☐</td><td><span class="btn">Terminer la session</span></td><td>« Session terminée » sur les téléphones</td></tr>
+<tr><td>☐</td><td>Vidéoprojecteur réel, fond de salle</td><td>Texte lisible, QR code scannable de loin</td></tr>
+</table>
+
+<h2>5. En cas de problème</h2>
+<table>
+<tr><th style="width:38%">Message ou symptôme</th><th>Que faire</th></tr>
+<tr><td>« Code inconnu ou session expirée »</td><td>Vérifier les 5 caractères ; la session a peut-être été supprimée.</td></tr>
+<tr><td>« Le vote n'est pas encore ouvert » / « fermé »</td><td>Côté animateur : <span class="btn">Ouvrir le vote</span>.</td></tr>
+<tr><td>« Connexion perdue »</td><td>Attendre : reconnexion automatique, la réponse en attente repart seule.</td></tr>
+<tr><td>« Trop de tentatives » à la connexion</td><td>Attendre 15 minutes (ou se connecter depuis un appareil déjà utilisé).</td></tr>
+<tr><td>Reconnexion demandée en pleine séance</td><td>Sécurité : 2 h sans action ou 12 h après la connexion. Se reconnecter.</td></tr>
+<tr><td>La projection ne bouge plus</td><td>Recharger la page (F5) : rien n'est perdu.</td></tr>
+</table>
+<p class="small">Notez ce qui ne va pas (étape, téléphone utilisé, message exact) ; une capture d'écran recadrée, sans nom de participant, aide beaucoup.</p>
+</body></html>
