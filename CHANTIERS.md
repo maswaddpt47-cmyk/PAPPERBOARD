@@ -8,9 +8,10 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 1. **Fin de mise en ligne** (14/10/2026 : déployé sur le compte personnel
    `wooclight`, `config.php` créé par `configurer.php`, CONFIG OK) : tâche
-   planifiée **horaire** `php ~/www/purge.php` ; couper l'accès SSH par mot de
-   passe / « Accessible par le web » ; renseigner `contact` (relancer
-   `configurer.php`) ; se connecter à `admin.php` depuis chaque appareil.
+   planifiée **horaire** `php ~/www/purge.php` ; renseigner `contact`
+   (réactiver un moment le mot de passe SSH, relancer `configurer.php`) ; se
+   connecter à `admin.php` depuis chaque appareil. Accès SSH par mot de passe
+   coupé le 14/10/2026 (clé seule).
 3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
    mur, post-it et gommettes (déroulé « variante bilan », README §5).
 4. **Après l'audit Codex du 10/10/2026** (14 points, tous vérifiés dans le
