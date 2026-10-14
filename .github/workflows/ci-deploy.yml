@@ -137,7 +137,7 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/index.php")
           echo "http://…/index.php → HTTP $code"
           case "$code" in 301|302|307|308) ;; *) echo "::warning::HTTP ne redirige pas vers HTTPS : activer la redirection dans le site Alwaysdata." ;; esac
-          for f in lib.php purge.php config.php config.sample.php data/ data/sessions/ tests/e2e.php CHANTIERS.md .htaccess; do
+          for f in lib.php purge.php configurer.php config.php config.sample.php data/ data/sessions/ tests/e2e.php CHANTIERS.md .htaccess; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/$f")
             echo "$f → HTTP $code"
             if [ "$code" = "200" ]; then echo "::error::$f est accessible depuis internet (.htaccess ignoré ?)"; exit 1; fi

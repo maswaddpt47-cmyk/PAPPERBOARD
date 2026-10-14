@@ -33,6 +33,8 @@ echo "=== Charge ==="
 # Nouveau dossier de données : le test e2e a bloqué l'IP locale (5 échecs).
 rm -rf "$WL_DATA"
 php tests/charge.php || fail=1
+echo "=== Configuration guidée ==="
+php tests/configurer.php || fail=1
 echo "=== Données dans la racine web ==="
 php tests/protect.php || fail=1
 
