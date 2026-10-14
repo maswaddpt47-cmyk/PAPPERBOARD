@@ -114,6 +114,9 @@ Puis `nano config.php` et renseigner :
 - `secret` : la suite de 64 caractères ;
 - `data_dir` : `/home/COMPTE/wooclight-data` (chemin complet, `echo $HOME` le donne) ;
 - `base_url` : `https://COMPTE.alwaysdata.net/wooclight` (adresse mise dans le QR code).
+- `responsable`, `contact` (et éventuellement `base_legale`) : affichés dans
+  « Confidentialité » sur la page participant. Une adresse e-mail dédiée
+  plutôt que personnelle.
 
 Le mot de passe, le hash et le secret ne doivent jamais être envoyés à une IA
 ni écrits dans le dépôt (charte IA du CD47, §5).

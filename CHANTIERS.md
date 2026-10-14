@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **10/10/2026** — commit de référence : voir `git log -1 main`.
+État au **14/10/2026** — commit de référence : voir `git log -1 main`.
 Application complète, tests verts en local (`bash tests/run.sh`, 09/10/2026 :
 e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
@@ -17,12 +17,11 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 4. **Après l'audit Codex du 10/10/2026** (14 points, tous vérifiés dans le
    code et confirmés ; rapport complet hors dépôt). Corrigé dans le code :
    2 (fermer les inscriptions), 3, 4 (session terminée + essais de codes),
-   5, 6, 7, 8, 9, 10, 12 (texte à valider DPD), 13, 14, chemin et SHA du
+   5, 6, 7, 8, 9, 10, 12, 13, 14, chemin et SHA du
    workflow. **Reste à l'utilisateur** (README §1, étape 5) : 1 protéger
    `main` + approbation de l'environnement `production` ; 11 secret
    `ALWAYSDATA_KNOWN_HOSTS` ; redirection HTTPS ; tâche planifiée de purge ;
-   faire valider par le DPD la base légale et le texte « Confidentialité »
-   (cas des mineurs).
+   renseigner `responsable` et `contact` dans `config.php` (texte « Confidentialité »).
 4bis. **Second audit Codex (10/10/2026, réflexion maximale)** : aucun point
    critique ni haut ; 8 points vérifiés et confirmés. Corrigés : 1 (purge
    revérifiée sous verrou), 2 (verrous de limitation fixes), 3 (inscriptions
@@ -32,7 +31,7 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    masqué, CSV à diffuser, création de session exclusive, texte « Tout est
    effacé ». **Reste à l'utilisateur** : 5 (ruleset sur `main`), 7 (faire
    reconnaître ses appareils avant l'atelier), 8 (tâche planifiée **horaire**),
-   journaux Apache et sauvegardes d'Alwaysdata à vérifier, validation DPD.
+   journaux Apache et sauvegardes d'Alwaysdata à vérifier.
 5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, créée dans
    l'interface, invisible et non modifiable par Claude) : coller le bloc de
    `docs/routine-audit-trimestriel.md` à la fin de ses instructions et lui
@@ -47,28 +46,28 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Décisions à trancher
 
-- ⚠️ **Base légale et information des mineurs** : le texte « Confidentialité »
-  annonce « mission d'intérêt public » — à faire confirmer par le DPD
-  (`contact-dpd@lotetgaronne.fr`) avant la mise en ligne.
+- **Projet personnel** (décision de l'utilisateur, 14/10/2026) : WoocLight sort
+  des obligations du CD47 et sera hébergé sur un **profil Alwaysdata personnel**
+  (offre Free, compte à la racine `www/`). Les règles CD47 (Archives
+  départementales, DPD du Département, charte IA, registre du CD47) ne
+  s'appliquent plus telles quelles ; le RGPD, lui, s'applique toujours :
+  l'utilisateur devient responsable de traitement. Mentions « Confidentialité »
+  désormais réglées dans `config.php` (`responsable`, `contact`,
+  `base_legale`), hors du dépôt public. **À trancher** : garder les couleurs
+  de la charte CD47 (identité du Département, prêter à confusion sur un outil
+  personnel) ou passer à une palette neutre ; durée de purge (30 j par défaut).
+  ⚠️ Si l'outil sert un jour à des ateliers **du CD47**, c'est le Département
+  qui redevient responsable : repasser alors par son DPD.
 
-- ⚠️ **Durée de purge (30 jours)** : élimination d'archives publiques. À
-  valider avec les Archives départementales et le DPD (tableau de gestion).
-  Réglable dans `config.php` (`purge_days`).
 - **Mode « non anonyme »** du cahier des charges : non codé. Il supposerait de
   demander un nom ou un pseudo, contraire à « aucune donnée personnelle ».
   Toutes les réponses sont anonymes. À rouvrir seulement sur besoin réel.
 - **Classement par points** : le participant répartit entre 1 point et tout
   le budget (pas d'obligation de tout dépenser), pour ne pas bloquer un senior
   qui s'arrête à 8 sur 10. Changer dans `wl_clean_points()` si besoin.
-- **Emplacement** : `www/wooclight/` du compte Alwaysdata (défaut du workflow,
-  variable `WOOCLIGHT_CHEMIN`). Même compte que l'API des Ateliers ou compte
-  séparé : à décider par l'utilisateur.
 - **Mur et post-it : affichage différé** (décision prise seule le 09/10/2026) :
   les contributions des autres n'apparaissent qu'après « Publier ». Affichage
   immédiat possible si l'utilisateur le préfère (moins de contrôle des noms).
-- **Questions de la charte IA** encore ouvertes (06/10/2026) : Claude
-  figure-t-il parmi les outils autorisés (§8) ?
-
 ## Limites connues
 
 - `php -S` ignore `.htaccess` : le refus de `lib.php`, `config.php`, `data/`
@@ -92,6 +91,9 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   Renseigner `base_url` en production.
 
 ## Points à ne pas défaire
+
+- Aucun nom ni adresse de contact dans le dépôt (public) : les mentions de
+  confidentialité viennent de `config.php` (14/10/2026).
 
 - Mur et post-it : les contributions des autres ne sont visibles (téléphones
   et projection) qu'après **Publier** — relecture et masquage d'abord, une
