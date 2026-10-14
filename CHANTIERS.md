@@ -11,7 +11,9 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
 2. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
-   dont mur, post-it, gommettes et les trois modes de correction.
+   dont mur, post-it, gommettes et les trois modes de correction. Tester aussi
+   « Générer à partir d'un thème » avec ton IA habituelle (14/10/2026 : testé
+   seulement avec des réponses écrites à la main, pas avec une vraie IA).
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
 4. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
@@ -133,10 +135,19 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
   purge n'efface que les compteurs `rl/*.json`.
 - Clé participant dérivée du code de session : deux sessions ne se relient pas.
+- Génération par une IA (14/10/2026) : copier-coller, WoocLight n'appelle aucune
+  IA. La réponse collée est lue et validée **côté serveur** (`wl_import_parse`,
+  mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**
+  (une IA se trompe sur les numéros), refusées si absentes des choix ; gommettes
+  reliées à leur source par sa position dans la liste. Ajout tout ou rien.
+  Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
 
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
+- 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
+  reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
+  à déclarer, clé dans `config.php`, limite de générations, audit Codex.
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.
