@@ -6,9 +6,11 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 ## Restant, par priorité
 
-1. **Mise en ligne** (utilisateur, procédure README §1) : clé SSH, secrets
-   `ALWAYSDATA_COMPTE` et `ALWAYSDATA_SSH_KEY`, puis `config.php` sur le
-   serveur. Sans les secrets, le déploiement est sauté (avertissement jaune).
+1. **Fin de mise en ligne** (14/10/2026 : déployé sur le compte personnel
+   `wooclight`, `config.php` créé par `configurer.php`, CONFIG OK) : tâche
+   planifiée **horaire** `php ~/www/purge.php` ; couper l'accès SSH par mot de
+   passe / « Accessible par le web » ; renseigner `contact` (relancer
+   `configurer.php`) ; se connecter à `admin.php` depuis chaque appareil.
 2. **Couper GitHub Pages** sur le dépôt (Settings > Pages > Source : None) :
    une publication Pages a tourné sur `main` le 09/10/2026, elle expose une
    copie statique inutile du code.
@@ -91,6 +93,11 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   Renseigner `base_url` en production.
 
 ## Points à ne pas défaire
+
+- Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
+  `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
+  déploiement part dans `~/www/wooclight/`), données dans `~/wooclight-data`,
+  adresse https://wooclight.alwaysdata.net.
 
 - Aucun nom ni adresse de contact dans le dépôt (public) : les mentions de
   confidentialité viennent de `config.php` (14/10/2026).
