@@ -173,7 +173,14 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   exemples d'adultes) : 3e consigne « chaque question s'adresse directement à ce
   public : tutoiement pour des enfants ou des adolescents ». Exemple corrigé de
   12 questions : `docs/exemples/temps-ecran-collegiens.json`.
-  Les deux IA ont produit 20 questions, trop pour une séance :
+  Mistral (temps d'écran, collégiens, 20, même texte) : 20/20 acceptées, JSON
+  propre, public et échelle unique respectés ; mais fond contestable (« réseaux
+  sociaux dès 13 ans en France » : accord parental avant 15 ans ; « like →
+  dopamine = plaisir » simplifié), affirmation posée en Oui/Non, sondage là où
+  plusieurs réponses sont vraies, une faute. Classement pour des collégiens :
+  ChatGPT (fond le plus sûr), Mistral (bonnes idées, le plus à relire), Gemini
+  (public ignoré). Aucune IA ne dispense de relire les corrections des quiz.
+  Les trois IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
   format que l'import, **sans aucune réponse de participant**, réglages compris
@@ -187,6 +194,9 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
+- 14/10/2026 — Texte pour l'IA : consigne de forme tirée de Mistral
+  (« une affirmation → Vrai/Faux, pas Oui/Non ; plusieurs bonnes réponses
+  possibles → QCM multiple, pas sondage »). À ajouter si l'écart se répète.
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.
