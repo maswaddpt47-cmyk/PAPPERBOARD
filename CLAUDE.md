@@ -13,9 +13,12 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - `git pull origin main` avant de lire ou d'écrire quoi que ce soit.
 - Un commit par modification logique, message conventionnel en français
   (`feat:`, `fix:`, `refactor:`, `style:`, `docs:`, `chore:`).
-- Branche de session imposée par la plateforme → en fin de session
-  `git checkout main && git merge <branche> --no-ff && git push origin main`.
-  Le déploiement ne part que de `main`, et seulement si la CI passe.
+- Branche de session imposée par la plateforme. `main` est protégée par un
+  ruleset (contrôle `tests` exigé, 14/10/2026) : un merge local poussé est
+  refusé. Méthode : partir de `origin/main`, pousser la branche, attendre la
+  CI verte sur son dernier commit, puis avancer `main` dessus
+  (`git push origin <sha>:main`, avance rapide). Le déploiement attend en plus
+  l'approbation de l'environnement `production`.
 - Racine du dépôt = racine de l'application. Pas de changelog dans le code
   (« v1.2 : … ») : l'histoire va dans `git log`, le code porte la décision
   en vigueur et sa raison.
