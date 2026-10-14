@@ -28,7 +28,9 @@ réponse — ou importez un fichier `.json` au même format —, cochez les ques
 n'appelle aucune IA lui-même : rien ne part sans vous. Le bouton **Questions
 (.json)** de chaque session enregistre ses questions (sans les réponses) dans ce
 même format, pour les réutiliser dans une autre session. Vérifiez les bonnes
-réponses des quiz avant l'atelier.
+réponses des quiz avant l'atelier. Pour un nouveau thème, **Copier la consigne
+de relecture** prépare un texte pour faire relire les questions par une *autre*
+IA, sources exigées : ouvrez chaque lien avant de vous y fier.
 
 Mur et post-it : les participants ne voient que leurs propres contributions
 tant que l'animateur n'a pas cliqué **Publier** (le temps de relire et de

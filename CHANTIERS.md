@@ -185,7 +185,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (2023, juillet 2026, 24/08/2026 censurée) — non vérifié par Claude (après
   juin 2026) : aucune question d'âge légal sans vérification sur Légifrance.
   Leçon : une IA ne relit jamais sa propre version ; aucune ne dispense de
-  relire les corrections des quiz.
+  relire les corrections des quiz. D'où le bouton **Copier la consigne de
+  relecture** (aperçu de l'import, `reviewPrompt`, `admin.js`) : ordre public →
+  fond → sources → forme, sources officielles exigées, « pas de source sûre »
+  plutôt qu'une référence inventée. Méthode conseillée : générer (ChatGPT),
+  « Vérifier », relire l'aperçu ; relecture par une autre IA pour un nouveau
+  thème ; jamais de question d'âge légal ou de loi sans Légifrance.
   Les quatre IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
