@@ -10,44 +10,31 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
-2. **Ménage des clés** : `rm ~/wooclight-deploy ~/wooclight-deploy.pub` dans
-   le terminal Alwaysdata et suppression de la copie Bloc-notes. Rien à
-   conserver (README, étape 3) sauf le mot de passe admin.
-3. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
+2. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
    dont mur, post-it, gommettes et les trois modes de correction.
-4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+4. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
    supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
-6. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
+5. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
    passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
    recouper l'accès par mot de passe). Journaux Apache et sauvegardes
    d'Alwaysdata à regarder une fois.
-7. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
+6. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
    créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
 Fait côté hébergement (14/10/2026, déclaré par l'utilisateur) : HTTPS forcé,
-accès SSH par mot de passe coupé (clé seule). Secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré : pas
+accès SSH par mot de passe coupé (clé seule), fichiers de clé supprimés. Secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré : pas
 d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 
 ## Décisions à trancher
 
-- **Projet personnel** (décision de l'utilisateur, 14/10/2026) : WoocLight sort
-  des obligations du CD47 et sera hébergé sur un **profil Alwaysdata personnel**
-  (offre Free, compte à la racine `www/`). Les règles CD47 (Archives
-  départementales, DPD du Département, charte IA, registre du CD47) ne
-  s'appliquent plus telles quelles ; le RGPD, lui, s'applique toujours :
-  l'utilisateur devient responsable de traitement. Mentions « Confidentialité »
-  désormais réglées dans `config.php` (`responsable`, `contact`,
-  `base_legale`), hors du dépôt public. Couleurs : palette neutre (indigo /
-  sarcelle), charte CD47 retirée (14/10/2026). **À trancher** : durée de purge
-  (30 j par défaut).
-  ⚠️ Si l'outil sert un jour à des ateliers **du CD47**, c'est le Département
-  qui redevient responsable : repasser alors par son DPD.
+- **Durée de purge** : 30 jours sans action de l'animateur (défaut,
+  `purge_days`). C'est à l'utilisateur, responsable de traitement, de la fixer.
 
 - **Mode « non anonyme »** du cahier des charges : non codé. Il supposerait de
   demander un nom ou un pseudo, contraire à « aucune donnée personnelle ».
@@ -76,6 +63,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   voir ligne précédente).
 
 ## Points à ne pas défaire
+
+- **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
+  pas concerné (ni charte, ni DPD, ni Archives départementales, ni registre du
+  Département). Le RGPD s'applique : l'utilisateur est responsable de
+  traitement ; ses mentions (`responsable`, `contact`, `base_legale`) sont dans
+  `config.php`, hors du dépôt public. Fiche : `docs/registre-traitement.md`.
 
 - Déploiement **automatique** à chaque mise à jour de `main`, sans approbation
   manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset

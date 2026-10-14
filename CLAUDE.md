@@ -4,7 +4,8 @@
 à ne pas défaire. Cahier des charges de référence : `docs/prompt-wooclight.md`.
 
 Application de participation en direct (type Wooclap léger) pour des ateliers
-de médiation numérique (projet personnel depuis le 14/10/2026). PHP 8 sans framework, JSON dans `DATA_DIR`,
+de médiation numérique. **Projet personnel** (14/10/2026) : le CD47 n'est pas
+concerné, l'utilisateur est responsable de traitement. PHP 8 sans framework, JSON dans `DATA_DIR`,
 JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 (`maswaddpt47-cmyk/MD-LIB`) et adaptées le 09/10/2026 ; MD-LIB reste la source.
 
@@ -18,7 +19,8 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   refusé. Méthode : partir de `origin/main`, pousser la branche, attendre la
   CI verte sur son dernier commit, puis avancer `main` dessus
   (`git push origin <sha>:main`, avance rapide). Le déploiement part alors
-  tout seul (pas d'approbation manuelle, choix du 14/10/2026).
+  tout seul (pas d'approbation manuelle, choix du 14/10/2026). Avant d'écrire
+  « en ligne », `MD-LIB/outils/attendre-deploiement.sh` doit avoir dit ✅.
 - Racine du dépôt = racine de l'application. Pas de changelog dans le code
   (« v1.2 : … ») : l'histoire va dans `git log`, le code porte la décision
   en vigueur et sa raison.
@@ -56,13 +58,11 @@ Alerter sans attendre, au format :
 - Aucune donnée personnelle collectée ; jeton participant aléatoire ; IP
   seulement hachée avec sel (`config.php`), pour la limite de taux.
 - `config.php` (hash du mot de passe, sel, secret) jamais commité, jamais vu
-  par Claude : l'utilisateur génère le hash lui-même en SSH (charte IA CD47
-  §5). Ne jamais demander mot de passe, hash ni clé SSH.
+  par Claude : l'utilisateur le crée lui-même en SSH
+  (`configurer.php`). Ne jamais demander mot de passe, hash ni clé SSH.
 - Réponses libres : un participant peut y taper un nom → modération + purge.
-- Projet personnel (14/10/2026) : l'utilisateur est responsable de traitement.
-  Si l'outil sert un jour des ateliers du CD47, la purge redevient une
-  élimination d'archives publiques (Archives départementales, DPD du
-  Département) — MD-LIB `archivage-cd47.md`.
+- Durée de purge et mentions de confidentialité : fixées par l'utilisateur
+  (`config.php`), fiche dans `docs/registre-traitement.md`.
 - Captures envoyées à Claude : données fictives ou recadrées.
 - Changement structurant de sécurité (connexion, page publique, hébergement)
   → audit Codex ponctuel (MD-LIB `agora.md` §12, modèle
@@ -72,6 +72,6 @@ Alerter sans attendre, au format :
 ## 5. Couleurs
 
 Palette neutre (projet personnel, 14/10/2026) : variables `--wl-*` en tête de
-`assets/style.css`, Verdana. Plus de couleurs ni de logo du CD47 (un outil
-personnel ne doit pas passer pour un outil officiel). Tout couple texte/fond
+`assets/style.css`, Verdana. Aucune couleur ni logo d'une institution (un
+outil personnel ne doit pas passer pour un outil officiel). Tout couple texte/fond
 vérifié AA (4,5:1), éléments graphiques 3:1.
