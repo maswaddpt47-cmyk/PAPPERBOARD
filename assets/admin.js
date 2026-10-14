@@ -324,6 +324,8 @@
       '',
       'Règles :',
       '- Langage simple, phrases courtes, adapté au public. Aucun nom de personne réelle.',
+      '- Chaque question s\'adresse directement à ce public : tutoiement pour des enfants ou des adolescents, '
+        + 'exemples tirés de leur quotidien.',
       '- Varie les types et utilise chacun au moins une fois si le nombre le permet, dans un ordre d\'atelier : '
         + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
       '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
