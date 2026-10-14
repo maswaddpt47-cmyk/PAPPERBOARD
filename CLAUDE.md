@@ -3,8 +3,8 @@
 **Lire d'abord `CHANTIERS.md`** : état du projet, décisions à trancher, points
 à ne pas défaire. Cahier des charges de référence : `docs/prompt-wooclight.md`.
 
-Application de participation en direct (type Wooclap léger) pour les ateliers
-de médiation numérique du CD47. PHP 8 sans framework, JSON dans `DATA_DIR`,
+Application de participation en direct (type Wooclap léger) pour des ateliers
+de médiation numérique (projet personnel depuis le 14/10/2026). PHP 8 sans framework, JSON dans `DATA_DIR`,
 JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 (`maswaddpt47-cmyk/MD-LIB`) et adaptées le 09/10/2026 ; MD-LIB reste la source.
 
@@ -59,18 +59,19 @@ Alerter sans attendre, au format :
   par Claude : l'utilisateur génère le hash lui-même en SSH (charte IA CD47
   §5). Ne jamais demander mot de passe, hash ni clé SSH.
 - Réponses libres : un participant peut y taper un nom → modération + purge.
-- La purge automatique est une élimination d'archives publiques : durée à
-  valider avec les Archives départementales et le DPD
-  (`contact-dpd@lotetgaronne.fr`) — résumé dans MD-LIB `archivage-cd47.md`.
+- Projet personnel (14/10/2026) : l'utilisateur est responsable de traitement.
+  Si l'outil sert un jour des ateliers du CD47, la purge redevient une
+  élimination d'archives publiques (Archives départementales, DPD du
+  Département) — MD-LIB `archivage-cd47.md`.
 - Captures envoyées à Claude : données fictives ou recadrées.
 - Changement structurant de sécurité (connexion, page publique, hébergement)
   → audit Codex ponctuel (MD-LIB `agora.md` §12, modèle
   `consigne-audit-externe.md`) : Claude prépare la consigne, l'utilisateur
   la colle dans Codex, Codex ne modifie rien.
 
-## 5. Charte CD47
+## 5. Couleurs
 
-Couleurs dans les variables CSS en tête de `assets/style.css` (bleu `#4389BD`,
-sarcelle `#197D89`, bleu ciel `#5EB3D2`, vert `#B6C932`, gris `#6F6F6E`),
-Verdana. Tout couple texte/fond vérifié AA (4,5:1). Pas de logo tant que
-l'utilisateur ne l'a pas fourni.
+Palette neutre (projet personnel, 14/10/2026) : variables `--wl-*` en tête de
+`assets/style.css`, Verdana. Plus de couleurs ni de logo du CD47 (un outil
+personnel ne doit pas passer pour un outil officiel). Tout couple texte/fond
+vérifié AA (4,5:1), éléments graphiques 3:1.

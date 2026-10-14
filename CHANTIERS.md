@@ -55,9 +55,9 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   s'appliquent plus telles quelles ; le RGPD, lui, s'applique toujours :
   l'utilisateur devient responsable de traitement. Mentions « Confidentialité »
   désormais réglées dans `config.php` (`responsable`, `contact`,
-  `base_legale`), hors du dépôt public. **À trancher** : garder les couleurs
-  de la charte CD47 (identité du Département, prêter à confusion sur un outil
-  personnel) ou passer à une palette neutre ; durée de purge (30 j par défaut).
+  `base_legale`), hors du dépôt public. Couleurs : palette neutre (indigo /
+  sarcelle), charte CD47 retirée (14/10/2026). **À trancher** : durée de purge
+  (30 j par défaut).
   ⚠️ Si l'outil sert un jour à des ateliers **du CD47**, c'est le Département
   qui redevient responsable : repasser alors par son DPD.
 
@@ -132,12 +132,9 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 - Jeton participant jamais stocké en clair (HMAC) ; IP seulement hachée.
 - Déploiement `rsync` **sans `--delete`** : `config.php` (et `data/` s'il est
   dans le site) vivent sur le serveur hors dépôt.
-- Bleu CD47 `#4389BD` avec texte blanc : 3,78:1, refusé en AA pour le texte
-  courant (mesuré le 09/10/2026, formule WCAG). Boutons et liens :
-  `#2F6A96` (5,80:1). Bleu ciel (2,37) et vert (1,84) : jamais de texte blanc
-  dessus. Sarcelle (4,84) et gris (5,03) passent sur blanc ; sarcelle sur
-  fond `#F3F6F9` : 4,47, à éviter pour du texte courant.
-
+- Palette neutre (14/10/2026) : primaire `#4338CA` (7,9:1 sur blanc), accent
+  `#0F766E` (5,5:1), barres `#6366F1` / `#16A34A` (graphiques ≥ 3:1). Mesuré
+  avec la formule WCAG ; revérifier tout nouveau couple texte/fond.
 - **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
   multiples (point 2) — inhérent à un vote sans compte ; atténué par
   « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
