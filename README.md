@@ -6,7 +6,7 @@ l'animateur projette une question, les participants répondent depuis leur
 téléphone, sans compte, avec un QR code ou un code de 5 caractères.
 
 - **Animateur** : `admin.php` (mot de passe) — sessions, questions, pilotage, export.
-- **Participant** : `index.php` (ou le QR code) — une question à la fois, réponse en un geste.
+- **Participant** : `index.php` (ou le QR code) — une question à la fois : on choisit, puis on appuie sur **Envoyer**.
 - **Projection** : `screen.php?s=CODE` — plein écran, résultats en direct, QR code permanent.
 
 Types de questions : Oui/Non, Vrai/Faux (quiz avec correction), QCM (avec

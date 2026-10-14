@@ -41,7 +41,7 @@ Participants : seniors, collégiens, travailleurs sociaux, agents. Ils rejoignen
    - Piloter en direct : question suivante / précédente, ouvrir / fermer les votes, afficher / masquer les résultats, réinitialiser une question.
    - Afficher le QR code et le code de la session, avec l'URL de participation.
    - Exporter les résultats en CSV (UTF-8 avec BOM, séparateur point-virgule, lisible dans Excel) et en version imprimable.
-2. **Participant (index.php)** : saisit le code ou arrive par QR code, voit uniquement la question active, répond en un geste, reçoit une confirmation. Peut modifier sa réponse tant que le vote est ouvert (si l'animateur l'autorise).
+2. **Participant (index.php)** : saisit le code ou arrive par QR code, voit uniquement la question active, choisit sa réponse puis appuie sur « Envoyer » (modifié le 14/10/2026 : l'envoi en un geste déroutait), reçoit une confirmation. Peut modifier sa réponse tant que le vote est ouvert (si l'animateur l'autorise).
 3. **Projection (screen.php?s=CODE)** : plein écran, grande typographie lisible de loin, résultats animés en direct, QR code visible en permanence dans un coin. Thèmes sombre et clair.
 
 ### Types de questions

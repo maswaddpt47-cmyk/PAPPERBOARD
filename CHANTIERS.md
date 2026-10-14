@@ -135,6 +135,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
   purge n'efface que les compteurs `rl/*.json`.
 - Clé participant dérivée du code de session : deux sessions ne se relient pas.
+- Toutes les questions ont un bouton **Envoyer** (14/10/2026, demande de
+  l'utilisateur) : sur Oui/Non, Vrai/Faux, sondage, QCM et échelle, un appui
+  sélectionne seulement ; l'envoi en un geste déroutait. Tenu par
+  `tests/navigateur.js` (« choisir n'envoie rien avant Envoyer »).
 - Génération par une IA (14/10/2026) : copier-coller, WoocLight n'appelle aucune
   IA. La réponse collée est lue et validée **côté serveur** (`wl_import_parse`,
   mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**
