@@ -17,8 +17,8 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   ruleset (contrôle `tests` exigé, 14/10/2026) : un merge local poussé est
   refusé. Méthode : partir de `origin/main`, pousser la branche, attendre la
   CI verte sur son dernier commit, puis avancer `main` dessus
-  (`git push origin <sha>:main`, avance rapide). Le déploiement attend en plus
-  l'approbation de l'environnement `production`.
+  (`git push origin <sha>:main`, avance rapide). Le déploiement part alors
+  tout seul (pas d'approbation manuelle, choix du 14/10/2026).
 - Racine du dépôt = racine de l'application. Pas de changelog dans le code
   (« v1.2 : … ») : l'histoire va dans `git log`, le code porte la décision
   en vigueur et sa raison.

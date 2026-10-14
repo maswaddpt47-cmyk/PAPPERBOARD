@@ -111,6 +111,8 @@ Le mot de passe ne doit jamais être envoyé à une IA ni écrit dans le dépôt
 2. **Approbation du déploiement** : GitHub > Settings > Environments >
    `production` (créé au premier déploiement) > **Required reviewers** : soi-même.
    Chaque mise en ligne attend alors un clic « Approve » dans l'onglet Actions.
+   Facultatif : sans cette case, la mise en ligne est automatique (choix retenu
+   le 14/10/2026).
 3. **Protéger `main`** : Settings > Rules > Rulesets > New branch ruleset, cible
    `main` : cocher « Restrict deletions », « Block force pushes » et « Require
    status checks to pass » (contrôle `tests`). Seul sur le dépôt, une revue

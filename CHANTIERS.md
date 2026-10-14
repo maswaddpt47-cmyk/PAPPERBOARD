@@ -11,9 +11,6 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    planifiée **horaire** `php ~/www/purge.php` ; couper l'accès SSH par mot de
    passe / « Accessible par le web » ; renseigner `contact` (relancer
    `configurer.php`) ; se connecter à `admin.php` depuis chaque appareil.
-2. **Couper GitHub Pages** sur le dépôt (Settings > Pages > Source : None) :
-   une publication Pages a tourné sur `main` le 09/10/2026, elle expose une
-   copie statique inutile du code.
 3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
    mur, post-it et gommettes (déroulé « variante bilan », README §5).
 4. **Après l'audit Codex du 10/10/2026** (14 points, tous vérifiés dans le
@@ -21,7 +18,7 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
    2 (fermer les inscriptions), 3, 4 (session terminée + essais de codes),
    5, 6, 7, 8, 9, 10, 12, 13, 14, chemin et SHA du
    workflow. **Reste à l'utilisateur** (README §1, étape 5) : 1 protéger
-   `main` + approbation de l'environnement `production` ; 11 secret
+   `main` (fait) ; 11 secret
    `ALWAYSDATA_KNOWN_HOSTS` ; redirection HTTPS ; tâche planifiée de purge ;
    renseigner `responsable` et `contact` dans `config.php` (texte « Confidentialité »).
 4bis. **Second audit Codex (10/10/2026, réflexion maximale)** : aucun point
@@ -93,6 +90,10 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   Renseigner `base_url` en production.
 
 ## Points à ne pas défaire
+
+- Déploiement **automatique** à chaque mise à jour de `main`, sans approbation
+  manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset
+  de `main` (tests exigés). GitHub Pages coupé (14/10/2026).
 
 - Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
   `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
