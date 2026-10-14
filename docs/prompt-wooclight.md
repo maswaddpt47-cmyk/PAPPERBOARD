@@ -1,10 +1,12 @@
-Construis « WoocLight », application web de participation en direct (type Wooclap, version légère) pour mes ateliers de médiation numérique au CD47. Projet complet, testé, déployé sur Alwaysdata depuis GitHub.
+Construis « WoocLight », application web de participation en direct (type Wooclap, version légère) pour mes ateliers de médiation numérique. Projet complet, testé, déployé sur Alwaysdata depuis GitHub.
+
+> **Mis à jour le 14/10/2026** : projet personnel, le CD47 n'est pas concerné (charte graphique, charte IA, DPD et Archives départementales retirés). Je suis responsable de traitement.
 
 ## 0. AVANT DE COMMENCER (dans cet ordre)
 - Dépôt : `maswaddpt47-cmyk/PAPPERBOARD` (le nom du dépôt reste PAPPERBOARD, l'application s'appelle WoocLight). MD-LIB attaché en lecture.
 - `git pull origin main` avant de lire ou d'écrire quoi que ce soit (si `main` n'existe pas encore, partir de la branche de session).
 - Ce prompt est rangé dans `docs/prompt-wooclight.md` : c'est le cahier des charges de référence.
-- Lis dans MD-LIB : `hygiene-instructions.md`, `collaboration.md`, `git-workflow.md`, `rgpd-securite.md`, `charte-graphique-cd47.md`, `charte-ia-cd47.md`, `archivage-cd47.md`, `agora.md` §12.
+- Lis dans MD-LIB : `hygiene-instructions.md`, `collaboration.md`, `git-workflow.md`, `rgpd-securite.md`, `agora.md` §12.
 - Crée à la racine :
   - `CLAUDE.md` du projet : règles **copiées** (pas référencées) de MD-LIB, adaptées à ce projet, budget serré ; renvoi vers `CHANTIERS.md` en tête.
   - `CHANTIERS.md` (règle 8ter), tenu à jour à chaque étape, pas en fin de session.
@@ -20,7 +22,7 @@ Construis « WoocLight », application web de participation en direct (type Wooc
 ## 2. HÉBERGEMENT : ALWAYSDATA
 - PHP 8.x, Apache (`.htaccess` actif — à vérifier sur le compte, pas à supposer), SSH disponible, pas de MySQL.
 - Déploiement : workflow GitHub Actions sur push `main`, `rsync` en SSH par clé, clé et hôte dans les **Secrets GitHub** (même schéma que l'API des Ateliers). `permissions:` minimales dans le workflow. Exclure du rsync : `data/`, `config.php`, `.git*`, `tests/`, `scripts/`, `*.md`.
-- `config.php` jamais commité : créé une fois sur le serveur à partir de `config.sample.php`. **Je génère moi-même le hash du mot de passe** en SSH (`php -r 'echo password_hash("…", PASSWORD_DEFAULT);'`) : ne me demande jamais le mot de passe ni le hash (charte IA §5).
+- `config.php` jamais commité : créé une fois sur le serveur à partir de `config.sample.php`. **Je crée moi-même `config.php` et le hash du mot de passe** en SSH (`php ~/www/configurer.php`) : ne me demande jamais le mot de passe ni le hash.
 - `data/` **hors de la racine web** par défaut (chemin `DATA_DIR` dans config.php, ex. `~/wooclight-data/`), créé automatiquement ; si placé dans la racine web, `.htaccess` « Require all denied » + `index.php` vide.
 - Plan B documenté dans le README : envoi FTP d'un zip produit par la CI (artefact, pas commité).
 
@@ -69,14 +71,13 @@ Chaque question a : intitulé, type, options, durée optionnelle avec compte à 
 - Sel du hachage IP et clé de session dans `config.php`, jamais dans le dépôt.
 - Session PHP animateur : cookie `HttpOnly`, `SameSite=Strict`, `Secure` si HTTPS ; régénération de l'ID à la connexion ; limite de tentatives de connexion.
 - Réponses libres : même anonymes, elles peuvent contenir un nom ou une donnée sensible tapée par un participant → modération + purge.
-- **Purge automatique** (défaut 30 j) : c'est une élimination d'archives publiques (`archivage-cd47.md`). Code-la, mais signale-moi en ⚠️ que la durée doit être validée avec les Archives départementales.
-- Rédige une fiche de traitement courte (`docs/registre-traitement.md`) pour le registre RGPD : finalité, données, durée, hébergeur (Alwaysdata, France), sous-traitants (GitHub pour le code seul).
+- **Purge automatique** (défaut 30 j, réglable) : durée fixée par moi, responsable de traitement.
+- Rédige une fiche de traitement courte (`docs/registre-traitement.md`) pour mon registre RGPD : finalité, données, durée, hébergeur (Alwaysdata, France), sous-traitants (GitHub pour le code seul).
 - Signalements au format ⚠️ de `rgpd-securite.md`, au moment où tu les constates.
 
-## 6. EXPÉRIENCE UTILISATEUR ET CHARTE
+## 6. EXPÉRIENCE UTILISATEUR ET COULEURS
 - Cahier des charges initial (mobile first, 48 px, AA, clavier, ARIA, grands textes pour les seniors).
-- Variables CSS en tête de `style.css` **préremplies avec la charte CD47** : bleu `#4389BD` (principal), sarcelle `#197D89`, bleu ciel `#5EB3D2`, vert `#B6C932`, gris `#6F6F6E`. Police Verdana (système), pas de Capriola embarquée. Vérifie les contrastes AA de chaque couple texte/fond : si une couleur de la charte ne passe pas (ex. blanc sur vert), dis-le et propose la variante.
-- Pas de logo CD47 dans le code tant que je ne te l'ai pas fourni.
+- Variables CSS `--wl-*` en tête de `style.css`, palette neutre, police Verdana (système). Aucune couleur ni logo d'une institution. Vérifie les contrastes AA de chaque couple texte/fond.
 
 ## 7. TESTS (dosés, règles 14 à 17 de collaboration.md)
 - `php -l` sur tous les PHP, `node --check` sur tous les JS.

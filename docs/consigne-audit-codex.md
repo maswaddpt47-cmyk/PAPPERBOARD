@@ -1,8 +1,7 @@
 # Consigne d'audit Codex — WoocLight (dépôt PAPPERBOARD)
 
-Rédigée le 10/10/2026 à partir de MD-LIB `consigne-audit-externe.md`, mise à
-jour le même jour après les corrections du premier audit (contexte seulement,
-sans dire ce qui a été corrigé), pour l'audit ponctuel avant mise en production (`agora.md` §12, règle 4 : nouvelle
+Rédigée le 10/10/2026 à partir de MD-LIB `consigne-audit-externe.md`, contexte
+remis à jour le 14/10/2026 (projet personnel, mise en ligne), pour l'audit ponctuel (`agora.md` §12, règle 4 : nouvelle
 page publique et mot de passe). Le contexte ne contient que des faits, aucune
 conclusion. À coller telle quelle dans Codex.
 
@@ -20,8 +19,9 @@ URL de production.
 
 CONTEXTE (faits, pas conclusions)
 WoocLight : application web de participation en direct (type Wooclap) pour
-des ateliers de médiation numérique d'un Conseil départemental. Participants :
-seniors, collégiens (mineurs), travailleurs sociaux, agents. Ils rejoignent
+des ateliers de médiation numérique, projet personnel d'un animateur (aucune
+collectivité concernée). Participants : seniors, collégiens (mineurs),
+travailleurs sociaux, agents. Ils rejoignent
 depuis leur téléphone, sans compte, avec un code de 5 caractères ou un QR code.
 Architecture : PHP 8 sans framework ni Composer ; un seul point d'entrée pour
 les actions (api.php), bibliothèque commune (lib.php), pages index.php
@@ -41,10 +41,11 @@ signé pour le blocage après échecs). Les participants reçoivent un jeton
 aléatoire (cookie + localStorage) sans identité.
 config.php (hash, secret servant de sel) n'est pas dans le dépôt :
 config.sample.php en donne le modèle.
-Hébergement prévu : Alwaysdata (mutualisé, Apache, .htaccess), compte dédié.
-Déploiement : .github/workflows/ci-deploy.yml, tests puis rsync par SSH
-(clé et empreinte du serveur dans les Secrets GitHub) sur push de main,
-via un environnement GitHub « production ». Pas encore en ligne.
+Hébergement : Alwaysdata (mutualisé, Apache, .htaccess), compte personnel,
+en ligne depuis le 14/10/2026. Déploiement : .github/workflows/ci-deploy.yml,
+tests puis rsync par SSH (clé et empreinte du serveur dans les Secrets GitHub)
+quand main avance, sans approbation manuelle ; main protégée par un ruleset
+(tests exigés).
 Données personnelles : aucune demandée ; IP hachée pour les limites de taux ;
 les réponses libres, messages et post-its peuvent contenir un nom tapé par un
 participant. Purge automatique des sessions après N jours (config.php), au
