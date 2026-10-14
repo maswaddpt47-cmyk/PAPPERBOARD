@@ -719,7 +719,39 @@ function wl_import_input(array $in): array
         'multi' => !empty($in['multi']) || count($correct) > 1,
         'scaleMax' => $in['scaleMax'] ?? 5,
         'budget' => $in['budget'] ?? null,
-    ];
+        // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
+    ] + array_intersect_key($in, array_flip(['duration', 'reveal', 'allowChange', 'live']));
+}
+
+/** Questions d'une session au format de l'import (wl_import_parse) : réponses
+ *  écartées, bonnes réponses par leur texte, source des gommettes par sa position. */
+function wl_export_questions(array $s): array
+{
+    $pos = array_flip(array_column($s['questions'], 'id'));
+    return array_map(function ($q) use ($pos) {
+        $out = ['type' => $q['type'], 'text' => $q['text']];
+        if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit'], true)) {
+            $out['options'] = $q['options'];
+        }
+        if ($q['correct']) {
+            $texts = array_map(fn($i) => $q['options'][$i], $q['correct']);
+            $out['correct'] = $q['type'] === 'mcq' ? $texts : $texts[0];
+        }
+        if ($q['type'] === 'mcq' && $q['multi']) {
+            $out['multi'] = true;
+        }
+        if ($q['type'] === 'scale') {
+            $out['scaleMax'] = $q['scaleMax'];
+        }
+        if (in_array($q['type'], ['points', 'dots'], true)) {
+            $out['budget'] = $q['budget'];
+        }
+        if ($q['type'] === 'dots' && isset($pos[$q['source']])) {
+            $out['source'] = $pos[$q['source']] + 1;
+        }
+        return $out + ['duration' => $q['duration'], 'reveal' => $q['reveal'] ?? 'manual',
+            'allowChange' => $q['allowChange'], 'live' => $q['live'] ?? true];
+    }, $s['questions']);
 }
 
 // ---------------------------------------------------------------------------

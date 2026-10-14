@@ -60,6 +60,7 @@ header('Cache-Control: no-store');
           <a id="ed-csv" class="btn">Exporter en CSV (tout)</a>
           <a id="ed-csv-public" class="btn">CSV à diffuser (sans réponses masquées)</a>
           <a id="ed-print" class="btn" target="_blank" rel="noopener">Version imprimable</a>
+          <a id="ed-questions" class="btn">Questions (.json, sans les réponses)</a>
         </p>
         <p><span id="ed-participants"></span></p>
         <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>

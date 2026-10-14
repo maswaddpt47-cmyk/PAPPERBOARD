@@ -419,6 +419,16 @@ expect_status($r, 200, 'import : ajout');
 $gq = $admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [];
 check(count($gq) === 6 && ($gq[4]['source'] ?? '') === ($gq[3]['id'] ?? '-') && ($gq[5]['scaleMax'] ?? 0) === 10, 'import : 6 questions, gommettes reliées au post-it importé');
 
+// --- Export des questions en JSON, réimporté à l'identique -----------------------
+$admin->post('question_save', ['s' => $gen, 'question' => ['type' => 'yesno', 'text' => 'Réglée', 'correct' => [1], 'reveal' => 'end', 'duration' => 30, 'allowChange' => false]]);
+$exp = $admin->get("api.php?action=export&format=questions&s=$gen");
+$json = json_decode($exp['body'], true);
+check(str_contains($exp['headers']['content-disposition'] ?? '', '.json') && count($json ?? []) === 7, 'export questions : fichier JSON, 7 questions');
+check(!str_contains($exp['body'], '"answers"') && ($json[4]['source'] ?? 0) === 4 && ($json[2]['correct'] ?? null) === ['Urgence', 'Fautes'], 'export questions : sans réponses, gommettes et bonnes réponses lisibles');
+$copy = $admin->post('session_create', ['title' => 'Copie'])['json']['code'] ?? '';
+expect_status($admin->post('questions_import', ['s' => $copy, 'raw' => $exp['body'], 'keep' => range(0, 6)]), 200, 'export questions : réimport');
+check($admin->get("api.php?action=export&format=questions&s=$copy")['body'] === $exp['body'], 'export questions : réimport identique (réglages compris)');
+
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {
     check(is_array(json_decode(file_get_contents($f), true)), 'JSON valide : ' . basename($f));

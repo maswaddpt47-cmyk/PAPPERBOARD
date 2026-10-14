@@ -551,6 +551,13 @@ function api_export(): void
     if (($_GET['format'] ?? '') === 'print') {
         api_export_print($s, $all);
     }
+    if (($_GET['format'] ?? '') === 'questions') {
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="wooclight-questions-' . $s['code'] . '-' . date('Y-m-d') . '.json"');
+        header('Cache-Control: no-store');
+        echo json_encode(wl_export_questions($s), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
     api_export_csv($s, $all);
 }
 

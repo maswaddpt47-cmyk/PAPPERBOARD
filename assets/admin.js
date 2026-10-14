@@ -127,6 +127,7 @@
     $('ed-csv').href = 'api.php?action=export&s=' + d.code;
     $('ed-csv-public').href = 'api.php?action=export&public=1&s=' + d.code;
     $('ed-print').href = 'api.php?action=export&format=print&s=' + d.code;
+    $('ed-questions').href = 'api.php?action=export&format=questions&s=' + d.code;
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' connecté' + (d.participants > 1 ? 's' : '');
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
