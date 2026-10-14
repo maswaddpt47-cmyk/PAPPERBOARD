@@ -327,6 +327,8 @@
         + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
       '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
       '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
+      '- Quiz : mauvaises réponses crédibles, qui font réfléchir, jamais absurdes ni comiques.',
+      '- Une seule échelle (« scale »), en toute fin d\'atelier.',
       '',
       'Types possibles :',
       '- "yesno" : question Oui/Non ; "correct" facultatif : "Oui" ou "Non".',
