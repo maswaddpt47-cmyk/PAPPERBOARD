@@ -264,6 +264,7 @@
     if (!sources.options.length) sources.appendChild(el('option', { value: '' }, 'Créez d\'abord un post-it collectif ou un mur'));
     $('qf-duration').value = q ? q.duration : 0;
     $('qf-change').checked = q ? q.allowChange : true;
+    $('qf-reveal').value = q ? (q.reveal || 'manual') : 'manual';
     $('qf-error').textContent = '';
     syncForm(q ? q.correct : []);
     $('q-dialog').showModal();
@@ -285,6 +286,7 @@
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value,
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
+      reveal: $('qf-reveal').value,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
     if (editing) {

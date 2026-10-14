@@ -109,7 +109,7 @@
     var q = data.question;
     // Les contributions (mur, post-it) n'entrent pas dans la clé : elles
     // s'affichent à part, sans effacer un texte en cours de saisie.
-    var key = [q.id, q.state, q.showResults, q.closesAt, JSON.stringify(data.mine), JSON.stringify(data.result),
+    var key = [q.id, q.state, q.showResults, q.closesAt, JSON.stringify(q.correct), JSON.stringify(data.mine), JSON.stringify(data.result),
       JSON.stringify(data.items)].join('|');
     if (key !== renderKey) {
       renderKey = key;
@@ -164,7 +164,7 @@
 
   /** Classe CSS de correction, une fois les résultats affichés. */
   function markClass(q, i) {
-    if (!q.showResults || !q.correct.length) return '';
+    if (!q.correct.length) return ''; // le serveur n'envoie la correction que lorsqu'elle est visible
     return q.correct.indexOf(i) !== -1 ? ' is-correct' : '';
   }
 
@@ -410,6 +410,9 @@
       pendingStore.del('pending');
       if (r.status === 200) {
         state.mine = r.data.mine;
+        if (state.question && state.question.id === p.qid && r.data.correct && r.data.correct.length) {
+          state.question.correct = r.data.correct; // correction immédiate
+        }
         renderKey = '';
         if (state.question && state.question.id === p.qid) onState(state);
       } else if (r.status === 403 && /Rejoignez/.test(r.data.error)) {
@@ -431,7 +434,7 @@
     var box = $('my-result');
     WL.clear(box);
     WL.show(box, false);
-    if (!q.showResults) return;
+    if (!q.showResults && !q.correct.length) return;
     if (q.correct.length && mine !== null) {
       var good = JSON.stringify([].concat(mine).sort()) === JSON.stringify(q.correct);
       box.appendChild(el('p', { class: 'big ' + (good ? 'ok' : 'ko') }, good ? 'Bonne réponse !' : 'Ce n\'était pas la bonne réponse.'));

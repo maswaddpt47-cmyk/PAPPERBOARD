@@ -250,6 +250,37 @@ $admin->post('control', ['s' => $code, 'op' => 'show']);
 $res = $admin->get("api.php?action=screen&s=$code")['json']['results'];
 check($res['items'][0]['id'] === $b && $res['items'][0]['n'] === 3 && $res['total'] === 2, 'gommettes : classement');
 
+// --- Moment de la correction : immédiate, ou à la fin du temps ----------------
+expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'truefalse', 'text' => 'Sans bonne réponse', 'reveal' => 'instant']]), 400, 'correction immédiate sans bonne réponse refusée');
+expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'yesno', 'text' => 'Sans durée', 'correct' => [0], 'reveal' => 'end']]), 400, 'correction en fin de temps sans durée refusée');
+$instant = $admin->post('question_save', ['s' => $code, 'question' => ['type' => 'truefalse', 'text' => 'Quiz immédiat', 'correct' => [0], 'reveal' => 'instant']])['json']['id'] ?? '';
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $instant]);
+check($p[0]->get("api.php?action=state&s=$code")['json']['question']['correct'] === [], 'immédiate : pas de correction avant de répondre');
+$r = $p[0]->vote($code, $instant, 1);
+check(($r['json']['correct'] ?? null) === [0], 'immédiate : correction renvoyée avec le vote');
+check($p[0]->get("api.php?action=state&s=$code")['json']['question']['correct'] === [0], 'immédiate : correction visible ensuite');
+check($p[1]->get("api.php?action=state&s=$code")['json']['question']['correct'] === [], 'immédiate : invisible pour qui n\'a pas répondu');
+expect_status($p[0]->vote($code, $instant, 0), 409, 'immédiate : réponse figée après la correction');
+$atEnd = $admin->post('question_save', ['s' => $code, 'question' => ['type' => 'yesno', 'text' => 'Quiz fin du temps', 'correct' => [0], 'reveal' => 'end', 'duration' => 30]])['json']['id'] ?? '';
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $atEnd]);
+$p[1]->vote($code, $atEnd, 0);
+$endPath = "api.php?action=state&s=$code";
+$p[2]->poll($endPath);
+check($p[2]->poll($endPath)['status'] === 304, 'fin du temps : rien avant l\'échéance');
+check($admin->get("api.php?action=screen&s=$code")['json']['results'] === null, 'fin du temps : pas de résultats projetés avant');
+$file = "$data/sessions/$code.json";
+$json = json_decode(file_get_contents($file), true);
+foreach ($json['questions'] as &$jq) {
+    if ($jq['id'] === $atEnd) {
+        $jq['closesAt'] = time() - 1;
+    }
+}
+unset($jq);
+file_put_contents($file, json_encode($json));
+$after = $p[2]->poll($endPath);
+check($after['status'] === 200 && $after['json']['question']['correct'] === [0] && $after['json']['question']['showResults'] === true, 'fin du temps : correction envoyée sans action de l\'animateur');
+check(($admin->get("api.php?action=screen&s=$code")['json']['results']['counts'] ?? null) === [1, 0], 'fin du temps : résultats projetés');
+
 // --- Coût : 30 rafraîchissements sans changement = 0 corps renvoyé -----------
 $path = "api.php?action=state&s=$code";
 $first = $p[0]->poll($path);
@@ -318,7 +349,7 @@ check($adm['questions'][0]['id'] === $qid['truefalse'], 'question remontée');
 $r = $admin->post('session_duplicate', ['s' => $code]);
 $copy = $r['json']['code'] ?? '';
 $dup = $admin->get("api.php?action=admin_state&s=$copy")['json'];
-check(count($dup['questions']) === 11 && $dup['questions'][10]['source'] === $dup['questions'][9]['id'] && $dup['questions'][0]['results']['total'] === 0 && $dup['participants'] === 0, 'copie sans votes ni participants');
+check(count($dup['questions']) === 13 && $dup['questions'][10]['source'] === $dup['questions'][9]['id'] && $dup['questions'][0]['results']['total'] === 0 && $dup['participants'] === 0, 'copie sans votes ni participants');
 $admin->post('control', ['s' => $code, 'op' => 'end']);
 check($p[0]->get($path)['json']['ended'] === true, 'session terminée visible des participants');
 expect_status((new Client($base))->join($code), 409, 'rejoindre une session terminée refusé');

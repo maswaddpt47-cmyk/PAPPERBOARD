@@ -124,6 +124,12 @@ header('Cache-Control: no-store');
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
         <label for="qf-duration">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">
+        <label for="qf-reveal">Correction et résultats</label>
+        <select id="qf-reveal">
+          <option value="manual">Quand je clique sur « Afficher les résultats »</option>
+          <option value="end">Automatiquement à la fin du temps (durée obligatoire)</option>
+          <option value="instant">Immédiate : chaque participant voit la correction dès qu'il a répondu</option>
+        </select>
         <label class="check"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
         <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>

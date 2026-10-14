@@ -499,6 +499,7 @@ function wl_clean_question(array $in, ?array $old = null): array
         'source' => $type === 'dots' ? (string)($in['source'] ?? '') : '',
         'duration' => wl_clean_duration($in['duration'] ?? 0),
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
+        'reveal' => in_array($in['reveal'] ?? '', ['manual', 'end', 'instant'], true) ? $in['reveal'] : 'manual',
         'anonymous' => true,
         // L'état de vote est conservé si on modifie une question existante.
         'state' => $old['state'] ?? 'draft',
@@ -509,11 +510,48 @@ function wl_clean_question(array $in, ?array $old = null): array
         'posts' => $old['posts'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
+    wl_check_reveal($q);
     if ($old && wl_structure_changed($old, $q)) {
         // Les réponses déjà reçues ne correspondent plus aux choix : on repart de zéro.
         wl_reset_question($q);
     }
     return $q;
+}
+
+/** Moment de la correction : manual = bouton « Afficher les résultats » ;
+ *  end = automatiquement à la fin du compte à rebours ; instant = chaque
+ *  participant voit la correction dès qu'il a répondu (réponse alors figée). */
+function wl_check_reveal(array &$q): void
+{
+    if ($q['reveal'] === 'end' && !$q['duration']) {
+        throw new WlError('Correction à la fin du temps : indiquez une durée.');
+    }
+    if ($q['reveal'] === 'instant') {
+        if (!$q['correct']) {
+            throw new WlError('Correction immédiate : cochez la ou les bonnes réponses.');
+        }
+        $q['allowChange'] = false; // sinon on corrigerait sa réponse après avoir vu la solution
+    }
+}
+
+/** Résultats visibles du public : affichés par l'animateur, ou temps écoulé
+ *  pour une question « correction à la fin du temps ». */
+function wl_shown(array $q, ?int $now = null): bool
+{
+    return $q['showResults'] || (($q['reveal'] ?? 'manual') === 'end' && wl_time_up($q, $now));
+}
+
+function wl_time_up(array $q, ?int $now = null): bool
+{
+    return $q['state'] === 'open' && $q['closesAt'] && ($now ?? time()) >= $q['closesAt'];
+}
+
+/** Morceau d'ETag qui change quand le temps de la question courante s'écoule
+ *  (sinon un rafraîchissement 304 ne verrait jamais la fin du temps). */
+function wl_time_tag(array $s): string
+{
+    $q = wl_current_question($s);
+    return $q && wl_time_up($q) ? '-t' : '';
 }
 
 /** Efface les réponses et contributions d'une question, vote fermé. */
@@ -822,12 +860,13 @@ function wl_points_results(array $answers, int $n): array
  *  correction tant que l'animateur n'affiche pas les résultats. */
 function wl_public_question(array $q): array
 {
-    $show = $q['showResults'];
+    $show = wl_shown($q);
     return [
         'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'],
         'multi' => $q['multi'], 'scaleMax' => $q['scaleMax'], 'budget' => $q['budget'],
         'duration' => $q['duration'], 'closesAt' => $q['closesAt'], 'state' => $q['state'],
         'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '',
+        'reveal' => $q['reveal'] ?? 'manual',
         'correct' => $show ? $q['correct'] : [],
     ];
 }
@@ -846,7 +885,7 @@ function wl_screen_view(array $s): array
         'participants' => count($s['participants']),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
         'question' => $q ? wl_public_question($q) : null,
-        'results' => $q && $q['showResults'] ? wl_results($q, false, $s) : null,
+        'results' => $q && wl_shown($q) ? wl_results($q, false, $s) : null,
         'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
@@ -1034,7 +1073,7 @@ function wl_like(array &$s, string $pkey, string $qid, string $pid): bool
 {
     $q = &wl_open_question($s, $qid, ['wall']);
     $i = wl_post_index($q, $pid);
-    if (!$q['showResults'] || in_array($pid, $q['hidden'], true)) {
+    if (!wl_shown($q) || in_array($pid, $q['hidden'], true)) {
         throw new WlError('Ce message n\'est pas affiché.', 409);
     }
     $likes = &$q['posts'][$i]['likes'];
@@ -1088,7 +1127,7 @@ function wl_participant_posts(array $q, string $pkey): array
         $mine = $p['p'] === $pkey;
         // Masquer un post-it principal masque aussi ceux regroupés dessous.
         $hidden = in_array($p['id'], $q['hidden'], true) || in_array($p['parent'], $q['hidden'], true);
-        if ($mine || ($q['showResults'] && !$hidden)) {
+        if ($mine || (wl_shown($q) && !$hidden)) {
             $out[] = ['id' => $p['id'], 'text' => $p['text'], 'col' => min($p['col'], max(0, count($q['options']) - 1)),
                 'likes' => count($p['likes']), 'liked' => in_array($pkey, $p['likes'], true), 'mine' => $mine];
         }
@@ -1136,7 +1175,7 @@ function wl_dot_items(array $s, array $q): array
     $src = null;
     foreach ($s['questions'] as $c) {
         // Source publiée seulement : avant, ses contributions n'ont pas été relues.
-        if ($c['id'] === $q['source'] && in_array($c['type'], WL_POST_TYPES, true) && $c['showResults']) {
+        if ($c['id'] === $q['source'] && in_array($c['type'], WL_POST_TYPES, true) && wl_shown($c)) {
             $src = $c;
         }
     }

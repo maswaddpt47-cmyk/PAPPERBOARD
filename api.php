@@ -173,15 +173,16 @@ function api_state(): void
     $q = wl_current_question($s);
     // La version publique change avec la question ; la réponse du participant
     // n'en fait pas partie (le téléphone la connaît déjà après son vote).
-    wl_json_etag('p' . $s['pversion'] . '-' . substr($pkey, 0, 6), fn() => [
+    $mine = $q['answers'][$pkey]['v'] ?? null;
+    wl_json_etag('p' . $s['pversion'] . wl_time_tag($s) . '-' . substr($pkey, 0, 6), fn() => [
         'ok' => true, 'title' => $s['title'], 'ended' => $s['ended'],
         'joined' => isset($s['participants'][$pkey]),
-        'question' => $q ? wl_public_question($q) : null,
+        'question' => $q ? api_question_for($q, $mine) : null,
         'mine' => $q['answers'][$pkey]['v'] ?? null,
         'posts' => $q && in_array($q['type'], WL_POST_TYPES, true) ? wl_participant_posts($q, $pkey) : null,
         'items' => $q && $q['type'] === 'dots' ? wl_dot_items($s, $q) : null,
         'maxPosts' => (int)wl_config()['max_posts'],
-        'result' => $q && $q['showResults'] && in_array($q['type'], ['yesno', 'truefalse', 'mcq', 'poll', 'scale'], true)
+        'result' => $q && wl_shown($q) && in_array($q['type'], ['yesno', 'truefalse', 'mcq', 'poll', 'scale'], true)
             ? wl_results($q) : null,
         'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'], 'maxText' => (int)wl_config()['max_text'],
     ]);
@@ -208,11 +209,27 @@ function api_participant_write(array $b, callable $fn, bool $public): mixed
     }, $public, false);
 }
 
+/** Question vue par un participant ; correction immédiate : la bonne réponse
+ *  n'est donnée qu'à celui qui a déjà répondu. */
+function api_question_for(array $q, mixed $mine): array
+{
+    $pub = wl_public_question($q);
+    if (($q['reveal'] ?? 'manual') === 'instant' && $mine !== null) {
+        $pub['correct'] = $q['correct'];
+    }
+    return $pub;
+}
+
 function api_vote(array $b): void
 {
-    $mine = api_participant_write($b, fn(array &$s, string $pkey) =>
-        wl_vote($s, $pkey, (string)($b['qid'] ?? ''), $b['value'] ?? null), false);
-    wl_json(['ok' => true, 'mine' => $mine]);
+    $correct = [];
+    $mine = api_participant_write($b, function (array &$s, string $pkey) use ($b, &$correct) {
+        $clean = wl_vote($s, $pkey, (string)($b['qid'] ?? ''), $b['value'] ?? null);
+        $q = $s['questions'][wl_question_index($s, (string)($b['qid'] ?? ''))];
+        $correct = api_question_for($q, $clean)['correct'];
+        return $clean;
+    }, false);
+    wl_json(['ok' => true, 'mine' => $mine, 'correct' => $correct]);
 }
 
 /** Mur et post-it : chaque contribution rafraîchit les téléphones (ils
@@ -245,7 +262,7 @@ function api_like(array $b): void
 function api_screen(): void
 {
     $s = api_public_session(api_code($_GET));
-    wl_json_etag('s' . $s['version'], fn() => $s['ended'] ? api_ended_view($s) : ['ok' => true] + wl_screen_view($s));
+    wl_json_etag('s' . $s['version'] . wl_time_tag($s), fn() => $s['ended'] ? api_ended_view($s) : ['ok' => true] + wl_screen_view($s));
 }
 
 // ---------------------------------------------------------------------------
@@ -283,9 +300,9 @@ function api_sessions(): void
 function api_admin_state(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
-    wl_json_etag('a' . $s['version'], function () use ($s) {
+    wl_json_etag('a' . $s['version'] . wl_time_tag($s), function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
-            'showResults' => $q['showResults'], 'results' => wl_results($q, true, $s),
+            'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s),
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'current' => $s['current'], 'participants' => count($s['participants']),
