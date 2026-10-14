@@ -191,6 +191,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   plutôt qu'une référence inventée. Méthode conseillée : générer (ChatGPT),
   « Vérifier », relire l'aperçu ; relecture par une autre IA pour un nouveau
   thème ; jamais de question d'âge légal ou de loi sans Légifrance.
+  **Règle : l'IA qui écrit ne relit pas** (décision de l'utilisateur,
+  14/10/2026). Une nouvelle conversation avec la même IA ne suffit pas : même
+  anonymisées, ChatGPT et Claude ont classé leur version première. Questions de
+  ChatGPT → relecture par Gemini ou Mistral (juges neutres du test) ou Claude.
+  L'utilisateur ouvre les liens des sources et tranche.
   Les quatre IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
