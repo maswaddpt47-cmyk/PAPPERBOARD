@@ -173,18 +173,19 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   exemples d'adultes) : 3e consigne « chaque question s'adresse directement à ce
   public : tutoiement pour des enfants ou des adolescents ». Exemple corrigé de
   12 questions : `docs/exemples/temps-ecran-collegiens.json`.
-  Mistral (temps d'écran, collégiens, 20, même texte) : 20/20 acceptées, JSON
-  propre, public et échelle unique respectés ; mais fond contestable (« réseaux
-  sociaux dès 13 ans en France » : accord parental avant 15 ans ; « like →
-  dopamine = plaisir » simplifié), affirmation posée en Oui/Non, sondage là où
-  plusieurs réponses sont vraies, une faute. Classement pour des collégiens :
-  ChatGPT (fond le plus sûr), Mistral (bonnes idées, le plus à relire), Gemini
-  (public ignoré). Claude (même texte) : 20/20 acceptées, aucune erreur de forme,
-  deux votes par gommettes, orientation vers un adulte en fin d'atelier ; à
-  relire : lumière bleue seule cause du mauvais sommeil, « plus faim le soir »
-  compté faux (le grignotage devant les écrans est réel). Classé premier par
-  Claude lui-même : **juge et partie**, classement à confirmer par l'utilisateur
-  ou une autre IA. Aucune IA ne dispense de relire les corrections des quiz.
+  Mistral et Claude (même texte, 20/20 acceptées). Évaluation croisée
+  anonymisée (versions A-D, consigne imposant public → fond → forme →
+  classement, 14/10/2026) par les quatre IA : **ChatGPT > Claude > Mistral >
+  Gemini**, unanime sauf Claude qui s'était classé premier. Mesuré : 2 IA sur 4
+  se classent premières (ChatGPT, Claude) ; Gemini et Mistral, qui se classent
+  dernière et troisième, sont les juges neutres et tranchent. Constats communs :
+  Gemini ignore le public, Mistral a deux erreurs de fond, les distracteurs
+  restent le point faible de toutes, la règle 20-20-20 est toujours incomplète.
+  ⚠️ Âge légal des réseaux sociaux : trois IA citent trois lois différentes
+  (2023, juillet 2026, 24/08/2026 censurée) — non vérifié par Claude (après
+  juin 2026) : aucune question d'âge légal sans vérification sur Légifrance.
+  Leçon : une IA ne relit jamais sa propre version ; aucune ne dispense de
+  relire les corrections des quiz.
   Les quatre IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
