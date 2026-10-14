@@ -414,7 +414,21 @@
     else manual();
   });
 
-  $('gen-check').addEventListener('click', function () {
+  // Fichier JSON : lu dans le navigateur, puis vérifié comme une réponse collée.
+  $('gen-file').addEventListener('change', function () {
+    var file = $('gen-file').files[0];
+    $('gen-file').value = ''; // permet de réimporter le même fichier
+    if (!file) return;
+    if (file.size > 60000) { $('gen-error').textContent = 'Fichier trop gros (60 Ko au plus).'; return; }
+    var reader = new FileReader();
+    reader.onload = function () { $('gen-raw').value = String(reader.result); genCheck(); };
+    reader.onerror = function () { $('gen-error').textContent = 'Fichier illisible.'; };
+    reader.readAsText(file, 'utf-8');
+  });
+
+  $('gen-check').addEventListener('click', function () { genCheck(); });
+
+  function genCheck() {
     genReset();
     var body = { s: code, raw: $('gen-raw').value, preview: true };
     WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
@@ -423,7 +437,7 @@
       genItems = r.data.items;
       genRender();
     }, function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; });
-  });
+  }
 
   $('gen-form').addEventListener('submit', function (e) {
     e.preventDefault();

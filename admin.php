@@ -88,12 +88,12 @@ header('Cache-Control: no-store');
       <h2>Questions</h2>
       <ol id="q-list" class="list q-list"></ol>
       <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" type="button">+ Ajouter une question</button>
-        <button id="gen-btn" class="btn" type="button">Générer à partir d'un thème</button></p>
+        <button id="gen-btn" class="btn" type="button">Générer ou importer (JSON)</button></p>
     </div>
 
     <dialog id="gen-dialog" aria-labelledby="gen-title">
       <form id="gen-form" method="dialog" novalidate>
-        <h2 id="gen-title">Générer des questions avec une IA</h2>
+        <h2 id="gen-title">Générer ou importer des questions</h2>
         <p class="meta">1. Décrivez l'atelier, copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
           N'y mettez aucun nom ni donnée personnelle.</p>
         <label for="gen-theme">Thème</label>
@@ -112,8 +112,11 @@ header('Cache-Control: no-store');
         <p><button id="gen-copy" class="btn btn-primary" type="button">Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
-        <p class="meta">2. Collez ici toute la réponse de l'IA, puis vérifiez.</p>
-        <label for="gen-raw" class="sr-only">Réponse de l'IA</label>
+        <p class="meta">2. Collez ici toute la réponse de l'IA, ou importez un fichier JSON au même format
+          (étape 1 inutile dans ce cas), puis vérifiez.</p>
+        <p><label for="gen-file" class="btn">Importer un fichier .json</label>
+          <input id="gen-file" class="sr-only" type="file" accept=".json,.txt,application/json,text/plain"></p>
+        <label for="gen-raw" class="sr-only">Réponse de l'IA ou contenu du fichier</label>
         <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
         <p><button id="gen-check" class="btn" type="button">Vérifier la réponse</button></p>
         <div id="gen-preview" hidden>

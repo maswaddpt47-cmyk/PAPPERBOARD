@@ -128,6 +128,13 @@ function check(cond, label) {
   await admin.click('#gen-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
   check(!(await admin.locator('#gen-dialog').evaluate(d => d.open)), 'génération : question cochée ajoutée, fenêtre fermée');
+  await admin.click('#gen-btn');
+  await admin.setInputFiles('#gen-file', { name: 'questions.json', mimeType: 'application/json',
+    buffer: Buffer.from('[{"type":"wordcloud","text":"Un mot importé ?"}]') });
+  await admin.waitForSelector('#gen-list input');
+  await admin.click('#gen-save');
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 4);
+  check(true, 'import d\'un fichier JSON : lu, vérifié, ajouté');
 
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();
