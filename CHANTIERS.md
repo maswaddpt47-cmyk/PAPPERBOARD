@@ -171,6 +171,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   « mauvaises réponses crédibles, jamais absurdes » et « une seule échelle, en
   fin d'atelier ». Les deux IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
+- Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
+  format que l'import, **sans aucune réponse de participant**, réglages compris
+  (durée, correction, modification, direct). Réimporter un export redonne le
+  même fichier : tenu par `tests/e2e.php` (« Export des questions »).
   Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
 
 ## Pistes d'amélioration
@@ -179,8 +183,6 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
-- 14/10/2026 — Exporter les questions d'une session en `.json` (même format
-  que l'import) : garder et réutiliser ses séries d'un atelier à l'autre.
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.

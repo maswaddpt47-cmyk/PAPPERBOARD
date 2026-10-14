@@ -25,7 +25,9 @@ classement par points, et trois modules d'atelier :
 à coller dans l'IA de votre choix (Claude, ChatGPT, Le Chat…), vous recollez sa
 réponse — ou importez un fichier `.json` au même format —, cochez les questions
 à garder et les ajoutez à la session. WoocLight
-n'appelle aucune IA lui-même : rien ne part sans vous. Vérifiez les bonnes
+n'appelle aucune IA lui-même : rien ne part sans vous. Le bouton **Questions
+(.json)** de chaque session enregistre ses questions (sans les réponses) dans ce
+même format, pour les réutiliser dans une autre session. Vérifiez les bonnes
 réponses des quiz avant l'atelier.
 
 Mur et post-it : les participants ne voient que leurs propres contributions
