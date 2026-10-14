@@ -11,21 +11,26 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
 2. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
-   dont mur, post-it, gommettes et les trois modes de correction. Tester aussi
-   « Générer ou importer (JSON) » avec ton IA habituelle (14/10/2026 : testé
-   seulement avec des réponses écrites à la main, pas avec une vraie IA).
-3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+   dont mur, post-it, gommettes et les trois modes de correction. Vérifier en
+   particulier les changements du 14/10/2026, non vus sur un vrai téléphone :
+   bouton **Envoyer** après le choix (Oui/Non, sondage, échelle…), bouton
+   d'envoi visible au-dessus du clavier, Entrée qui publie sur le mur,
+   projection **en direct** du nuage de mots et du sondage sans clic.
+3. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
+   nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
+   absurdes ni trois échelles.
+4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-4. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
    supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
-5. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
+6. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
    passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
    recouper l'accès par mot de passe). Journaux Apache et sauvegardes
    d'Alwaysdata à regarder une fois.
-6. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
+7. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
    créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
@@ -157,6 +162,15 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (copie depuis l'application ChatGPT, constaté le 14/10/2026) sont retirés.
   Un fichier `.json` importé suit le même chemin (lu dans le navigateur, 60 Ko
   au plus, puis vérifié par le serveur).
+  Mesuré le 14/10/2026 sur de vraies réponses : ChatGPT (mails frauduleux,
+  10 puis 20 questions ; temps d'écran, 20) et Gemini (temps d'écran, 20),
+  toutes acceptées. Comparaison sur le même thème : ChatGPT donne des mauvaises
+  réponses crédibles et un ton nuancé ; Gemini des mauvaises réponses absurdes
+  (« rétrécissement des bras »), des chiffres à nuancer et 3 échelles finales.
+  D'où deux consignes dans le texte pour l'IA (`genPrompt`, `admin.js`) :
+  « mauvaises réponses crédibles, jamais absurdes » et « une seule échelle, en
+  fin d'atelier ». Les deux IA ont produit 20 questions, trop pour une séance :
+  conseiller 10 à 12 (décocher dans l'aperçu).
   Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
 
 ## Pistes d'amélioration
@@ -165,6 +179,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
+- 14/10/2026 — Exporter les questions d'une session en `.json` (même format
+  que l'import) : garder et réutiliser ses séries d'un atelier à l'autre.
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.
