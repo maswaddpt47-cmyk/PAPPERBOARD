@@ -139,6 +139,9 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   l'utilisateur) : sur Oui/Non, Vrai/Faux, sondage, QCM et échelle, un appui
   sélectionne seulement ; l'envoi en un geste déroutait. Tenu par
   `tests/navigateur.js` (« choisir n'envoie rien avant Envoyer »).
+  Pendant une saisie (nuage, réponse libre, mur, post-it), le bouton d'envoi
+  est ramené à l'écran (le clavier du téléphone le cachait, hypothèse du
+  14/10/2026) ; sur mur et post-it, Entrée publie.
 - Génération par une IA (14/10/2026) : copier-coller, WoocLight n'appelle aucune
   IA. La réponse collée est lue et validée **côté serveur** (`wl_import_parse`,
   mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**

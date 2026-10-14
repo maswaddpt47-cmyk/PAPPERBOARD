@@ -211,10 +211,18 @@
     form.appendChild(input);
     form.appendChild(count);
     form.appendChild(el('p', { class: 'meta' }, 'N\'écrivez pas de nom ni d\'information personnelle.'));
-    submit(form, locked, function () {
+    keepVisible(input, submit(form, locked, function () {
       if (!input.value.trim()) return 'Écrivez une réponse avant d\'envoyer.';
       send(q, input.value);
-    });
+    }));
+  }
+
+  /** Sur téléphone, le clavier recouvre le bouton d'envoi : on le ramène à
+   *  l'écran pendant la saisie (les participants ne le trouvaient pas). */
+  function keepVisible(input, button) {
+    var show = function () { setTimeout(function () { button.scrollIntoView({ block: 'nearest' }); }, 350); };
+    input.addEventListener('focus', show);
+    input.addEventListener('input', function () { if (input.value.length === 1) show(); });
   }
 
   function scale(form, q, mine, locked) {
@@ -324,6 +332,11 @@
     var button = el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked },
       q.type === 'postit' ? 'Coller le post-it' : 'Publier');
     form.appendChild(button);
+    keepVisible(input, button);
+    // Message court sur une ligne : Entrée publie, comme dans une messagerie.
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(button); }
+    });
     form.onsubmit = function (e) {
       e.preventDefault();
       if (!input.value.trim()) { err.textContent = 'Écrivez quelque chose avant de publier.'; return; }
@@ -387,11 +400,13 @@
   function submit(form, locked, onSubmit) {
     var err = el('p', { class: 'error', role: 'alert' });
     form.appendChild(err);
-    form.appendChild(el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked }, 'Envoyer'));
+    var button = el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked }, 'Envoyer');
+    form.appendChild(button);
     form.onsubmit = function (e) {
       e.preventDefault();
       err.textContent = onSubmit() || '';
     };
+    return button;
   }
 
   // --- Envoi, avec reprise si le réseau tombe ----------------------------------
