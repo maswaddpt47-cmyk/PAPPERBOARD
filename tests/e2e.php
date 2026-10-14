@@ -370,6 +370,25 @@ $admin->get('api.php?action=me');
 check(!is_file($file), 'sans action de l\'animateur depuis 31 jours : purgée, même avec un passage récent');
 expect_status($p[0]->get($path), 404, 'session purgée : code inconnu');
 
+// --- Projection en direct (sondage, nuage, échelle, points) ---------------------
+$dir = $admin->post('session_create', ['title' => 'Direct'])['json']['code'] ?? '';
+$live = $admin->post('question_save', ['s' => $dir, 'question' => ['type' => 'poll', 'text' => 'En direct', 'options' => ['A', 'B']]])['json']['id'] ?? '';
+$off = $admin->post('question_save', ['s' => $dir, 'question' => ['type' => 'wordcloud', 'text' => 'Sans direct', 'live' => false]])['json']['id'] ?? '';
+$quiz = $admin->post('question_save', ['s' => $dir, 'question' => ['type' => 'truefalse', 'text' => 'Quiz', 'correct' => [1], 'live' => true]])['json']['id'] ?? '';
+$screenRes = fn() => $admin->get("api.php?action=screen&s=$dir")['json']['results'] ?? null;
+$admin->post('control', ['s' => $dir, 'op' => 'goto', 'qid' => $live]);
+$viewer = new Client($base); // participant neuf : les autres ont épuisé leur limite de taux
+$viewer->join($dir);
+$viewer->vote($dir, $live, 1);
+check(($screenRes()['counts'] ?? null) === [0, 1], 'direct : sondage projeté pendant le vote, sans « Afficher »');
+$st = $viewer->get("api.php?action=state&s=$dir")['json'];
+check(empty($st['question']['showResults']) && !isset($st['results']) && empty($st['result']), 'direct : les téléphones n\'affichent pas les résultats (coût du polling)');
+foreach ([$off => 'nuage sans direct', $quiz => 'quiz (correction)'] as $id => $label) {
+    $admin->post('control', ['s' => $dir, 'op' => 'goto', 'qid' => $id]);
+    $admin->post('control', ['s' => $dir, 'op' => 'open']);
+    check($screenRes() === null, "direct : $label pas projeté avant « Afficher »");
+}
+
 // --- Import de questions générées par une IA (copier-coller) -------------------
 $gen = $admin->post('session_create', ['title' => 'Générée'])['json']['code'] ?? '';
 $raw = "Voici vos questions :\n```json\n" . json_encode([

@@ -218,6 +218,7 @@
   // --- Formulaire de question -----------------------------------------------------
 
   var FIXED = { yesno: ['Oui', 'Non'], truefalse: ['Vrai', 'Faux'] };
+  var LIVE = ['poll', 'wordcloud', 'scale', 'points']; // même liste que WL_LIVE_TYPES (lib.php)
 
   function optionLines() {
     var type = $('qf-type').value;
@@ -233,6 +234,7 @@
     WL.show($('qf-source-box'), type === 'dots');
     $('qf-budget-label').textContent = type === 'dots' ? 'Gommettes par participant' : 'Points à répartir';
     WL.show($('qf-multi-box'), type === 'mcq');
+    WL.show($('qf-live-box'), LIVE.indexOf(type) !== -1);
     WL.show($('qf-scale-box'), type === 'scale');
     WL.show($('qf-budget-box'), type === 'points' || type === 'dots');
     var quiz = ['yesno', 'truefalse', 'mcq'].indexOf(type) !== -1;
@@ -264,6 +266,7 @@
     if (!sources.options.length) sources.appendChild(el('option', { value: '' }, 'Créez d\'abord un post-it collectif ou un mur'));
     $('qf-duration').value = q ? q.duration : 0;
     $('qf-change').checked = q ? q.allowChange : true;
+    $('qf-live').checked = q ? q.live !== false : true;
     $('qf-reveal').value = q ? (q.reveal || 'manual') : 'manual';
     $('qf-error').textContent = '';
     syncForm(q ? q.correct : []);
@@ -286,7 +289,7 @@
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value,
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
-      reveal: $('qf-reveal').value,
+      reveal: $('qf-reveal').value, live: $('qf-live').checked,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
     if (editing) {

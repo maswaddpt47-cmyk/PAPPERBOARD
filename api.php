@@ -302,7 +302,7 @@ function api_admin_state(): void
     $s = wl_load_or_fail(api_code($_GET));
     wl_json_etag('a' . $s['version'] . wl_time_tag($s), function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
-            'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s),
+            'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'current' => $s['current'], 'participants' => count($s['participants']),

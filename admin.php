@@ -171,6 +171,7 @@ header('Cache-Control: no-store');
           <option value="end">Automatiquement à la fin du temps (durée obligatoire)</option>
           <option value="instant">Immédiate : chaque participant voit la correction dès qu'il a répondu</option>
         </select>
+        <label id="qf-live-box" class="check"><input id="qf-live" type="checkbox" checked> Afficher les réponses en direct sur la projection, dès l'ouverture du vote</label>
         <label class="check"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
         <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>

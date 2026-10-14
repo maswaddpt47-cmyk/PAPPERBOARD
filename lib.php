@@ -6,6 +6,9 @@ declare(strict_types=1);
 
 const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots'];
 const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
+// Résultats projetés en direct (sans « Afficher ») : ni correction à dévoiler,
+// ni texte libre à relire avant projection (choix de l'utilisateur, 14/10/2026).
+const WL_LIVE_TYPES = ['poll', 'wordcloud', 'scale', 'points'];
 const WL_MAX_COLUMNS = 6;
 const WL_CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // sans 0/O, 1/I/L
 const WL_MAX_OPTIONS = 10;
@@ -500,6 +503,7 @@ function wl_clean_question(array $in, ?array $old = null): array
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
         'reveal' => in_array($in['reveal'] ?? '', ['manual', 'end', 'instant'], true) ? $in['reveal'] : 'manual',
         'anonymous' => true,
+        'live' => in_array($type, WL_LIVE_TYPES, true) && (!array_key_exists('live', $in) || !empty($in['live'])),
         // L'état de vote est conservé si on modifie une question existante.
         'state' => $old['state'] ?? 'draft',
         'showResults' => $old['showResults'] ?? false,
@@ -948,11 +952,19 @@ function wl_screen_view(array $s): array
         'participants' => count($s['participants']),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
         'question' => $q ? wl_public_question($q) : null,
-        'results' => $q && wl_shown($q) ? wl_results($q, false, $s) : null,
+        'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
         'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
+}
+
+/** Projection en direct dès l'ouverture du vote. Les téléphones, eux, attendent
+ *  « Afficher les résultats » : sinon chaque vote les ferait tous recharger.
+ *  Question enregistrée avant l'option : en direct si son type le permet. */
+function wl_live(array $q): bool
+{
+    return in_array($q['type'], WL_LIVE_TYPES, true) && ($q['live'] ?? true) && $q['state'] !== 'draft';
 }
 
 function wl_join_url(string $code): string
