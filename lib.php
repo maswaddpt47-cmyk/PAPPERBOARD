@@ -403,8 +403,7 @@ function wl_maybe_purge(): int
 }
 
 /** Supprime les sessions sans action de l'animateur depuis purge_days jours.
- *  Élimination d'archives publiques : la durée doit être validée avec les
- *  Archives départementales (voir CHANTIERS.md). */
+ *  Durée fixée par le responsable de traitement (config.php). */
 function wl_purge(): int
 {
     $limit = time() - 86400 * max(1, (int)wl_config()['purge_days']);

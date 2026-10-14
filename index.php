@@ -61,7 +61,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <p><strong>En bref.</strong> Pas de nom, pas de compte. N'écrivez pas votre nom ni celui de
     quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
     devant tout le groupe. Tout est effacé du serveur <?= $days ?> jours après l'atelier ; les résultats
-    que l'animateur a exportés pour le bilan suivent les règles de conservation du service.</p>
+    que l'animateur a exportés pour le bilan restent sous sa responsabilité.</p>
     <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
     <strong>Base légale</strong> : <?= wl_h($legal) ?>.</p>
@@ -70,7 +70,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
     ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées.</p>
     <p><strong>Qui les voit</strong> : l'animateur ; les réponses qu'il publie sont projetées et
-    visibles des participants ; il peut exporter les résultats pour le bilan du service.
+    visibles des participants ; il peut exporter les résultats pour le bilan de l'atelier.
     <strong>Hébergement</strong> : Alwaysdata, en France.
     <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression.</p>
     <p><strong>Vos droits</strong> (accès, effacement, opposition…) : pendant l'atelier, demandez à
