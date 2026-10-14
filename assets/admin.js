@@ -307,6 +307,137 @@
     }, function () { $('qf-error').textContent = 'Pas de connexion au serveur.'; });
   });
 
+  // --- Génération par une IA (copier-coller) ---------------------------------------
+  // WoocLight n'appelle aucune IA : l'animateur colle le texte dans l'outil de son
+  // choix, puis recolle la réponse. Le serveur la lit et la valide (questions_import).
+
+  function genPrompt() {
+    return [
+      'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
+      'Thème : ' + $('gen-theme').value.trim(),
+      'Public : ' + $('gen-public').value,
+      'Nombre de questions : ' + $('gen-count').value,
+      '',
+      'Règles :',
+      '- Langage simple, phrases courtes, adapté au public. Aucun nom de personne réelle.',
+      '- Varie les types et utilise chacun au moins une fois si le nombre le permet, dans un ordre d\'atelier : '
+        + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
+      '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
+      '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
+      '',
+      'Types possibles :',
+      '- "yesno" : question Oui/Non ; "correct" facultatif : "Oui" ou "Non".',
+      '- "truefalse" : affirmation ; "correct" : "Vrai" ou "Faux".',
+      '- "mcq" : quiz ; "options" : les choix ; "correct" : liste des textes des bonnes réponses ; "multi": true s\'il y en a plusieurs.',
+      '- "poll" : sondage d\'opinion, sans bonne réponse ; "options".',
+      '- "wordcloud" : réponse en un ou deux mots (nuage de mots).',
+      '- "text" : réponse libre courte (80 caractères).',
+      '- "scale" : échelle d\'accord ou de satisfaction ; "scaleMax" : 5 ou 10.',
+      '- "points" : répartir des points entre des priorités ; "options" ; "budget" (ex. 10).',
+      '- "wall" : mur d\'idées, chacun publie de courts messages.',
+      '- "postit" : post-it collectif ; "options" : 2 à 4 colonnes (ex. "Points forts", "Difficultés").',
+      '- "dots" : vote par gommettes sur les idées d\'un mur ou d\'un post-it placé AVANT ; '
+        + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3).',
+      '',
+      'Réponds UNIQUEMENT par une liste JSON valide, sans texte autour. Exemple de format :',
+      '[',
+      '  {"type": "wordcloud", "text": "Un mot pour dire ce que vous évoque …"},',
+      '  {"type": "mcq", "text": "…", "options": ["…", "…", "…"], "correct": ["…"]},',
+      '  {"type": "postit", "text": "…", "options": ["…", "…"]},',
+      '  {"type": "dots", "text": "…", "source": 3, "budget": 3}',
+      ']'
+    ].join('\n');
+  }
+
+  var genItems = [];
+
+  function genReset() {
+    genItems = [];
+    WL.clear($('gen-list'));
+    WL.show($('gen-preview'), false);
+    $('gen-save').disabled = true;
+    $('gen-error').textContent = '';
+  }
+
+  function genChecked() {
+    return [].map.call($('gen-list').querySelectorAll('input:checked'), function (c) { return Number(c.value); });
+  }
+
+  /** Détail d'une question de l'aperçu : choix (bonne réponse marquée ✓), échelle, source. */
+  function genDetail(q) {
+    if (q.type === 'scale') return 'De 1 à ' + q.scaleMax;
+    if (q.type === 'dots') return WL.plural(q.budget, 'gommette') + ' sur les idées de la question ' + (Number(q.source.slice(1)) + 1);
+    var opts = q.options.map(function (o, i) { return (q.correct.indexOf(i) !== -1 ? '✓ ' : '') + o; });
+    if (q.type === 'points') opts.unshift(q.budget + ' points :');
+    if (q.type === 'postit') opts.unshift('Colonnes :');
+    return opts.join(' · ');
+  }
+
+  function genRender() {
+    var list = WL.clear($('gen-list'));
+    genItems.forEach(function (it, i) {
+      if (it.error) {
+        list.appendChild(el('li', { class: 'list-item' }, el('div', { class: 'grow' },
+          el('p', { class: 'error' }, 'Question ' + (i + 1) + ' écartée : ' + it.error))));
+        return;
+      }
+      var detail = genDetail(it);
+      list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
+        el('input', { type: 'checkbox', value: i, checked: true }),
+        el('span', null, el('strong', null, it.text),
+          el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
+          detail ? el('span', { class: 'meta gen-detail' }, detail) : null))));
+    });
+    WL.show($('gen-preview'), true);
+    $('gen-save').disabled = !genChecked().length;
+  }
+
+  $('gen-btn').addEventListener('click', function () {
+    genReset();
+    $('gen-copied').textContent = '';
+    $('gen-dialog').showModal();
+    $('gen-theme').focus();
+  });
+  $('gen-cancel').addEventListener('click', function () { $('gen-dialog').close(); });
+  $('gen-list').addEventListener('change', function () { $('gen-save').disabled = !genChecked().length; });
+  $('gen-raw').addEventListener('input', genReset);
+
+  $('gen-copy').addEventListener('click', function () {
+    if (!$('gen-theme').value.trim()) { $('gen-error').textContent = 'Indiquez un thème.'; $('gen-theme').focus(); return; }
+    $('gen-error').textContent = '';
+    var box = $('gen-prompt');
+    box.value = genPrompt();
+    WL.show(box, true);
+    var done = function () { $('gen-copied').textContent = 'Copié : collez-le dans l\'IA.'; };
+    var manual = function () { box.select(); $('gen-copied').textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(box.value).then(done, manual);
+    else manual();
+  });
+
+  $('gen-check').addEventListener('click', function () {
+    genReset();
+    var body = { s: code, raw: $('gen-raw').value, preview: true };
+    WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
+      if (r.status === 401) return showLogin('Session expirée : reconnectez-vous.');
+      if (r.status !== 200) { $('gen-error').textContent = r.data.error; return; }
+      genItems = r.data.items;
+      genRender();
+    }, function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; });
+  });
+
+  $('gen-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var body = { s: code, raw: $('gen-raw').value, keep: genChecked() };
+    WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
+      if (r.status === 401) return showLogin('Session expirée : reconnectez-vous.');
+      if (r.status !== 200) { $('gen-error').textContent = r.data.error; return; }
+      $('gen-dialog').close();
+      $('gen-raw').value = '';
+      banner(WL.plural(r.data.added, 'question') + ' ajoutée' + (r.data.added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.');
+      poller.refresh();
+    }, function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; });
+  });
+
   // --- Démarrage ------------------------------------------------------------------
 
   WL.api('me').then(function (r) {

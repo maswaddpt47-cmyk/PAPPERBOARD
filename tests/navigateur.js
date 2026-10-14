@@ -114,6 +114,21 @@ function check(cond, label) {
   await phone.waitForSelector('#ended:not([hidden])');
   check(true, 'fin de session sur le téléphone');
 
+  // --- Génération par une IA : texte copié, réponse collée, aperçu, ajout ----------
+  await admin.click('#gen-btn');
+  await admin.fill('#gen-theme', 'Les arnaques en ligne');
+  await admin.click('#gen-copy');
+  check((await admin.inputValue('#gen-prompt')).includes('Thème : Les arnaques en ligne'), 'génération : texte pour l\'IA');
+  await admin.fill('#gen-raw', '[{"type":"poll","text":"Déjà reçu un faux SMS ?","options":["Oui","Non"]},'
+    + '{"type":"truefalse","text":"La banque demande le code par SMS.","correct":"Faux"}]');
+  await admin.click('#gen-check');
+  await admin.waitForSelector('#gen-list input');
+  check(await admin.locator('#gen-list input:checked').count() === 2, 'génération : aperçu, tout coché');
+  await admin.uncheck('#gen-list input[value="0"]');
+  await admin.click('#gen-save');
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
+  check(!(await admin.locator('#gen-dialog').evaluate(d => d.open)), 'génération : question cochée ajoutée, fenêtre fermée');
+
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();
   console.log('navigateur : ' + ok + ' vérifications OK, ' + ko + ' échec(s)');

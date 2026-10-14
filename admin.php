@@ -87,8 +87,46 @@ header('Cache-Control: no-store');
     <div class="card">
       <h2>Questions</h2>
       <ol id="q-list" class="list q-list"></ol>
-      <p><button id="add-q-btn" class="btn btn-primary" type="button">+ Ajouter une question</button></p>
+      <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" type="button">+ Ajouter une question</button>
+        <button id="gen-btn" class="btn" type="button">Générer à partir d'un thème</button></p>
     </div>
+
+    <dialog id="gen-dialog" aria-labelledby="gen-title">
+      <form id="gen-form" method="dialog" novalidate>
+        <h2 id="gen-title">Générer des questions avec une IA</h2>
+        <p class="meta">1. Décrivez l'atelier, copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
+          N'y mettez aucun nom ni donnée personnelle.</p>
+        <label for="gen-theme">Thème</label>
+        <input id="gen-theme" maxlength="200" placeholder="ex. Reconnaître un message frauduleux">
+        <div class="row wrap">
+          <div class="grow"><label for="gen-public">Public</label>
+            <select id="gen-public">
+              <option>tout public</option>
+              <option>seniors débutants</option>
+              <option>collégiens</option>
+              <option>professionnels de l'accompagnement</option>
+            </select></div>
+          <div><label for="gen-count">Nombre de questions</label>
+            <input id="gen-count" type="number" min="3" max="20" value="10"></div>
+        </div>
+        <p><button id="gen-copy" class="btn btn-primary" type="button">Copier le texte pour l'IA</button>
+          <span id="gen-copied" class="meta" aria-live="polite"></span></p>
+        <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
+        <p class="meta">2. Collez ici toute la réponse de l'IA, puis vérifiez.</p>
+        <label for="gen-raw" class="sr-only">Réponse de l'IA</label>
+        <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
+        <p><button id="gen-check" class="btn" type="button">Vérifier la réponse</button></p>
+        <div id="gen-preview" hidden>
+          <p class="meta">3. Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong></p>
+          <ol id="gen-list" class="list gen-list"></ol>
+        </div>
+        <p id="gen-error" class="error" role="alert"></p>
+        <div class="row">
+          <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
+          <button class="btn" id="gen-cancel" type="button">Fermer</button>
+        </div>
+      </form>
+    </dialog>
 
     <dialog id="q-dialog" aria-labelledby="qd-title">
       <form id="q-form" method="dialog" novalidate>
