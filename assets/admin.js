@@ -146,6 +146,8 @@
     document.querySelector('#live [data-op="prev"]').disabled = d.current < 0;
     document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
     if (!has) {
+      $('open-btn').textContent = 'Ouvrir le vote';
+      $('show-btn').textContent = 'Afficher les résultats';
       $('live-pos').textContent = d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code.'
         : 'Aucune question : ajoutez-en une ci-dessous.';
       $('live-text').textContent = d.questions.length ? '« Suivante » lance la première question et ouvre le vote.' : '';
