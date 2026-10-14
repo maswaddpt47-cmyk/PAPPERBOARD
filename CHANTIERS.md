@@ -54,6 +54,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   immédiat possible si l'utilisateur le préfère (moins de contrôle des noms).
 ## Limites connues
 
+- Gommettes : elles portent sur **tous** les post-its de la question source,
+  pas sur une colonne (constaté le 14/10/2026 : vote « solutions » sur un
+  post-it « freins / solutions »). Contournement : post-it à une seule colonne
+  quand il est suivi d'un vote.
 - `php -S` ignore `.htaccess` : le refus de `lib.php`, `config.php`, `data/`
   n'est testé que sur le vrai serveur, par l'étape « Vérifier la mise en
   ligne » de `ci-deploy.yml` (verte le 14/10/2026).
@@ -196,6 +200,14 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   anonymisées, ChatGPT et Claude ont classé leur version première. Questions de
   ChatGPT → relecture par Gemini ou Mistral (juges neutres du test) ou Claude.
   L'utilisateur ouvre les liens des sources et tranche.
+  Cycle complet essayé le 14/10/2026 (numérique responsable, seniors, 15 q.) :
+  relecture par une autre IA de bonne qualité (sources précises, « pas de
+  source sûre » assumé, corrections prêtes) ; corrections renvoyées **en un seul
+  collage** à l'IA auteure avec « Applique exactement les corrections… redonne
+  la liste JSON complète » ; 15/15 acceptées. Reste une relecture humaine
+  rapide : l'IA auteure a changé la colonne d'un post-it sans adapter son
+  intitulé, et trois questions demandaient presque la même chose. Pas de
+  seconde relecture par IA (tourne en rond). Série validée → **Questions (.json)**.
   Les quatre IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
