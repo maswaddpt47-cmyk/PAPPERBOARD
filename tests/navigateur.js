@@ -129,6 +129,9 @@ function check(cond, label) {
   await admin.click('#gen-check');
   await admin.waitForSelector('#gen-list input');
   check(await admin.locator('#gen-list input:checked').count() === 2, 'génération : aperçu, tout coché');
+  await admin.click('#gen-review');
+  const review = await admin.inputValue('#gen-prompt');
+  check(review.includes('n\'invente jamais') && review.includes('Déjà reçu un faux SMS'), 'relecture : consigne avec sources et questions');
   await admin.uncheck('#gen-list input[value="0"]');
   await admin.click('#gen-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);

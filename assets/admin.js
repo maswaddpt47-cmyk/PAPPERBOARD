@@ -410,17 +410,51 @@
   $('gen-list').addEventListener('change', function () { $('gen-save').disabled = !genChecked().length; });
   $('gen-raw').addEventListener('input', genReset);
 
+  /** Affiche le texte dans la zone dédiée et le copie (sinon le sélectionne). */
+  function copyText(text, note) {
+    var box = $('gen-prompt');
+    box.value = text;
+    WL.show(box, true);
+    var done = function () { note.textContent = 'Copié : collez-le dans l\'IA.'; };
+    var manual = function () { box.select(); note.textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, manual);
+    else manual();
+  }
+
   $('gen-copy').addEventListener('click', function () {
     if (!$('gen-theme').value.trim()) { $('gen-error').textContent = 'Indiquez un thème.'; $('gen-theme').focus(); return; }
     $('gen-error').textContent = '';
-    var box = $('gen-prompt');
-    box.value = genPrompt();
-    WL.show(box, true);
-    var done = function () { $('gen-copied').textContent = 'Copié : collez-le dans l\'IA.'; };
-    var manual = function () { box.select(); $('gen-copied').textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
-    if (navigator.clipboard) navigator.clipboard.writeText(box.value).then(done, manual);
-    else manual();
+    copyText(genPrompt(), $('gen-copied'));
   });
+
+  /** Consigne pour faire relire les questions par une autre IA. Ordre imposé
+   *  (public, fond, sources, forme) et sources exigées sans invention : retenu
+   *  après l'évaluation croisée de quatre IA du 14/10/2026 (CHANTIERS.md). */
+  function reviewPrompt() {
+    var theme = $('gen-theme').value.trim() || 'à déduire des questions';
+    return [
+      'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
+      'Thème : ' + theme,
+      'Public : ' + $('gen-public').value,
+      '',
+      'Méthode, dans cet ordre :',
+      '1. Public : chaque question s\'adresse-t-elle vraiment à ce public (ton, vocabulaire, situations de son quotidien) ? Cite les numéros qui ne vont pas.',
+      '2. Fond : pour chaque quiz, la bonne réponse est-elle juste ? Une mauvaise réponse pourrait-elle être défendue ? '
+        + 'Signale tout chiffre, loi, âge ou affirmation de santé, et toute simplification excessive.',
+      '3. Sources : pour chaque point de fond, cite une source précise (organisme, titre, date, lien). '
+        + 'Préfère les sources officielles françaises (Légifrance, Service-public.fr, CNIL, Santé publique France, ANSES, HAS, Inserm). '
+        + 'Si tu n\'as pas de source sûre, écris « pas de source sûre » : n\'invente jamais une loi, une étude, un chiffre ou un lien.',
+      '4. Forme : affirmation posée en Oui/Non au lieu de Vrai/Faux, sondage alors que plusieurs réponses sont vraies, '
+        + 'mauvaise réponse absurde ou trop facile, faute de français, gommettes ("dots") dont la "source" n\'est pas un mur ou un post-it placé avant.',
+      '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
+        + 'Si une catégorie n\'a aucun défaut, dis-le en une ligne.',
+      '',
+      'Questions (numérotées à partir de 1, dans l\'ordre de la liste) :',
+      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim()
+    ].join('\n');
+  }
+
+  $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied')); });
 
   // Fichier JSON : lu dans le navigateur, puis vérifié comme une réponse collée.
   $('gen-file').addEventListener('change', function () {

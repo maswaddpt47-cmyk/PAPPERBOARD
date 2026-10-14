@@ -123,6 +123,11 @@ header('Cache-Control: no-store');
         <div id="gen-preview" hidden>
           <p class="meta">3. Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong></p>
           <ol id="gen-list" class="list gen-list"></ol>
+          <p class="meta">Facultatif, pour un nouveau thème ou un public sensible : faites relire par une <strong>autre</strong> IA
+            que celle qui a écrit les questions (nouvelle conversation). Elle doit citer ses sources :
+            <strong>ouvrez chaque lien avant de vous y fier</strong>, une IA peut en inventer.</p>
+          <p><button id="gen-review" class="btn" type="button">Copier la consigne de relecture</button>
+            <span id="gen-review-copied" class="meta" aria-live="polite"></span></p>
         </div>
         <p id="gen-error" class="error" role="alert"></p>
         <div class="row">
