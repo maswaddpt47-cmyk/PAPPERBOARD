@@ -370,6 +370,33 @@ $admin->get('api.php?action=me');
 check(!is_file($file), 'sans action de l\'animateur depuis 31 jours : purgée, même avec un passage récent');
 expect_status($p[0]->get($path), 404, 'session purgée : code inconnu');
 
+// --- Import de questions générées par une IA (copier-coller) -------------------
+$gen = $admin->post('session_create', ['title' => 'Générée'])['json']['code'] ?? '';
+$raw = "Voici vos questions :\n```json\n" . json_encode([
+    ['type' => 'wordcloud', 'text' => 'Un mot sur les arnaques ?'],
+    ['type' => 'truefalse', 'text' => 'Une banque demande votre code par SMS.', 'correct' => 'faux'],
+    ['type' => 'mcq', 'text' => 'Signes d\'alerte ?', 'options' => ['Urgence', 'Fautes', 'Logo'], 'correct' => ['urgence', 'Fautes']],
+    ['type' => 'mcq', 'text' => 'Bonne réponse inventée', 'options' => ['A', 'B'], 'correct' => ['C']],
+    ['type' => 'postit', 'text' => 'Vos réflexes', 'options' => ['Je fais', 'Je ne fais pas']],
+    ['type' => 'dots', 'text' => 'Le plus utile ?', 'source' => 5, 'budget' => 3],
+    ['type' => 'dots', 'text' => 'Source invalide', 'source' => 2],
+    ['type' => 'scale', 'text' => 'À l\'aise ?', 'scaleMax' => 10],
+], JSON_UNESCAPED_UNICODE) . "\n```\nBon atelier !";
+$prev = $admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'preview' => true]);
+$items = $prev['json']['items'] ?? [];
+expect_status($prev, 200, 'import : aperçu');
+check(count($items) === 8 && isset($items[3]['error'], $items[6]['error']), 'import : bonne réponse absente des choix et gommettes sans source valide écartées');
+check(($items[1]['correct'] ?? null) === [1] && ($items[2]['correct'] ?? null) === [0, 1] && ($items[2]['multi'] ?? false), 'import : bonnes réponses retrouvées par leur texte (sans casse ni accents)');
+check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [1]) === 0, 'import : l\'aperçu n\'ajoute rien');
+expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 3]]), 400, 'import : question écartée refusée');
+expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [5]]), 400, 'import : gommettes sans leur source refusées');
+expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => 'pas de JSON', 'preview' => true]), 400, 'import : réponse illisible refusée');
+check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [1]) === 0, 'import : tout ou rien');
+$r = $admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 1, 2, 4, 5, 7]]);
+expect_status($r, 200, 'import : ajout');
+$gq = $admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [];
+check(count($gq) === 6 && ($gq[4]['source'] ?? '') === ($gq[3]['id'] ?? '-') && ($gq[5]['scaleMax'] ?? 0) === 10, 'import : 6 questions, gommettes reliées au post-it importé');
+
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {
     check(is_array(json_decode(file_get_contents($f), true)), 'JSON valide : ' . basename($f));

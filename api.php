@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'question_save', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'question_save', 'questions_import', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -382,6 +382,47 @@ function api_question_save(array $b): void
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** Questions générées par une IA : aperçu (preview) ou ajout de celles retenues
+ *  (keep = positions dans la liste collée). Tout ou rien. */
+function api_questions_import(array $b): void
+{
+    $items = wl_import_parse((string)($b['raw'] ?? ''));
+    if (!empty($b['preview'])) {
+        wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source']))
+            : $it, $items)]);
+    }
+    $keep = array_values(array_unique(array_map('intval', is_array($b['keep'] ?? null) ? $b['keep'] : [])));
+    sort($keep);
+    foreach ($keep as $i) {
+        if (!isset($items[$i]['q'])) {
+            throw new WlError('Question ' . ($i + 1) . ' : ' . ($items[$i]['error'] ?? 'introuvable.'));
+        }
+        $src = $items[$i]['q']['type'] === 'dots' ? (int)substr($items[$i]['q']['source'], 1) : null;
+        if ($src !== null && !in_array($src, $keep, true)) {
+            throw new WlError('Question ' . ($i + 1) . ' (gommettes) : cochez aussi sa source, la question ' . ($src + 1) . '.');
+        }
+    }
+    if (!$keep) {
+        throw new WlError('Cochez au moins une question.');
+    }
+    wl_update(api_code($b), function (array &$s) use ($items, $keep) {
+        if (count($s['questions']) + count($keep) > WL_MAX_QUESTIONS) {
+            throw new WlError(WL_MAX_QUESTIONS . ' questions au plus par session.');
+        }
+        $ids = [];
+        foreach ($keep as $i) {
+            $q = $items[$i]['q'];
+            if ($q['type'] === 'dots') {
+                $q['source'] = $ids[(int)substr($q['source'], 1)];
+            }
+            $ids[$i] = $q['id'];
+            $s['questions'][] = $q;
+        }
+    });
+    wl_json(['ok' => true, 'added' => count($keep)]);
 }
 
 /** La question source des gommettes doit être un mur ou un post-it de la session. */

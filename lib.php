@@ -643,6 +643,70 @@ function wl_clean_correct(array $q, mixed $correct): array
 }
 
 // ---------------------------------------------------------------------------
+// Import : questions générées par une IA, réponse collée par l'animateur
+// ---------------------------------------------------------------------------
+
+/** Lit la liste JSON collée et valide chaque question comme une saisie de
+ *  l'animateur. Renvoie, dans l'ordre, ['q' => question] ou ['error' => texte].
+ *  Une gommette pointe sa source par sa position dans la liste (« #0 »…). */
+function wl_import_parse(string $raw): array
+{
+    $start = strpos($raw, '[');
+    $end = strrpos($raw, ']');
+    $list = $start !== false && $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
+    if (!is_array($list) || !$list || !array_is_list($list)) {
+        throw new WlError('Réponse illisible : collez toute la réponse de l\'IA, du « [ » au « ] ».');
+    }
+    if (count($list) > WL_MAX_QUESTIONS) {
+        throw new WlError(WL_MAX_QUESTIONS . ' questions au plus.');
+    }
+    $items = [];
+    foreach ($list as $in) {
+        try {
+            $q = wl_clean_question(wl_import_input(is_array($in) ? $in : []));
+            if ($q['type'] === 'dots') {
+                $q['source'] = '#' . ((int)($in['source'] ?? 0) - 1);
+            }
+            $items[] = ['q' => $q];
+        } catch (WlError $e) {
+            $items[] = ['error' => $e->getMessage()];
+        }
+    }
+    foreach ($items as $i => $it) {
+        $src = isset($it['q']) && $it['q']['type'] === 'dots' ? (int)substr($it['q']['source'], 1) : null;
+        if ($src !== null && ($src >= $i || !in_array($items[$src]['q']['type'] ?? '', WL_POST_TYPES, true))) {
+            $items[$i] = ['error' => 'Gommettes : la source doit être un mur ou un post-it placé avant dans la liste.'];
+        }
+    }
+    return $items;
+}
+
+/** Format de l'IA vers celui du formulaire : bonnes réponses données par leur
+ *  texte (l'IA se trompe sur les numéros), retrouvées sans casse ni accents. */
+function wl_import_input(array $in): array
+{
+    $type = (string)($in['type'] ?? '');
+    $options = ['yesno' => ['Oui', 'Non'], 'truefalse' => ['Vrai', 'Faux']][$type]
+        ?? (is_array($in['options'] ?? null) ? array_values($in['options']) : []);
+    $keys = array_map(fn($o) => wl_fold(wl_clean_text($o)), $options);
+    $correct = [];
+    $wanted = in_array($type, ['yesno', 'truefalse', 'mcq'], true) ? (array)($in['correct'] ?? []) : [];
+    foreach ($wanted as $c) {
+        $i = array_search(wl_fold(wl_clean_text($c)), $keys, true);
+        $correct[] = $i !== false ? $i : throw new WlError('Bonne réponse « ' . wl_clean_text($c) . ' » absente des choix.');
+    }
+    return [
+        'type' => $type,
+        'text' => $in['text'] ?? '',
+        'options' => $options,
+        'correct' => $correct,
+        'multi' => !empty($in['multi']) || count($correct) > 1,
+        'scaleMax' => $in['scaleMax'] ?? 5,
+        'budget' => $in['budget'] ?? null,
+    ];
+}
+
+// ---------------------------------------------------------------------------
 // Votes : validation de la réponse d'un participant
 // ---------------------------------------------------------------------------
 
