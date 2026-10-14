@@ -85,41 +85,23 @@ Ensuite, chaque push sur `main` lance les tests, puis copie l'application si
 tout passe. Le premier déploiement signale « config.php absent » : normal,
 c'est l'étape suivante.
 
-### Étape 4 — Dossier des données et `config.php`
+### Étape 4 — `config.php` (une commande)
 
-En SSH sur le serveur :
-
-```bash
-mkdir -p ~/wooclight-data && chmod 700 ~/wooclight-data
-cd ~/www/wooclight
-cp config.sample.php config.php && chmod 600 config.php
-```
-
-Générer le **hash** du mot de passe animateur (taper le mot de passe puis
-Entrée : il n'apparaît pas dans l'historique du terminal) :
+Après le premier déploiement, en SSH (ou terminal web d'Alwaysdata) :
 
 ```bash
-php -r 'echo password_hash(trim(fgets(STDIN)), PASSWORD_DEFAULT), "\n";'
+php ~/www/configurer.php
 ```
 
-Générer le **secret** :
+(`php ~/www/wooclight/configurer.php` si l'appli est dans un sous-dossier.)
+La commande demande le mot de passe animateur (deux fois, masqué, 12
+caractères au moins), l'adresse publique (Entrée pour accepter celle proposée),
+le responsable et l'adresse de contact affichés aux participants. Elle crée
+`config.php` (droits 600), le secret et le dossier des données hors du site,
+puis affiche **CONFIG OK**. Relançable à tout moment pour changer le mot de
+passe ou les mentions : le secret et les sessions sont conservés.
 
-```bash
-php -r 'echo bin2hex(random_bytes(32)), "\n";'
-```
-
-Puis `nano config.php` et renseigner :
-
-- `admin_hash` : le hash obtenu (commence par `$2y$`) ;
-- `secret` : la suite de 64 caractères ;
-- `data_dir` : `/home/COMPTE/wooclight-data` (chemin complet, `echo $HOME` le donne) ;
-- `base_url` : `https://COMPTE.alwaysdata.net/wooclight` (adresse mise dans le QR code).
-- `responsable`, `contact` (et éventuellement `base_legale`) : affichés dans
-  « Confidentialité » sur la page participant. Une adresse e-mail dédiée
-  plutôt que personnelle.
-
-Le mot de passe, le hash et le secret ne doivent jamais être envoyés à une IA
-ni écrits dans le dépôt (charte IA du CD47, §5).
+Le mot de passe ne doit jamais être envoyé à une IA ni écrit dans le dépôt.
 
 ### Étape 5 — Sécuriser (avant la première séance)
 
