@@ -32,6 +32,12 @@ return [
     'rate_token' => 30,
     'rate_join' => 60,   // nouvelles inscriptions par minute et par IP (ralentit les faux participants)
 
+    // Mentions affichées dans « Confidentialité » (page participant).
+    // Gardées ici, hors du dépôt public. Vides : formulations génériques.
+    'responsable' => '',   // ex. 'Michel X., animateur numérique' ou le nom d'une association
+    'contact' => '',       // adresse où exercer ses droits (e-mail dédié de préférence)
+    'base_legale' => '',   // défaut : intérêt légitime de l'organisateur à animer l'atelier
+
     // Mots refusés dans les réponses libres et le nuage de mots
     // (comparaison sans casse ni accents, mot entier).
     'banned_words' => [],

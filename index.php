@@ -6,6 +6,10 @@ require __DIR__ . '/lib.php';
 wl_config();
 wl_security_headers();
 $days = (int)wl_config()['purge_days'];
+// Mentions de confidentialité : dans config.php, pas dans le dépôt public.
+$org = trim((string)wl_config()['responsable']) ?: 'l\'organisateur de l\'atelier';
+$contact = trim((string)wl_config()['contact']) ?: 'l\'animateur de l\'atelier';
+$legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'organisateur à animer l\'atelier';
 ?>
 <!doctype html>
 <html lang="fr">
@@ -58,9 +62,9 @@ $days = (int)wl_config()['purge_days'];
     quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
     devant tout le groupe. Tout est effacé du serveur <?= $days ?> jours après l'atelier ; les résultats
     que l'animateur a exportés pour le bilan suivent les règles de conservation du service.</p>
-    <p><strong>Responsable</strong> : Conseil départemental de Lot-et-Garonne.
+    <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
-    <strong>Base légale</strong> : mission d'intérêt public du Département (médiation numérique).</p>
+    <strong>Base légale</strong> : <?= wl_h($legal) ?>.</p>
     <p><strong>Données</strong> : vos réponses ; un identifiant au hasard enregistré sur ce téléphone
     pour une journée, qui évite les votes en double ; votre adresse IP, gardée seulement sous forme
     codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
@@ -70,8 +74,8 @@ $days = (int)wl_config()['purge_days'];
     <strong>Hébergement</strong> : Alwaysdata, en France.
     <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression.</p>
     <p><strong>Vos droits</strong> (accès, effacement, opposition…) : pendant l'atelier, demandez à
-    l'animateur de retirer une réponse ; ensuite, écrivez au délégué à la protection des données :
-    contact-dpd@lotetgaronne.fr. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
+    l'animateur de retirer une réponse ; ensuite, écrivez à : <?= wl_h($contact) ?>.
+    Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </details>
   <p><button id="leave-btn" class="btn btn-ghost" type="button">Quitter et effacer ce téléphone</button></p>
 </footer>

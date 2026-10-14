@@ -42,7 +42,7 @@ function wl_config(): array
     $defaults = [
         'data_dir' => '', 'base_url' => '', 'poll_ms' => 2000, 'max_participants' => 150,
         'purge_days' => 30, 'max_text' => 80, 'max_posts' => 5, 'rate_ip' => 900, 'rate_token' => 30,
-        'rate_join' => 60,
+        'rate_join' => 60, 'responsable' => '', 'contact' => '', 'base_legale' => '',
         'banned_words' => [],
     ];
     $cfg = array_merge($defaults, $user);
