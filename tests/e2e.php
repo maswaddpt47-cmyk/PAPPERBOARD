@@ -410,6 +410,9 @@ check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 3]]), 400, 'import : question écartée refusée');
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [5]]), 400, 'import : gommettes sans leur source refusées');
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => 'pas de JSON', 'preview' => true]), 400, 'import : réponse illisible refusée');
+$copied = '\\[ { "type": "poll", "text": "Copié depuis l\'appli", "options": \\[ "A", "B" \\] } \\]';
+check(($admin->post('questions_import', ['s' => $gen, 'raw' => $copied, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Copié depuis l\'appli',
+    'import : « \\[ » ajoutés par l\'affichage d\'une IA retirés');
 check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [1]) === 0, 'import : tout ou rien');
 $r = $admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 1, 2, 4, 5, 7]]);
 expect_status($r, 200, 'import : ajout');

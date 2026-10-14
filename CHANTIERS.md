@@ -153,6 +153,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**
   (une IA se trompe sur les numéros), refusées si absentes des choix ; gommettes
   reliées à leur source par sa position dans la liste. Ajout tout ou rien.
+  Les « \[ », « \] » et espaces insécables ajoutés par l'affichage d'une IA
+  (copie depuis l'application ChatGPT, constaté le 14/10/2026) sont retirés.
   Un fichier `.json` importé suit le même chemin (lu dans le navigateur, 60 Ko
   au plus, puis vérifié par le serveur).
   Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.

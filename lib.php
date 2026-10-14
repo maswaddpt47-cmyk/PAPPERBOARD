@@ -655,9 +655,12 @@ function wl_clean_correct(array $q, mixed $correct): array
  *  Une gommette pointe sa source par sa position dans la liste (« #0 »…). */
 function wl_import_parse(string $raw): array
 {
-    $start = strpos($raw, '[');
-    $end = strrpos($raw, ']');
-    $list = $start !== false && $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
+    $list = wl_import_json($raw);
+    if (!is_array($list)) {
+        // Copie depuis l'affichage d'une IA (application mobile) : « \[ », « \] »
+        // ajoutés par la mise en forme, espaces insécables. Jamais valides en JSON.
+        $list = wl_import_json(str_replace("\u{00A0}", ' ', preg_replace('/(?<!\\\\)\\\\([\[\]_*#`>+\-.!()])/', '$1', $raw)));
+    }
     if (!is_array($list) || !$list || !array_is_list($list)) {
         throw new WlError('Réponse illisible : collez toute la réponse de l\'IA, du « [ » au « ] ».');
     }
@@ -683,6 +686,15 @@ function wl_import_parse(string $raw): array
         }
     }
     return $items;
+}
+
+/** Liste JSON comprise entre le premier « [ » et le dernier « ] », ou null. */
+function wl_import_json(string $raw): ?array
+{
+    $start = strpos($raw, '[');
+    $end = strrpos($raw, ']');
+    $list = $start !== false && $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
+    return is_array($list) ? $list : null;
 }
 
 /** Format de l'IA vers celui du formulaire : bonnes réponses données par leur
