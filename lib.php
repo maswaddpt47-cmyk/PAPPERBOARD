@@ -390,7 +390,7 @@ function wl_retention_start(array $s): int
 }
 
 /** Purge au fil des requêtes, au plus une fois par heure. Complétée par
- *  purge.php, lancé chaque nuit par une tâche planifiée, pour que la durée
+ *  purge.php, lancé chaque heure par une tâche planifiée, pour que la durée
  *  soit tenue même sans visite. */
 function wl_maybe_purge(): int
 {

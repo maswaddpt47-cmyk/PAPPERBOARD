@@ -1,48 +1,38 @@
 # CHANTIERS — WoocLight
 
 État au **14/10/2026** — commit de référence : voir `git log -1 main`.
-Application complète, tests verts en local (`bash tests/run.sh`, 09/10/2026 :
-e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
+**En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
+le 14/10/2026, vérifications après déploiement comprises : fichiers sensibles
+refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
+(CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
 
-## Restant, par priorité
+## Restant, par priorité — tout côté utilisateur
 
-1. **Fin de mise en ligne** (14/10/2026 : déployé sur le compte personnel
-   `wooclight`, `config.php` créé par `configurer.php`, CONFIG OK) : tâche
-   planifiée **horaire** `php ~/www/purge.php` ; renseigner `contact`
-   (réactiver un moment le mot de passe SSH, relancer `configurer.php`) ; se
-   connecter à `admin.php` depuis chaque appareil. Accès SSH par mot de passe
-   coupé le 14/10/2026 (clé seule).
-3. **Contrôle visuel** sur téléphone et projection (README §3), y compris
-   mur, post-it et gommettes (déroulé « variante bilan », README §5).
-4. **Après l'audit Codex du 10/10/2026** (14 points, tous vérifiés dans le
-   code et confirmés ; rapport complet hors dépôt). Corrigé dans le code :
-   2 (fermer les inscriptions), 3, 4 (session terminée + essais de codes),
-   5, 6, 7, 8, 9, 10, 12, 13, 14, chemin et SHA du
-   workflow. **Reste à l'utilisateur** (README §1, étape 5) : 1 protéger
-   `main` (fait) ; 11 secret
-   `ALWAYSDATA_KNOWN_HOSTS` ; redirection HTTPS ; tâche planifiée de purge ;
-   renseigner `responsable` et `contact` dans `config.php` (texte « Confidentialité »).
-4bis. **Second audit Codex (10/10/2026, réflexion maximale)** : aucun point
-   critique ni haut ; 8 points vérifiés et confirmés. Corrigés : 1 (purge
-   revérifiée sous verrou), 2 (verrous de limitation fixes), 3 (inscriptions
-   limitées à 60/min/IP, `rate_join`), 4 (jeton signé et daté, 24 h vérifiées
-   par le serveur ; bouton « Quitter et effacer ce téléphone »), 6 (réponse en
-   attente valable 1 h, effacée en fin de session), plus les remarques groupe
-   masqué, CSV à diffuser, création de session exclusive, texte « Tout est
-   effacé ». **Reste à l'utilisateur** : 5 (ruleset sur `main`), 7 (faire
-   reconnaître ses appareils avant l'atelier), 8 (tâche planifiée **horaire**),
-   journaux Apache et sauvegardes d'Alwaysdata à vérifier.
-5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, créée dans
-   l'interface, invisible et non modifiable par Claude) : coller le bloc de
-   `docs/routine-audit-trimestriel.md` à la fin de ses instructions et lui
-   attacher le dépôt — utilisateur. Fait le 10/10/2026 par Claude : ancienne
-   routine `trig_018SBR4ihGT8Y2ud7sP5kxYm` (consigne GAS périmée) **désactivée**,
-   PAPPERBOARD ajouté aux deux rappels d'audit Codex.
-6. **Hook `SessionStart`** : `scripts/check-chantiers.sh` est en place, mais
-   `.claude/settings.json` + `.claude/hooks/session-start.sh` ont été refusés à
-   Claude par la plateforme (09/10/2026). À créer par l'utilisateur : même
-   `settings.json` que NEWGEN, hook réduit à
+1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
+   elle, la purge n'a lieu qu'au fil des visites.
+2. **Ménage des clés** : `rm ~/wooclight-deploy ~/wooclight-deploy.pub` dans
+   le terminal Alwaysdata et suppression de la copie Bloc-notes. Rien à
+   conserver (README, étape 3) sauf le mot de passe admin.
+3. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
+   dont mur, post-it, gommettes et les trois modes de correction.
+4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+   chacun (sinon le blocage après échecs se fait par IP).
+5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+   pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
+   instructions et lui attacher le dépôt. Ancienne routine
+   `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
+   supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
+6. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
+   passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
+   recouper l'accès par mot de passe). Journaux Apache et sauvegardes
+   d'Alwaysdata à regarder une fois.
+7. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
+   créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
+
+Fait côté hébergement (14/10/2026, déclaré par l'utilisateur) : HTTPS forcé,
+accès SSH par mot de passe coupé (clé seule). Secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré : pas
+d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 
 ## Décisions à trancher
 
@@ -72,8 +62,7 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 
 - `php -S` ignore `.htaccess` : le refus de `lib.php`, `config.php`, `data/`
   n'est testé que sur le vrai serveur, par l'étape « Vérifier la mise en
-  ligne » de `ci-deploy.yml` (hypothèse non vérifiée tant qu'aucun
-  déploiement n'a tourné).
+  ligne » de `ci-deploy.yml` (verte le 14/10/2026).
 - Parcours navigateur (`tests/navigateur.js`) lancé seulement si Playwright
   est installé : en local oui, en CI non.
 - Toutes les écritures d'une session passent par un verrou de fichier :
@@ -85,10 +74,6 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
 - IP lue dans `REMOTE_ADDR` : hypothèse non vérifiée que le proxy Alwaysdata
   y met l'IP du visiteur (sinon, limite par IP commune à tous — sans gravité,
   voir ligne précédente).
-- Premier contact SSH du déploiement en `accept-new` (empreinte du serveur
-  acceptée au premier passage), comme l'API des Ateliers.
-- `base_url` vide : l'adresse du QR code est déduite de l'en-tête `Host`.
-  Renseigner `base_url` en production.
 
 ## Points à ne pas défaire
 
@@ -96,6 +81,9 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset
   de `main` (tests exigés). GitHub Pages coupé (14/10/2026).
 
+- Clés : aucune à conserver, toutes se recréent (déploiement : README étapes
+  2-3 ; secret et sel : `configurer.php`). Pas de sauvegarde chiffrée ici,
+  donc aucune clé dont la perte ferait perdre des données (14/10/2026).
 - Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
   `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
   déploiement part dans `~/www/wooclight/`), données dans `~/wooclight-data`,
@@ -146,7 +134,7 @@ e2e 200 vérifications, charge, données, navigateur 15). Pas encore en ligne.
   ne compte pas), 12 h au plus depuis la connexion. Blocage de connexion par
   appareil connu (cookie signé `wl_dev`), sinon par IP.
 - Rétention : seule l'activité de l'animateur (`activity`) repousse la purge ;
-  `purge.php` (ligne de commande seulement) la lance chaque nuit.
+  `purge.php` (ligne de commande seulement) la lance chaque heure.
 - Les « 2 heures au plus » de traces d'IP annoncées aux participants tiennent
   à la tâche planifiée **horaire** de `purge.php` : ne pas l'espacer.
 - Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
