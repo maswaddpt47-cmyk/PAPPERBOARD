@@ -12,7 +12,7 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
    elle, la purge n'a lieu qu'au fil des visites.
 2. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
    dont mur, post-it, gommettes et les trois modes de correction. Tester aussi
-   « Générer à partir d'un thème » avec ton IA habituelle (14/10/2026 : testé
+   « Générer ou importer (JSON) » avec ton IA habituelle (14/10/2026 : testé
    seulement avec des réponses écrites à la main, pas avec une vraie IA).
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
@@ -140,6 +140,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**
   (une IA se trompe sur les numéros), refusées si absentes des choix ; gommettes
   reliées à leur source par sa position dans la liste. Ajout tout ou rien.
+  Un fichier `.json` importé suit le même chemin (lu dans le navigateur, 60 Ko
+  au plus, puis vérifié par le serveur).
   Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
 
 ## Pistes d'amélioration

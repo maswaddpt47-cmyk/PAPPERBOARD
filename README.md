@@ -21,9 +21,10 @@ classement par points, et trois modules d'atelier :
 - **Vote par gommettes** : chacun colle ses gommettes (3 par défaut) sur les
   idées d'un post-it collectif ou d'un mur précédent ; le classement s'affiche.
 
-**Générer à partir d'un thème** (espace animateur) : WoocLight prépare un texte
+**Générer ou importer (JSON)** (espace animateur) : WoocLight prépare un texte
 à coller dans l'IA de votre choix (Claude, ChatGPT, Le Chat…), vous recollez sa
-réponse, cochez les questions à garder et les ajoutez à la session. WoocLight
+réponse — ou importez un fichier `.json` au même format —, cochez les questions
+à garder et les ajoutez à la session. WoocLight
 n'appelle aucune IA lui-même : rien ne part sans vous. Vérifiez les bonnes
 réponses des quiz avant l'atelier.
 
