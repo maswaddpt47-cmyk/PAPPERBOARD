@@ -1,0 +1,23 @@
+[
+  {"type": "wordcloud", "text": "En un mot, qu'est-ce que « temps d'écran » t'évoque ?"},
+  {"type": "poll", "text": "En dehors des cours, combien de temps passes-tu sur les écrans par jour ?",
+   "options": ["Moins d'1 heure", "Entre 1 et 2 heures", "Entre 2 et 4 heures", "Plus de 4 heures", "Je ne sais pas"]},
+  {"type": "truefalse", "text": "Regarder un écran juste avant de dormir peut retarder l'endormissement.", "correct": "Vrai"},
+  {"type": "mcq", "text": "Pour reposer tes yeux, la règle « 20-20-20 », c'est :",
+   "options": ["Toutes les 20 min, regarder au loin (6 mètres) pendant 20 secondes", "Fermer les yeux 20 secondes toutes les 20 minutes", "Baisser la luminosité de 20 % toutes les 20 minutes", "Faire 20 minutes de pause après 20 minutes d'écran"],
+   "correct": ["Toutes les 20 min, regarder au loin (6 mètres) pendant 20 secondes"]},
+  {"type": "truefalse", "text": "Le mode sombre supprime complètement la fatigue des yeux.", "correct": "Faux"},
+  {"type": "mcq", "text": "Quelles astuces les applis utilisent-elles pour te garder plus longtemps ?",
+   "options": ["Les vidéos qui s'enchaînent toutes seules", "Le fil qui défile sans fin", "Les notifications", "Les séries de jours à ne pas casser (flammes)", "Un rappel qui te propose de faire une pause"],
+   "correct": ["Les vidéos qui s'enchaînent toutes seules", "Le fil qui défile sans fin", "Les notifications", "Les séries de jours à ne pas casser (flammes)"], "multi": true},
+  {"type": "mcq", "text": "Où peux-tu voir combien de temps tu passes sur chaque appli ?",
+   "options": ["Dans les réglages « Temps d'écran » ou « Bien-être numérique »", "Dans la galerie photos", "Dans l'historique des messages", "Dans l'espace de stockage"],
+   "correct": ["Dans les réglages « Temps d'écran » ou « Bien-être numérique »"]},
+  {"type": "yesno", "text": "Faire tes devoirs en répondant aux messages, est-ce aussi efficace que sans téléphone ?", "correct": "Non"},
+  {"type": "postit", "text": "Les écrans et toi : écris une idée par post-it, dans la bonne colonne.",
+   "options": ["Ce qu'ils m'apportent", "Ce qui me gêne", "Mes astuces pour décrocher"]},
+  {"type": "dots", "text": "Colle tes 3 gommettes sur les idées que tu as vraiment envie d'essayer.", "source": 9, "budget": 3},
+  {"type": "points", "text": "Tu as 10 points : à quoi aimerais-tu consacrer plus de temps ?",
+   "options": ["Dormir et me reposer", "Bouger, faire du sport", "Voir mes amis en vrai", "Lire, dessiner, créer", "Être en famille"], "budget": 10},
+  {"type": "scale", "text": "Après cet atelier, te sens-tu capable de mieux gérer ton temps d'écran ? (1 = pas du tout, 5 = tout à fait)", "scaleMax": 5}
+]

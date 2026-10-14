@@ -169,7 +169,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (« rétrécissement des bras »), des chiffres à nuancer et 3 échelles finales.
   D'où deux consignes dans le texte pour l'IA (`genPrompt`, `admin.js`) :
   « mauvaises réponses crédibles, jamais absurdes » et « une seule échelle, en
-  fin d'atelier ». Les deux IA ont produit 20 questions, trop pour une séance :
+  fin d'atelier ». Gemini a ensuite ignoré « Public : collégiens » (vouvoiement,
+  exemples d'adultes) : 3e consigne « chaque question s'adresse directement à ce
+  public : tutoiement pour des enfants ou des adolescents ». Exemple corrigé de
+  12 questions : `docs/exemples/temps-ecran-collegiens.json`.
+  Les deux IA ont produit 20 questions, trop pour une séance :
   conseiller 10 à 12 (décocher dans l'aperçu).
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
   format que l'import, **sans aucune réponse de participant**, réglages compris
