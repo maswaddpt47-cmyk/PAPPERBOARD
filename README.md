@@ -1,6 +1,7 @@
 # WoocLight
 
-Participation en direct pour les ateliers de médiation numérique du CD47 :
+Participation en direct pour des ateliers de médiation numérique (projet
+personnel) :
 l'animateur projette une question, les participants répondent depuis leur
 téléphone, sans compte, avec un QR code ou un code de 5 caractères.
 
@@ -32,17 +33,16 @@ fichiers JSON dans un dossier hors du site.
 ## 1. Installation chez Alwaysdata
 
 À faire une fois. Remplacer `COMPTE` par le nom du compte Alwaysdata.
-Les libellés de l'interface Alwaysdata et les noms d'hôtes (`ssh-COMPTE`,
-`ftp-COMPTE`) sont repris de l'API des Ateliers ou cités de mémoire
-(09/10/2026, hypothèse non vérifiée sur ce compte) : se fier à l'interface en
-cas d'écart.
-L'application sera servie à l'adresse `https://COMPTE.alwaysdata.net/wooclight/`.
+Les libellés de l'interface Alwaysdata peuvent changer : se fier à l'interface
+en cas d'écart. L'application est servie à la racine du site,
+`https://COMPTE.alwaysdata.net/` (installation du 14/10/2026 : compte
+`wooclight`).
 
 ### Étape 1 — Vérifier PHP
 
 Interface Alwaysdata > **Environnement** > **PHP** : version 8.1 ou plus.
-Le site par défaut sert le dossier `~/www/` : rien à créer, l'application ira
-dans `~/www/wooclight/`.
+Le site par défaut sert le dossier `~/www/` : rien à créer, l'application y
+sera copiée (variable `WOOCLIGHT_CHEMIN`, étape 3).
 
 ### Étape 2 — Clé SSH de déploiement
 
@@ -64,9 +64,6 @@ Deux fichiers sont créés : `wooclight-deploy` (privée) et `wooclight-deploy.p
    chmod 600 ~/.ssh/authorized_keys
    ```
 
-Si le compte est celui de l'API des Ateliers, la clé de déploiement existante
-peut servir : il suffit de la recopier dans les secrets de ce dépôt (étape 3).
-
 ### Étape 3 — Secrets GitHub
 
 Dépôt GitHub > **Settings** > **Secrets and variables** > **Actions** >
@@ -74,7 +71,7 @@ Dépôt GitHub > **Settings** > **Secrets and variables** > **Actions** >
 
 | Nom | Valeur |
 |---|---|
-| `ALWAYSDATA_COMPTE` | le nom du compte (ex. `ateliers-numeriques`) |
+| `ALWAYSDATA_COMPTE` | le nom du compte (ex. `wooclight`) |
 | `ALWAYSDATA_SSH_KEY` | tout le contenu du fichier **privé** `wooclight-deploy` |
 
 Une fois le secret enregistré, **supprimer les deux fichiers de clé** là où
@@ -83,9 +80,10 @@ dans un Bloc-notes : la clé privée vit dans le secret GitHub, la publique dans
 `authorized_keys`. Rien à conserver ; en cas de souci, refaire les étapes 2 et 3
 avec une nouvelle clé.
 
-Facultatif, onglet **Variables** : `WOOCLIGHT_CHEMIN` (dossier cible, défaut
-`www/wooclight/`) et `WOOCLIGHT_URL` (adresse publique, défaut
-`https://COMPTE.alwaysdata.net/wooclight`).
+Onglet **Variables** : `WOOCLIGHT_CHEMIN` = `www/` (sans elle, l'appli part
+dans `www/wooclight/`). Facultatif : `WOOCLIGHT_URL` (adresse publique, défaut
+`https://COMPTE.alwaysdata.net/wooclight`, à mettre à
+`https://COMPTE.alwaysdata.net` avec l'installation à la racine).
 
 Ensuite, chaque push sur `main` lance les tests, puis copie l'application si
 tout passe. Le premier déploiement signale « config.php absent » : normal,
@@ -99,7 +97,6 @@ Après le premier déploiement, en SSH (ou terminal web d'Alwaysdata) :
 php ~/www/configurer.php
 ```
 
-(`php ~/www/wooclight/configurer.php` si l'appli est dans un sous-dossier.)
 La commande demande le mot de passe animateur (deux fois, masqué, 12
 caractères au moins), l'adresse publique (Entrée pour accepter celle proposée),
 le responsable et l'adresse de contact affichés aux participants. Elle crée
@@ -126,8 +123,7 @@ Le mot de passe ne doit jamais être envoyé à une IA ni écrit dans le dépôt
 4. **HTTPS obligatoire** : interface Alwaysdata > Sites > le site > activer la
    redirection HTTP → HTTPS. Le déploiement signale en jaune si ce n'est pas fait.
 5. **Purge planifiée** : Alwaysdata > Tâches planifiées > ajouter la commande
-   `php ~/www/purge.php` **toutes les heures** (adapter le chemin si l'appli est
-   dans un sous-dossier). Elle supprime les sessions expirées et les traces
+   `php ~/www/purge.php` **toutes les heures**. Elle supprime les sessions expirées et les traces
    d'IP de plus d'une heure : c'est elle qui garantit les « 2 heures au plus »
    annoncées aux participants.
 6. **Faire reconnaître ses appareils** : se connecter une fois à `admin.php`
@@ -137,7 +133,7 @@ Le mot de passe ne doit jamais être envoyé à une IA ni écrit dans le dépôt
 
 ### Étape 6 — Vérifier
 
-- `https://COMPTE.alwaysdata.net/wooclight/admin.php` : la page de connexion s'affiche.
+- `https://COMPTE.alwaysdata.net/admin.php` : la page de connexion s'affiche.
 - Le déploiement suivant vérifie tout seul que `lib.php`, `config.php`, `data/`
   ne sont pas lisibles depuis internet (preuve que `.htaccess` est actif). En cas
   d'échec, l'onglet **Actions** de GitHub l'indique en rouge.
@@ -148,7 +144,7 @@ Si le déploiement automatique est impossible :
 
 1. GitHub > **Actions** > dernier « Tests et déploiement » réussi sur `main` >
    **Artifacts** > télécharger `wooclight` (zip, gardé 30 jours).
-2. Décompresser, puis envoyer le contenu dans `www/wooclight/` avec FileZilla
+2. Décompresser, puis envoyer le contenu dans `www/` avec FileZilla
    (hôte `ftp-COMPTE.alwaysdata.net`, identifiants FTP du compte).
 3. Ne jamais écraser `config.php` sur le serveur (le zip n'en contient pas).
 4. Étape 4 ci-dessus si c'est la première installation.
@@ -168,7 +164,7 @@ Si le déploiement automatique est impossible :
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
 | « WoocLight n'est pas encore configuré » | `config.php` absent ou incomplet | Étape 4 |
-| « Mot de passe incorrect » alors qu'il est juste | hash mal copié (guillemets, espace) | Regénérer le hash, le coller entre apostrophes `'…'` |
+| « Mot de passe incorrect » alors qu'il est juste | faute de frappe à la configuration | Relancer `php ~/www/configurer.php` et ressaisir le mot de passe |
 | « Trop de tentatives » | 5 erreurs en 15 minutes depuis cet appareil (ou cette IP pour un appareil jamais connecté) | Attendre 15 minutes, ou en SSH : `rm ~/wooclight-data/login.json` |
 | Reconnexion demandée en pleine séance | 2 h sans action, ou 12 h depuis la connexion | Se reconnecter (sécurité d'un poste partagé) |
 | « Les inscriptions sont fermées » | bouton **Fermer les inscriptions** activé | Le rouvrir dans l'espace animateur |
@@ -210,7 +206,7 @@ Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 **Après**
 - **Exporter en CSV (tout)** pour le bilan interne, ou **CSV à diffuser** (sans
   les réponses masquées) pour un partage. Les exports ne sont pas effacés par la
-  purge : les ranger et les supprimer selon les règles du service.
+  purge : les supprimer une fois le bilan fait.
 - **Terminer la session** : les téléphones affichent « Session terminée ».
 - Les données sont effacées automatiquement après 30 jours sans activité, ou
   tout de suite avec **Supprimer** dans « Mes sessions ».
