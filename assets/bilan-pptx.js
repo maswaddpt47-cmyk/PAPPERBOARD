@@ -31,7 +31,7 @@
   var PAL = ['A83A1A', '1F6F6B', 'B07A00', '7A2E5E', '55702A', '2F5E9E', '8A6A4A'];
   var NOTES = ['FFF1A8', 'D6EEF6', 'EEF3C9', 'F9DCC8', 'F3DDEB', 'E4EEDB']; // .note.board-c0 à c5
   var CLOUD = [C.primaire, C.accent, C.texte, '7A2E5E'];                   // .cloud-c0 à c3
-  var PASTILLE = 'E0A22B', PASTILLE_BORD = '7A4F00', MOUTARDE = 'B07A00';
+  var PASTILLE = 'E0A22B', PASTILLE_BORD = '7A4F00';
 
   /** Même calcul que WL.noteColor / colorOf : couleur stable d'après un texte. */
   function hash(str) {
@@ -42,19 +42,25 @@
   function good(correct, i) { return (correct || []).indexOf(i) !== -1; }
   function pct(n, total) { return total ? Math.round(100 * n / total) + ' %' : '0 %'; }
 
-  /** Barres horizontales, une couleur par choix, bonne réponse en vert et cochée. */
+  /** Barres horizontales dessinées comme sur la projection : libellé, piste
+   *  claire, barre arrondie proportionnelle au plus grand, valeur à droite.
+   *  Bonne réponse : barre verte, coche et cadre (pas la couleur seule). */
   function bars(pptx, slide, labels, values, correct, box) {
-    var total = values.reduce(function (a, b) { return a + b; }, 0);
-    slide.addChart(pptx.ChartType.bar, [{
-      name: 'Réponses', values: values,
-      labels: labels.map(function (l, i) { return (good(correct, i) ? '✓ ' : '') + l + '  ·  ' + values[i] + ' (' + pct(values[i], total) + ')'; })
-    }], Object.assign({
-      barDir: 'bar', catAxisOrientation: 'maxMin', barGapWidthPct: 45,
-      chartColors: labels.map(function (_, i) { return good(correct, i) ? C.ok : PAL[i % PAL.length]; }),
-      catAxisLabelFontSize: 16, catAxisLabelFontFace: FONT, catAxisLabelColor: C.texte, catAxisLineShow: false,
-      valAxisHidden: true, valGridLine: { style: 'none' }, showLegend: false,
-      valAxisMinVal: 0, valAxisMaxVal: Math.max(1, Math.max.apply(null, values))
-    }, box));
+    var total = values.reduce(function (a, b) { return a + b; }, 0), max = Math.max(1, Math.max.apply(null, values));
+    var n = labels.length, row = Math.min(0.75, box.h / n), bh = row * 0.62;
+    var lw = 4.4, vw = 1.9, tx = box.x + lw + 0.2, tw = box.w - lw - vw - 0.4;
+    labels.forEach(function (l, i) {
+      var y = box.y + i * row, ok = good(correct, i), by = y + (row - bh) / 2;
+      if (ok) slide.addShape(pptx.ShapeType.roundRect, { x: box.x - 0.1, y: y + 0.02, w: box.w + 0.2, h: row - 0.04, rectRadius: 0.12,
+        fill: { color: C.fond }, line: { color: C.ok, width: 2.5 } });
+      text(slide, (ok ? '✓ ' : '') + l, { x: box.x, y: y, w: lw, h: row, fontSize: 18, bold: ok, valign: 'middle', fit: 'shrink' });
+      slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: by, w: tw, h: bh, rectRadius: bh / 2, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      if (values[i]) {
+        var c = ok ? C.ok : PAL[i % PAL.length];
+        slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: by, w: Math.max(bh, tw * values[i] / max), h: bh, rectRadius: bh / 2, fill: { color: c }, line: { color: c, width: 0 } });
+      }
+      text(slide, values[i] + ' (' + pct(values[i], total) + ')', { x: box.x + box.w - vw, y: y, w: vw, h: row, fontSize: 22, bold: true, fontFace: TITRE, align: 'right', valign: 'middle' });
+    });
   }
 
   /** Oui / Non, Vrai / Faux : anneau avec le total au centre, légende à droite. */
@@ -89,11 +95,15 @@
     text(slide, [{ text: r.average === null ? '–' : String(r.average).replace('.', ','), options: { fontSize: 40, bold: true, fontFace: TITRE } },
       { text: ' / ' + q.scaleMax, options: { fontSize: 20, color: C.doux } }],
     { x: x, y: y + size / 2 - 0.85, w: size, h: 0.8, align: 'center', valign: 'bottom' });
-    slide.addChart(pptx.ChartType.bar, [{ name: 'Réponses', labels: r.counts.map(function (_, n) { return String(n + 1); }), values: r.counts }], {
-      x: x + size + 0.3, y: box.y, w: box.w - size - 0.3, h: box.h, barDir: 'col', barGapWidthPct: 25, chartColors: [MOUTARDE],
-      showValue: true, dataLabelFormatCode: '#;;', dataLabelFontFace: TITRE, dataLabelFontSize: 16, dataLabelColor: C.texte, dataLabelPosition: 'outEnd',
-      catAxisLabelFontSize: 18, catAxisLabelFontFace: FONT, catAxisLabelColor: C.texte, valAxisHidden: true, valGridLine: { style: 'none' },
-      valAxisMinVal: 0, valAxisMaxVal: Math.max(1, Math.max.apply(null, r.counts))
+    // Colonnes : piste claire, remplissage moutarde depuis le bas, effectif au-dessus.
+    var cx = x + size + 0.4, cw = box.w - size - 0.4, n = r.counts.length, gap = 0.12, w = (cw - gap * (n - 1)) / n;
+    var top = box.y + 0.45, ch = box.h - 0.95, max = Math.max(1, Math.max.apply(null, r.counts));
+    r.counts.forEach(function (v, k) {
+      var px = cx + k * (w + gap), fh = ch * v / max;
+      text(slide, String(v), { x: px, y: box.y, w: w, h: 0.4, fontSize: 18, bold: true, fontFace: TITRE, align: 'center', valign: 'bottom' });
+      slide.addShape(pptx.ShapeType.roundRect, { x: px, y: top, w: w, h: ch, rectRadius: 0.08, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      if (v) slide.addShape(pptx.ShapeType.roundRect, { x: px, y: top + ch - fh, w: w, h: fh, rectRadius: 0.08, fill: { color: PASTILLE }, line: { color: PASTILLE, width: 0 } });
+      text(slide, String(k + 1), { x: px, y: top + ch + 0.05, w: w, h: 0.4, fontSize: 18, align: 'center' });
     });
   }
 
