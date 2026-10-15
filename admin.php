@@ -175,6 +175,8 @@ header('Cache-Control: no-store');
           <p class="meta">Les idées n'apparaissent qu'une fois cette question publiée.</p></div>
         <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label" title="Nombre de points à répartir ; pour les gommettes, nombre de gommettes par personne">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
+        <label for="qf-explain" title="Encadré affiché sous les résultats, sur la projection et les téléphones, jamais avant">Explication affichée avec les résultats (facultatif, 400 caractères)</label>
+        <textarea id="qf-explain" rows="3" maxlength="400" placeholder="Ex. : Vrai — la lumière bleue freine la mélatonine. Source : …"></textarea>
         <label for="qf-duration" title="Compte à rebours du vote ; 0 = pas de limite">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">
         <label for="qf-reveal" title="Quand la bonne réponse et les résultats s'affichent">Correction et résultats</label>

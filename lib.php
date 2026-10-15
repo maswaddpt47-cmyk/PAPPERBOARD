@@ -507,6 +507,7 @@ function wl_clean_question(array $in, ?array $old = null): array
         'budget' => max(1, min(100, (int)($in['budget'] ?? ($type === 'dots' ? 3 : 10)))),
         'source' => $type === 'dots' ? (string)($in['source'] ?? '') : '',
         'duration' => wl_clean_duration($in['duration'] ?? 0),
+        'explain' => wl_clean_explain($in['explain'] ?? ''),
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
         'reveal' => in_array($in['reveal'] ?? '', ['manual', 'end', 'instant'], true) ? $in['reveal'] : 'manual',
         'anonymous' => true,
@@ -526,6 +527,17 @@ function wl_clean_question(array $in, ?array $old = null): array
         wl_reset_question($q);
     }
     return $q;
+}
+
+/** Explication affichée avec les résultats (projection et téléphones), pour
+ *  appuyer l'intervention de l'animateur. 400 caractères : lisible de loin. */
+function wl_clean_explain(mixed $text): string
+{
+    $text = wl_clean_text($text);
+    if (wl_strlen($text) > 400) {
+        throw new WlError('Explication : 400 caractères au plus.');
+    }
+    return $text;
 }
 
 /** Moment de la correction : manual = bouton « Afficher les résultats » ;
@@ -727,7 +739,7 @@ function wl_import_input(array $in): array
         'scaleMax' => $in['scaleMax'] ?? 5,
         'budget' => $in['budget'] ?? null,
         // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
-    ] + array_intersect_key($in, array_flip(['duration', 'reveal', 'allowChange', 'live']));
+    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live']));
 }
 
 /** Questions d'une session au format de l'import (wl_import_parse) : réponses
@@ -755,6 +767,9 @@ function wl_export_questions(array $s): array
         }
         if ($q['type'] === 'dots' && isset($pos[$q['source']])) {
             $out['source'] = $pos[$q['source']] + 1;
+        }
+        if (($q['explain'] ?? '') !== '') {
+            $out['explain'] = $q['explain'];
         }
         return $out + ['duration' => $q['duration'], 'reveal' => $q['reveal'] ?? 'manual',
             'allowChange' => $q['allowChange'], 'live' => $q['live'] ?? true];
@@ -987,6 +1002,7 @@ function wl_public_question(array $q): array
         'reveal' => $q['reveal'] ?? 'manual',
         'graded' => !empty($q['correct']), // quiz : le téléphone garde « Envoyer » (pas la bonne réponse)
         'correct' => $show ? $q['correct'] : [],
+        'explain' => $show ? ($q['explain'] ?? '') : '', // jamais avant la correction
     ];
 }
 

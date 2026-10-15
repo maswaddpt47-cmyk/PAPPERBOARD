@@ -157,6 +157,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
   #answer-form:has(> .choices, > .checks) { display: grid; grid-template-columns: 1fr 14rem; gap: 0 1.25rem; align-items: start; }
   #answer-form:has(> .choices, > .checks) > .send-bar { grid-column: 2; grid-row: 1; margin-top: 0; position: sticky; top: 1rem; }
 }
+.explain { border-left: 4px solid var(--wl-accent); padding: .5rem .75rem; background: var(--wl-fond); margin: .75rem 0 0; }
 .answer-status { font-weight: bold; color: var(--wl-ok); min-height: 1.5em; }
 .my-result { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 
@@ -301,6 +302,7 @@ label.btn { cursor: pointer; }
 .s-waiting p { margin: .2em 0; }
 .s-answered { font-size: 2em; font-weight: bold; }
 .s-all { color: var(--wl-barre-ok); }
+.s-explain { border-left: .25em solid var(--wl-barre-ok); padding: .4em .7em; margin: .6em 0 0; font-size: .8em; line-height: 1.35; background: var(--wl-carte); border-radius: 0 var(--wl-rayon) var(--wl-rayon) 0; }
 .s-pcount { font-size: 1.1rem; padding: 0 .5rem; }
 .s-welcome { text-align: center; margin-top: 3em; }
 .s-join-line { font-size: 1.8em; margin: .4em 0; }

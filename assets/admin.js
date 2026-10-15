@@ -281,6 +281,7 @@
     $('qd-title').textContent = q ? 'Modifier la question' : 'Nouvelle question';
     $('qf-type').value = q ? q.type : 'yesno';
     $('qf-text').value = q ? q.text : '';
+    $('qf-explain').value = q ? (q.explain || '') : '';
     $('qf-options').value = q && !FIXED[q.type] ? q.options.join('\n') : '';
     $('qf-multi').checked = !!(q && q.multi);
     $('qf-scale').value = q ? String(q.scaleMax) : '5';
@@ -313,7 +314,7 @@
   $('q-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var question = {
-      type: $('qf-type').value, text: $('qf-text').value, options: optionLines(),
+      type: $('qf-type').value, text: $('qf-text').value, explain: $('qf-explain').value, options: optionLines(),
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value,
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
@@ -359,6 +360,9 @@
       '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
       '- Quiz : mauvaises réponses crédibles, qui font réfléchir, jamais absurdes ni comiques.',
       '- Une seule échelle (« scale »), en toute fin d\'atelier.',
+      '- Chaque question a un champ "explain" : 2 ou 3 phrases (300 caractères au plus) affichées avec les résultats '
+        + 'pour lancer l\'échange : la bonne réponse et pourquoi, ou un chiffre de repère pour un sondage, avec sa source '
+        + '(organisme officiel, étude nommée). Si tu n\'as pas de source sûre, écris « pas de source sûre » plutôt qu\'en inventer une.',
       '',
       'Types possibles :',
       '- "yesno" : question Oui/Non ; "correct" facultatif : "Oui" ou "Non".',
@@ -377,7 +381,7 @@
       'Réponds UNIQUEMENT par une liste JSON valide, sans texte autour. Exemple de format :',
       '[',
       '  {"type": "wordcloud", "text": "Un mot pour dire ce que vous évoque …"},',
-      '  {"type": "mcq", "text": "…", "options": ["…", "…", "…"], "correct": ["…"]},',
+      '  {"type": "mcq", "text": "…", "options": ["…", "…", "…"], "correct": ["…"], "explain": "… Source : …"},',
       '  {"type": "postit", "text": "…", "options": ["…", "…"]},',
       '  {"type": "dots", "text": "…", "source": 3, "budget": 3}',
       ']'

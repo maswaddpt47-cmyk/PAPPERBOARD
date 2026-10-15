@@ -479,7 +479,7 @@
     var box = $('my-result');
     WL.clear(box);
     WL.show(box, false);
-    if (!q.showResults && !q.correct.length) return;
+    if (!q.showResults && !q.correct.length && !q.explain) return;
     if (q.correct.length && mine !== null) {
       var good = JSON.stringify([].concat(mine).sort()) === JSON.stringify(q.correct);
       box.appendChild(el('p', { class: 'big ' + (good ? 'ok' : 'ko') }, good ? 'Bonne réponse !' : 'Ce n\'était pas la bonne réponse.'));
@@ -487,6 +487,7 @@
     if (q.correct.length) {
       box.appendChild(el('p', null, 'Bonne réponse : ' + q.correct.map(function (i) { return q.options[i]; }).join(', ')));
     }
+    if (q.explain) box.appendChild(el('p', { class: 'explain' }, q.explain));
     if (state.result) {
       var res = el('div');
       WL.renderResults(res, q, state.result);

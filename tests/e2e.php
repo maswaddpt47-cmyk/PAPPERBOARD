@@ -45,7 +45,7 @@ $code = $r['json']['code'];
 check(preg_match('/^[A-Z2-9]{5}$/', $code) === 1, 'code de 5 caractères');
 
 $questions = [
-    'yesno' => ['type' => 'yesno', 'text' => 'Avez-vous un smartphone ?', 'correct' => [0], 'allowChange' => false],
+    'yesno' => ['type' => 'yesno', 'text' => 'Avez-vous un smartphone ?', 'correct' => [0], 'allowChange' => false, 'explain' => 'Oui : 9 sur 10.'],
     'truefalse' => ['type' => 'truefalse', 'text' => 'Un mot de passe se partage ?', 'correct' => [1]],
     'mcq' => ['type' => 'mcq', 'text' => 'Quels navigateurs ?', 'options' => ['Firefox', 'Chrome', 'Edge'], 'multi' => true, 'correct' => [0, 1]],
     'poll' => ['type' => 'poll', 'text' => 'Votre usage ?', 'options' => ['Peu', 'Moyen', 'Beaucoup']],
@@ -102,6 +102,7 @@ function play(Client $admin, array $p, string $code, string $qid, array $votes):
 }
 
 // Oui / Non, modification interdite.
+check(($admin->get("api.php?action=screen&s=$code")['json']['question']['explain'] ?? null) === '', 'explication cachée avant les résultats');
 expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'rouvrir oui/non (sans effet)');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'vote oui');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'même vote renvoyé (reprise réseau) accepté');
@@ -113,6 +114,7 @@ $res = play($admin, $p, $code, $qid['yesno'], [0, 1, 0]);
 check($res['counts'] === [2, 1] && $res['total'] === 3, 'résultats oui/non');
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['question']['correct'] === [0] && $st['mine'] === 0, 'correction et réponse visibles après affichage');
+check(($st['question']['explain'] ?? '') === 'Oui : 9 sur 10.', 'explication visible avec les résultats');
 
 // Vrai / Faux, modification autorisée.
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['truefalse']]);

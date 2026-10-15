@@ -215,6 +215,8 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 - Quiz, réponse libre, mur et post-it : rien n'est projeté avant le clic. Quand
   le compteur approche 20 : **Fermer le vote**, puis **Afficher les résultats**
   (ou **Publier** pour le mur et le post-it).
+- **Explication** (facultative, dans chaque question) : un encadré s'affiche sous
+  les résultats, sur la projection et les téléphones, pour lancer l'échange.
 - Réponses libres : relire avant d'afficher, **Masquer** toute réponse contenant
   un nom ou une donnée personnelle.
 - **Suivante →** pour enchaîner.

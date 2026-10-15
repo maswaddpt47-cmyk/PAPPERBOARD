@@ -216,6 +216,7 @@ function api_question_for(array $q, mixed $mine): array
     $pub = wl_public_question($q);
     if (($q['reveal'] ?? 'manual') === 'instant' && $mine !== null) {
         $pub['correct'] = $q['correct'];
+        $pub['explain'] = $q['explain'] ?? '';
     }
     return $pub;
 }
@@ -409,7 +410,7 @@ function api_questions_import(array $b): void
     $items = wl_import_parse((string)($b['raw'] ?? ''));
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'explain']))
             : $it, $items)]);
     }
     $keep = array_values(array_unique(array_map('intval', is_array($b['keep'] ?? null) ? $b['keep'] : [])));

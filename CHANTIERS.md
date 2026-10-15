@@ -251,6 +251,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
   en local dans Chromium).
 
+- **Explication par question** (`explain`, 15/10/2026, demande de l'utilisateur) :
+  400 caractères au plus, envoyée aux téléphones et à la projection **seulement
+  avec les résultats** (`wl_public_question`, tenu par e2e « explication cachée
+  avant les résultats »). Le texte pour l'IA la demande avec sa source ou
+  « pas de source sûre ». Import et export `.json` la reprennent.
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*

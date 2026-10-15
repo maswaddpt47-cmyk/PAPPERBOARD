@@ -74,6 +74,7 @@
     timerFor(q);
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
+      if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
       WL.fitCloud($('s-results'));
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
