@@ -176,6 +176,10 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .bars:not(.bars-scale) > .bar:nth-child(7n+6) .bar-fill { background: var(--wl-b6); }
 .bars:not(.bars-scale) > .bar:nth-child(7n) .bar-fill { background: var(--wl-b7); }
 .bars:not(.bars-scale) > .bar.bar-good .bar-fill { background: var(--wl-barre-ok); }
+/* Projection : la bonne réponse clignote 3 fois quand les résultats s'affichent
+   (lent, moins de 3 éclairs par seconde ; coupé si l'utilisateur réduit les animations). */
+.s-results .bar-good { animation: wl-blink .7s ease-in-out 3; border-radius: 6px; }
+@keyframes wl-blink { 50% { background: var(--wl-barre-ok); color: var(--wl-fond); } }
 .bar-good .bar-label { font-weight: bold; }
 .bar-value { font-weight: bold; white-space: nowrap; }
 /* Échelle : colonnes verticales, pour que 10 notes tiennent à l'écran. */
@@ -239,7 +243,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 
 @keyframes wl-pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .bar-fill, .cloud-word, .is-new { transition: none; animation: none; }
+  .bar-fill, .cloud-word, .is-new, .s-results .bar-good { transition: none; animation: none; }
 }
 
 /* --- Animateur ---------------------------------------------------------------- */
