@@ -38,7 +38,9 @@
     }, 800);
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
-  window.addEventListener('resize', function () { WL.fitResults($('s-results')); });
+  window.addEventListener('resize', function () {
+    if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
+  });
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
   });
@@ -71,6 +73,7 @@
     }
     $('s-meta').textContent = 'Question ' + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
+    $('s-text').style.fontSize = '';
     timerFor(q);
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
@@ -89,7 +92,25 @@
       WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
         el('p', { class: 's-answered' + (all ? ' s-all' : '') }, answeredText(d, unit)),
         el('p', null, all ? 'Tout le monde a répondu.' : msg)));
+      fitQuestion();
     }
+  }
+
+  /** Pendant le vote : une longue question est réduite pour que le décompte
+   *  reste visible au-dessus de la barre de pilotage. */
+  function fitQuestion() {
+    var text = $('s-text');
+    text.style.fontSize = '';
+    var limit = window.innerHeight - 90;
+    var fits = function () { return $('s-results').getBoundingClientRect().bottom <= limit; };
+    if (document.body.classList.contains('s-live') || fits()) return;
+    var lo = 12, hi = parseFloat(getComputedStyle(text).fontSize);
+    for (var i = 0; i < 8; i++) {
+      var mid = (lo + hi) / 2;
+      text.style.fontSize = mid + 'px';
+      if (fits()) lo = mid; else hi = mid;
+    }
+    text.style.fontSize = lo + 'px';
   }
 
   function answeredText(d, unit) {
