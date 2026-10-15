@@ -4,25 +4,23 @@
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
-Testé par l'utilisateur le 15/10/2026 sur PC (Edge), portable et téléphone,
-atelier « Temps d'écran » de bout en bout : pilotage, Envoyer, sondage au
-toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
+Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelier
+« Temps d'écran » de bout en bout.
 
 ## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
-2. **À vérifier après le 15/10/2026** (livré en fin de journée, pas encore vu chez
-   l'utilisateur) : **onglets** de l'espace animateur (Préparer / Animer / Bilan /
-   Réglages ; accueil Sessions / Archives), archive anonyme (bouton Archiver,
-   consultation, PowerPoint, réutilisation), export PowerPoint du bilan ouvert
-   dans PowerPoint, synthèse enregistrée, post-its colorés au hasard, **bilan
-   projeté** (touche B sur la projection, 15/10/2026 : lisibilité de chaque
-   diapositive sur l'écran de la salle). Puis un
-   **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
+2. **À vérifier sur téléphone et projection** (en ligne le 15/10/2026 ; refonte,
+   PowerPoint et bilan projeté validés par l'utilisateur le 15/10/2026) :
+   **onglets** de l'espace animateur, archive anonyme (Archiver, consultation,
+   réutilisation), synthèse enregistrée, post-its colorés, signaux, « Oser
+   demander », pseudonymes et podium, brise-glaces, option « Que des quiz ».
+   Puis un **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
 3. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
    annonce encore la suppression après 30 jours, alors que WoocLight archive
-   désormais des résultats anonymes. À ajuster par l'utilisateur s'il le souhaite.
+   désormais des résultats anonymes ; à compléter pour les pseudonymes et
+   « Oser demander ».
 4. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
@@ -32,7 +30,7 @@ toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
-   supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
+   supprimée).
 7. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
    passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
    recouper l'accès par mot de passe). Journaux Apache et sauvegardes
@@ -56,9 +54,7 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - **Classement par points** : le participant répartit entre 1 point et tout
   le budget (pas d'obligation de tout dépenser), pour ne pas bloquer un senior
   qui s'arrête à 8 sur 10. Changer dans `wl_clean_points()` si besoin.
-- **Mur et post-it : affichage différé** (décision prise seule le 09/10/2026) :
-  les contributions des autres n'apparaissent qu'après « Publier ». Affichage
-  immédiat possible si l'utilisateur le préfère (moins de contrôle des noms).
+
 ## Limites connues
 
 - `php -S` ignore `.htaccess` : le refus de `lib.php`, `config.php`, `data/`
@@ -77,10 +73,9 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   voir ligne précédente).
 
 - Plein écran de la projection : sans effet dans le Chrome du PC de
-  l'utilisateur (ni bouton ni Fn+F11), fonctionne dans Edge sur le même PC
-  (constaté le 15/10/2026). Cause mesurée le 15/10/2026 : règle
-  `FullscreenAllowed = false` imposée à ce Chrome (niveau ordinateur). Le bouton
-  affiche un message au lieu de rester muet. Contournement : projeter avec Edge.
+  l'utilisateur, fonctionne dans Edge (mesuré le 15/10/2026 : règle
+  `FullscreenAllowed = false` imposée à ce Chrome). Le bouton affiche un
+  message. Contournement : projeter avec Edge.
 
 - Décompte « 3 / 5 ont répondu » (15/10/2026) : le dénominateur est le nombre
   de participants inscrits ; un téléphone éteint sans « Quitter » compte encore
@@ -91,6 +86,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   chiffres (« 24342264 »). Jamais comme clé de tableau PHP sans le remettre en
   chaîne (sinon entier, comparaison stricte ratée) : cause de l'échec
   intermittent du test « direct » trouvée le 15/10/2026.
+## Points à ne pas défaire
+
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
   pas concerné (ni charte, ni DPD, ni Archives départementales, ni registre du
   Département). Le RGPD s'applique : l'utilisateur est responsable de
@@ -101,20 +98,17 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset
   de `main` (tests exigés). GitHub Pages coupé (14/10/2026).
 
-- Clés : aucune à conserver, toutes se recréent (déploiement : README étapes
-  2-3 ; secret et sel : `configurer.php`). Pas de sauvegarde chiffrée ici,
-  donc aucune clé dont la perte ferait perdre des données (14/10/2026).
+- Clés (14/10/2026) : aucune à conserver, toutes se recréent (README étapes
+  2-3 ; secret et sel : `configurer.php`). Pas de sauvegarde chiffrée ici.
 - Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
   `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
   déploiement part dans `~/www/wooclight/`), données dans `~/wooclight-data`,
   adresse https://wooclight.alwaysdata.net.
 
-- Aucun nom ni adresse de contact dans le dépôt (public) : les mentions de
-  confidentialité viennent de `config.php` (14/10/2026).
-
 - Mur et post-it : les contributions des autres ne sont visibles (téléphones
   et projection) qu'après **Publier** — relecture et masquage d'abord, une
-  contribution peut contenir un nom. Chaque contribution rafraîchit les
+  contribution peut contenir un nom (décision prise seule le 09/10/2026 ;
+  affichage immédiat possible si l'utilisateur le préfère). Chaque contribution rafraîchit les
   téléphones (`pversion`), contrairement aux votes : coût accepté, les
   contributions sont bien plus rares que les rafraîchissements.
 - Gommettes : elles visent les post-its **principaux** visibles de la question
@@ -198,11 +192,13 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   liens sont ouverts par l'utilisateur, pas de seconde relecture par IA.
   ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
   (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
+  Import tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
+  « Que des quiz » (case du formulaire) ne change que le texte pour l'IA :
+  l'import valide pareil côté serveur, aucune règle n'est imposée au contenu.
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
   format que l'import, **sans aucune réponse de participant**, réglages compris
   (durée, correction, modification, direct). Réimporter un export redonne le
   même fichier : tenu par `tests/e2e.php` (« Export des questions »).
-  Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
 
 - **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
@@ -288,8 +284,7 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   demande de l'utilisateur) : signaux 2 min pour l'animateur seul (jamais sur la
   projection, vue de la salle), téléphones non réveillés ; questions publiées après
   relecture, auteur jamais servi ; pseudonymes par session, effacés à la
-  désactivation, jamais archivés ; podium rangs 1-3. Tenu par e2e. À vérifier sur
-  téléphone ; fiche `docs/registre-traitement.md` à compléter par l'utilisateur.
+  désactivation, jamais archivés ; podium rangs 1-3. Tenu par e2e.
 
 ## Pistes d'amélioration
 
@@ -297,10 +292,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
-- 14/10/2026 — Texte pour l'IA : consigne de forme tirée de Mistral
-  (« une affirmation → Vrai/Faux, pas Oui/Non »). À ajouter si l'écart se
-  répète. (Le volet « plusieurs réponses → QCM multiple » est ajouté le
-  15/10/2026 : l'écart s'est répété sur un sondage d'activités.)
+- 14/10/2026 — Texte pour l'IA : « une affirmation → Vrai/Faux, pas Oui/Non »
+  (essai Mistral). À ajouter si l'écart se répète.
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.
