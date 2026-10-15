@@ -39,7 +39,7 @@
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
   window.addEventListener('resize', function () {
-    if (!$('s-ended').hidden && !document.body.classList.contains('s-rolling')) fitRecap();
+    if (!$('s-ended').hidden) fitRecap();
     else if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
   });
   document.addEventListener('fullscreenchange', function () {
@@ -156,14 +156,20 @@
   function fitRecap() {
     var box = $('s-recap');
     box.style.fontSize = '';
-    // Au-dessus de la barre de pilotage quand elle est affichée.
-    var limit = $('s-pilot').hidden ? window.innerHeight - 40 : $('s-pilot').getBoundingClientRect().top - 12;
-    if (box.getBoundingClientRect().bottom <= limit) return;
+    // Place de la barre de pilotage réservée dès le départ (cookie animateur) :
+    // sinon son apparition, en pleine montée, changerait la taille du texte.
+    var limit = window.innerHeight - (document.body.dataset.pilot ? 90 : 40);
+    // Position finale, montée en cours ou non (décalage de l'animation retiré).
+    var bottom = function () {
+      var m = getComputedStyle(box).transform.match(/matrix\(([^)]+)\)/);
+      return box.getBoundingClientRect().bottom - (m ? parseFloat(m[1].split(',')[5]) : 0);
+    };
+    if (bottom() <= limit) return;
     var lo = 10, hi = parseFloat(getComputedStyle(box).fontSize);
     for (var i = 0; i < 8; i++) {
       var mid = (lo + hi) / 2;
       box.style.fontSize = mid + 'px';
-      if (box.getBoundingClientRect().bottom <= limit) lo = mid; else hi = mid;
+      if (bottom() <= limit) lo = mid; else hi = mid;
     }
     box.style.fontSize = lo + 'px';
   }
