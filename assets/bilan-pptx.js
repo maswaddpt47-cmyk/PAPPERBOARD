@@ -27,29 +27,130 @@
     slide.addText(value, Object.assign({ fontFace: FONT, color: C.texte, valign: 'top', margin: 0 }, o));
   }
 
-  /** Barres horizontales : bonnes réponses en vert, les autres en indigo. */
+  // Une couleur par réponse (--wl-b1 à b7), la bonne réponse en vert : comme la projection.
+  var PAL = ['A83A1A', '1F6F6B', 'B07A00', '7A2E5E', '55702A', '2F5E9E', '8A6A4A'];
+  var NOTES = ['FFF1A8', 'D6EEF6', 'EEF3C9', 'F9DCC8', 'F3DDEB', 'E4EEDB']; // .note.board-c0 à c5
+  var CLOUD = [C.primaire, C.accent, C.texte, '7A2E5E'];                   // .cloud-c0 à c3
+  var PASTILLE = 'E0A22B', PASTILLE_BORD = '7A4F00', MOUTARDE = 'B07A00';
+
+  /** Même calcul que WL.noteColor / colorOf : couleur stable d'après un texte. */
+  function hash(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) % 997;
+    return h;
+  }
+  function good(correct, i) { return (correct || []).indexOf(i) !== -1; }
+  function pct(n, total) { return total ? Math.round(100 * n / total) + ' %' : '0 %'; }
+
+  /** Barres horizontales, une couleur par choix, bonne réponse en vert et cochée. */
   function bars(pptx, slide, labels, values, correct, box) {
-    var good = values.map(function (v, i) { return correct.indexOf(i) !== -1 ? v : 0; });
-    var other = values.map(function (v, i) { return correct.indexOf(i) !== -1 ? 0 : v; });
-    var series = correct.length
-      ? [{ name: 'Bonne réponse', labels: labels, values: good }, { name: 'Autres réponses', labels: labels, values: other }]
-      : [{ name: 'Réponses', labels: labels, values: values }];
-    slide.addChart(pptx.ChartType.bar, series, Object.assign({
-      barDir: 'bar', barGrouping: correct.length ? 'stacked' : 'clustered', catAxisOrientation: 'maxMin',
-      chartColors: correct.length ? [C.ok, C.primaire] : [C.primaire],
-      showValue: true, dataLabelFormatCode: '#;;', dataLabelColor: 'FFFFFF', dataLabelFontSize: 14, dataLabelFontFace: FONT,
-      catAxisLabelFontSize: 16, catAxisLabelFontFace: FONT, catAxisLabelColor: C.texte,
-      valAxisHidden: true, valGridLine: { style: 'none' }, showLegend: correct.length > 0, legendPos: 'b', legendFontFace: FONT,
+    var total = values.reduce(function (a, b) { return a + b; }, 0);
+    slide.addChart(pptx.ChartType.bar, [{
+      name: 'Réponses', values: values,
+      labels: labels.map(function (l, i) { return (good(correct, i) ? '✓ ' : '') + l + '  ·  ' + values[i] + ' (' + pct(values[i], total) + ')'; })
+    }], Object.assign({
+      barDir: 'bar', catAxisOrientation: 'maxMin', barGapWidthPct: 45,
+      chartColors: labels.map(function (_, i) { return good(correct, i) ? C.ok : PAL[i % PAL.length]; }),
+      catAxisLabelFontSize: 16, catAxisLabelFontFace: FONT, catAxisLabelColor: C.texte, catAxisLineShow: false,
+      valAxisHidden: true, valGridLine: { style: 'none' }, showLegend: false,
       valAxisMinVal: 0, valAxisMaxVal: Math.max(1, Math.max.apply(null, values))
     }, box));
   }
 
-  function columnsChart(pptx, slide, labels, values, box) {
-    slide.addChart(pptx.ChartType.bar, [{ name: 'Réponses', labels: labels, values: values }], Object.assign({
-      barDir: 'col', chartColors: [C.primaire], showValue: true, dataLabelFormatCode: '#;;', dataLabelFontFace: FONT,
-      catAxisLabelFontSize: 18, catAxisLabelFontFace: FONT, valAxisHidden: true, valGridLine: { style: 'none' },
-      valAxisMinVal: 0, valAxisMaxVal: Math.max(1, Math.max.apply(null, values))
-    }, box));
+  /** Oui / Non, Vrai / Faux : anneau avec le total au centre, légende à droite. */
+  function donut(pptx, slide, q, r, box) {
+    var size = Math.min(box.h, 4.2), x = box.x + 0.3, y = box.y + (box.h - size) / 2;
+    var colors = q.options.map(function (_, i) { return good(q.correct, i) ? C.ok : [C.accent, C.primaire][i % 2]; });
+    slide.addChart(pptx.ChartType.doughnut, [{ name: 'Réponses', labels: q.options, values: r.counts }], {
+      x: x, y: y, w: size, h: size, holeSize: 62, chartColors: colors, showLegend: false, showValue: false,
+      showPercent: false, showLabel: false, dataBorder: { pt: 2, color: C.fond }
+    });
+    text(slide, [{ text: String(r.total), options: { fontSize: 40, bold: true, fontFace: TITRE, breakLine: true } },
+      { text: r.total > 1 ? 'réponses' : 'réponse', options: { fontSize: 16, color: C.doux } }],
+    { x: x, y: y + size / 2 - 0.55, w: size, h: 1.1, align: 'center', valign: 'middle' });
+    q.options.forEach(function (name, i) {
+      var ly = box.y + box.h / 2 - 0.6 + i * 0.8, ok = good(q.correct, i);
+      slide.addShape(pptx.ShapeType.ellipse, { x: x + size + 0.6, y: ly + 0.13, w: 0.3, h: 0.3, fill: { color: colors[i] }, line: { color: colors[i], width: 0 } });
+      text(slide, [{ text: (ok ? '✓ ' : '') + name + ' · ' + pct(r.counts[i], r.total) + (ok ? ' · Bonne réponse' : ''), options: { bold: true, fontFace: TITRE } },
+        { text: '   ' + r.counts[i], options: { color: C.doux } }],
+      { x: x + size + 1.05, y: ly, w: box.w - size - 1.5, h: 0.56, fontSize: 24, valign: 'middle',
+        line: ok ? { color: C.ok, width: 2.5 } : undefined, margin: 6 });
+    });
+  }
+
+  /** Échelle : jauge de la moyenne (demi-anneau) et colonnes de la répartition. */
+  function gauge(pptx, slide, q, r, box) {
+    var size = Math.min(4.2, box.h * 1.3), x = box.x, y = box.y + 0.1, avg = r.average || 0;
+    // Anneau dont la moitié basse prend la couleur du fond : il reste un demi-cercle.
+    slide.addChart(pptx.ChartType.doughnut, [{ name: 'Moyenne', labels: ['m', 'r', 'b'], values: [avg, q.scaleMax - avg, q.scaleMax] }], {
+      x: x, y: y, w: size, h: size, holeSize: 66, firstSliceAng: 270, chartColors: [PASTILLE, 'EADBC2', C.fond],
+      showLegend: false, showValue: false, showPercent: false, showLabel: false, dataBorder: { pt: 0, color: C.fond }
+    });
+    text(slide, [{ text: r.average === null ? '–' : String(r.average).replace('.', ','), options: { fontSize: 40, bold: true, fontFace: TITRE } },
+      { text: ' / ' + q.scaleMax, options: { fontSize: 20, color: C.doux } }],
+    { x: x, y: y + size / 2 - 0.85, w: size, h: 0.8, align: 'center', valign: 'bottom' });
+    slide.addChart(pptx.ChartType.bar, [{ name: 'Réponses', labels: r.counts.map(function (_, n) { return String(n + 1); }), values: r.counts }], {
+      x: x + size + 0.3, y: box.y, w: box.w - size - 0.3, h: box.h, barDir: 'col', barGapWidthPct: 25, chartColors: [MOUTARDE],
+      showValue: true, dataLabelFormatCode: '#;;', dataLabelFontFace: TITRE, dataLabelFontSize: 16, dataLabelColor: C.texte, dataLabelPosition: 'outEnd',
+      catAxisLabelFontSize: 18, catAxisLabelFontFace: FONT, catAxisLabelColor: C.texte, valAxisHidden: true, valGridLine: { style: 'none' },
+      valAxisMinVal: 0, valAxisMaxVal: Math.max(1, Math.max.apply(null, r.counts))
+    });
+  }
+
+  /** Nuage : mêmes couleurs stables que la projection, taille selon la fréquence. */
+  function cloud(slide, words, box) {
+    var max = words.reduce(function (m, w) { return Math.max(m, w.n); }, 1);
+    text(slide, words.slice(0, 40).map(function (w) {
+      return { text: w.text + '    ', options: { fontSize: Math.round(16 + 36 * w.n / max), bold: true, fontFace: TITRE,
+        color: CLOUD[hash(w.text.toLowerCase()) % CLOUD.length] } };
+    }), Object.assign({ align: 'center', valign: 'middle', fit: 'shrink' }, box));
+  }
+
+  /** Mur : cartes claires sur trois colonnes, filet coloré en bas, « ♥ n » à droite. */
+  function wall(pptx, slide, posts, box) {
+    var cols = 3, gap = 0.2, w = (box.w - gap * (cols - 1)) / cols, h = 1, rows = Math.floor((box.h + gap) / (h + gap));
+    var shown = posts.slice(0, cols * rows);
+    shown.forEach(function (p, k) {
+      var x = box.x + (k % cols) * (w + gap), y = box.y + Math.floor(k / cols) * (h + gap);
+      text(slide, [{ text: p.text, options: { fontSize: 16, breakLine: true } },
+        { text: '♥ ' + p.likes + ' j\'aime', options: { fontSize: 14, bold: true, color: C.primaire, align: 'right' } }],
+      { x: x, y: y, w: w, h: h, shape: pptx.ShapeType.roundRect, rectRadius: 0.1, fill: { color: C.carte },
+        line: { color: C.bord, width: 1 }, margin: 8, valign: 'middle', fit: 'shrink' });
+      slide.addShape(pptx.ShapeType.rect, { x: x + 0.1, y: y + h - 0.06, w: w - 0.2, h: 0.06, fill: { color: PAL[k % 6] }, line: { color: PAL[k % 6], width: 0 } });
+    });
+    if (posts.length > shown.length) text(slide, '+ ' + (posts.length - shown.length) + ' autres messages', { x: box.x, y: box.y + box.h - 0.3, w: box.w, h: 0.3, fontSize: 12, color: C.doux, align: 'right' });
+  }
+
+  /** Post-it : une colonne par rubrique, post-its colorés comme sur la projection. */
+  function postits(pptx, slide, q, posts, box) {
+    var n = q.options.length, gap = 0.2, w = (box.w - gap * (n - 1)) / n;
+    q.options.forEach(function (name, c) {
+      var x = box.x + c * (w + gap);
+      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: box.y, w: w, h: box.h, rectRadius: 0.1, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      text(slide, name, { x: x + 0.15, y: box.y + 0.1, w: w - 0.3, h: 0.45, fontSize: 16, bold: true, fontFace: TITRE });
+      var notes = posts.filter(function (p) { return p.col === c && !p.parent; });
+      var h = Math.min(0.6, (box.h - 0.7) / Math.max(1, notes.length) - 0.1);
+      notes.forEach(function (p, k) {
+        text(slide, p.text, { x: x + 0.12, y: box.y + 0.65 + k * (h + 0.1), w: w - 0.24, h: h, fontSize: 14, bold: true,
+          fill: { color: NOTES[hash(p.id) % 6] }, margin: 6, valign: 'middle', fit: 'shrink',
+          shadow: { type: 'outer', color: '503C28', opacity: 0.25, blur: 3, offset: 2, angle: 90 } });
+      });
+    });
+  }
+
+  /** Gommettes : idée sur post-it jaune, pastilles, décompte. */
+  function dots(pptx, slide, items, box) {
+    var rows = items.slice(0, 8), h = Math.min(0.55, box.h / Math.max(1, rows.length) - 0.1);
+    rows.forEach(function (it, k) {
+      var y = box.y + k * (h + 0.1);
+      text(slide, it.text, { x: box.x, y: y, w: 5.2, h: h, fontSize: 15, bold: true, fill: { color: 'FFF1A8' }, margin: 6, valign: 'middle', fit: 'shrink',
+        shadow: { type: 'outer', color: '503C28', opacity: 0.25, blur: 3, offset: 2, angle: 90 } });
+      for (var d = 0; d < Math.min(it.n, 20); d++) {
+        slide.addShape(pptx.ShapeType.ellipse, { x: box.x + 5.5 + d * 0.27, y: y + h / 2 - 0.11, w: 0.22, h: 0.22,
+          fill: { color: PASTILLE }, line: { color: PASTILLE_BORD, width: 1 } });
+      }
+      text(slide, WL.plural(it.n, 'gommette'), { x: box.x + 10.2, y: y, w: 2.13, h: h, fontSize: 15, bold: true, fontFace: TITRE, valign: 'middle', align: 'right' });
+    });
   }
 
   function bullets(slide, lines, box) {
@@ -70,28 +171,22 @@
     if (gone) {
       text(slide, WL.plural(r.total, post ? 'contribution' : 'réponse') + ' — textes des participants non conservés dans l\'archive (anonymat).',
         Object.assign({ fontSize: 18, color: C.doux }, box));
-    } else if (['yesno', 'truefalse', 'poll', 'mcq', 'points'].indexOf(q.type) !== -1) {
+    } else if (q.type === 'yesno' || q.type === 'truefalse') {
+      donut(pptx, slide, q, r, box);
+    } else if (['poll', 'mcq', 'points'].indexOf(q.type) !== -1) {
       bars(pptx, slide, q.options, r.counts, q.type === 'points' ? [] : (q.correct || []), box);
     } else if (q.type === 'dots') {
-      bars(pptx, slide, r.items.map(function (it) { return it.text; }), r.items.map(function (it) { return it.n; }), [], box);
+      dots(pptx, slide, r.items, box);
     } else if (q.type === 'scale') {
-      columnsChart(pptx, slide, r.counts.map(function (_, n) { return String(n + 1); }), r.counts, box);
+      gauge(pptx, slide, q, r, box);
     } else if (q.type === 'wordcloud') {
-      var max = r.words.reduce(function (m, w) { return Math.max(m, w.n); }, 1);
-      text(slide, r.words.slice(0, 40).map(function (w) {
-        return { text: w.text + '   ', options: { fontSize: Math.round(16 + 32 * w.n / max), bold: w.n === max, color: w.n === max ? C.primaire : C.texte } };
-      }), Object.assign({ align: 'center', valign: 'middle', fit: 'shrink' }, box));
+      cloud(slide, r.words, box);
     } else if (q.type === 'text') {
       bullets(slide, visible(r.texts).map(function (t) { return t.text; }), box);
     } else if (q.type === 'wall') {
-      bullets(slide, visible(r.posts).map(function (p) { return p.text + '  —  ♥ ' + p.likes; }), box);
+      wall(pptx, slide, visible(r.posts), box);
     } else if (q.type === 'postit') {
-      var cols = q.options.map(function (name, c) {
-        var notes = visible(r.posts).filter(function (p) { return p.col === c && !p.parent; }).map(function (p) { return '• ' + p.text; });
-        return { text: notes.join('\n') || '—', options: { fontSize: 14, valign: 'top', fill: { color: C.postit } } };
-      });
-      slide.addTable([q.options.map(function (n) { return { text: n, options: { bold: true, fontSize: 16, fill: { color: C.entete } } }; }), cols],
-        Object.assign({ fontFace: FONT, color: C.texte, border: { type: 'solid', pt: 1, color: C.bord }, autoPage: false, rowH: [0.5, box.h - 0.5] }, box));
+      postits(pptx, slide, q, visible(r.posts), box);
     }
     var foot = post ? WL.plural(r.total, q.type === 'wall' ? 'message' : 'post-it')
       : r.total + ' / ' + d.participants + ' ont répondu';
