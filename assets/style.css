@@ -263,9 +263,12 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .dots { display: inline-flex; flex-wrap: wrap; gap: .2em; vertical-align: middle; margin-left: .3em; }
 .dot { width: .9em; height: .9em; border-radius: 50%; background: var(--wl-pastille); border: 2px solid #92400E; }
 
+/* « Quitter » en fin de session : clignotement lent (moins de 3 éclats par seconde). */
+@keyframes wl-blink { 50% { background: var(--wl-primaire); color: #FFFFFF; } }
+.blink { animation: wl-blink 1.2s ease-in-out infinite; }
 @keyframes wl-pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .bar-fill, .cloud-word, .is-new, .s-results .bar-good, .s-roll { transition: none; animation: none; }
+  .bar-fill, .cloud-word, .is-new, .s-results .bar-good, .s-roll, .blink { transition: none; animation: none; }
 }
 
 /* --- Animateur ---------------------------------------------------------------- */

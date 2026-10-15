@@ -111,6 +111,8 @@
     $('session-title').textContent = data.title;
     // Session terminée : on continue d'écouter (304 sans corps), pour qu'une
     // conclusion ajoutée ou corrigée après la fin arrive sur les téléphones.
+    // Fin : « Quitter » clignote pour inviter à effacer l'appareil de l'atelier.
+    $('leave-btn').classList.toggle('blink', !!data.ended);
     if (data.ended) { view('ended'); WL.renderRecap($('recap'), data); pendingStore.del('pending'); return; }
     if (!data.joined) { join(code); return; } // données purgées ou cookie perdu
     if (!data.question) { view('wait'); return; }
