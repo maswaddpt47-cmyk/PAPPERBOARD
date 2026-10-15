@@ -416,6 +416,9 @@ label.btn { cursor: pointer; }
 [data-theme="dark"] .screen .btn { color: var(--wl-texte); border-color: var(--wl-texte-doux); background: transparent; }
 [data-theme="dark"] .screen .btn:hover { background: var(--wl-carte); }
 [data-theme="dark"] .screen .btn-primary { color: #2A1B14; background: #F2A07F; border-color: #F2A07F; }
+/* Mesuré le 15/10/2026 : sans cette règle, le survol (collé après un appui sur
+   téléphone) donne au bouton principal le fond des cartes avec son texte foncé. */
+[data-theme="dark"] .screen .btn-primary:hover { color: #2A1B14; background: #F2A07F; border-color: #F2A07F; }
 [data-theme="dark"] .screen .banner { color: var(--wl-alerte-texte); }
 body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .screen-head { display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; flex-wrap: wrap; }
