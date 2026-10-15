@@ -107,6 +107,20 @@ header('Cache-Control: no-store');
         <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
     </div>
 
+    <div class="card">
+      <h2>Bilan de l'atelier</h2>
+      <p class="meta">Tableau de bord de toutes les questions, et texte à coller dans une IA pour obtenir une synthèse,
+        une conclusion et des recommandations. Seuls des résultats regroupés partent, jamais l'identité d'un participant.</p>
+      <label class="check" title="Réponses libres, mur et post-it : relisez-les et masquez tout nom avant de les envoyer à une IA">
+        <input id="bilan-texts" type="checkbox"> Inclure les réponses écrites (réponses libres, mur, post-it ; réponses masquées exclues)</label>
+      <p class="row wrap"><button id="bilan-copy" class="btn btn-primary" type="button" title="Copie le bilan chiffré et la consigne de synthèse, à coller dans une IA">Copier le bilan pour une IA</button>
+        <button id="bilan-show" class="btn" type="button" title="Affiche les résultats de toutes les questions">Voir le tableau de bord</button>
+        <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
+      <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
+      <div id="bilan-board" class="bilan-board" hidden></div>
+      <p class="meta">Collez ensuite la conclusion proposée par l'IA dans la carte « Conclusion » ci-dessus, après l'avoir relue.</p>
+    </div>
+
     <dialog id="gen-dialog" aria-labelledby="gen-title">
       <form id="gen-form" method="dialog" novalidate>
         <h2 id="gen-title">Générer ou importer des questions</h2>

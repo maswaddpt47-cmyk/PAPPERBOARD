@@ -332,6 +332,13 @@ label.btn { cursor: pointer; }
 #s-ended { padding-top: .5em; }
 .s-thanks { text-align: center; margin: 0 0 .3em; }
 #s-recap { font-size: .8em; }
+#s-ended:has(.recap) .s-thanks { font-size: 1.1em; }
+/* Plus de 6 questions : récap sur deux colonnes, lisible de loin. */
+#s-recap .recap:has(> li:nth-child(7)) { columns: 2; column-gap: 3em; }
+#s-recap .recap li { break-inside: avoid; }
+.bilan-board { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); margin-top: 1rem; }
+.bilan-q { border: 1px solid var(--wl-bord); border-radius: var(--wl-rayon); padding: .75rem; }
+.bilan-q h3 { font-size: 1rem; margin: 0; }
 .s-pcount { font-size: 1.1rem; padding: 0 .5rem; }
 .s-welcome { text-align: center; margin-top: 3em; }
 .s-join-line { font-size: 1.8em; margin: .4em 0; }

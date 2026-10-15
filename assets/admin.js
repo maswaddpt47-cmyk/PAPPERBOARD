@@ -137,6 +137,80 @@
     });
   });
 
+  // --- Bilan : tableau de bord et synthèse par une IA ------------------------------
+
+  /** Résultats d'une question en texte, pour l'IA. withTexts : réponses écrites
+   *  non masquées (elles peuvent contenir un nom : case décochée par défaut). */
+  function bilanLines(q, withTexts) {
+    var r = q.results, out = [], pct = function (n) { return r.total ? Math.round(100 * n / r.total) + ' %' : '0 %'; };
+    var good = function (i) { return q.correct && q.correct.indexOf(i) !== -1 ? ' (bonne réponse)' : ''; };
+    if (r.counts && q.type !== 'scale' && q.type !== 'points') {
+      q.options.forEach(function (o, i) { out.push('  - ' + o + good(i) + ' : ' + r.counts[i] + ' (' + pct(r.counts[i]) + ')'); });
+    } else if (q.type === 'scale') {
+      out.push('  - Moyenne : ' + String(r.average).replace('.', ',') + ' / ' + q.scaleMax + ' ; répartition de 1 à ' + q.scaleMax + ' : ' + r.counts.join(', '));
+    } else if (q.type === 'points') {
+      q.options.forEach(function (o, i) { out.push('  - ' + o + ' : ' + r.counts[i] + ' points'); });
+    } else if (q.type === 'wordcloud') {
+      out.push('  - Mots : ' + r.words.slice(0, 15).map(function (w) { return w.text + ' (' + w.n + ')'; }).join(', '));
+    } else if (q.type === 'dots') {
+      r.items.forEach(function (it) { out.push('  - ' + it.text + ' : ' + WL.plural(it.n, 'gommette')); });
+    } else if (withTexts && q.type === 'text') {
+      r.texts.filter(function (t) { return !t.hidden; }).forEach(function (t) { out.push('  - « ' + t.text + ' »'); });
+    } else if (withTexts && q.type === 'wall') {
+      r.posts.filter(function (p) { return !p.hidden; }).forEach(function (p) { out.push('  - « ' + p.text + ' » (' + p.likes + ' j\'aime)'); });
+    } else if (withTexts && q.type === 'postit') {
+      r.posts.filter(function (p) { return !p.hidden; }).forEach(function (p) { out.push('  - [' + (q.options[p.col] || '') + '] « ' + p.text + ' »'); });
+    }
+    return out;
+  }
+
+  function bilanPrompt(withTexts) {
+    var lines = [
+      'Tu aides un animateur de médiation numérique à faire le bilan d\'un atelier animé avec WoocLight (votes anonymes sur téléphone).',
+      'Atelier : ' + data.title + ' — ' + WL.plural(data.participants, 'participant') + '.',
+      '',
+      'Résultats, question par question :'
+    ];
+    data.questions.forEach(function (q, i) {
+      lines.push('', (i + 1) + '. ' + q.text + ' [' + WL.typeLabel(q) + '] — '
+        + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution') : WL.plural(q.results.total, 'réponse')));
+      bilanLines(q, withTexts).forEach(function (l) { lines.push(l); });
+    });
+    lines.push('',
+      'Rédige, en français simple :',
+      '1. Une synthèse en 5 points au plus : ce que les réponses montrent, points forts, idées reçues, écarts entre les quiz réussis et ratés.',
+      '2. Une conclusion de 600 caractères au plus, adressée directement aux participants, à afficher en fin d\'atelier.',
+      '3. Trois à cinq recommandations concrètes pour les participants, et trois pour l\'animateur (prochaine séance, notions à reprendre).',
+      'Appuie-toi seulement sur ces résultats. Pour tout chiffre ou conseil de santé ajouté, cite une source précise (organisme officiel) '
+        + 'ou écris « pas de source sûre ». Ne cite aucun nom de personne.');
+    return lines.join('\n');
+  }
+
+  $('bilan-copy').addEventListener('click', function () {
+    var text = bilanPrompt($('bilan-texts').checked), box = $('bilan-prompt'), note = $('bilan-copied');
+    box.value = text;
+    WL.show(box, true);
+    var done = function () { note.textContent = 'Copié : collez-le dans l\'IA de votre choix.'; };
+    var manual = function () { box.select(); note.textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, manual);
+    else manual();
+  });
+
+  $('bilan-show').addEventListener('click', function () {
+    var board = $('bilan-board');
+    if (!board.hidden) { WL.show(board, false); $('bilan-show').textContent = 'Voir le tableau de bord'; return; }
+    WL.clear(board);
+    data.questions.forEach(function (q, i) {
+      var res = el('div');
+      board.appendChild(el('section', { class: 'bilan-q' },
+        el('h3', null, (i + 1) + '. ' + q.text),
+        el('p', { class: 'meta' }, WL.typeLabel(q)), res));
+      WL.renderResults(res, Object.assign({}, q, { showResults: true }), q.results);
+    });
+    WL.show(board, true);
+    $('bilan-show').textContent = 'Masquer le tableau de bord';
+  });
+
   function control(op, extra) {
     return act('control', Object.assign({ op: op }, extra));
   }

@@ -238,6 +238,13 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   `{"type": "conclusion"}` de l'IA, repris par l'export). Jamais le texte d'une
   réponse libre ; une idée du mur seulement si publiée. Tenu par e2e.
 
+- **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
+  toutes les questions et texte à copier pour une IA (synthèse, conclusion,
+  recommandations). Résultats regroupés seulement ; réponses écrites (libres,
+  mur, post-it) **décochées par défaut** car elles peuvent contenir un nom, et
+  jamais les réponses masquées. Les téléphones écoutent encore après la fin
+  (304) : une conclusion ajoutée ensuite leur parvient.
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
