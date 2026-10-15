@@ -186,7 +186,8 @@
     $('live-pos').textContent = 'Question projetée : ' + (d.current + 1) + ' / ' + d.questions.length + ' — ' + WL.TYPES[q.type];
     $('live-text').textContent = q.text;
     $('live-state').textContent = (open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé')
-      + ' — ' + WL.plural(q.results.total, 'réponse') + (q.showResults ? ' — résultats affichés' : '');
+      + ' — ' + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution')
+        : q.results.total + ' / ' + d.participants + ' ont répondu') + (q.showResults ? ' — résultats affichés' : '');
     $('open-btn').textContent = open ? 'Fermer le vote' : 'Ouvrir le vote';
     $('open-btn').dataset.next = open ? 'close' : 'open';
     $('show-btn').textContent = q.showResults ? 'Masquer les résultats' : 'Afficher les résultats';

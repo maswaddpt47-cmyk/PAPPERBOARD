@@ -293,8 +293,11 @@ label.btn { cursor: pointer; }
 .s-timer-low { color: var(--wl-ko) !important; }
 .s-results .bar-track { height: 1.4em; }
 .s-results .cloud { font-size: 1.4em; }
-.s-waiting { text-align: center; font-size: 1.4em; margin-top: 2em; }
+.s-waiting { text-align: center; font-size: 1.2em; margin-top: .5em; }
+.s-waiting p { margin: .2em 0; }
 .s-answered { font-size: 2em; font-weight: bold; }
+.s-all { color: var(--wl-barre-ok); }
+.s-pcount { font-size: 1.1rem; padding: 0 .5rem; }
 .s-welcome { text-align: center; margin-top: 3em; }
 .s-join-line { font-size: 1.8em; margin: .4em 0; }
 .code-big { font-weight: bold; }

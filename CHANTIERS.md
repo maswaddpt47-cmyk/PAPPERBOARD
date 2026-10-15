@@ -82,6 +82,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   `FullscreenAllowed = false` imposée à ce Chrome (niveau ordinateur). Le bouton
   affiche un message au lieu de rester muet. Contournement : projeter avec Edge.
 
+- Décompte « 3 / 5 ont répondu » (15/10/2026) : le dénominateur est le nombre
+  de participants inscrits ; un téléphone éteint sans « Quitter » compte encore
+  (hypothèse non vérifiée sur le terrain). « Tout le monde a répondu » peut donc
+  ne jamais s'afficher : fermer le vote quand le compteur ne bouge plus.
+
 ## Points à ne pas défaire
 
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
