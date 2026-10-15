@@ -275,7 +275,7 @@
 
   var csrf = '', busy = false;
 
-  function control(op) {
+  function control(op, after) {
     if (busy) return;
     busy = true;
     WL.api('control', { body: { s: code, op: op }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
@@ -283,8 +283,19 @@
       // Message d'abord, sans rafraîchir : l'affichage suivant l'effacerait aussitôt.
       if (r.status === 401 || r.status === 403) error('Reconnectez-vous dans l\'espace animateur pour piloter.');
       else if (!r.data.ok) error(r.data.error || 'Commande refusée.');
-      else poller.now();
+      else { poller.now(); if (after) after(); }
     }, function () { busy = false; });
+  }
+
+  /** Rouvrir un vote fermé. Les résultats d'un quiz ou d'un sondage sont masqués
+   *  d'abord (sinon la correction serait visible pendant le vote) ; un mur ou un
+   *  post-it publié le reste. */
+  function reopen() {
+    var q = last && last.question;
+    if (!q) return;
+    var post = q.type === 'wall' || q.type === 'postit';
+    if (q.showResults && !post) control('hide', function () { control('open'); });
+    else control('open');
   }
 
   /** Espace ou bouton central : ouvrir le vote, le fermer, afficher les
@@ -312,6 +323,7 @@
     var shown = !!(last && last.show);
     ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
     WL.show($('p-board'), !board);
+    WL.show($('p-reopen'), false);
     if (last && last.show) {
       $('p-step').textContent = 'Revenir à la question';
       $('p-step').title = 'Arrête la projection ' + (last.show === 'asks' ? 'des questions' : 'du podium') + ' (Espace)';
@@ -342,6 +354,8 @@
       ? (post ? last.contributors : last.answered) + ' / ' + last.participants + (post ? ' ont participé' : ' ont répondu') : '';
     $('p-prev').disabled = !last || last.position === 0;
     $('p-next').disabled = !!last && last.position >= last.count;
+    var voting = !!q && q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
+    WL.show($('p-reopen'), !!q && !ended && q.state !== 'draft' && !voting);
   }
 
   if (document.body.dataset.pilot) WL.api('me').then(function (r) {
@@ -356,6 +370,7 @@
     $('p-prev').addEventListener('click', prev);
     $('p-next').addEventListener('click', next);
     $('p-step').addEventListener('click', function () { control(stepOp()); });
+    $('p-reopen').addEventListener('click', reopen);
     $('p-board').addEventListener('click', function () { control('board'); });
     document.addEventListener('keydown', function (e) {
       if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;

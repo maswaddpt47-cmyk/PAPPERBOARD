@@ -152,6 +152,8 @@ function check(cond, label) {
   watch(pilot, 'projection pilotée');
   await pilot.setViewportSize({ width: 1280, height: 720 });
   await pilot.goto(BASE + 'screen.php?s=' + code);
+  await pilot.waitForSelector('#s-pilot:not([hidden])');
+  check(await pilot.locator('#p-reopen').isHidden(), 'session terminée : pas de « Rouvrir le vote »');
   await pilot.click('#p-board');
   await pilot.waitForFunction(() => /^Bilan — 1 \//.test(document.getElementById('s-meta').textContent));
   await pilot.keyboard.press('ArrowRight');

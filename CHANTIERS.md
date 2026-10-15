@@ -34,7 +34,7 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
 Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
-clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré), ruleset sur `main`.
+clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 
 ## Décisions à trancher
 
@@ -58,12 +58,10 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré), ruleset s
 - Toutes les écritures d'une session passent par un verrou de fichier :
   150 arrivées + 150 votes simultanés en 340-450 ms (mesuré en local avec
   8 processus PHP, 09/10/2026). Non mesuré sur l'hébergement mutualisé.
-- Limite par IP large (900 écritures/min) : dans une salle, tous les
-  téléphones sortent souvent par la même IP. La vraie limite est par
-  participant (30/min).
-- IP lue dans `REMOTE_ADDR` : hypothèse non vérifiée que le proxy Alwaysdata
-  y met l'IP du visiteur (sinon, limite par IP commune à tous — sans gravité,
-  voir ligne précédente).
+- Limite par IP large (900 écritures/min) : une salle sort souvent par la même
+  IP ; la vraie limite est par participant (30/min). IP lue dans `REMOTE_ADDR` :
+  hypothèse non vérifiée que le proxy Alwaysdata y met l'IP du visiteur (sinon,
+  limite par IP commune à tous, sans gravité).
 
 - Plein écran de la projection : sans effet dans le Chrome du PC de
   l'utilisateur, fonctionne dans Edge (mesuré le 15/10/2026 : règle
@@ -210,7 +208,8 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré), ruleset s
 - **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
   ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
-  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
+  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit. « Rouvrir le
+  vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
 - **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit les barres qui
   débordent (7 longs choix + explication tiennent en 1280x720) ; nuage : ajuste la taille de
   l'ensemble pour tenir dans l'écran (mesuré en local, Chromium, 3 à 60 mots,
