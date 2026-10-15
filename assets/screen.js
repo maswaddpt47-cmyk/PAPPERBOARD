@@ -73,7 +73,7 @@
     $('s-text').textContent = q.text;
     timerFor(q);
     if (d.results) {
-      WL.renderResults($('s-results'), q, d.results);
+      WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
       WL.fitCloud($('s-results'));
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
@@ -163,7 +163,7 @@
       show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
       next: 'Passe à la question suivante'
     }[op] + ' (Espace)';
-    $('p-count').textContent = q && q.type !== 'wall' && q.type !== 'postit' && q.state !== 'draft' && !q.showResults
+    $('p-count').textContent = q && q.type !== 'wall' && q.type !== 'postit' && q.state !== 'draft'
       ? last.answered + ' / ' + last.participants + ' ont répondu' : '';
     $('p-prev').disabled = !last || last.position === 0;
     $('p-next').disabled = !!last && last.position >= last.count;

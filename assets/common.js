@@ -339,7 +339,8 @@ var WL = (function () {
   }
 
   /** Affiche les résultats d'une question dans container. opts : onHide
-   *  (modération, animateur), onAdmin (outils post-it, animateur). Une
+   *  (modération, animateur), onAdmin (outils post-it, animateur),
+   *  participants (projection : décompte « 3 / 5 »). Une
    *  fonction seule vaut onHide. */
   function renderResults(container, q, res, opts) {
     opts = typeof opts === 'function' ? { onHide: opts } : (opts || {});
@@ -368,7 +369,10 @@ var WL = (function () {
     } else {
       clear(container).appendChild(node);
     }
-    var foot = plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
+    var post = q.type === 'wall' || q.type === 'postit';
+    // Projection : « 3 / 5 ont répondu » (opts.participants), ailleurs le total seul.
+    var foot = !post && opts.participants ? res.total + ' / ' + opts.participants + ' ont répondu'
+      : plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
     container.appendChild(el('p', { class: 'results-foot' }, foot));
   }
