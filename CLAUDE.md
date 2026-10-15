@@ -63,6 +63,7 @@ Alerter sans attendre, au format :
 - Réponses libres : un participant peut y taper un nom → modération + purge.
 - Durée de purge et mentions de confidentialité : fixées par l'utilisateur
   (`config.php`), fiche dans `docs/registre-traitement.md`.
+  Cette fiche est tenue par l'utilisateur : Claude ne la modifie pas (15/10/2026).
 - Captures envoyées à Claude : données fictives ou recadrées.
 - Changement structurant de sécurité (connexion, page publique, hébergement)
   → audit Codex ponctuel (MD-LIB `agora.md` §12, modèle

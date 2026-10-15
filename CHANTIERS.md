@@ -264,7 +264,7 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   regroupés, récap anonyme, conclusion, synthèse) puis suppriment la session.
   Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
   réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
-  personnelle). Tenu par e2e. Mentions de confidentialité et registre (V0.4) à jour.
+  personnelle). Tenu par e2e. Mentions de confidentialité à jour ; `docs/registre-traitement.md` laissé tel quel (l'utilisateur le tient lui-même, 15/10/2026).
 
 ## Pistes d'amélioration
 

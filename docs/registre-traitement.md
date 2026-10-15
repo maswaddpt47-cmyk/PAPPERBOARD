@@ -5,7 +5,7 @@ traitement** depuis le 14/10/2026 (projet personnel, le CD47 n'est pas
 concerné). Rédaction assistée par Claude (IA), à relire et valider par le
 responsable. Son nom et son adresse de contact ne figurent pas ici (dépôt
 public) : ils sont dans `config.php` et affichés aux participants
-(« Confidentialité »). Version V0.4 (15/10/2026).
+(« Confidentialité »). Version V0.3 (14/10/2026).
 
 | Rubrique | Contenu |
 |---|---|
@@ -18,7 +18,7 @@ public) : ils sont dans `config.php` et affichés aux participants
 | Données sensibles | Aucune demandée. Risque résiduel : un participant peut taper un nom ou une information personnelle dans une réponse libre → l'animateur peut masquer la réponse, la session peut être supprimée immédiatement |
 | Mineurs | Possible : aucune donnée identifiante demandée |
 | Destinataires | L'animateur ; les participants de la séance voient les résultats projetés (réponses masquées exclues) |
-| Durée de conservation | **30 jours** après la dernière action de l'animateur (`purge_days`, réglable ; l'activité des participants ne la prolonge pas), par une tâche planifiée **horaire** (`purge.php`) : les réponses une à une, les textes écrits par les participants (réponses libres, nuage, mur, post-it), les identifiants d'appareil et les traces d'IP sont **supprimés**. Seule une **archive anonyme** est gardée sans limite : questions, résultats regroupés (nombres, pourcentages, moyennes), récap, conclusion et synthèse de l'animateur — données qui ne permettent plus de remonter à une personne (anonymisation par agrégation, décision du responsable du 15/10/2026). Archivage ou suppression manuels possibles à tout moment |
+| Durée de conservation | Suppression automatique de la session et de toutes ses réponses **30 jours** après la dernière action de l'animateur (`purge_days`, réglable ; l'activité des participants ne la prolonge pas), par une tâche planifiée **horaire** (`purge.php`). Suppression manuelle possible à tout moment |
 | Exports | CSV et version imprimable des résultats, téléchargés par l'animateur, **réponses masquées comprises** : à supprimer une fois le bilan fait ; la purge du serveur ne les atteint pas |
 | Hébergement | Alwaysdata (Paris, France), compte personnel — données dans un dossier non accessible depuis internet |
 | Sous-traitants | Alwaysdata (hébergeur). GitHub (Microsoft, États-Unis) héberge **le code seulement**, jamais de données de participants |
