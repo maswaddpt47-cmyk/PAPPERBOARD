@@ -228,13 +228,13 @@
     pickOne(form, grid, q, mine, locked, q.options.map(function (label, i) { return { value: i, label: label, mark: markClass(q, i) }; }));
   }
 
-  /** Boutons à choix unique. Sondage (question sans bonne réponse, modifiable) :
-   *  un appui envoie tout de suite, on peut en toucher un autre pour changer.
-   *  Quiz ou réponse figée : un appui sélectionne, « Envoyer » vote (une erreur
-   *  y compterait). */
+  /** Boutons à choix unique. Sondage, Oui/Non ou Vrai/Faux, même corrigés, tant
+   *  que la réponse est modifiable : un appui envoie tout de suite, on peut en
+   *  toucher un autre pour changer. QCM corrigé ou réponse figée (correction
+   *  immédiate) : un appui sélectionne, « Envoyer » vote (une erreur y compterait). */
   function pickOne(form, grid, q, mine, locked, items) {
     var picked = mine;
-    var instant = !q.graded && q.allowChange;
+    var instant = q.allowChange && (!q.graded || q.type === 'yesno' || q.type === 'truefalse');
     var button = null;
     var buttons = items.map(function (it) {
       return el('button', {

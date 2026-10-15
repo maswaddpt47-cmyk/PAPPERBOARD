@@ -162,15 +162,16 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
 - Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
   purge n'efface que les compteurs `rl/*.json`.
 - Clé participant dérivée du code de session : deux sessions ne se relient pas.
-- **Envoyer ou toucher** (15/10/2026, choix de l'utilisateur) : sondage, Oui/Non,
-  échelle **sans bonne réponse et modifiables** : un appui envoie tout de suite
-  (on en touche un autre pour changer). Quiz (`graded` : une bonne réponse
-  existe, le téléphone ne sait pas laquelle), réponse figée ou QCM multiple :
-  un appui sélectionne, **Envoyer** vote (14/10/2026 : l'envoi en un geste
-  déroutait, d'où ce partage). Le bouton Envoyer est à droite des choix sur
-  écran large, sous les choix sur téléphone (barre collée en bas essayée le
-  15/10/2026 : elle cachait les choix). Tenu par `tests/navigateur.js`
-  (« choisir n'envoie rien avant Envoyer », sur un quiz).
+- **Envoyer ou toucher** (15/10/2026) : sondage, échelle, Oui/Non et Vrai/Faux
+  **modifiables** (même corrigés, `app.js` `pickOne`) : un appui envoie tout de
+  suite, on en touche un autre pour changer. QCM corrigé (`graded`), réponse figée
+  (correction immédiate) ou QCM multiple : un appui sélectionne, **Envoyer** vote
+  (14/10/2026 : l'envoi en un geste déroutait). Oui/Non et Vrai/Faux corrigés
+  envoient au toucher depuis le 15/10/2026 (interprétation d'une capture de
+  l'utilisateur, à confirmer). Envoyer : à droite des choix sur écran large, sous
+  les choix sur téléphone (barre collée essayée : elle cachait les choix). Tenu
+  par `tests/navigateur.js` (figé : « choisir n'envoie rien avant Envoyer » ;
+  Vrai/Faux corrigé : « un appui envoie tout de suite »).
   Pendant une saisie (nuage, réponse libre, mur, post-it), le bouton d'envoi
   est ramené à l'écran (le clavier du téléphone le cachait, hypothèse du
   14/10/2026) ; sur mur et post-it, Entrée publie.

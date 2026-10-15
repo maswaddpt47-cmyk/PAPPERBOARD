@@ -40,13 +40,20 @@ function check(cond, label) {
   await admin.click('#add-q-btn');
   await admin.fill('#qf-text', 'Utilisez-vous internet ?');
   await admin.check('#qf-correct input[value="0"]');
+  await admin.uncheck('#qf-change'); // réponse figée : un appui ne vote pas, « Envoyer » vote
   await admin.click('#qf-save');
   await admin.waitForSelector('#q-list .list-item');
+  await admin.click('#add-q-btn');
+  await admin.selectOption('#qf-type', 'truefalse');
+  await admin.fill('#qf-text', 'Vrai ou faux ?');
+  await admin.check('#qf-correct input[value="0"]');
+  await admin.click('#qf-save');
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'wordcloud');
   await admin.fill('#qf-text', 'Un mot ?');
   await admin.click('#qf-save');
-  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
   check(await admin.locator('#tab-live').isHidden(), 'onglets : un seul panneau visible');
   await admin.click('#t-live');
   await admin.click('#live [data-op="next"]'); // quitte l'accueil et ouvre le vote
@@ -95,6 +102,14 @@ function check(cond, label) {
   check(/100 % · Bonne réponse/.test(await screen.textContent('#s-results .donut-legend .is-good')), 'résultat projeté');
   await phone.waitForSelector('#my-result:not([hidden])');
   check(/Bonne réponse !/.test(await phone.textContent('#my-result')), 'correction sur le téléphone');
+
+  // Vrai/Faux corrigé et modifiable : un appui envoie tout de suite, sans « Envoyer ».
+  await admin.click('#live [data-op="next"]');
+  await phone.waitForSelector('.btn-choice >> text=Vrai');
+  votes.length = 0;
+  await phone.click('.btn-choice >> text=Vrai');
+  await phone.waitForFunction(() => /Réponse enregistrée/.test(document.getElementById('answer-status').textContent));
+  check(votes.length === 1, 'Vrai/Faux corrigé : un appui envoie tout de suite');
 
   // Nuage de mots, puis reconnexion après coupure réseau.
   await admin.click('#live [data-op="next"]');
@@ -163,14 +178,14 @@ function check(cond, label) {
   check(review.includes('n\'invente jamais') && review.includes('Déjà reçu un faux SMS'), 'relecture : consigne avec sources et questions');
   await admin.uncheck('#gen-list input[value="0"]');
   await admin.click('#gen-save');
-  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 4);
   check(!(await admin.locator('#gen-dialog').evaluate(d => d.open)), 'génération : question cochée ajoutée, fenêtre fermée');
   await admin.click('#gen-btn');
   await admin.setInputFiles('#gen-file', { name: 'questions.json', mimeType: 'application/json',
     buffer: Buffer.from('[{"type":"wordcloud","text":"Un mot importé ?"}]') });
   await admin.waitForSelector('#gen-list input');
   await admin.click('#gen-save');
-  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 4);
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 5);
   check(true, 'import d\'un fichier JSON : lu, vérifié, ajouté');
 
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
