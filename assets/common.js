@@ -146,17 +146,20 @@ var WL = (function () {
     var fresh = !list || list.getAttribute('data-q') !== q.id + names.length;
     if (fresh) {
       list = el('ul', { class: 'bars' + (columns ? ' bars-scale' : ''), 'data-q': q.id + names.length });
-      names.forEach(function () {
-        list.appendChild(el('li', { class: 'bar' }, el('span', { class: 'bar-label' }),
+      names.forEach(function (_, i) {
+        list.appendChild(el('li', { class: 'bar', 'data-i': String(i) }, el('span', { class: 'bar-label' }),
           el('span', { class: 'bar-track' }, el('span', { class: 'bar-fill' })), el('span', { class: 'bar-value' })));
       });
     }
+    var items = Array.prototype.slice.call(list.children).sort(function (a, b) {
+      return a.getAttribute('data-i') - b.getAttribute('data-i');
+    });
     names.forEach(function (label, i) {
       var n = res.counts[i] || 0;
       var good = q.correct && q.correct.indexOf(i) !== -1;
       var pct = q.type === 'points' ? (sum ? Math.round(100 * n / sum) : 0)
         : (res.total ? Math.round(100 * n / res.total) : 0);
-      var li = list.children[i];
+      var li = items[i];
       li.className = 'bar' + (good ? ' bar-good' : '');
       li.children[0].textContent = (good ? '✓ ' : '') + label;
       li.children[2].textContent = columns ? String(n) : q.type === 'points' ? plural(n, 'point') : n + ' (' + pct + ' %)';
@@ -166,7 +169,19 @@ var WL = (function () {
       if (fresh) requestAnimationFrame(function () { requestAnimationFrame(apply); });
       else apply();
     });
+    if (q.type === 'points') sortByPoints(list, items, res.counts);
     return list;
+  }
+
+  /** Classement par points : du plus au moins de points, à égalité l'ordre des
+   *  choix. Les barres gardent leur élément (la longueur s'anime) ; on ne les
+   *  déplace que si l'ordre change, sinon la transition repartirait. */
+  function sortByPoints(list, items, counts) {
+    var order = items.map(function (_, i) { return i; }).sort(function (a, b) {
+      return (counts[b] || 0) - (counts[a] || 0) || a - b;
+    });
+    var moved = order.some(function (i, k) { return list.children[k] !== items[i]; });
+    if (moved) order.forEach(function (i) { list.appendChild(items[i]); });
   }
 
   /** Mémoire des éléments déjà affichés pour une question : seuls les

@@ -29,19 +29,17 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
 6. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
-   `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
-   supprimée).
-7. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
-   passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
-   recouper l'accès par mot de passe). Journaux Apache et sauvegardes
-   d'Alwaysdata à regarder une fois.
+   `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (à supprimer).
+7. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
+   `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
+   Apache et sauvegardes d'Alwaysdata à regarder une fois.
 8. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
    créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
 Fait côté hébergement (14/10/2026, déclaré par l'utilisateur) : HTTPS forcé,
-accès SSH par mot de passe coupé (clé seule), fichiers de clé supprimés. Secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré : pas
-d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
+SSH par clé seule, fichiers de clé supprimés. Secret `ALWAYSDATA_KNOWN_HOSTS`
+présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
 
 ## Décisions à trancher
 
@@ -142,7 +140,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   `#A83A1A`, bonne réponse `#2F6B1F` + coche (jamais la couleur seule), choix
   sélectionné brun neutre, Georgia/Verdana. Graphiques : `assets/charts.js`
   (anneau, jauge, compteur) ; PowerPoint dessiné aux mêmes couleurs (thème clair).
+  Classement par points : barres triées du plus au moins de points
+  (`sortByPoints`, 15/10/2026), déplacées seulement si l'ordre change.
   Cartes en thème sombre : contraste AA conservé (texte 4,5:1, graphique 3:1).
+- `/security-review` (15/10/2026) : rien retenu ; `admin.php` après la ligne 80 et
+  les JS lus par recherche seulement. À noter : `reveal: end` publie mur et
+  réponses libres sans relecture à l'échéance du minuteur.
 - **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
   multiples (point 2) — inhérent à un vote sans compte ; atténué par
   « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
@@ -194,6 +197,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
   (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
   Import tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
+  Texte pour l'IA : une affirmation est un « truefalse », jamais un « yesno »
+  (15/10/2026, essai Mistral).
   « Que des quiz » (case du formulaire) ne change que le texte pour l'IA :
   l'import valide pareil côté serveur, aucune règle n'est imposée au contenu.
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
@@ -293,8 +298,4 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
-- 14/10/2026 — Texte pour l'IA : « une affirmation → Vrai/Faux, pas Oui/Non »
-  (essai Mistral). À ajouter si l'écart se répète.
-- 09/10/2026 — Classement par points : trier les barres du plus au moins de
-  points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.

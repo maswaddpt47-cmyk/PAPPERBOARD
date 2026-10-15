@@ -657,6 +657,7 @@
       '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
       '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
       '- Quiz : mauvaises réponses crédibles, qui font réfléchir, jamais absurdes ni comiques.',
+      '- Une affirmation à juger est une question "truefalse" (Vrai/Faux), jamais "yesno" (Oui/Non) ; "yesno" seulement pour une vraie question à laquelle on répond par oui ou par non.',
       $('gen-qcm').checked ? '- Pas d\'échelle.' : '- Une seule échelle (« scale »), en toute fin d\'atelier.',
       '- Chaque question a un champ "explain" : 2 ou 3 phrases (300 caractères au plus) affichées avec les résultats '
         + 'pour lancer l\'échange : la bonne réponse et pourquoi, ou un chiffre de repère pour un sondage, avec sa source '
