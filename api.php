@@ -308,7 +308,7 @@ function api_admin_state(): void
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
-            'current' => $s['current'], 'participants' => count($s['participants']),
+            'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
     });

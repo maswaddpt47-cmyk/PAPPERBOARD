@@ -84,6 +84,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   avant « Afficher » » échoue environ 1 fois sur 10 (2 fois sur 20 lancements
   locaux), sans changement de code. Cause non trouvée ; bloque le passage sur
   `main` quand il tombe. À instrumenter (statut de `goto`, question projetée).
+  Même constat le 15/10/2026 sur `tests/navigateur.js` (« mot constructor »,
+  délai dépassé 1 fois sur 3, local seulement : le parcours navigateur ne tourne pas en CI).
 
 ## Points à ne pas défaire
 
@@ -244,6 +246,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   mur, post-it) **décochées par défaut** car elles peuvent contenir un nom, et
   jamais les réponses masquées. Les téléphones écoutent encore après la fin
   (304) : une conclusion ajoutée ensuite leur parvient.
+
+- **Export PowerPoint du bilan** (15/10/2026) : généré dans le navigateur par
+  PptxGenJS 4.0.1 copié dans `assets/` (licence MIT, chargé seulement à l'export,
+  aucune donnée envoyée ailleurs). Graphiques natifs modifiables, réponses
+  masquées exclues. Vérifié en local : fichier ouvert par python-pptx et
+  LibreOffice (9 diapositives) ; pas encore ouvert dans PowerPoint.
 
 ## Pistes d'amélioration
 

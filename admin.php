@@ -114,6 +114,7 @@ header('Cache-Control: no-store');
       <label class="check" title="Réponses libres, mur et post-it : relisez-les et masquez tout nom avant de les envoyer à une IA">
         <input id="bilan-texts" type="checkbox"> Inclure les réponses écrites (réponses libres, mur, post-it ; réponses masquées exclues)</label>
       <p class="row wrap"><button id="bilan-copy" class="btn btn-primary" type="button" title="Copie le bilan chiffré et la consigne de synthèse, à coller dans une IA">Copier le bilan pour une IA</button>
+        <button id="bilan-pptx" class="btn btn-primary" type="button" data-src="<?= wl_asset('pptxgen.bundle.js') ?>" title="Une diapositive par question (graphiques modifiables), le récap et la conclusion : à présenter ou imprimer">Exporter en PowerPoint</button>
         <button id="bilan-show" class="btn" type="button" title="Affiche les résultats de toutes les questions">Voir le tableau de bord</button>
         <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
       <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
@@ -225,6 +226,7 @@ header('Cache-Control: no-store');
 </main>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 </body>
 </html>

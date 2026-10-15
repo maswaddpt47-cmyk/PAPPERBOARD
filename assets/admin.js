@@ -196,6 +196,17 @@
     else manual();
   });
 
+  $('bilan-pptx').addEventListener('click', function () {
+    var btn = $('bilan-pptx'), note = $('bilan-copied');
+    btn.disabled = true;
+    note.textContent = 'Préparation du fichier PowerPoint…';
+    window.WLBilanPptx(btn.dataset.src, data).then(function () {
+      note.textContent = 'Fichier PowerPoint téléchargé.';
+    }, function (e) {
+      note.textContent = 'Export impossible : ' + (e && e.message || 'erreur inconnue') + '.';
+    }).then(function () { btn.disabled = false; });
+  });
+
   $('bilan-show').addEventListener('click', function () {
     var board = $('bilan-board');
     if (!board.hidden) { WL.show(board, false); $('bilan-show').textContent = 'Voir le tableau de bord'; return; }

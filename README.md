@@ -228,6 +228,8 @@ Envies » → regrouper les doublons depuis l'écran animateur → **Publier** �
 Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 
 **Après**
+- **Exporter en PowerPoint** (carte « Bilan de l'atelier ») : une diapositive par
+  question, le récap et la conclusion, à présenter ou imprimer.
 - **Exporter en CSV (tout)** pour le bilan interne, ou **CSV à diffuser** (sans
   les réponses masquées) pour un partage. Les exports ne sont pas effacés par la
   purge : les supprimer une fois le bilan fait.
@@ -246,3 +248,5 @@ Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
   fiche RGPD : `docs/registre-traitement.md`.
 - `assets/qrcode.js` : qrcode-generator 1.4.4 de Kazuhiko Arase, licence MIT
   (`assets/LICENSE-qrcode.txt`).
+- `assets/pptxgen.bundle.js` : PptxGenJS 4.0.1 (avec JSZip), licence MIT
+  (`assets/LICENSE-pptxgenjs.txt`), chargé seulement pour l'export PowerPoint du bilan.
