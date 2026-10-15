@@ -511,6 +511,59 @@ $admin->post('questions_duration', ['s' => $copy, 'duration' => 0]);
 $all = json_decode($admin->get("api.php?action=export&format=questions&s=$copy")['body'], true);
 check(!in_array('end', array_column($all, 'reveal'), true), 'sans durée, plus de correction « à la fin du temps »');
 
+// --- Signaler une difficulté, Oser demander, pseudonymes et classement -----------
+$ws = $admin->post('session_create', ['title' => 'Atelier élèves'])['json']['code'] ?? '';
+$el = [new Client($base), new Client($base), new Client($base)];
+foreach ($el as $c) { $c->join($ws); }
+$st = fn(Client $c) => $c->get("api.php?action=state&s=$ws")['json'];
+$adm = fn() => $admin->get("api.php?action=admin_state&s=$ws")['json'];
+$scr = fn() => $admin->get("api.php?action=screen&s=$ws")['json'];
+// Signaux : comptés pour l'animateur, sans réveiller les téléphones.
+$phonePath = "api.php?action=state&s=$ws";
+$el[1]->poll($phonePath);
+expect_status($el[0]->post('signal', ['s' => $ws, 'kind' => 'fast']), 200, 'signal « trop vite »');
+$el[2]->post('signal', ['s' => $ws, 'kind' => 'help']);
+check(($adm()['signals'] ?? []) === ['fast' => 1, 'again' => 0, 'help' => 1], 'signaux comptés par sorte');
+check($el[1]->poll($phonePath)['status'] === 304, 'un signal ne réveille pas les téléphones');
+check(!str_contains(json_encode($scr()), 'signal'), 'signaux jamais servis à la projection');
+$el[0]->post('signal', ['s' => $ws, 'kind' => 'fast']);
+check(($adm()['signals']['fast'] ?? 1) === 0, 'même signal renvoyé : retiré');
+expect_status($el[0]->post('signal', ['s' => $ws, 'kind' => 'pirate']), 400, 'signal inconnu refusé');
+// Oser demander : anonyme, publié par l'animateur avant d'être vu des autres.
+expect_status($el[0]->post('ask', ['s' => $ws, 'text' => 'Question ?']), 409, 'oser demander fermé : refusé');
+$admin->post('control', ['s' => $ws, 'op' => 'asks_open']);
+$aid = $el[0]->post('ask', ['s' => $ws, 'text' => 'Est-ce que TikTok écoute ?'])['json']['id'] ?? '';
+check(($st($el[0])['asks'][0]['pending'] ?? false) === true, 'oser demander : son auteur voit sa question en attente');
+check($st($el[1])['asks'] === [], 'oser demander : invisible des autres avant publication');
+expect_status($el[1]->post('ask_vote', ['s' => $ws, 'aid' => $aid]), 409, 'vote sur une question non publiée refusé');
+$admin->post('ask_admin', ['s' => $ws, 'aid' => $aid, 'op' => 'publish']);
+check(($el[1]->post('ask_vote', ['s' => $ws, 'aid' => $aid])['json']['voted'] ?? false) === true, 'vote « moi aussi »');
+expect_status($el[0]->post('ask_vote', ['s' => $ws, 'aid' => $aid]), 409, 'vote pour sa propre question refusé');
+check(($adm()['asks'][0]['votes'] ?? 0) === 1 && !isset($st($el[1])['asks'][0]['p']), 'oser demander : votes comptés, auteur jamais servi');
+$admin->post('control', ['s' => $ws, 'op' => 'show_asks']);
+check(($scr()['asks'][0]['text'] ?? '') === 'Est-ce que TikTok écoute ?' && !isset($scr()['asks'][0]['mine']), 'oser demander projeté à la demande');
+// Pseudonymes et classement des quiz (option de session).
+$quiz = $admin->post('question_save', ['s' => $ws, 'question' => ['type' => 'truefalse', 'text' => 'Quiz élèves', 'correct' => [0]]])['json']['id'] ?? '';
+check($st($el[0])['pseudo'] === null, 'pas de pseudonyme sans l\'option');
+$admin->post('control', ['s' => $ws, 'op' => 'pseudo_on']);
+$names = array_map(fn($c) => $st($c)['pseudo'] ?? '', $el);
+check(count(array_unique($names)) === 3 && preg_match('/^\S+ \S+$/u', $names[0]) === 1, 'pseudonymes donnés à chaque inscrit, tous différents');
+$admin->post('control', ['s' => $ws, 'op' => 'goto', 'qid' => $quiz]);
+check(!isset($scr()['asks']), 'piloter une question quitte la projection d\'« Oser demander »');
+$el[0]->vote($ws, $quiz, 0);
+$el[1]->vote($ws, $quiz, 1);
+check(($st($el[0])['score']['n'] ?? -1) === 0, 'score : rien avant la correction');
+$admin->post('control', ['s' => $ws, 'op' => 'close']);
+$admin->post('control', ['s' => $ws, 'op' => 'show']);
+check(($st($el[0])['score'] ?? null) === ['n' => 1, 'of' => 1], 'score du participant après la correction');
+$admin->post('control', ['s' => $ws, 'op' => 'show_podium']);
+$pod = $scr()['podium'] ?? [];
+check(count($pod) === 1 && $pod[0]['name'] === $names[0] && $pod[0]['rank'] === 1, 'podium : seuls les rangs 1 à 3 qui ont marqué');
+check(count($adm()['ranking'] ?? []) === 3, 'classement complet pour l\'animateur seul');
+$admin->post('session_archive', ['s' => $ws]);
+$rawWs = implode('', array_map('file_get_contents', glob("$data/archives/*.json")));
+check(!str_contains($rawWs, $names[0]) && !str_contains($rawWs, 'TikTok'), 'archive : ni pseudonyme, ni question d\'un participant');
+
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {
     check(is_array(json_decode(file_get_contents($f), true)), 'JSON valide : ' . basename($f));

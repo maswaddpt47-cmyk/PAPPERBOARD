@@ -9,10 +9,10 @@ require __DIR__ . '/lib.php';
 wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
-const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
+const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
 
 try {
     wl_maybe_purge();
@@ -145,6 +145,7 @@ function api_join(array $b): void
             wl_rate('join|' . wl_ip_hash(), (int)wl_config()['rate_join']);
             $s['participants'][$pkey] = time();
         }
+        wl_assign_pseudo($s, $pkey);
         return $s['title'];
     }, false, false);
     api_set_token_cookie($token);
@@ -189,6 +190,9 @@ function api_state(): void
         'result' => $q && wl_shown($q) && in_array($q['type'], ['yesno', 'truefalse', 'mcq', 'poll', 'scale'], true)
             ? wl_results($q) : null,
         'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'], 'maxText' => (int)wl_config()['max_text'],
+        'asksOpen' => !empty($s['asksOpen']), 'asks' => !empty($s['asksOpen']) ? wl_asks_view($s, $pkey) : [],
+        'pseudo' => !empty($s['pseudo']) ? ($s['pseudos'][$pkey] ?? null) : null,
+        'score' => !empty($s['pseudo']) ? ['n' => wl_scores($s)[$pkey] ?? 0, 'of' => count(wl_scored_questions($s))] : null,
     ]);
 }
 
@@ -253,6 +257,27 @@ function api_post_delete(array $b): void
     wl_json(['ok' => true]);
 }
 
+/** Signaler une difficulté : seul l'animateur voit les compteurs, les
+ *  téléphones ne sont pas réveillés. */
+function api_signal(array $b): void
+{
+    $kind = api_participant_write($b, fn(array &$s, string $pkey) => wl_signal($s, $pkey, $b['kind'] ?? ''), false);
+    wl_json(['ok' => true, 'signal' => $kind, 'ttl' => WL_SIGNAL_TTL]);
+}
+
+/** Oser demander : une question publiée réveille les téléphones (comme le mur). */
+function api_ask(array $b): void
+{
+    $ask = api_participant_write($b, fn(array &$s, string $pkey) => wl_ask_add($s, $pkey, $b['text'] ?? ''), true);
+    wl_json(['ok' => true, 'id' => $ask['id']]);
+}
+
+function api_ask_vote(array $b): void
+{
+    $voted = api_participant_write($b, fn(array &$s, string $pkey) => wl_ask_vote($s, $pkey, (string)($b['aid'] ?? '')), true);
+    wl_json(['ok' => true, 'voted' => $voted]);
+}
+
 function api_like(array $b): void
 {
     $liked = api_participant_write($b, fn(array &$s, string $pkey) =>
@@ -269,6 +294,7 @@ function api_screen(): void
     $s = api_public_session(api_code($_GET));
     wl_json_etag('s' . $s['version'] . wl_time_tag($s), fn() => match (true) {
         ($s['board'] ?? -1) >= 0 => ['ok' => true] + wl_board_view($s),
+        in_array($s['show'] ?? '', ['asks', 'podium'], true) => ['ok' => true] + wl_show_view($s),
         $s['ended'] => api_ended_view($s),
         default => ['ok' => true] + wl_screen_view($s),
     });
@@ -309,12 +335,17 @@ function api_sessions(): void
 function api_admin_state(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
-    wl_json_etag('a' . $s['version'] . wl_time_tag($s), function () use ($s) {
+    // Signaux en cours : l'ETag change toutes les 10 s pour que les compteurs
+    // s'effacent d'eux-mêmes (sinon 304 jusqu'à la prochaine écriture).
+    $live = array_filter($s['signals'] ?? [], fn($x) => time() - $x['t'] < WL_SIGNAL_TTL + 15);
+    wl_json_etag('a' . $s['version'] . wl_time_tag($s) . ($live ? '-' . intdiv(time(), 10) : ''), function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
-            'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
+            'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
+            'signals' => wl_signal_counts($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
+            'pseudo' => !empty($s['pseudo']), 'ranking' => !empty($s['pseudo']) ? wl_ranking($s) : [], 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
     });
@@ -577,15 +608,42 @@ function api_question_move(array $b): void
 function api_control(array $b): void
 {
     $op = (string)($b['op'] ?? '');
-    // Bilan projeté et QR code : seule la projection change, pas les téléphones.
+    // Bilan, QR code, projection d'« Oser demander » ou du podium : seule la
+    // projection change, pas les téléphones.
     $board = in_array($op, ['board', 'board_next', 'board_prev', 'board_off'], true);
     $qr = $op === 'qr_hide' || $op === 'qr_show';
-    wl_update(api_code($b), function (array &$s) use ($op, $b, $board, $qr) {
+    $show = in_array($op, ['show_asks', 'show_podium', 'show_off'], true);
+    wl_update(api_code($b), function (array &$s) use ($op, $b, $board, $qr, $show) {
         if ($qr) {
             $s['qrHidden'] = $op === 'qr_hide';
             return;
         }
+        if ($show) {
+            $s['show'] = ['show_asks' => 'asks', 'show_podium' => 'podium', 'show_off' => ''][$op];
+            $s['board'] = -1;
+            return;
+        }
+        if ($op === 'asks_open' || $op === 'asks_close') {
+            $s['asksOpen'] = $op === 'asks_open';
+            return;
+        }
+        if ($op === 'pseudo_on' || $op === 'pseudo_off') {
+            // Activé en cours de route : chaque inscrit reçoit son pseudonyme.
+            // Désactivé : les pseudonymes sont effacés (minimisation).
+            $s['pseudo'] = $op === 'pseudo_on';
+            if (!$s['pseudo']) {
+                $s['pseudos'] = [];
+            }
+            foreach (array_keys($s['participants']) as $pkey) {
+                wl_assign_pseudo($s, $pkey);
+            }
+            if ($op === 'pseudo_off' && ($s['show'] ?? '') === 'podium') {
+                $s['show'] = '';
+            }
+            return;
+        }
         if ($board) {
+            $s['show'] = '';
             $n = count(wl_board_questions($s));
             if ($op !== 'board_off' && $n === 0) {
                 throw new WlError('Aucune question posée : rien à montrer.', 409);
@@ -600,6 +658,7 @@ function api_control(array $b): void
         // Piloter une question ou la session reprend la projection normale.
         if ($op !== 'lock' && $op !== 'unlock') {
             $s['board'] = -1;
+            $s['show'] = '';
         }
         if (in_array($op, ['next', 'prev', 'goto'], true)) {
             $target = match ($op) {
@@ -625,7 +684,7 @@ function api_control(array $b): void
             throw new WlError('Aucune question.', 404);
         }
         api_apply_op($s['questions'][$s['current']], $op);
-    }, !$board && !$qr);
+    }, !$board && !$qr && !$show);
     wl_json(['ok' => true]);
 }
 
@@ -650,6 +709,13 @@ function api_apply_op(array &$q, string $op): void
         default:
             throw new WlError('Commande inconnue.');
     }
+}
+
+/** Oser demander : publier, masquer, marquer répondue, supprimer. */
+function api_ask_admin(array $b): void
+{
+    wl_update(api_code($b), fn(array &$s) => wl_ask_admin($s, (string)($b['aid'] ?? ''), (string)($b['op'] ?? '')));
+    wl_json(['ok' => true]);
 }
 
 /** Masque ou réaffiche une réponse libre (modération). */

@@ -1569,3 +1569,215 @@ function wl_dots_results(array $q, array $items): array
     usort($out, fn($a, $b) => $b['n'] <=> $a['n']);
     return $out;
 }
+
+// ---------------------------------------------------------------------------
+// Signaler une difficulté (anonyme, 2 minutes)
+// ---------------------------------------------------------------------------
+
+const WL_SIGNALS = ['fast' => 'Trop vite', 'again' => 'À réexpliquer', 'help' => 'Besoin d\'aide'];
+const WL_SIGNAL_TTL = 120; // un signal reflète le moment présent, puis s'efface
+
+/** Un signal par participant ; le même signal renvoyé (ou vide) le retire.
+ *  Retourne le signal en cours, ou null. */
+function wl_signal(array &$s, string $pkey, mixed $kind): ?string
+{
+    $kind = is_string($kind) ? $kind : '';
+    if ($kind !== '' && !isset(WL_SIGNALS[$kind])) {
+        throw new WlError('Signal inconnu.');
+    }
+    $now = time();
+    // Ménage des signaux expirés à chaque écriture.
+    $s['signals'] = array_filter($s['signals'] ?? [], fn($x) => $now - $x['t'] < WL_SIGNAL_TTL);
+    if ($kind === '' || ($s['signals'][$pkey]['k'] ?? '') === $kind) {
+        unset($s['signals'][$pkey]);
+        return null;
+    }
+    $s['signals'][$pkey] = ['k' => $kind, 't' => $now];
+    return $kind;
+}
+
+/** Nombre de signaux en cours, par sorte (jamais qui les a envoyés). */
+function wl_signal_counts(array $s, ?int $now = null): array
+{
+    $now ??= time();
+    $counts = array_fill_keys(array_keys(WL_SIGNALS), 0);
+    foreach ($s['signals'] ?? [] as $x) {
+        if ($now - $x['t'] < WL_SIGNAL_TTL) {
+            $counts[$x['k']]++;
+        }
+    }
+    return $counts;
+}
+
+// ---------------------------------------------------------------------------
+// Oser demander : questions anonymes des participants, votes, modération
+// ---------------------------------------------------------------------------
+
+function wl_ask_index(array $s, string $aid): int
+{
+    foreach ($s['asks'] ?? [] as $i => $a) {
+        if ($a['id'] === $aid) {
+            return $i;
+        }
+    }
+    throw new WlError('Question introuvable.', 404);
+}
+
+/** Question d'un participant : visible des autres seulement une fois publiée
+ *  par l'animateur (elle peut contenir un nom). */
+function wl_ask_add(array &$s, string $pkey, mixed $text): array
+{
+    if (empty($s['asksOpen']) || $s['ended']) {
+        throw new WlError('« Oser demander » est fermé.', 409);
+    }
+    $max = (int)wl_config()['max_posts'];
+    if (count(array_filter($s['asks'] ?? [], fn($a) => $a['p'] === $pkey)) >= $max) {
+        throw new WlError("Vous avez déjà posé $max questions.", 409);
+    }
+    $ask = ['id' => 'q' . bin2hex(random_bytes(5)), 'p' => $pkey, 'text' => wl_clean_free_text($text),
+        't' => time(), 'votes' => [], 'published' => false, 'answered' => false];
+    $s['asks'][] = $ask;
+    return $ask;
+}
+
+/** Vote « moi aussi » sur une question publiée : un par participant, bascule. */
+function wl_ask_vote(array &$s, string $pkey, string $aid): bool
+{
+    if (empty($s['asksOpen']) || $s['ended']) {
+        throw new WlError('« Oser demander » est fermé.', 409);
+    }
+    $a = &$s['asks'][wl_ask_index($s, $aid)];
+    if (!$a['published']) {
+        throw new WlError('Cette question n\'est pas affichée.', 409);
+    }
+    if ($a['p'] === $pkey) {
+        throw new WlError('Vous ne pouvez pas voter pour votre propre question.', 409);
+    }
+    $voted = !in_array($pkey, $a['votes'], true);
+    $a['votes'] = $voted ? [...$a['votes'], $pkey] : array_values(array_diff($a['votes'], [$pkey]));
+    return $voted;
+}
+
+/** Animateur : publier, masquer, marquer répondue, supprimer. */
+function wl_ask_admin(array &$s, string $aid, string $op): void
+{
+    $i = wl_ask_index($s, $aid);
+    match ($op) {
+        'publish', 'unpublish' => $s['asks'][$i]['published'] = $op === 'publish',
+        'answered', 'unanswered' => $s['asks'][$i]['answered'] = $op === 'answered',
+        'delete' => array_splice($s['asks'], $i, 1),
+        default => throw new WlError('Commande inconnue.'),
+    };
+}
+
+/** Questions triées : non répondues d'abord, puis les plus votées. $pkey :
+ *  vue d'un participant (publiées + les siennes en attente) ; null : animateur
+ *  (toutes) ; '' : projection (publiées seulement). Jamais l'auteur. */
+function wl_asks_view(array $s, ?string $pkey): array
+{
+    $list = [];
+    foreach ($s['asks'] ?? [] as $a) {
+        $mine = $pkey !== null && $pkey !== '' && $a['p'] === $pkey;
+        if ($pkey !== null && !$a['published'] && !$mine) {
+            continue;
+        }
+        $item = ['id' => $a['id'], 'text' => $a['text'], 'votes' => count($a['votes']),
+            'answered' => $a['answered'], 't' => $a['t']];
+        if ($pkey === null) {
+            $item['published'] = $a['published'];
+        } elseif ($pkey !== '') {
+            $item += ['mine' => $mine, 'pending' => !$a['published'], 'voted' => in_array($pkey, $a['votes'], true)];
+        }
+        $list[] = $item;
+    }
+    usort($list, fn($x, $y) => [$x['answered'], -$x['votes'], $x['t']] <=> [$y['answered'], -$y['votes'], $y['t']]);
+    return array_map(function ($x) { unset($x['t']); return $x; }, $list);
+}
+
+// ---------------------------------------------------------------------------
+// Pseudonymes tirés au hasard et classement des quiz (option par session)
+// ---------------------------------------------------------------------------
+
+// Noms masculins et adjectifs accordés : « Panda curieux », jamais saisi par l'élève.
+const WL_PSEUDO_ANIMALS = ['Panda', 'Koala', 'Hibou', 'Renard', 'Castor', 'Dauphin', 'Lynx', 'Pingouin',
+    'Hérisson', 'Écureuil', 'Faucon', 'Lama', 'Zèbre', 'Tigre', 'Loup', 'Ours', 'Phoque', 'Colibri',
+    'Toucan', 'Manchot', 'Chamois', 'Bison', 'Blaireau', 'Chevreuil', 'Flamant', 'Héron', 'Jaguar',
+    'Lézard', 'Mouflon', 'Poulpe'];
+const WL_PSEUDO_ADJECTIVES = ['agile', 'brillant', 'calme', 'curieux', 'discret', 'futé', 'joyeux', 'malin',
+    'rapide', 'rêveur', 'rusé', 'sage', 'souriant', 'tranquille', 'vaillant', 'vif', 'zen', 'audacieux',
+    'patient', 'créatif', 'enjoué', 'espiègle', 'inventif', 'serein', 'généreux', 'attentif', 'habile',
+    'sportif', 'poétique', 'radieux'];
+
+/** Donne un pseudonyme libre à un participant (si l'option est active). */
+function wl_assign_pseudo(array &$s, string $pkey): void
+{
+    if (empty($s['pseudo']) || isset($s['pseudos'][$pkey])) {
+        return;
+    }
+    $taken = array_flip($s['pseudos'] ?? []);
+    for ($try = 0; $try < 200; $try++) {
+        $name = WL_PSEUDO_ANIMALS[random_int(0, count(WL_PSEUDO_ANIMALS) - 1)] . ' '
+            . WL_PSEUDO_ADJECTIVES[random_int(0, count(WL_PSEUDO_ADJECTIVES) - 1)];
+        if (!isset($taken[$name])) {
+            break;
+        }
+    }
+    $s['pseudos'][$pkey] = $name;
+}
+
+/** Questions qui comptent au classement : quiz à bonne réponse, correction affichée. */
+function wl_scored_questions(array $s): array
+{
+    return array_values(array_filter($s['questions'], fn($q) => !empty($q['correct'])
+        && in_array($q['type'], ['yesno', 'truefalse', 'mcq'], true) && wl_shown($q)));
+}
+
+/** Bonnes réponses par participant (clé => nombre). */
+function wl_scores(array $s): array
+{
+    $scores = array_fill_keys(array_keys($s['pseudos'] ?? []), 0);
+    foreach (wl_scored_questions($s) as $q) {
+        $want = $q['correct'];
+        sort($want);
+        foreach ($q['answers'] as $pkey => $a) {
+            $v = (array)$a['v'];
+            sort($v);
+            if ($v === $want && isset($scores[$pkey])) {
+                $scores[$pkey]++;
+            }
+        }
+    }
+    return $scores;
+}
+
+/** Classement par pseudonyme : rang (ex aequo partagé), pseudonyme, score. */
+function wl_ranking(array $s): array
+{
+    $rows = [];
+    foreach (wl_scores($s) as $pkey => $score) {
+        $rows[] = ['name' => $s['pseudos'][$pkey], 'score' => $score];
+    }
+    usort($rows, fn($a, $b) => [-$a['score'], $a['name']] <=> [-$b['score'], $b['name']]);
+    foreach ($rows as $i => &$r) {
+        $r['rank'] = $i > 0 && $rows[$i - 1]['score'] === $r['score'] ? $rows[$i - 1]['rank'] : $i + 1;
+    }
+    return $rows;
+}
+
+/** Podium projeté : les rangs 1 à 3 seulement (personne n'est montré dernier). */
+function wl_podium(array $s): array
+{
+    return array_values(array_filter(wl_ranking($s), fn($r) => $r['rank'] <= 3 && $r['score'] > 0));
+}
+
+/** Projection « Oser demander » ou « Podium » (à la demande de l'animateur). */
+function wl_show_view(array $s): array
+{
+    $base = ['code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
+        'participants' => count($s['participants']), 'qrHidden' => !empty($s['qrHidden']),
+        'joinUrl' => wl_join_url($s['code']), 'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'],
+        'show' => $s['show']];
+    return $base + ($s['show'] === 'asks'
+        ? ['asks' => wl_asks_view($s, '')]
+        : ['podium' => wl_podium($s), 'scored' => count(wl_scored_questions($s))]);
+}
