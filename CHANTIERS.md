@@ -258,6 +258,14 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   aux téléphones (tenu par e2e), reprise dans l'export PowerPoint, effacée avec
   la session par la purge.
 
+- **Archive anonyme au lieu de suppression** (choix de l'utilisateur, 15/10/2026,
+  option 1 après alerte RGPD) : la purge (`wl_purge`) et le bouton « Archiver »
+  écrivent `archives/<date>-<id>.json` (questions, explications, résultats
+  regroupés, récap anonyme, conclusion, synthèse) puis suppriment la session.
+  Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
+  réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
+  personnelle). Tenu par e2e. Mentions de confidentialité et registre (V0.4) à jour.
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*

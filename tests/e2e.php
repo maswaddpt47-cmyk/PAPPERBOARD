@@ -402,6 +402,20 @@ touch("$data/last-purge", time() - 7200);
 $admin->get('api.php?action=me');
 check(!is_file($file), 'sans action de l\'animateur depuis 31 jours : purgée, même avec un passage récent');
 expect_status($p[0]->get($path), 404, 'session purgée : code inconnu');
+$arch = $admin->get('api.php?action=archives')['json']['archives'] ?? [];
+$aid = array_values(array_filter($arch, fn($a) => $a['title'] === $json['title']))[0]['id'] ?? '';
+$ar = $admin->get('api.php?action=archive&id=' . $aid)['json'] ?? [];
+$raw = file_get_contents("$data/archives/$aid.json");
+check(count($ar['questions'] ?? []) === count($json['questions']) && ($ar['conclusion'] ?? '') !== '', 'purge : archive anonyme créée (questions, conclusion)');
+check(!str_contains($raw, $p[0]->token) && !str_contains($raw, 'Dupont') && !str_contains($raw, '"answers"') && str_contains($raw, 'Point un'),
+    'archive : ni jeton, ni réponse une à une, ni texte d\'un participant (synthèse de l\'animateur gardée)');
+$yes = array_values(array_filter($ar['questions'], fn($q) => $q['text'] === 'Avez-vous un smartphone ?'))[0] ?? [];
+check(isset($yes['results']['counts']) && !isset($yes['results']['texts']), 'archive : résultats chiffrés gardés');
+expect_status($p[0]->get('api.php?action=archives'), 401, 'archives réservées à l\'animateur');
+$reuse = $admin->post('archive_reuse', ['id' => $aid]);
+check(count($admin->get('api.php?action=admin_state&s=' . ($reuse['json']['code'] ?? ''))['json']['questions'] ?? []) > 0, 'archive : questions réutilisées dans une nouvelle session');
+expect_status($admin->post('archive_delete', ['id' => '../sessions/x']), 404, 'archive : identifiant invalide refusé');
+expect_status($admin->post('archive_delete', ['id' => $aid]), 200, 'archive supprimée');
 
 // --- Projection en direct (sondage, nuage, échelle, points) ---------------------
 $dir = $admin->post('session_create', ['title' => 'Direct'])['json']['code'] ?? '';

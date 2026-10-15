@@ -64,7 +64,11 @@
     text(slide, q.text, { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink' });
     var h = q.explain ? 3.5 : 4.5, box = { x: 0.5, y: 1.9, w: W - 1, h: h };
     var visible = function (list) { return (list || []).filter(function (x) { return !x.hidden; }); };
-    if (['yesno', 'truefalse', 'poll', 'mcq', 'points'].indexOf(q.type) !== -1) {
+    var gone = !r.counts && !r.words && !r.texts && !r.posts && !r.items; // archive : textes non conservés
+    if (gone) {
+      text(slide, WL.plural(r.total, post ? 'contribution' : 'réponse') + ' — textes des participants non conservés dans l\'archive (anonymat).',
+        Object.assign({ fontSize: 18, color: C.doux }, box));
+    } else if (['yesno', 'truefalse', 'poll', 'mcq', 'points'].indexOf(q.type) !== -1) {
       bars(pptx, slide, q.options, r.counts, q.type === 'points' ? [] : (q.correct || []), box);
     } else if (q.type === 'dots') {
       bars(pptx, slide, r.items.map(function (it) { return it.text; }), r.items.map(function (it) { return it.n; }), [], box);

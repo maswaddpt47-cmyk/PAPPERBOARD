@@ -12,7 +12,7 @@
   }
 
   function view(id) {
-    ['login', 'sessions', 'editor'].forEach(function (v) { WL.show($(v), v === id); });
+    ['login', 'sessions', 'editor', 'archive-view'].forEach(function (v) { WL.show($(v), v === id); });
     WL.show($('logout-btn'), id !== 'login');
   }
 
@@ -58,6 +58,7 @@
     if (poller) poller.stop();
     code = null;
     view('sessions');
+    showArchives();
     WL.api('sessions').then(function (r) {
       if (r.status === 401) return showLogin('');
       var list = WL.clear($('session-list'));
@@ -73,6 +74,11 @@
             el('button', { type: 'button', class: 'btn', onclick: function () {
               post('session_duplicate', { s: s.code }).then(showSessions);
             } }, 'Dupliquer'),
+            el('button', { type: 'button', class: 'btn', title: 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', onclick: function () {
+              if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés.')) {
+                post('session_archive', { s: s.code }).then(showSessions);
+              }
+            } }, 'Archiver'),
             el('button', { type: 'button', class: 'btn btn-danger', onclick: function () {
               if (confirm('Supprimer définitivement « ' + s.title + ' » et toutes ses réponses ?')) {
                 post('session_delete', { s: s.code }).then(showSessions);
@@ -81,6 +87,61 @@
       });
     });
   }
+
+  // --- Archives (anonymes) ------------------------------------------------------
+
+  var archive = null;
+
+  function showArchives() {
+    WL.api('archives').then(function (r) {
+      var list = WL.clear($('archive-list'));
+      if (r.status !== 200) return;
+      if (!r.data.archives.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune archive pour le moment.'));
+      r.data.archives.forEach(function (a) {
+        list.appendChild(el('li', { class: 'list-item' },
+          el('div', { class: 'grow' }, el('strong', null, a.title),
+            el('p', { class: 'meta' }, WL.plural(a.questions, 'question') + ' — ' + WL.plural(a.participants, 'participant')
+              + ' — archivée le ' + new Date(a.archived * 1000).toLocaleDateString('fr-FR'))),
+          el('button', { type: 'button', class: 'btn', onclick: function () { openArchive(a.id); } }, 'Ouvrir')));
+      });
+    });
+  }
+
+  function openArchive(id) {
+    WL.api('archive', { query: 'id=' + encodeURIComponent(id) }).then(function (r) {
+      if (r.status !== 200) { banner(r.data.error); return; }
+      archive = r.data;
+      view('archive-view');
+      $('ar-title').textContent = archive.title;
+      $('ar-meta').textContent = WL.plural(archive.participants, 'participant') + ' — ' + WL.plural(archive.questions.length, 'question')
+        + (archive.created ? ' — atelier du ' + new Date(archive.created * 1000).toLocaleDateString('fr-FR') : '')
+        + ' — archivée le ' + new Date(archive.archived * 1000).toLocaleDateString('fr-FR');
+      $('ar-status').textContent = '';
+      WL.renderRecap($('ar-recap'), archive);
+      $('ar-synthesis').textContent = archive.synthesis || '';
+      WL.show($('ar-synthesis-box'), !!archive.synthesis);
+      var board = WL.clear($('ar-board'));
+      archive.questions.forEach(function (q, i) {
+        var res = el('div');
+        board.appendChild(el('section', { class: 'bilan-q' }, el('h3', null, (i + 1) + '. ' + q.text), el('p', { class: 'meta' }, WL.typeLabel(q)), res));
+        if (q.results.counts) WL.renderResults(res, Object.assign({ showResults: true, options: [] }, q), q.results);
+        else res.appendChild(el('p', { class: 'meta' }, WL.plural(q.results.total, 'réponse') + ' (textes non conservés dans l\'archive)'));
+      });
+    });
+  }
+
+  $('archive-back').addEventListener('click', showSessions);
+  $('ar-pptx').addEventListener('click', function () {
+    $('ar-status').textContent = 'Préparation du fichier PowerPoint…';
+    window.WLBilanPptx($('ar-pptx').dataset.src, archive).then(function () { $('ar-status').textContent = 'Fichier PowerPoint téléchargé.'; },
+      function (e) { $('ar-status').textContent = 'Export impossible : ' + (e && e.message || 'erreur inconnue') + '.'; });
+  });
+  $('ar-reuse').addEventListener('click', function () {
+    post('archive_reuse', { id: archive.id }).then(function (d) { openSession(d.code); });
+  });
+  $('ar-delete').addEventListener('click', function () {
+    if (confirm('Supprimer définitivement l\'archive « ' + archive.title + ' » ?')) post('archive_delete', { id: archive.id }).then(showSessions);
+  });
 
   $('create-form').addEventListener('submit', function (e) {
     e.preventDefault();

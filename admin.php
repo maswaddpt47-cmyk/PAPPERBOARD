@@ -40,6 +40,25 @@ header('Cache-Control: no-store');
       <button class="btn btn-primary" type="submit">Créer</button>
     </form>
     <ul id="session-list" class="list"></ul>
+    <h2>Archives</h2>
+    <p class="meta">Après 30 jours sans activité (ou sur « Archiver »), une session devient une archive anonyme :
+      questions, résultats chiffrés, récap, conclusion et synthèse sont gardés ; les réponses une à une, les textes
+      écrits par les participants et les jetons des appareils sont effacés. Les archives se gardent sans limite.</p>
+    <ul id="archive-list" class="list"></ul>
+  </section>
+
+  <section id="archive-view" hidden>
+    <p><button id="archive-back" class="btn btn-ghost" type="button">← Mes sessions</button></p>
+    <h1 id="ar-title"></h1>
+    <p id="ar-meta" class="meta"></p>
+    <p class="row wrap">
+      <button id="ar-pptx" class="btn btn-primary" type="button" data-src="<?= wl_asset('pptxgen.bundle.js') ?>" title="Bilan en diapositives : questions, résultats, récap, synthèse, conclusion">Exporter en PowerPoint</button>
+      <button id="ar-reuse" class="btn" type="button" title="Nouvelle session avec les mêmes questions et la même conclusion, sans résultats">Réutiliser les questions</button>
+      <button id="ar-delete" class="btn btn-danger" type="button">Supprimer l'archive</button>
+      <span id="ar-status" class="meta" aria-live="polite"></span></p>
+    <div id="ar-recap" class="card"></div>
+    <div id="ar-synthesis-box" class="card" hidden><h2>Synthèse et recommandations</h2><p id="ar-synthesis" class="pre-wrap"></p></div>
+    <div id="ar-board" class="bilan-board"></div>
   </section>
 
   <section id="editor" hidden>

@@ -10,9 +10,9 @@ wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
-const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
+const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_conclusion', 'session_synthesis', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -346,6 +346,54 @@ function api_session_duplicate(array $b): void
     }, $src['questions']);
     $title = preg_replace('/^(.{0,120}).*$/us', '$1', 'Copie de ' . $src['title']);
     $s = wl_create_session($title, $questions);
+    wl_json(['ok' => true, 'code' => $s['code']]);
+}
+
+/** Archiver tout de suite (anonymiser) une session, sans attendre la purge. */
+function api_session_archive(array $b): void
+{
+    $s = wl_load_or_fail(api_code($b));
+    $id = wl_archive_session($s);
+    wl_delete_session($s['code']);
+    wl_json(['ok' => true, 'id' => $id]);
+}
+
+function api_archives(): void
+{
+    wl_json(['ok' => true, 'archives' => wl_list_archives()]);
+}
+
+function api_archive(): void
+{
+    $file = wl_archive_file((string)($_GET['id'] ?? ''));
+    $a = is_file($file) ? json_decode((string)file_get_contents($file), true) : null;
+    is_array($a) ? wl_json(['ok' => true] + $a) : throw new WlError('Archive introuvable.', 404);
+}
+
+function api_archive_delete(array $b): void
+{
+    $file = wl_archive_file((string)($b['id'] ?? ''));
+    is_file($file) && unlink($file);
+    wl_json(['ok' => true]);
+}
+
+/** Nouvelle session avec les questions d'une archive (sans résultats). */
+function api_archive_reuse(array $b): void
+{
+    $file = wl_archive_file((string)($b['id'] ?? ''));
+    $a = is_file($file) ? json_decode((string)file_get_contents($file), true) : null;
+    if (!is_array($a)) {
+        throw new WlError('Archive introuvable.', 404);
+    }
+    $questions = array_map(function ($q) {
+        $q = wl_clean_question(array_diff_key($q, ['results' => 1]));
+        // Gommettes : la source n'est pas conservée dans l'archive, à rechoisir.
+        return $q;
+    }, array_values(array_filter($a['questions'], fn($q) => $q['type'] !== 'dots')));
+    $s = wl_create_session(preg_replace('/^(.{0,120}).*$/us', '$1', $a['title']), $questions);
+    wl_update($s['code'], function (array &$s) use ($a) {
+        $s['conclusion'] = $a['conclusion'] ?? '';
+    });
     wl_json(['ok' => true, 'code' => $s['code']]);
 }
 

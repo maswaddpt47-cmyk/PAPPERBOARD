@@ -62,7 +62,8 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <summary>Confidentialité</summary>
     <p><strong>En bref.</strong> Pas de nom, pas de compte. N'écrivez pas votre nom ni celui de
     quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
-    devant tout le groupe. Tout est effacé du serveur <?= $days ?> jours après l'atelier ; les résultats
+    devant tout le groupe. Ce qui vient de vous est effacé du serveur <?= $days ?> jours après l'atelier (on ne garde que les résultats
+    de groupe, comme « 2 personnes sur 3 ») ; les résultats
     que l'animateur a exportés pour le bilan restent sous sa responsabilité.</p>
     <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
@@ -74,7 +75,8 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <p><strong>Qui les voit</strong> : l'animateur ; les réponses qu'il publie sont projetées et
     visibles des participants ; il peut exporter les résultats pour le bilan de l'atelier.
     <strong>Hébergement</strong> : Alwaysdata, en France.
-    <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression.</p>
+    <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression de vos
+    réponses et de l'identifiant de l'appareil ; seuls des résultats regroupés et anonymes sont archivés.</p>
     <p><strong>Vos droits</strong> (accès, effacement, opposition…) : pendant l'atelier, demandez à
     l'animateur de retirer une réponse ; ensuite, écrivez à : <?= wl_h($contact) ?>.
     Vous pouvez aussi saisir la CNIL (cnil.fr).</p>

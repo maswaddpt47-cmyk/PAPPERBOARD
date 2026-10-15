@@ -234,8 +234,10 @@ Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
   les réponses masquées) pour un partage. Les exports ne sont pas effacés par la
   purge : les supprimer une fois le bilan fait.
 - **Terminer la session** : les téléphones affichent « Session terminée ».
-- Les données sont effacées automatiquement après 30 jours sans activité, ou
-  tout de suite avec **Supprimer** dans « Mes sessions ».
+- Après 30 jours sans activité, la session devient une **archive anonyme**
+  (« Mes sessions » > Archives) : questions, résultats chiffrés, récap,
+  conclusion et synthèse gardés, réponses une à une et textes des participants
+  effacés. **Archiver** le fait tout de suite ; **Supprimer** efface tout.
 
 ## 6. Développement
 

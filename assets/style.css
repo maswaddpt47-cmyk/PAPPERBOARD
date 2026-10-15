@@ -336,6 +336,7 @@ label.btn { cursor: pointer; }
 /* Plus de 6 questions : récap sur deux colonnes, lisible de loin. */
 #s-recap .recap:has(> li:nth-child(7)) { columns: 2; column-gap: 3em; }
 #s-recap .recap li { break-inside: avoid; }
+.pre-wrap { white-space: pre-wrap; }
 .bilan-board { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); margin-top: 1rem; }
 .bilan-q { border: 1px solid var(--wl-bord); border-radius: var(--wl-rayon); padding: .75rem; }
 .bilan-q h3 { font-size: 1rem; margin: 0; }

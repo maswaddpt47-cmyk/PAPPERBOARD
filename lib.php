@@ -61,7 +61,7 @@ function wl_data_dir(): string
         return $dir;
     }
     $dir = rtrim((string)wl_config()['data_dir'], '/') ?: __DIR__ . '/data';
-    foreach (['', '/sessions', '/rl'] as $sub) {
+    foreach (['', '/sessions', '/rl', '/archives'] as $sub) {
         if (!is_dir($dir . $sub) && !mkdir($dir . $sub, 0700, true) && !is_dir($dir . $sub)) {
             throw new WlError('Stockage indisponible.', 500);
         }
@@ -412,6 +412,57 @@ function wl_maybe_purge(): int
     return wl_purge();
 }
 
+/** Archive anonyme d'une session : questions, explications, résultats
+ *  regroupés (nombres, pourcentages, moyenne), récap, conclusion et synthèse.
+ *  Rien qui vienne d'un participant pris à part : ni jeton, ni réponse une à
+ *  une, ni texte écrit (réponses libres, nuage, mur, post-it), ni IP. Ces
+ *  données ne sont plus personnelles : l'archive se garde sans limite. */
+function wl_archive_session(array $s): string
+{
+    $questions = array_map(function ($q) use ($s) {
+        $r = wl_results($q, false, $s);
+        $kept = ['total' => $r['total']] + array_intersect_key($r, array_flip(['counts', 'average']));
+        if ($q['type'] === 'postit') {
+            $kept['columns'] = $q['options'];
+        }
+        return array_intersect_key($q, array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
+            + ['results' => $kept];
+    }, $s['questions']);
+    $id = gmdate('Ymd', $s['created'] ?? time()) . '-' . bin2hex(random_bytes(4));
+    $archive = [
+        'id' => $id, 'title' => $s['title'], 'created' => $s['created'] ?? null, 'archived' => time(),
+        'participants' => count($s['participants']), 'questions' => $questions,
+        'recap' => wl_recap($s, true), 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '',
+    ];
+    $file = wl_data_dir() . '/archives/' . $id . '.json';
+    $tmp = $file . '.tmp';
+    file_put_contents($tmp, json_encode($archive, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    rename($tmp, $file);
+    return $id;
+}
+
+function wl_archive_file(string $id): string
+{
+    if (!preg_match('/^\d{8}-[0-9a-f]{8}$/', $id)) {
+        throw new WlError('Archive introuvable.', 404);
+    }
+    return wl_data_dir() . '/archives/' . $id . '.json';
+}
+
+function wl_list_archives(): array
+{
+    $list = [];
+    foreach (glob(wl_data_dir() . '/archives/*.json') ?: [] as $file) {
+        $a = json_decode((string)file_get_contents($file), true);
+        if (is_array($a)) {
+            $list[] = ['id' => $a['id'], 'title' => $a['title'], 'created' => $a['created'], 'archived' => $a['archived'],
+                'questions' => count($a['questions']), 'participants' => $a['participants']];
+        }
+    }
+    usort($list, fn($a, $b) => $b['archived'] <=> $a['archived']);
+    return $list;
+}
+
 /** Supprime les sessions sans action de l'animateur depuis purge_days jours.
  *  Durée fixée par le responsable de traitement (config.php). */
 function wl_purge(): int
@@ -420,8 +471,14 @@ function wl_purge(): int
     $count = 0;
     foreach (glob(wl_data_dir() . '/sessions/*.json') ?: [] as $file) {
         $s = json_decode((string)file_get_contents($file), true);
-        if ((!is_array($s) || wl_retention_start($s) < $limit) && wl_delete_session(basename($file, '.json'), $limit)) {
-            $count++;
+        if (!is_array($s) || wl_retention_start($s) < $limit) {
+            // Archive anonyme d'abord (résultats regroupés), puis suppression du détail.
+            if (is_array($s) && !empty($s['questions'])) {
+                wl_archive_session($s);
+            }
+            if (wl_delete_session(basename($file, '.json'), $limit)) {
+                $count++;
+            }
         }
     }
     foreach (glob(wl_data_dir() . '/sessions/*.lock') ?: [] as $lock) {
@@ -957,7 +1014,7 @@ function wl_results(array $q, bool $admin = false, ?array $s = null): array
 /** Récap de fin de session : une ligne par question qui a reçu des réponses.
  *  Jamais le texte d'une réponse libre (elle peut contenir un nom) ; une idée
  *  du mur seulement si le mur a été publié et l'idée non masquée. */
-function wl_recap(array $s): array
+function wl_recap(array $s, bool $anonymous = false): array
 {
     $lines = [];
     foreach ($s['questions'] as $q) {
@@ -984,6 +1041,9 @@ function wl_recap(array $s): array
             })(),
             in_array($q['type'], ['yesno', 'truefalse', 'poll', 'mcq'], true)
                 => 'Le plus choisi : ' . $top($r['counts']) . ' (' . $pct(max($r['counts'])) . ')',
+            // Archive : aucun texte écrit par un participant (mots, idées, post-its).
+            $anonymous && in_array($q['type'], ['wordcloud', 'text', 'wall', 'postit', 'dots'], true)
+                => wl_plural($r['total'], ['wall' => 'message', 'postit' => 'post-it', 'dots' => 'vote'][$q['type']] ?? 'réponse'),
             $q['type'] === 'wordcloud' => 'Mots les plus cités : ' . implode(', ', array_column(array_slice($r['words'], 0, 3), 'text')),
             $q['type'] === 'scale' => 'Moyenne : ' . str_replace('.', ',', (string)$r['average']) . ' / ' . $q['scaleMax'],
             $q['type'] === 'points' => 'En tête : ' . $top($r['counts']),
