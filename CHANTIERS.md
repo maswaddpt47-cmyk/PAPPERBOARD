@@ -76,6 +76,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   y met l'IP du visiteur (sinon, limite par IP commune à tous — sans gravité,
   voir ligne précédente).
 
+- Plein écran de la projection : sans effet dans le Chrome du PC de
+  l'utilisateur (ni bouton ni Fn+F11), fonctionne dans Edge sur le même PC
+  (constaté le 15/10/2026). Cause hors WoocLight, supposée : réglage imposé à ce
+  Chrome (`chrome://policy`, FullscreenAllowed) ou extension. Le bouton
+  affiche un message au lieu de rester muet. Contournement : projeter avec Edge.
+
 ## Points à ne pas défaire
 
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
