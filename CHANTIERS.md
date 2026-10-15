@@ -11,11 +11,11 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
 1. **Tâche planifiée horaire** `php ~/www/purge.php` : créée chez Alwaysdata le
    15/10/2026 (déclaré), **non vérifiée** (SSH par mot de passe coupé) : un email
    d'erreur signalerait un échec, son absence ne prouve rien. Ne pas l'espacer.
-2. **À vérifier** : onglets de l'espace animateur, archive anonyme (Archiver,
-   consultation, réutilisation), synthèse enregistrée, post-its colorés (signaux,
-   « Oser demander », pseudonymes, podium, brise-glaces, Vrai/Faux au toucher,
-   « Rouvrir le vote » : validés par l'utilisateur le 15/10/2026). Puis un
-   **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
+2. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
+   validé, 15/10/2026) : onglets de l'espace animateur, archive anonyme, synthèse
+   enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
+   podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
+   barres de points. Puis un **atelier réel** à 10 participants ou plus.
 3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
    15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
    par l'utilisateur** (responsable de traitement).
