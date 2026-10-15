@@ -478,6 +478,9 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .s-qr-big .qr-code { font-size: clamp(1.2rem, 3vw, 3rem); }
 /* Fin de session : la conclusion monte du bas de l'écran (générique, 7 s, une fois). */
 .s-roll { animation: wl-roll 7s cubic-bezier(.25, .6, .3, 1); }
+/* Calque gardé après la montée : sans lui, Chrome redessine le texte à l'arrêt
+   et le recale au pixel (petit saut constaté le 15/10/2026, hypothèse non vérifiée). */
+#s-recap { will-change: transform; backface-visibility: hidden; }
 .s-rolling { overflow: hidden; }
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }
