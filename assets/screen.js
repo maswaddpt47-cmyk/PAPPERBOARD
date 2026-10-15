@@ -5,7 +5,7 @@
 (function () {
   var el = WL.el, $ = WL.$;
   var code = (new URLSearchParams(location.search).get('s') || '').toUpperCase();
-  var qrDone = false, offset = 0, timer = null;
+  var qrDone = false, offset = 0, timer = null, last = null;
 
   function error(text) {
     $('screen-error').textContent = text || '';
@@ -47,6 +47,9 @@
       qrDone = true;
     }
     var q = d.question;
+    last = d;
+    // Résultats à l'écran : question et QR réduits, la place va aux résultats.
+    document.body.classList.toggle('s-live', !d.ended && !!q && !!d.results);
     WL.show($('s-ended'), d.ended);
     WL.show($('s-welcome'), !d.ended && !q);
     WL.show($('s-question'), !d.ended && !!q);
@@ -97,4 +100,51 @@
     else if (kind === 'error') error(r.data.error || 'Erreur du serveur.');
   });
   poller.now();
+
+  // --- Pilotage (animateur connecté dans ce navigateur) -------------------------
+  // Mêmes commandes et même contrôle que admin.php (session animateur + CSRF) :
+  // un participant qui ouvre cette page n'a pas de session, rien ne s'active
+  // (et sans cookie animateur, aucune session PHP n'est ouverte pour lui).
+  // Une télécommande de présentation envoie flèches / Page préc.-suiv.
+
+  var csrf = '', busy = false;
+
+  function control(op) {
+    if (busy) return;
+    busy = true;
+    WL.api('control', { body: { s: code, op: op }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
+      busy = false;
+      // Message d'abord, sans rafraîchir : l'affichage suivant l'effacerait aussitôt.
+      if (r.status === 401 || r.status === 403) error('Reconnectez-vous dans l\'espace animateur pour piloter.');
+      else if (!r.data.ok) error(r.data.error || 'Commande refusée.');
+      else poller.now();
+    }, function () { busy = false; });
+  }
+
+  /** Espace : ouvrir le vote, le fermer, afficher les résultats, puis suivante. */
+  function step() {
+    var q = last && last.question;
+    if (!q) return control('next');
+    var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
+    if (q.state === 'draft') control('open');
+    else if (open) control('close');
+    else if (!q.showResults) control('show');
+    else control('next');
+  }
+
+  if (document.body.dataset.pilot) WL.api('me').then(function (r) {
+    if (!r.data || !r.data.admin) return;
+    csrf = r.data.csrf;
+    WL.show($('s-keys'), true);
+    document.addEventListener('keydown', function (e) {
+      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+      var k = e.key;
+      if (k === 'ArrowRight' || k === 'PageDown') control('next');
+      else if (k === 'ArrowLeft' || k === 'PageUp') control('prev');
+      else if (k === ' ' || k === 'Enter') step();
+      else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
+      else return;
+      e.preventDefault();
+    });
+  });
 }());

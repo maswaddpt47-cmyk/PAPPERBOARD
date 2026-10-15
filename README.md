@@ -204,6 +204,10 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 - Le compteur « 20 participants » en haut de la projection confirme que tout le monde est là.
 
 **Pendant (questions)**
+- Piloter depuis la projection (connecté à `admin.php` dans le même navigateur) :
+  **→ / ←** question suivante ou précédente, **Espace** ouvre le vote, le ferme,
+  affiche les résultats, puis passe à la suivante ; **Q** affiche le QR code en
+  grand. Une télécommande de présentation fait de même (Page suiv. / préc.).
 - **Ouvrir le vote** → « Votez sur votre téléphone ! » et le nombre de réponses s'affichent.
 - Sondage, nuage de mots, échelle et points : les réponses s'affichent **en
   direct** sur la projection dès l'ouverture du vote (case « Afficher les

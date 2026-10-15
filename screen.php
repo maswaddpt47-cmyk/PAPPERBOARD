@@ -14,12 +14,14 @@ wl_security_headers();
 <title>WoocLight — Projection</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
-<body class="screen">
+<?php // Cookie animateur présent : la page tentera le pilotage (vérifié par api.php). ?>
+<body class="screen"<?= isset($_COOKIE['WLADMIN']) ? ' data-pilot="1"' : '' ?>>
 <div id="screen-error" class="banner" role="alert" hidden></div>
 <header class="screen-head">
   <h1 id="s-title" class="s-title"></h1>
   <div class="screen-tools">
     <span id="s-count" class="s-count" aria-live="polite"></span>
+    <span id="s-keys" class="s-keys" hidden>← → question · Espace : vote, résultats · Q : QR code</span>
     <button id="theme-btn" class="btn btn-ghost" type="button">Thème clair</button>
     <button id="full-btn" class="btn btn-ghost" type="button">Plein écran</button>
   </div>
