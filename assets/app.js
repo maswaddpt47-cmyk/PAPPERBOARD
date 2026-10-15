@@ -328,10 +328,9 @@
     form.appendChild(count);
     form.appendChild(el('p', { class: 'meta' }, 'N\'écrivez pas de nom ni d\'information personnelle.'));
     var err = el('p', { class: 'error', role: 'alert' });
-    form.appendChild(err);
     var button = el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked },
       q.type === 'postit' ? 'Coller le post-it' : 'Publier');
-    form.appendChild(button);
+    form.appendChild(el('div', { class: 'send-bar' }, err, button));
     keepVisible(input, button);
     // Message court sur une ligne : Entrée publie, comme dans une messagerie.
     input.addEventListener('keydown', function (e) {
@@ -399,9 +398,12 @@
 
   function submit(form, locked, onSubmit) {
     var err = el('p', { class: 'error', role: 'alert' });
-    form.appendChild(err);
     var button = el('button', { type: 'submit', class: 'btn btn-primary btn-block', disabled: locked }, 'Envoyer');
-    form.appendChild(button);
+    // Barre collée en bas de l'écran : le bouton reste visible même quand la
+    // liste de choix dépasse (constaté sur téléphone le 15/10/2026).
+    form.appendChild(el('div', { class: 'send-bar' },
+      locked ? null : el('p', { class: 'send-hint' }, 'Appuyez sur « Envoyer » pour valider.'),
+      err, button));
     form.onsubmit = function (e) {
       e.preventDefault();
       err.textContent = onSubmit() || '';

@@ -228,6 +228,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   1280x720 et 1920x1000 : aucun défilement). Mots horizontaux, jamais de
   rotation (lisibilité de loin pour des seniors). Tailles relatives 35-100 %
   selon la fréquence ; au-delà de 60 mots, seuls les 60 plus cités (lib.php).
+- **Bouton Envoyer collé en bas de l'écran** (`.send-bar`, 15/10/2026) :
+  constaté sur un ordinateur portable, la liste de choix le repoussait sous
+  le pli sans aucun indice. Il reste visible avec la phrase « Appuyez sur
+  « Envoyer » pour valider ». Vu en local sur un écran 360x560.
 - Ressources appelées par `wl_asset()` (`?v=` date du fichier) : sans lui, un
   navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
   15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
