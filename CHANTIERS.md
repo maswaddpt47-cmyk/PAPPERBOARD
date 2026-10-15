@@ -16,6 +16,8 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
    bouton **Envoyer** après le choix (Oui/Non, sondage, échelle…), bouton
    d'envoi visible au-dessus du clavier, Entrée qui publie sur le mur,
    projection **en direct** du nuage de mots et du sondage sans clic.
+   Et ceux du 15/10/2026 : pilotage de la projection (flèches, Espace, Q,
+   télécommande), affichage réduit pendant les résultats.
 3. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
@@ -215,6 +217,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (durée, correction, modification, direct). Réimporter un export redonne le
   même fichier : tenu par `tests/e2e.php` (« Export des questions »).
   Tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
+
+- **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
+  navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
+  ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
+  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
 
 ## Pistes d'amélioration
 
