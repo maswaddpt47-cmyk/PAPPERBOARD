@@ -336,6 +336,13 @@ label.btn { cursor: pointer; }
 /* Plus de 6 questions : récap sur deux colonnes, lisible de loin. */
 #s-recap .recap:has(> li:nth-child(7)) { columns: 2; column-gap: 3em; }
 #s-recap .recap li { break-inside: avoid; }
+.tabs { display: flex; gap: .25rem; flex-wrap: wrap; border-bottom: 2px solid var(--wl-bord); margin: 1rem 0; }
+.tab {
+  font: inherit; font-weight: bold; color: var(--wl-texte-doux); background: none; border: 0; cursor: pointer;
+  padding: .7rem 1.1rem; min-height: var(--wl-cible); border-bottom: 3px solid transparent; margin-bottom: -2px;
+}
+.tab[aria-selected="true"] { color: var(--wl-primaire); border-bottom-color: var(--wl-primaire); }
+.tab:focus-visible { outline: 3px solid var(--wl-accent); outline-offset: 2px; }
 .pre-wrap { white-space: pre-wrap; }
 .bilan-board { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); margin-top: 1rem; }
 .bilan-q { border: 1px solid var(--wl-bord); border-radius: var(--wl-rayon); padding: .75rem; }

@@ -12,25 +12,33 @@ toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
-2. **À vérifier après le 15/10/2026** (livré, pas encore vu chez l'utilisateur) :
-   récap et conclusion de fin de session, post-its colorés au hasard,
-   gommettes limitées à une colonne, page participant élargie sur PC. Puis un
+2. **À vérifier après le 15/10/2026** (livré en fin de journée, pas encore vu chez
+   l'utilisateur) : **onglets** de l'espace animateur (Préparer / Animer / Bilan /
+   Réglages ; accueil Sessions / Archives), archive anonyme (bouton Archiver,
+   consultation, PowerPoint, réutilisation), export PowerPoint du bilan ouvert
+   dans PowerPoint, synthèse enregistrée, post-its colorés au hasard. Puis un
    **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
-3. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
+3. **Prochaine étape proposée : prompt de design** pour l'apparence (couleurs,
+   typographie, icônes, maquettes téléphone / projection / animateur), à soumettre
+   à un outil de design ; Claude le prépare, l'utilisateur choisit l'outil.
+4. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
+   annonce encore la suppression après 30 jours, alors que WoocLight archive
+   désormais des résultats anonymes. À ajuster par l'utilisateur s'il le souhaite.
+5. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
-4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+6. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+7. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
    supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
-6. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
+8. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
    passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
    recouper l'accès par mot de passe). Journaux Apache et sauvegardes
    d'Alwaysdata à regarder une fois.
-7. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
+9. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
    créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
@@ -80,15 +88,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (hypothèse non vérifiée sur le terrain). « Tout le monde a répondu » peut donc
   ne jamais s'afficher : fermer le vote quand le compteur ne bouge plus.
 
-- Test instable (15/10/2026) : e2e « direct : nuage sans direct pas projeté
-  avant « Afficher » » échoue environ 1 fois sur 10 (2 fois sur 20 lancements
-  locaux), sans changement de code. Cause non trouvée ; bloque le passage sur
-  `main` quand il tombe. À instrumenter (statut de `goto`, question projetée).
-  Même constat le 15/10/2026 sur `tests/navigateur.js` (« mot constructor »,
-  délai dépassé 1 fois sur 3, local seulement : le parcours navigateur ne tourne pas en CI).
-
-## Points à ne pas défaire
-
+- Identifiants de question tirés en hexadécimal : 1 fois sur 40 environ, tout en
+  chiffres (« 24342264 »). Jamais comme clé de tableau PHP sans le remettre en
+  chaîne (sinon entier, comparaison stricte ratée) : cause de l'échec
+  intermittent du test « direct » trouvée le 15/10/2026.
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
   pas concerné (ni charte, ni DPD, ni Archives départementales, ni registre du
   Département). Le RGPD s'applique : l'utilisateur est responsable de
@@ -265,6 +268,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
   réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
   personnelle). Tenu par e2e. Mentions de confidentialité à jour ; `docs/registre-traitement.md` laissé tel quel (l'utilisateur le tient lui-même, 15/10/2026).
+
+- **Onglets** (15/10/2026, demande de l'utilisateur : page sans fin) : un groupe
+  `.tabs` commande ses panneaux par `aria-controls` ; onglet de session retenu
+  (`wl_tab`, stockage facultatif). Tout reste dans la page : les identifiants
+  des éléments n'ont pas changé. Les tests navigateur cliquent l'onglet avant
+  d'agir (un élément d'un panneau masqué n'est pas cliquable).
 
 ## Pistes d'amélioration
 

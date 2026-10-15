@@ -46,6 +46,8 @@ function check(cond, label) {
   await admin.fill('#qf-text', 'Un mot ?');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
+  check(await admin.locator('#tab-live').isHidden(), 'onglets : un seul panneau visible');
+  await admin.click('#t-live');
   await admin.click('#live [data-op="next"]'); // quitte l'accueil et ouvre le vote
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
 
@@ -115,11 +117,13 @@ function check(cond, label) {
 
   // Session terminée.
   admin.once('dialog', d => d.accept());
+  await admin.click('#t-settings');
   await admin.click('#end-btn');
   await phone.waitForSelector('#ended:not([hidden])');
   check(true, 'fin de session sur le téléphone');
 
   // --- Génération par une IA : texte copié, réponse collée, aperçu, ajout ----------
+  await admin.click('#t-prep');
   await admin.click('#gen-btn');
   await admin.fill('#gen-theme', 'Les arnaques en ligne');
   await admin.click('#gen-copy');

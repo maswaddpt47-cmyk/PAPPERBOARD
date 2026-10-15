@@ -131,6 +131,14 @@
   }
 
   $('archive-back').addEventListener('click', showSessions);
+  $('ed-archive').addEventListener('click', function () {
+    if (confirm('Archiver « ' + data.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés.')) {
+      post('session_archive', { s: code }).then(showSessions);
+    }
+  });
+  $('ed-delete').addEventListener('click', function () {
+    if (confirm('Supprimer définitivement « ' + data.title + ' » et toutes ses réponses ?')) post('session_delete', { s: code }).then(showSessions);
+  });
   $('ar-pptx').addEventListener('click', function () {
     $('ar-status').textContent = 'Préparation du fichier PowerPoint…';
     window.WLBilanPptx($('ar-pptx').dataset.src, archive).then(function () { $('ar-status').textContent = 'Fichier PowerPoint téléchargé.'; },
@@ -153,10 +161,43 @@
 
   // --- Éditeur et pilotage ---------------------------------------------------------
 
+  // --- Onglets ------------------------------------------------------------------
+  // Un groupe .tabs commande les panneaux nommés par aria-controls. L'onglet de
+  // session choisi est retenu (confort, pas indispensable : stockage facultatif).
+
+  function selectTab(group, name) {
+    [].forEach.call(group.querySelectorAll('.tab'), function (b) {
+      var on = b.dataset.tab === name;
+      b.setAttribute('aria-selected', String(on));
+      b.tabIndex = on ? 0 : -1;
+      WL.show($(b.getAttribute('aria-controls')), on);
+    });
+    if (group.closest('#editor')) { try { localStorage.setItem('wl_tab', name); } catch (e) { /* sans stockage */ } }
+  }
+
+  [].forEach.call(document.querySelectorAll('.tabs'), function (group) {
+    var tabs = [].slice.call(group.querySelectorAll('.tab'));
+    group.addEventListener('click', function (e) {
+      var b = e.target.closest('.tab');
+      if (b) selectTab(group, b.dataset.tab);
+    });
+    group.addEventListener('keydown', function (e) {
+      var i = tabs.indexOf(document.activeElement);
+      if (i < 0 || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+      var next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      selectTab(group, next.dataset.tab);
+      next.focus();
+    });
+    selectTab(group, tabs[0].dataset.tab);
+  });
+
   function openSession(c) {
     code = c;
     data = null;
     view('editor');
+    var saved = null;
+    try { saved = localStorage.getItem('wl_tab'); } catch (e) { /* sans stockage */ }
+    selectTab(document.querySelector('#editor .tabs'), saved || 'prep');
     if (poller) poller.stop();
     poller = new WL.Poller('admin_state', 's=' + code, render, function (kind, r) {
       if (kind === 'offline') banner('Connexion perdue. Reconnexion automatique…');

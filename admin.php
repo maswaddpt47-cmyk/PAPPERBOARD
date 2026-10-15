@@ -34,17 +34,24 @@ header('Cache-Control: no-store');
 
   <section id="sessions" hidden>
     <h1>Mes sessions</h1>
+    <div class="tabs" role="tablist" aria-label="Mes sessions">
+      <button class="tab" role="tab" type="button" id="t-sessions" aria-controls="tab-sessions" data-tab="sessions">Sessions</button>
+      <button class="tab" role="tab" type="button" id="t-archives" aria-controls="tab-archives" data-tab="archives">Archives</button>
+    </div>
+    <div id="tab-sessions" class="tab-panel" role="tabpanel" aria-labelledby="t-sessions">
     <form id="create-form" class="row">
       <label for="new-title" class="sr-only">Titre de la nouvelle session</label>
       <input id="new-title" placeholder="Titre de la nouvelle session" maxlength="120" required>
       <button class="btn btn-primary" type="submit">Créer</button>
     </form>
     <ul id="session-list" class="list"></ul>
-    <h2>Archives</h2>
+    </div>
+    <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>
     <p class="meta">Après 30 jours sans activité (ou sur « Archiver »), une session devient une archive anonyme :
       questions, résultats chiffrés, récap, conclusion et synthèse sont gardés ; les réponses une à une, les textes
       écrits par les participants et les jetons des appareils sont effacés. Les archives se gardent sans limite.</p>
     <ul id="archive-list" class="list"></ul>
+    </div>
   </section>
 
   <section id="archive-view" hidden>
@@ -65,48 +72,17 @@ header('Cache-Control: no-store');
     <p><button id="back-btn" class="btn btn-ghost" type="button">← Mes sessions</button></p>
     <div class="row wrap">
       <h1 id="ed-title" class="grow"></h1>
-      <button id="rename-btn" class="btn" title="Changer le titre de la session (affiché sur la projection)" type="button">Renommer</button>
+      <span id="ed-participants" class="meta"></span>
     </div>
 
-    <div class="grid2">
-      <div class="card">
-        <h2>Rejoindre</h2>
-        <div id="ed-qr" class="qr qr-admin"></div>
-        <p>Code : <strong id="ed-code" class="code-big"></strong></p>
-        <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
-        <p class="row wrap"><button id="ed-url-copy" class="btn" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button">Copier l'invitation</button>
-          <button id="ed-url-share" class="btn" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage du téléphone)" type="button" hidden>Partager</button>
-          <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
-        <p><a id="ed-screen" class="btn" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener">Ouvrir la projection</a></p>
-        <p class="row wrap">
-          <a id="ed-csv" class="btn" title="Toutes les réponses, réponses masquées comprises, pour Excel (bilan interne)">Exporter en CSV (tout)</a>
-          <a id="ed-csv-public" class="btn" title="Réponses pour Excel, sans celles que vous avez masquées (à partager)">CSV à diffuser (sans réponses masquées)</a>
-          <a id="ed-print" class="btn" title="Page des résultats à imprimer ou enregistrer en PDF" target="_blank" rel="noopener">Version imprimable</a>
-          <a id="ed-questions" class="btn" title="Enregistre les questions (sans aucune réponse) pour les réutiliser dans une autre session">Questions (.json, sans les réponses)</a>
-        </p>
-        <p><span id="ed-participants"></span></p>
-        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>
-          <button id="end-btn" class="btn" type="button"></button></p>
-      </div>
-
-      <div class="card" id="live">
-        <h2>Pilotage en direct</h2>
-        <p id="live-pos" class="meta"></p>
-        <p id="live-text" class="live-text"></p>
-        <p id="live-state" class="live-state" aria-live="polite"></p>
-        <div class="row wrap">
-          <button class="btn" data-op="prev" title="Revenir à la question précédente sur la projection" type="button">← Précédente</button>
-          <button class="btn" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante →</button>
-        </div>
-        <div class="row wrap">
-          <button class="btn btn-primary" id="open-btn" type="button"></button>
-          <button class="btn" id="show-btn" type="button"></button>
-          <button class="btn btn-danger" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button">Réinitialiser</button>
-        </div>
-        <div id="live-results" class="live-results"></div>
-      </div>
+    <div class="tabs" role="tablist" aria-label="Session">
+      <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, génération par IA, conclusion">Préparer</button>
+      <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Inviter les participants, piloter le vote">Animer</button>
+      <button class="tab" role="tab" type="button" id="t-bilan" aria-controls="tab-bilan" data-tab="bilan" title="Tableau de bord, synthèse par une IA, PowerPoint, exports">Bilan</button>
+      <button class="tab" role="tab" type="button" id="t-settings" aria-controls="tab-settings" data-tab="settings" title="Renommer, terminer, archiver, supprimer">Réglages</button>
     </div>
 
+    <div id="tab-prep" class="tab-panel" role="tabpanel" aria-labelledby="t-prep">
     <div class="card">
       <h2>Questions</h2>
       <p class="row wrap"><label for="all-duration" title="Chaque question aura cette durée de vote, avec compte à rebours sur la projection">Durée pour toutes les questions, en secondes (0 = sans limite)</label>
@@ -125,7 +101,42 @@ header('Cache-Control: no-store');
       <p class="row wrap"><button id="conclusion-btn" class="btn" type="button" title="Enregistrer la conclusion de cette session">Enregistrer la conclusion</button>
         <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
     </div>
+    </div>
 
+    <div id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="t-live" hidden>
+      <div class="grid2">
+      <div class="card">
+        <h2>Rejoindre</h2>
+        <div id="ed-qr" class="qr qr-admin"></div>
+        <p>Code : <strong id="ed-code" class="code-big"></strong></p>
+        <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
+        <p class="row wrap"><button id="ed-url-copy" class="btn" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button">Copier l'invitation</button>
+          <button id="ed-url-share" class="btn" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage du téléphone)" type="button" hidden>Partager</button>
+          <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
+        <p><a id="ed-screen" class="btn" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener">Ouvrir la projection</a></p>
+        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button></p>
+      </div>
+
+      <div class="card" id="live">
+        <h2>Pilotage en direct</h2>
+        <p id="live-pos" class="meta"></p>
+        <p id="live-text" class="live-text"></p>
+        <p id="live-state" class="live-state" aria-live="polite"></p>
+        <div class="row wrap">
+          <button class="btn" data-op="prev" title="Revenir à la question précédente sur la projection" type="button">← Précédente</button>
+          <button class="btn" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante →</button>
+        </div>
+        <div class="row wrap">
+          <button class="btn btn-primary" id="open-btn" type="button"></button>
+          <button class="btn" id="show-btn" type="button"></button>
+          <button class="btn btn-danger" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button">Réinitialiser</button>
+        </div>
+        <div id="live-results" class="live-results"></div>
+      </div>
+      </div>
+    </div>
+
+    <div id="tab-bilan" class="tab-panel" role="tabpanel" aria-labelledby="t-bilan" hidden>
     <div class="card">
       <h2>Bilan de l'atelier</h2>
       <p class="meta">Tableau de bord de toutes les questions, et texte à coller dans une IA pour obtenir une synthèse,
@@ -142,7 +153,28 @@ header('Cache-Control: no-store');
       <textarea id="synthesis" rows="8" maxlength="6000" placeholder="Collez ici la réponse de l'IA, après relecture."></textarea>
       <p class="row wrap"><button id="synthesis-btn" class="btn" type="button" title="Enregistrer la synthèse avec la session (effacée avec elle par la purge)">Enregistrer la synthèse</button>
         <span id="synthesis-saved" class="meta" aria-live="polite"></span></p>
-      <p class="meta">Collez la conclusion proposée par l'IA dans la carte « Conclusion » ci-dessus, après l'avoir relue.</p>
+      <p class="meta">Collez la conclusion proposée par l'IA dans la carte « Conclusion » de l'onglet Préparer, après l'avoir relue.</p>
+    </div>
+
+    <div class="card">
+      <h2>Exports</h2>
+        <p class="row wrap">
+          <a id="ed-csv" class="btn" title="Toutes les réponses, réponses masquées comprises, pour Excel (bilan interne)">Exporter en CSV (tout)</a>
+          <a id="ed-csv-public" class="btn" title="Réponses pour Excel, sans celles que vous avez masquées (à partager)">CSV à diffuser (sans réponses masquées)</a>
+          <a id="ed-print" class="btn" title="Page des résultats à imprimer ou enregistrer en PDF" target="_blank" rel="noopener">Version imprimable</a>
+          <a id="ed-questions" class="btn" title="Enregistre les questions (sans aucune réponse) pour les réutiliser dans une autre session">Questions (.json, sans les réponses)</a>
+        </p>
+    </div>
+    </div>
+
+    <div id="tab-settings" class="tab-panel" role="tabpanel" aria-labelledby="t-settings" hidden>
+    <div class="card">
+      <h2>Réglages de la session</h2>
+      <p class="row wrap"><button id="rename-btn" class="btn" title="Changer le titre de la session (affiché sur la projection)" type="button">Renommer</button>
+        <button id="end-btn" class="btn" type="button"></button></p>
+      <p class="row wrap"><button id="ed-archive" class="btn" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)">Archiver la session</button>
+        <button id="ed-delete" class="btn btn-danger" type="button" title="Efface la session et toutes ses réponses">Supprimer la session</button></p>
+    </div>
     </div>
 
     <dialog id="gen-dialog" aria-labelledby="gen-title">
