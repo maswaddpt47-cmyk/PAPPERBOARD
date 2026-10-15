@@ -197,8 +197,7 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
   (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
   Import tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
-  Texte pour l'IA : une affirmation est un « truefalse », jamais un « yesno »
-  (15/10/2026, essai Mistral).
+  Texte pour l'IA : affirmation = « truefalse », jamais « yesno » (15/10/2026).
   « Que des quiz » (case du formulaire) ne change que le texte pour l'IA :
   l'import valide pareil côté serveur, aucune règle n'est imposée au contenu.
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
