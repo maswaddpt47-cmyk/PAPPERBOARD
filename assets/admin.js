@@ -471,7 +471,8 @@
       'Méthode, dans cet ordre :',
       '1. Public : chaque question s\'adresse-t-elle vraiment à ce public (ton, vocabulaire, situations de son quotidien) ? Cite les numéros qui ne vont pas.',
       '2. Fond : pour chaque quiz, la bonne réponse est-elle juste ? Une mauvaise réponse pourrait-elle être défendue ? '
-        + 'Signale tout chiffre, loi, âge ou affirmation de santé, et toute simplification excessive.',
+        + 'Signale tout chiffre, loi, âge ou affirmation de santé, et toute simplification excessive. '
+        + 'Vérifie aussi chaque explication ("explain") : juste, cohérente avec la bonne réponse, source réelle.',
       '3. Sources : pour chaque point de fond, cite une source précise (organisme, titre, date, lien). '
         + 'Préfère les sources officielles françaises (Légifrance, Service-public.fr, CNIL, Santé publique France, ANSES, HAS, Inserm). '
         + 'Si tu n\'as pas de source sûre, écris « pas de source sûre » : n\'invente jamais une loi, une étude, un chiffre ou un lien.',
