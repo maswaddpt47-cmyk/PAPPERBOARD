@@ -208,6 +208,8 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
   **→ / ←** question suivante ou précédente, **Espace** ouvre le vote, le ferme,
   affiche les résultats, puis passe à la suivante ; **Q** affiche le QR code en
   grand. Une télécommande de présentation fait de même (Page suiv. / préc.).
+- **Masquer le QR code sur la projection** (onglet Animer) : plus de place pour
+  les questions ; la touche **Q** le montre quand même en grand.
 - **Ouvrir le vote** → « Votez sur votre téléphone ! » et le nombre de réponses s'affichent.
 - Sondage, nuage de mots, échelle et points : les réponses s'affichent **en
   direct** sur la projection dès l'ouverture du vote (case « Afficher les

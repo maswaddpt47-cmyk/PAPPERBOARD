@@ -114,7 +114,8 @@ header('Cache-Control: no-store');
           <button id="ed-url-share" class="btn" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage du téléphone)" type="button" hidden>Partager</button>
           <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
         <p><a id="ed-screen" class="btn" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener">Ouvrir la projection</a></p>
-        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button></p>
+        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>
+          <button id="qr-btn" class="btn" type="button"></button></p>
       </div>
 
       <div class="card" id="live">

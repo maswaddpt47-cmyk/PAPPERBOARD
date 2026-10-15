@@ -282,6 +282,9 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   projection a déjà montré** (`wl_board_view`, décision prise seule : la
   projection est publique avec le code). Téléphones non réveillés ; toute autre
   commande (sauf inscriptions) l'arrête. Tenu par e2e et `tests/navigateur.js`.
+- **QR code masquable** (15/10/2026) depuis Animer (`qrHidden`, projection seule) ;
+  touche Q le montre quand même en grand. Récap de fin réduit au-dessus de la
+  barre de pilotage (elle le chevauchait, capture de l'utilisateur).
 
 ## Pistes d'amélioration
 

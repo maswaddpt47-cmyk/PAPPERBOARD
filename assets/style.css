@@ -376,6 +376,9 @@ label.btn { cursor: pointer; }
 /* Touche Q : QR code en grand au centre. */
 .s-qr-big .qr-corner { right: 50%; bottom: 50%; transform: translate(50%, 50%); width: min(70vh, 60vw); padding: 1rem; }
 .s-qr-big .qr-code { font-size: clamp(1.2rem, 3vw, 3rem); }
+/* QR masqué depuis l'espace animateur : la place va au contenu. */
+.s-noqr:not(.s-qr-big) .qr-corner { display: none; }
+.s-noqr .screen-main { margin-right: 0; }
 
 /* --- Impression ---------------------------------------------------------------- */
 

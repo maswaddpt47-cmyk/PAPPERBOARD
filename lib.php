@@ -1183,6 +1183,7 @@ function wl_screen_view(array $s): array
         'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
         // Mur et post-it : personnes distinctes ayant publié (décompte « 2 / 3 ont participé »).
         'contributors' => $q ? count(array_unique(array_column($q['posts'], 'p'))) : 0,
+        'qrHidden' => !empty($s['qrHidden']), // masqué depuis l'espace animateur (place gagnée)
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
@@ -1207,7 +1208,7 @@ function wl_board_view(array $s): array
     return [
         'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
         'participants' => count($s['participants']),
-        'board' => ['position' => $i + 1, 'count' => count($list)],
+        'board' => ['position' => $i + 1, 'count' => count($list)], 'qrHidden' => !empty($s['qrHidden']),
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),

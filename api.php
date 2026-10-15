@@ -88,6 +88,7 @@ function api_ended_view(array $s): array
     return ['ok' => true, 'title' => $s['title'], 'ended' => true, 'question' => null,
         'recap' => wl_recap($s), 'conclusion' => $s['conclusion'] ?? '',
         'code' => $s['code'], 'joinUrl' => wl_join_url($s['code']), 'participants' => count($s['participants']),
+        'qrHidden' => !empty($s['qrHidden']),
         'pollMs' => (int)wl_config()['poll_ms'], 'now' => time()];
 }
 
@@ -312,7 +313,7 @@ function api_admin_state(): void
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
-            'board' => ($s['board'] ?? -1) >= 0, 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
+            'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
     });
@@ -575,9 +576,14 @@ function api_question_move(array $b): void
 function api_control(array $b): void
 {
     $op = (string)($b['op'] ?? '');
-    // Tableau de bord projeté : seule la projection change, pas les téléphones.
+    // Bilan projeté et QR code : seule la projection change, pas les téléphones.
     $board = in_array($op, ['board', 'board_next', 'board_prev', 'board_off'], true);
-    wl_update(api_code($b), function (array &$s) use ($op, $b, $board) {
+    $qr = $op === 'qr_hide' || $op === 'qr_show';
+    wl_update(api_code($b), function (array &$s) use ($op, $b, $board, $qr) {
+        if ($qr) {
+            $s['qrHidden'] = $op === 'qr_hide';
+            return;
+        }
         if ($board) {
             $n = count(wl_board_questions($s));
             if ($op !== 'board_off' && $n === 0) {
@@ -618,7 +624,7 @@ function api_control(array $b): void
             throw new WlError('Aucune question.', 404);
         }
         api_apply_op($s['questions'][$s['current']], $op);
-    }, !$board);
+    }, !$board && !$qr);
     wl_json(['ok' => true]);
 }
 

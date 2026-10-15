@@ -39,7 +39,8 @@
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
   window.addEventListener('resize', function () {
-    if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
+    if (!$('s-ended').hidden) fitRecap();
+    else if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
   });
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
@@ -62,6 +63,7 @@
     last = d;
     pilotLabel();
     var board = !!d.board; // tableau de bord projeté, une question par diapositive
+    document.body.classList.toggle('s-noqr', !!d.qrHidden); // touche Q : le montre quand même en grand
     // Résultats à l'écran : question et QR réduits, la place va aux résultats.
     document.body.classList.toggle('s-live', (board || !d.ended) && !!q && !!d.results);
     WL.show($('s-ended'), d.ended && !board);
@@ -136,7 +138,8 @@
   function fitRecap() {
     var box = $('s-recap');
     box.style.fontSize = '';
-    var limit = window.innerHeight - 40;
+    // Au-dessus de la barre de pilotage quand elle est affichée.
+    var limit = $('s-pilot').hidden ? window.innerHeight - 40 : $('s-pilot').getBoundingClientRect().top - 12;
     if (box.getBoundingClientRect().bottom <= limit) return;
     var lo = 10, hi = parseFloat(getComputedStyle(box).fontSize);
     for (var i = 0; i < 8; i++) {

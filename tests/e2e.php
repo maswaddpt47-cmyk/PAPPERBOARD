@@ -455,6 +455,11 @@ check(($b['board']['position'] ?? 0) === 3 && $b['results'] === null && ($b['que
     'bilan projeté : rien de plus que pendant l\'atelier (quiz non affiché : ni résultats ni correction)');
 $admin->post('control', ['s' => $dir, 'op' => 'show']);
 check(!isset($slide()['board']), 'bilan projeté : piloter une question reprend la projection normale');
+$viewer->poll($phone);
+$admin->post('control', ['s' => $dir, 'op' => 'qr_hide']);
+check(($slide()['qrHidden'] ?? false) === true && $viewer->poll($phone)['status'] === 304, 'QR code masqué sur la projection, téléphones non réveillés');
+$admin->post('control', ['s' => $dir, 'op' => 'qr_show']);
+check(($slide()['qrHidden'] ?? true) === false, 'QR code réaffiché');
 
 // --- Import de questions générées par une IA (copier-coller) -------------------
 $gen = $admin->post('session_create', ['title' => 'Générée'])['json']['code'] ?? '';

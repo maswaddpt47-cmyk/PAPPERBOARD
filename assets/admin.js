@@ -360,6 +360,7 @@
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
+    $('qr-btn').textContent = d.qrHidden ? 'Afficher le QR code sur la projection' : 'Masquer le QR code sur la projection';
     if (qrFor !== d.joinUrl) {
       WL.qr($('ed-qr'), d.joinUrl, 4);
       qrFor = d.joinUrl;
@@ -380,10 +381,12 @@
     'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
     'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',
     'Terminer la session': 'Les téléphones affichent « Session terminée » ; les résultats restent',
-    'Rouvrir la session': 'Les participants peuvent de nouveau répondre'
+    'Rouvrir la session': 'Les participants peuvent de nouveau répondre',
+    'Masquer le QR code sur la projection': 'Plus de place pour les questions et les résultats ; touche Q sur la projection pour le montrer en grand',
+    'Afficher le QR code sur la projection': 'QR code et code de session dans le coin de la projection'
   };
   function tips() {
-    ['open-btn', 'show-btn', 'lock-btn', 'end-btn'].forEach(function (id) {
+    ['open-btn', 'show-btn', 'lock-btn', 'qr-btn', 'end-btn'].forEach(function (id) {
       $(id).title = TIPS[$(id).textContent] || '';
     });
   }
@@ -440,6 +443,7 @@
     control(data.ended ? 'reopen' : 'end');
   });
   $('lock-btn').addEventListener('click', function () { control(data.locked ? 'unlock' : 'lock'); });
+  $('qr-btn').addEventListener('click', function () { control(data.qrHidden ? 'qr_show' : 'qr_hide'); });
   $('rename-btn').addEventListener('click', function () {
     var title = prompt('Nouveau titre', data.title);
     if (title) act('session_rename', { title: title });
