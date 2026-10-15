@@ -157,25 +157,40 @@
     pickOne(form, grid, q, mine, locked, q.options.map(function (label, i) { return { value: i, label: label, mark: markClass(q, i) }; }));
   }
 
-  /** Boutons à choix unique + « Envoyer ». Rien ne part avant l'appui sur Envoyer. */
+  /** Boutons à choix unique. Sondage (question sans bonne réponse, modifiable) :
+   *  un appui envoie tout de suite, on peut en toucher un autre pour changer.
+   *  Quiz ou réponse figée : un appui sélectionne, « Envoyer » vote (une erreur
+   *  y compterait). */
   function pickOne(form, grid, q, mine, locked, items) {
     var picked = mine;
+    var instant = !q.graded && q.allowChange;
+    var button = null;
     var buttons = items.map(function (it) {
       return el('button', {
         type: 'button', class: 'btn btn-choice' + (it.mark || ''), 'aria-pressed': String(mine === it.value),
         disabled: locked, onclick: function () {
+          if (instant && sending) return;
           picked = it.value;
           buttons.forEach(function (b, j) { b.setAttribute('aria-pressed', String(items[j].value === picked)); });
-          if (picked !== mine) $('answer-status').textContent = 'Appuyez sur « Envoyer » pour valider votre réponse.';
+          if (picked === mine) return;
+          if (instant) { send(q, picked); return; }
+          $('answer-status').textContent = 'Appuyez sur « Envoyer » pour valider votre réponse.';
+          // Sur téléphone le bouton peut être sous le pli : on l'amène à l'écran.
+          if (button) button.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
       }, it.label);
     });
     buttons.forEach(function (b) { grid.appendChild(b); });
     form.appendChild(grid);
-    return submit(form, locked, function () {
+    if (instant) {
+      if (!locked) form.appendChild(el('p', { class: 'meta' }, 'Touchez votre réponse : elle est envoyée tout de suite.'));
+      return null;
+    }
+    button = submit(form, locked, function () {
       if (picked === null || picked === undefined) return 'Choisissez une réponse avant d\'envoyer.';
       send(q, picked);
     });
+    return button;
   }
 
   /** Classe CSS de correction, une fois les résultats affichés. */

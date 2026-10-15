@@ -147,9 +147,14 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .points-label { flex: 1; }
 .points-value { min-width: 2.5rem; text-align: center; font-size: 1.3rem; font-weight: bold; }
 .btn-step { font-size: 1.5rem; padding: 0; }
-.send-bar { position: sticky; bottom: 0; z-index: 2; background: var(--wl-carte); border-top: 1px solid var(--wl-bord); margin: 1rem -1.25rem -1.25rem; padding: .4rem 1.25rem .6rem; }
+.send-bar { margin-top: 1rem; }
 .send-bar .error { min-height: 0; margin: .25rem 0; }
-.send-hint { margin: 0 0 .3rem; color: var(--wl-texte-doux); font-size: .9rem; }
+.send-hint { margin: 0 0 .5rem; color: var(--wl-texte-doux); font-size: .95rem; }
+/* Écran large : « Envoyer » à droite des choix, jamais sous le pli ni par-dessus eux. */
+@media (min-width: 700px) {
+  #answer-form:has(> .choices, > .checks) { display: grid; grid-template-columns: 1fr 14rem; gap: 0 1.25rem; align-items: start; }
+  #answer-form:has(> .choices, > .checks) > .send-bar { grid-column: 2; grid-row: 1; margin-top: 0; position: sticky; top: 1rem; }
+}
 .answer-status { font-weight: bold; color: var(--wl-ok); min-height: 1.5em; }
 .my-result { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 
@@ -295,7 +300,9 @@ label.btn { cursor: pointer; }
 .screen-main { padding-bottom: 5rem; }
 /* Résultats affichés : en-tête, question et QR réduits. */
 .s-live .screen-head { padding: .3rem 2rem; }
-.s-live .s-text { font-size: 1.3em; margin: .1em 0 .4em; }
+.s-live .s-meta { font-size: .7em; }
+.s-live .s-text { font-size: .95em; margin: .05em 0 .35em; }
+.s-live .s-results .bar-track { height: clamp(1.6em, 7vh, 3.2em); }
 .s-live .s-timer { font-size: 1.2em; }
 .s-live .screen-main { margin-right: clamp(7rem, 11vw, 11rem); padding: .3rem 2rem 0; }
 .s-live .qr-corner { width: clamp(6rem, 9vw, 9rem); padding: .4rem; }

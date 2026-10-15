@@ -140,6 +140,8 @@ expect_status($p[0]->vote($code, $qid['wordcloud'], str_repeat('é', 80)), 200, 
 $res = play($admin, $p, $code, $qid['text'], ['=1+1', '<script>alert(1)</script>', 'Jean Dupont 06 12']);
 check(count($res['texts']) === 3, 'mur : 3 réponses');
 $adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
+$graded = array_column($adm['questions'], 'graded', 'id');
+check(($graded[$qid['yesno']] ?? null) === true && ($graded[$qid['poll']] ?? null) === false, 'téléphone : seul un quiz (bonne réponse définie) garde « Envoyer »');
 $q = array_values(array_filter($adm['questions'], fn($x) => $x['id'] === $qid['text']))[0];
 $nominative = array_values(array_filter($q['results']['texts'], fn($t) => str_contains($t['text'], 'Dupont')))[0];
 expect_status($admin->post('answer_hide', ['s' => $code, 'qid' => $qid['text'], 'aid' => $nominative['id'], 'hidden' => true]), 200, 'masquer une réponse');

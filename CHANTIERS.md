@@ -147,10 +147,15 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
   purge n'efface que les compteurs `rl/*.json`.
 - Clé participant dérivée du code de session : deux sessions ne se relient pas.
-- Toutes les questions ont un bouton **Envoyer** (14/10/2026, demande de
-  l'utilisateur) : sur Oui/Non, Vrai/Faux, sondage, QCM et échelle, un appui
-  sélectionne seulement ; l'envoi en un geste déroutait. Tenu par
-  `tests/navigateur.js` (« choisir n'envoie rien avant Envoyer »).
+- **Envoyer ou toucher** (15/10/2026, choix de l'utilisateur) : sondage, Oui/Non,
+  échelle **sans bonne réponse et modifiables** : un appui envoie tout de suite
+  (on en touche un autre pour changer). Quiz (`graded` : une bonne réponse
+  existe, le téléphone ne sait pas laquelle), réponse figée ou QCM multiple :
+  un appui sélectionne, **Envoyer** vote (14/10/2026 : l'envoi en un geste
+  déroutait, d'où ce partage). Le bouton Envoyer est à droite des choix sur
+  écran large, sous les choix sur téléphone (barre collée en bas essayée le
+  15/10/2026 : elle cachait les choix). Tenu par `tests/navigateur.js`
+  (« choisir n'envoie rien avant Envoyer », sur un quiz).
   Pendant une saisie (nuage, réponse libre, mur, post-it), le bouton d'envoi
   est ramené à l'écran (le clavier du téléphone le cachait, hypothèse du
   14/10/2026) ; sur mur et post-it, Entrée publie.
@@ -228,10 +233,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   1280x720 et 1920x1000 : aucun défilement). Mots horizontaux, jamais de
   rotation (lisibilité de loin pour des seniors). Tailles relatives 35-100 %
   selon la fréquence ; au-delà de 60 mots, seuls les 60 plus cités (lib.php).
-- **Bouton Envoyer collé en bas de l'écran** (`.send-bar`, 15/10/2026) :
-  constaté sur un ordinateur portable, la liste de choix le repoussait sous
-  le pli sans aucun indice. Il reste visible avec la phrase « Appuyez sur
-  « Envoyer » pour valider ». Vu en local sur un écran 360x560.
+- Projection, résultats affichés (`.s-live`) : question à 0,95 em et barres plus
+  hautes (15/10/2026, demande de l'utilisateur : lisibilité des résultats).
 - Ressources appelées par `wl_asset()` (`?v=` date du fichier) : sans lui, un
   navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
   15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
