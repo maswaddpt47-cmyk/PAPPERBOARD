@@ -85,7 +85,7 @@
       var unit = { wall: 'message', postit: 'post-it' }[q.type] || 'réponse';
       // Décompte « 3 / 5 » pour savoir quand fermer le vote (mur et post-it :
       // nombre de contributions, une personne peut en publier plusieurs).
-      var all = unit === 'réponse' && d.participants > 0 && d.answered >= d.participants;
+      var all = d.participants > 0 && (unit === 'réponse' ? d.answered : d.contributors) >= d.participants;
       WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
         el('p', { class: 's-answered' + (all ? ' s-all' : '') }, answeredText(d, unit)),
         el('p', null, all ? 'Tout le monde a répondu.' : msg)));
@@ -93,7 +93,8 @@
   }
 
   function answeredText(d, unit) {
-    return unit === 'réponse' ? d.answered + ' / ' + d.participants + ' ont répondu' : WL.plural(d.answered, unit);
+    return unit === 'réponse' ? d.answered + ' / ' + d.participants + ' ont répondu'
+      : d.contributors + ' / ' + d.participants + ' ont participé (' + WL.plural(d.answered, unit) + ')';
   }
 
   function timerFor(q) {
@@ -169,8 +170,8 @@
       show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
       next: 'Passe à la question suivante'
     }[op] + ' (Espace)';
-    $('p-count').textContent = q && q.type !== 'wall' && q.type !== 'postit' && q.state !== 'draft'
-      ? last.answered + ' / ' + last.participants + ' ont répondu' : '';
+    $('p-count').textContent = q && q.state !== 'draft'
+      ? (post ? last.contributors : last.answered) + ' / ' + last.participants + (post ? ' ont participé' : ' ont répondu') : '';
     $('p-prev').disabled = !last || last.position === 0;
     $('p-next').disabled = !!last && last.position >= last.count;
   }

@@ -208,6 +208,8 @@ for ($i = 0; $i < 4; $i++) {
     $post($p[0], $wallId, "Idée $i");
 }
 expect_status($post($p[0], $wallId, 'Une de trop'), 409, 'mur : 6e message refusé (5 au plus)');
+$sc = $admin->get("api.php?action=screen&s=$code")['json'];
+check(($sc['answered'] ?? 0) === 6 && ($sc['contributors'] ?? 0) === 2, 'mur : 6 messages de 2 personnes (décompte « ont participé »)');
 expect_status($p[0]->vote($code, $wallId, 0), 400, 'mur : pas de vote simple');
 check(count($wstate($p[1])['posts']) === 1, 'mur non publié : chacun ne voit que ses messages');
 expect_status($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId]), 409, 'aimer avant publication refusé');

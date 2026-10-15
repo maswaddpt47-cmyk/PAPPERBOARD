@@ -1022,6 +1022,8 @@ function wl_screen_view(array $s): array
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
         'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
+        // Mur et post-it : personnes distinctes ayant publié (décompte « 2 / 3 ont participé »).
+        'contributors' => $q ? count(array_unique(array_column($q['posts'], 'p'))) : 0,
         'joinUrl' => wl_join_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
