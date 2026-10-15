@@ -194,22 +194,43 @@ var WL = (function () {
     return 'cloud-c' + (h % 4);
   }
 
-  /** Nuage : taille de police proportionnelle à la fréquence (1 à 4 em). */
+  /** Nuage : taille de police proportionnelle à la fréquence (1 à 4 em). Sur la
+   *  projection (.s-results), les tailles sont relatives et fitCloud() ajuste
+   *  l'ensemble pour qu'il tienne dans l'écran, quel que soit le nombre de mots. */
   function cloud(container, q, words) {
     var nodes = memory(container, q);
+    var fit = container.classList.contains('s-results');
     var max = words.reduce(function (m, w) { return Math.max(m, w.n); }, 1);
-    var box = el('p', { class: 'cloud' });
+    var box = el('p', { class: 'cloud' + (fit ? ' cloud-fit' : '') });
     words.forEach(function (w) {
       var span = keep(nodes, w.text.toLowerCase(), function () {
         return el('span', { class: 'cloud-word ' + colorOf(w.text.toLowerCase()) }, w.text);
       });
       span.textContent = w.text;
       span.title = w.n + ' fois';
-      span.style.fontSize = (1 + 3 * w.n / max).toFixed(2) + 'em';
+      span.style.fontSize = (fit ? 0.35 + 0.65 * w.n / max : 1 + 3 * w.n / max).toFixed(2) + 'em';
       box.appendChild(span);
       box.appendChild(document.createTextNode(' '));
     });
     return box;
+  }
+
+  /** Agrandit le nuage au plus grand corps qui tient entre son haut et le bas
+   *  de la fenêtre (sans défilement ni mot coupé). À rappeler après chaque
+   *  affichage et quand la fenêtre change de taille. */
+  function fitCloud(container) {
+    var box = container.querySelector('.cloud-fit');
+    if (!box) return;
+    // Tout le bloc de résultats (nuage + total des réponses) doit finir au-dessus
+    // de la barre de pilotage, sans faire défiler la page.
+    var limit = window.innerHeight - 80;
+    var lo = 12, hi = 160;
+    for (var i = 0; i < 9; i++) {
+      var mid = (lo + hi) / 2;
+      box.style.fontSize = mid + 'px';
+      if (container.getBoundingClientRect().bottom <= limit && box.scrollWidth <= box.clientWidth) lo = mid; else hi = mid;
+    }
+    box.style.fontSize = lo + 'px';
   }
 
   /** Mur de réponses libres. onHide(id, hidden) : boutons de modération (animateur). */
@@ -363,7 +384,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitCloud: fitCloud,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };

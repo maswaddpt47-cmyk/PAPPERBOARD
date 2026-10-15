@@ -170,6 +170,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 
 .cloud { text-align: center; line-height: 1.25; margin: 0; }
 .cloud-word { display: inline-block; margin: .1em .3em; font-weight: bold; transition: font-size .6s ease; }
+.cloud-fit .cloud-word { transition: none; margin: .05em .25em; }
 .is-new { animation: wl-pop .5s ease; }
 .cloud-c0 { color: var(--wl-primaire); }
 .cloud-c1 { color: var(--wl-accent); }
@@ -293,7 +294,7 @@ label.btn { cursor: pointer; }
 .s-live .screen-head { padding: .3rem 2rem; }
 .s-live .s-text { font-size: 1.3em; margin: .1em 0 .4em; }
 .s-live .s-timer { font-size: 1.2em; }
-.s-live .screen-main { margin-right: clamp(7rem, 11vw, 11rem); padding-top: .3rem; }
+.s-live .screen-main { margin-right: clamp(7rem, 11vw, 11rem); padding: .3rem 2rem 0; }
 .s-live .qr-corner { width: clamp(6rem, 9vw, 9rem); padding: .4rem; }
 .s-live .qr-code { font-size: clamp(.7rem, 1vw, 1rem); }
 /* Touche Q : QR code en grand au centre. */

@@ -29,6 +29,7 @@
     if (document.fullscreenElement) document.exitFullscreen();
     else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
   });
+  window.addEventListener('resize', function () { WL.fitCloud($('s-results')); });
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
   });
@@ -64,6 +65,7 @@
     timerFor(q);
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results);
+      WL.fitCloud($('s-results'));
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
         : q.state === 'open' ? 'Répondez sur votre téléphone !' : 'Les votes sont fermés.';
