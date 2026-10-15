@@ -142,6 +142,7 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   `#A83A1A`, bonne réponse `#2F6B1F` + coche (jamais la couleur seule), choix
   sélectionné brun neutre, Georgia/Verdana. Graphiques : `assets/charts.js`
   (anneau, jauge, compteur) ; PowerPoint dessiné aux mêmes couleurs (thème clair).
+  Cartes en thème sombre : contraste AA conservé (texte 4,5:1, graphique 3:1).
 - **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
   multiples (point 2) — inhérent à un vote sans compte ; atténué par
   « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
