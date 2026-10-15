@@ -103,9 +103,8 @@
       // Décompte « 3 / 5 » pour savoir quand fermer le vote (mur et post-it :
       // nombre de contributions, une personne peut en publier plusieurs).
       var all = d.participants > 0 && (unit === 'réponse' ? d.answered : d.contributors) >= d.participants;
-      WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
-        el('p', { class: 's-answered' + (all ? ' s-all' : '') }, answeredText(d, unit)),
-        el('p', null, all ? 'Tout le monde a répondu.' : msg)));
+      var done = unit === 'réponse' ? d.answered : d.contributors;
+      WL.counter($('s-results'), q.id, answeredText(d, unit), done, d.participants, all, all ? 'Tout le monde a répondu.' : msg);
       fitQuestion();
     }
   }

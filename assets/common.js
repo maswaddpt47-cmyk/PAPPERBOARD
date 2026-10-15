@@ -182,6 +182,7 @@ var WL = (function () {
     if (nodes.has(key)) return nodes.get(key);
     var node = make();
     node.classList.add('is-new');
+    node.setAttribute('data-key', String(key));
     node.addEventListener('animationend', function () { node.classList.remove('is-new'); });
     nodes.set(key, node);
     return node;
@@ -241,6 +242,7 @@ var WL = (function () {
       });
       span.textContent = w.text;
       span.title = w.n + ' fois';
+      span.classList.toggle('cloud-top', w.n === max && words.length > 1);
       span.style.fontSize = (fit ? 0.35 + 0.65 * w.n / max : 1 + 3 * w.n / max).toFixed(2) + 'em';
       box.appendChild(span);
       box.appendChild(document.createTextNode(' '));
@@ -384,6 +386,8 @@ var WL = (function () {
     opts = typeof opts === 'function' ? { onHide: opts } : (opts || {});
     var onHide = opts.onHide;
     if (!res) { clear(container); return; }
+    var before = WL.measure ? WL.measure(container) : null; // glissement des lignes réordonnées
+    var onScreen = container.classList.contains('s-results');
     var node;
     var none = function (text) { return el('p', { class: 'meta' }, text); };
     if (q.type === 'wall') {
@@ -396,6 +400,10 @@ var WL = (function () {
       node = res.words.length ? cloud(container, q, res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.');
     } else if (q.type === 'text') {
       node = res.texts.length ? wall(container, q, res.texts, onHide) : el('p', { class: 'meta' }, 'Aucune réponse pour le moment.');
+    } else if (onScreen && WL.donut && (q.type === 'yesno' || q.type === 'truefalse')) {
+      node = WL.donut(container, q, res);
+    } else if (onScreen && WL.scaleView && q.type === 'scale') {
+      node = WL.scaleView(container, bars(container, q, res), q, res);
     } else {
       node = bars(container, q, res);
     }
@@ -413,6 +421,7 @@ var WL = (function () {
       : plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
     container.appendChild(el('p', { class: 'results-foot' }, foot));
+    if (before && WL.playFlip) WL.playFlip(container, before);
   }
 
   /** Secondes restantes avant closesAt, corrigées du décalage d'horloge. */

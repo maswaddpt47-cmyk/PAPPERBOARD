@@ -283,6 +283,7 @@ header('Cache-Control: no-store');
 </main>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 </body>

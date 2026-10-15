@@ -52,6 +52,7 @@ wl_security_headers();
 </aside>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('screen.js') ?>"></script>
 </body>
 </html>
