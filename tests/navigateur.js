@@ -90,8 +90,9 @@ function check(cond, label) {
   // Résultats et correction.
   await admin.click('#open-btn');
   await admin.click('#show-btn');
-  await screen.waitForSelector('#s-results .bar-good');
-  check(/1 \(100 %\)/.test(await screen.textContent('#s-results')), 'résultat projeté');
+  // Oui / Non projeté en anneau (charts.js) : bonne réponse cochée dans la légende.
+  await screen.waitForSelector('#s-results .donut-legend .is-good');
+  check(/100 % · Bonne réponse/.test(await screen.textContent('#s-results .donut-legend .is-good')), 'résultat projeté');
   await phone.waitForSelector('#my-result:not([hidden])');
   check(/Bonne réponse !/.test(await phone.textContent('#my-result')), 'correction sur le téléphone');
 
