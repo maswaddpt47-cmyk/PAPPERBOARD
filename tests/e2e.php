@@ -272,6 +272,9 @@ check($res['items'][0]['id'] === $b && $res['items'][0]['n'] === 3 && $res['tota
 // --- Moment de la correction : immédiate, ou à la fin du temps ----------------
 expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'truefalse', 'text' => 'Sans bonne réponse', 'reveal' => 'instant']]), 400, 'correction immédiate sans bonne réponse refusée');
 expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'yesno', 'text' => 'Sans durée', 'correct' => [0], 'reveal' => 'end']]), 400, 'correction en fin de temps sans durée refusée');
+foreach (['text', 'wall', 'postit'] as $written) {
+    expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => $written, 'text' => 'Écrite', 'reveal' => 'end', 'duration' => 30]]), 400, "affichage automatique refusé pour $written");
+}
 $instant = $admin->post('question_save', ['s' => $code, 'question' => ['type' => 'truefalse', 'text' => 'Quiz immédiat', 'correct' => [0], 'reveal' => 'instant']])['json']['id'] ?? '';
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $instant]);
 check($p[0]->get("api.php?action=state&s=$code")['json']['question']['correct'] === [], 'immédiate : pas de correction avant de répondre');

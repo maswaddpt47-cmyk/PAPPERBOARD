@@ -5,6 +5,7 @@
 declare(strict_types=1);
 
 const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots'];
+const WL_WRITTEN_TYPES = ['text', 'wall', 'postit']; // texte libre : relu avant d'être montré, jamais en affichage automatique
 const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
 // Résultats projetés en direct (sans « Afficher ») : ni correction à dévoiler,
 // ni texte libre à relire avant projection (choix de l'utilisateur, 14/10/2026).
@@ -611,6 +612,9 @@ function wl_clean_explain(mixed $text): string
  *  participant voit la correction dès qu'il a répondu (réponse alors figée). */
 function wl_check_reveal(array &$q): void
 {
+    if ($q['reveal'] === 'end' && in_array($q['type'], WL_WRITTEN_TYPES, true)) {
+        throw new WlError('Une réponse écrite peut contenir un nom : elle ne s\'affiche pas toute seule, relisez-la puis affichez-la.');
+    }
     if ($q['reveal'] === 'end' && !$q['duration']) {
         throw new WlError('Correction à la fin du temps : indiquez une durée.');
     }

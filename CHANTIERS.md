@@ -144,8 +144,9 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   (`sortByPoints`, 15/10/2026), déplacées seulement si l'ordre change.
   Cartes en thème sombre : contraste AA conservé (texte 4,5:1, graphique 3:1).
 - `/security-review` (15/10/2026) : rien retenu ; `admin.php` après la ligne 80 et
-  les JS lus par recherche seulement. À noter : `reveal: end` publie mur et
-  réponses libres sans relecture à l'échéance du minuteur.
+  les JS lus par recherche seulement. `reveal: end` (affichage à la fin du
+  temps) est refusé pour réponse libre, mur et post-it : une réponse peut
+  contenir un nom (`wl_check_reveal`, 15/10/2026, tenu par e2e).
 - **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
   multiples (point 2) — inhérent à un vote sans compte ; atténué par
   « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
@@ -293,8 +294,6 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
 
 ## Pistes d'amélioration
 
-*Proposées, en attente :*
-- 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
-  reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
-  à déclarer, clé dans `config.php`, limite de générations, audit Codex.
-*Écartées :* aucune.
+*Proposées, en attente :* aucune.
+*Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
+y renonce, le copier-coller suffit.

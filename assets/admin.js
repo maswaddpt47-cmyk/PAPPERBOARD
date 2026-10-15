@@ -542,6 +542,10 @@
     WL.show($('qf-live-box'), LIVE.indexOf(type) !== -1);
     WL.show($('qf-scale-box'), type === 'scale');
     WL.show($('qf-budget-box'), type === 'points' || type === 'dots');
+    // Texte libre : jamais affiché automatiquement (une réponse peut contenir un nom).
+    var written = ['text', 'wall', 'postit'].indexOf(type) !== -1;
+    $('qf-reveal').querySelector('option[value="end"]').disabled = written;
+    if (written && $('qf-reveal').value === 'end') $('qf-reveal').value = 'manual';
     var quiz = ['yesno', 'truefalse', 'mcq'].indexOf(type) !== -1;
     WL.show($('qf-correct-box'), quiz);
     if (!quiz) return;
