@@ -33,9 +33,6 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
 7. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
-8. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
-   créer : même `.claude/settings.json` que NEWGEN, hook réduit à
-   `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
 Fait côté hébergement (14/10/2026, déclaré par l'utilisateur) : HTTPS forcé,
 SSH par clé seule, fichiers de clé supprimés. Secret `ALWAYSDATA_KNOWN_HOSTS`
@@ -86,6 +83,10 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   intermittent du test « direct » trouvée le 15/10/2026.
 ## Points à ne pas défaire
 
+- Hook `SessionStart` (`.claude/settings.json`, créé par l'utilisateur le
+  15/10/2026, commande testée) : il lance `scripts/check-chantiers.sh`. La
+  plateforme interdit à Claude d'écrire ce fichier : toute modification passe
+  par l'utilisateur.
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
   pas concerné (ni charte, ni DPD, ni Archives départementales, ni registre du
   Département). Le RGPD s'applique : l'utilisateur est responsable de
