@@ -75,13 +75,13 @@
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
       if (q.type === 'wall' && q.state === 'open') {
-        $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre téléphone : touchez ♥.'));
+        $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre appareil : touchez ♥.'));
       }
       if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
       WL.fitResults($('s-results'));
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
-        : q.state === 'open' ? 'Répondez sur votre téléphone !' : 'Les votes sont fermés.';
+        : q.state === 'open' ? 'Répondez sur votre appareil !' : 'Les votes sont fermés.';
       var unit = { wall: 'message', postit: 'post-it' }[q.type] || 'réponse';
       // Décompte « 3 / 5 » pour savoir quand fermer le vote (mur et post-it :
       // nombre de contributions, une personne peut en publier plusieurs).
