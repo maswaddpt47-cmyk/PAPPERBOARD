@@ -167,8 +167,8 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   suite, on en touche un autre pour changer. QCM corrigé (`graded`), réponse figée
   (correction immédiate) ou QCM multiple : un appui sélectionne, **Envoyer** vote
   (14/10/2026 : l'envoi en un geste déroutait). Oui/Non et Vrai/Faux corrigés
-  envoient au toucher depuis le 15/10/2026 (interprétation d'une capture de
-  l'utilisateur, à confirmer). Envoyer : à droite des choix sur écran large, sous
+  envoient au toucher (choix de l'utilisateur, 15/10/2026, sauf réponse figée).
+  Envoyer : à droite des choix sur écran large, sous
   les choix sur téléphone (barre collée essayée : elle cachait les choix). Tenu
   par `tests/navigateur.js` (figé : « choisir n'envoie rien avant Envoyer » ;
   Vrai/Faux corrigé : « un appui envoie tout de suite »).
