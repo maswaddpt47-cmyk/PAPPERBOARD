@@ -457,8 +457,10 @@ expect_status($intrus->post('login', ['password' => getenv('WL_PASSWORD')]), 429
 expect_status($admin->post('login', ['password' => getenv('WL_PASSWORD')]), 200, 'appareil déjà connu : pas bloqué par les échecs d\'un autre sur la même IP');
 
 // --- Essais de codes en série (en dernier : bloque l'IP locale) -------------------
+// 61 essais : la fenêtre est la minute civile ; si elle change en cours de boucle,
+// l'une des deux reçoit au moins 31 essais (limite : 30). Avec 32, échec rare (15/10/2026).
 $codes = [];
-for ($i = 0; $i < 32; $i++) {
+for ($i = 0; $i < 61; $i++) {
     $codes[] = $intrus->get('api.php?action=state&s=' . substr(str_shuffle('ABCDEFGHJKMNPQRSTUVWXYZ'), 0, 5))['status'];
 }
 check(in_array(429, $codes, true), 'plus de 30 codes inconnus par minute : 429');

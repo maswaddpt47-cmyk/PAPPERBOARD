@@ -42,7 +42,7 @@ wl_security_headers();
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
   <button id="p-step" class="btn btn-primary" type="button"></button>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
-  <span class="s-keys">Clavier : ← → · Espace · Q (QR code)</span>
+  <span class="s-keys">Clavier : ← → · Espace · Q (QR code) · F (plein écran)</span>
 </nav>
 <aside class="qr-corner" aria-label="Rejoindre la session">
   <div id="qr" class="qr"></div>

@@ -25,10 +25,15 @@
   $('theme-btn').addEventListener('click', function () {
     setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
-  $('full-btn').addEventListener('click', function () {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-  });
+  function toggleFullscreen() {
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (!document.documentElement.requestFullscreen) { error('Plein écran non disponible sur ce navigateur : touche F11.'); return; }
+    // Refus du navigateur : on le dit au lieu de ne rien faire.
+    document.documentElement.requestFullscreen().catch(function (e) {
+      error('Plein écran refusé par le navigateur (' + (e && e.message || 'raison inconnue') + ') : essayez la touche F11.');
+    });
+  }
+  $('full-btn').addEventListener('click', toggleFullscreen);
   window.addEventListener('resize', function () { WL.fitCloud($('s-results')); });
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
@@ -165,6 +170,7 @@
       else if (k === 'ArrowLeft' || k === 'PageUp') control('prev');
       else if (k === ' ' || k === 'Enter') control(stepOp());
       else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
+      else if (k === 'f' || k === 'F') toggleFullscreen();
       else return;
       e.preventDefault();
     });

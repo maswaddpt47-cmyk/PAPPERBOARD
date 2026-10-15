@@ -310,8 +310,8 @@ label.btn { cursor: pointer; }
 .s-keys { font-size: .85rem; color: var(--wl-texte-doux); }
 .screen-main { padding-bottom: 5rem; }
 /* Résultats affichés : en-tête, question et QR réduits. */
-.s-live .screen-head { padding: .3rem 2rem; }
-.s-live .s-meta { font-size: .7em; }
+.s-live .screen-head { padding: .6rem 2rem .9rem; }
+.s-live .s-meta { font-size: .7em; margin-top: .6em; }
 .s-live .s-text { font-size: .95em; margin: .1em 0 .9em; }
 .s-live .s-results .bar-track { height: clamp(1.6em, 7vh, 3.2em); }
 .s-live .s-timer { font-size: 1.2em; }
