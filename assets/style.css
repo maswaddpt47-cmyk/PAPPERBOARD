@@ -203,7 +203,8 @@ legend { font-weight: bold; padding: 0 .25rem; }
 
 /* Signaler une difficulté, Oser demander, pseudonyme (téléphone). */
 .signal-title { font-size: 1.05rem; margin: 0 0 .6rem; }
-.signal-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.signal-btns { display: grid; grid-template-columns: 1fr; gap: .5rem; } /* téléphone : un bouton par ligne, rien ne déborde */
+@media (min-width: 600px) { .signal-btns { grid-template-columns: repeat(3, 1fr); } }
 .btn-signal { white-space: normal; font-size: .95rem; padding: .5rem .3rem; min-height: 3.5rem; }
 .btn-signal[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-texte); border-color: var(--wl-texte); }
 .ask-form { display: flex; gap: .5rem; }

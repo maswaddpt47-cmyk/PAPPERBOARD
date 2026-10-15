@@ -140,7 +140,9 @@
           var who = d.podium.filter(function (r) { return r.rank === rank; });
           if (!who.length) return;
           steps.appendChild(el('div', { class: 's-step s-step-' + rank },
-            el('p', { class: 's-step-names' }, who.map(function (r) { return r.name; }).join(' · ')),
+            // Beaucoup d'ex aequo : trois noms au plus, puis le nombre.
+            el('p', { class: 's-step-names' }, who.slice(0, 3).map(function (r) { return r.name; }).join(' · ')
+              + (who.length > 3 ? ' et ' + (who.length - 3) + ' autres' : '')),
             el('p', { class: 's-step-score' }, WL.plural(who[0].score, 'point') + ' / ' + d.scored),
             el('p', { class: 's-step-rank' }, rank === 1 ? '1er' : rank + 'e')));
         });

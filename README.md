@@ -229,6 +229,18 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 Envies » → regrouper les doublons depuis l'écran animateur → **Publier** →
 Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 
+**Nouveautés (onglet Animer)**
+- **Signaux** : les élèves peuvent toucher « Trop vite », « À réexpliquer » ou
+  « Besoin d'aide ». Les compteurs anonymes s'affichent au-dessus du pilotage et
+  s'effacent après 2 minutes.
+- **Oser demander** : ouvrez-le, lisez les questions, **Publier** celles à
+  partager. Les élèves votent « moi aussi », et **Projeter les questions** les
+  affiche en commençant par les plus votées.
+- **Pseudonymes et classement** (au cas par cas) : chaque inscrit reçoit un
+  pseudonyme au hasard, et chaque quiz corrigé rapporte un point. **Projeter le
+  podium** montre les rangs 1 à 3. Désactiver l'option efface les pseudonymes.
+- **Brise-glace** (onglet Préparer) : une question d'échauffement placée en tête.
+
 **Après**
 - **Bilan projeté** : touche **B** ou bouton **Bilan** sur la projection pilotée
   (ou « Projeter le bilan » dans l'onglet Bilan) : une question par diapositive,
