@@ -20,9 +20,9 @@ toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
    projeté** (touche B sur la projection, 15/10/2026 : lisibilité de chaque
    diapositive sur l'écran de la salle). Puis un
    **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
-3. **Refonte visuelle** : prompt prêt (`docs/prompt-design.md`, 15/10/2026), à
-   coller dans Claude Design ; pistes et maquettes avant tout code. Une police
-   web exigera d'ajouter `font-src 'self'` à la CSP (`lib.php`).
+3. **Refonte « Papier & Terre »** en ligne le 15/10/2026 (`INTEGRATION.md`) : à
+   valider sur téléphone et projection (anneau, jauge, thème clair, gommettes).
+   Retour arrière possible : revenir au commit `145dc25`.
 4. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
    annonce encore la suppression après 30 jours, alors que WoocLight archive
    désormais des résultats anonymes. À ajuster par l'utilisateur s'il le souhaite.
