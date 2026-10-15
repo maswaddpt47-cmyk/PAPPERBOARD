@@ -5,8 +5,10 @@
 'use strict';
 
 (function () {
-  var C = { texte: '1F2937', doux: '4B5563', primaire: '4338CA', ok: '16A34A', fond: 'F4F5F7', accent: '0F766E' };
-  var FONT = 'Verdana';
+  // Charte « Papier & Terre », thème clair (mêmes valeurs que --wl-* de style.css).
+  var C = { texte: '2E2118', doux: '6B5442', primaire: 'A83A1A', ok: '2F6B1F', fond: 'FBF4E8', carte: 'FFFDF8',
+    accent: '1F6F6B', bord: 'E4D3BA', entete: 'F6E7CF', postit: 'FFF1A8' };
+  var FONT = 'Verdana', TITRE = 'Georgia';
   var W = 13.33; // LAYOUT_WIDE : 13,33 x 7,5 pouces
 
   /** Charge la bibliothèque une seule fois (src signé par wl_asset). */
@@ -58,10 +60,10 @@
 
   /** Une diapositive par question. */
   function questionSlide(pptx, q, i, d) {
-    var slide = pptx.addSlide();
+    var slide = pptx.addSlide({ masterName: 'WL' });
     var r = q.results, post = q.type === 'wall' || q.type === 'postit';
     text(slide, 'Question ' + (i + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q), { x: 0.5, y: 0.3, w: W - 1, h: 0.4, fontSize: 14, color: C.doux });
-    text(slide, q.text, { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink' });
+    text(slide, q.text, { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink', fontFace: TITRE });
     var h = q.explain ? 3.5 : 4.5, box = { x: 0.5, y: 1.9, w: W - 1, h: h };
     var visible = function (list) { return (list || []).filter(function (x) { return !x.hidden; }); };
     var gone = !r.counts && !r.words && !r.texts && !r.posts && !r.items; // archive : textes non conservés
@@ -86,10 +88,10 @@
     } else if (q.type === 'postit') {
       var cols = q.options.map(function (name, c) {
         var notes = visible(r.posts).filter(function (p) { return p.col === c && !p.parent; }).map(function (p) { return '• ' + p.text; });
-        return { text: notes.join('\n') || '—', options: { fontSize: 14, valign: 'top', fill: { color: 'FFF7CC' } } };
+        return { text: notes.join('\n') || '—', options: { fontSize: 14, valign: 'top', fill: { color: C.postit } } };
       });
-      slide.addTable([q.options.map(function (n) { return { text: n, options: { bold: true, fontSize: 16, fill: { color: 'E9EEF3' } } }; }), cols],
-        Object.assign({ fontFace: FONT, color: C.texte, border: { type: 'solid', pt: 1, color: 'D1D5DB' }, autoPage: false, rowH: [0.5, box.h - 0.5] }, box));
+      slide.addTable([q.options.map(function (n) { return { text: n, options: { bold: true, fontSize: 16, fill: { color: C.entete } } }; }), cols],
+        Object.assign({ fontFace: FONT, color: C.texte, border: { type: 'solid', pt: 1, color: C.bord }, autoPage: false, rowH: [0.5, box.h - 0.5] }, box));
     }
     var foot = post ? WL.plural(r.total, q.type === 'wall' ? 'message' : 'post-it')
       : r.total + ' / ' + d.participants + ' ont répondu';
@@ -97,8 +99,10 @@
     var line = (d.recap || []).filter(function (x) { return x.text === q.text; })[0];
     if (line && q.correct && q.correct.length) foot += ' — ' + line.summary;
     if (q.explain) {
-      text(slide, q.explain, { x: 0.5, y: 5.5, w: W - 1, h: 1.2, fontSize: 15, fit: 'shrink', fill: { color: C.fond }, margin: 8,
-        line: { color: C.ok, width: 0 } });
+      // Encadré comme sur la projection : carte claire, filet vert à gauche.
+      text(slide, q.explain, { x: 0.5, y: 5.5, w: W - 1, h: 1.2, fontSize: 15, fit: 'shrink', fill: { color: C.carte }, margin: 10,
+        line: { color: C.bord, width: 1 } });
+      slide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 5.5, w: 0.08, h: 1.2, fill: { color: C.ok }, line: { color: C.ok, width: 0 } });
     }
     text(slide, foot, { x: 0.5, y: 6.85, w: W - 1, h: 0.4, fontSize: 13, color: C.doux });
   }
@@ -107,23 +111,27 @@
     var pptx = new window.PptxGenJS();
     pptx.layout = 'LAYOUT_WIDE';
     pptx.title = 'Bilan — ' + d.title;
+    // Fond papier et bandeau terre en haut de chaque diapositive.
+    pptx.defineSlideMaster({ title: 'WL', background: { color: C.fond },
+      objects: [{ rect: { x: 0, y: 0, w: W, h: 0.12, fill: { color: C.primaire } } }] });
     var day = new Date().toLocaleDateString('fr-FR');
 
     var s = pptx.addSlide();
-    s.background = { color: C.primaire };
-    text(s, d.title, { x: 0.8, y: 2.3, w: W - 1.6, h: 1.4, fontSize: 40, bold: true, color: 'FFFFFF', fit: 'shrink' });
-    text(s, 'Bilan de l\'atelier — ' + day, { x: 0.8, y: 3.8, w: W - 1.6, h: 0.6, fontSize: 22, color: 'FFFFFF' });
-    text(s, WL.plural(d.participants, 'participant') + ' — ' + WL.plural(d.questions.length, 'question'), { x: 0.8, y: 4.5, w: W - 1.6, h: 0.5, fontSize: 18, color: 'E0E7FF' });
+    s.background = { color: C.fond };
+    s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.45, h: 7.5, fill: { color: C.primaire }, line: { color: C.primaire, width: 0 } });
+    text(s, d.title, { x: 1.1, y: 2.3, w: W - 1.9, h: 1.4, fontSize: 40, bold: true, color: C.primaire, fontFace: TITRE, fit: 'shrink' });
+    text(s, 'Bilan de l\'atelier — ' + day, { x: 1.1, y: 3.8, w: W - 1.9, h: 0.6, fontSize: 22 });
+    text(s, WL.plural(d.participants, 'participant') + ' — ' + WL.plural(d.questions.length, 'question'), { x: 1.1, y: 4.5, w: W - 1.9, h: 0.5, fontSize: 18, color: C.doux });
 
     d.questions.forEach(function (q, i) { questionSlide(pptx, q, i, d); });
 
     if (d.recap && d.recap.length) {
-      s = pptx.addSlide();
-      text(s, 'Ce qu\'on retient de l\'atelier', { x: 0.5, y: 0.3, w: W - 1, h: 0.7, fontSize: 28, bold: true });
-      var rows = [[{ text: 'Question', options: { bold: true, fill: { color: 'E9EEF3' } } }, { text: 'Résultat', options: { bold: true, fill: { color: 'E9EEF3' } } }]]
+      s = pptx.addSlide({ masterName: 'WL' });
+      text(s, 'Ce qu\'on retient de l\'atelier', { x: 0.5, y: 0.3, w: W - 1, h: 0.7, fontSize: 28, bold: true, color: C.primaire, fontFace: TITRE });
+      var rows = [[{ text: 'Question', options: { bold: true, fill: { color: C.entete } } }, { text: 'Résultat', options: { bold: true, fill: { color: C.entete } } }]]
         .concat(d.recap.map(function (x) { return [x.text, x.summary]; }));
       s.addTable(rows, { x: 0.5, y: 1.1, w: W - 1, colW: [7.6, 4.73], fontFace: FONT, fontSize: 12, color: C.texte,
-        border: { type: 'solid', pt: 1, color: 'D1D5DB' }, autoPage: true, autoPageRepeatHeader: true });
+        fill: { color: C.carte }, border: { type: 'solid', pt: 1, color: C.bord }, autoPage: true, autoPageRepeatHeader: true });
     }
     if (d.synthesis) {
       // Une diapositive par tranche de ~1200 caractères, coupée entre deux paragraphes.
@@ -133,16 +141,18 @@
       });
       if (cur) parts.push(cur);
       parts.forEach(function (part, k) {
-        s = pptx.addSlide();
+        s = pptx.addSlide({ masterName: 'WL' });
         text(s, 'Synthèse et recommandations' + (parts.length > 1 ? ' (' + (k + 1) + '/' + parts.length + ')' : ''),
-          { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 28, bold: true, color: C.primaire });
+          { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 28, bold: true, color: C.primaire, fontFace: TITRE });
         text(s, part, { x: 0.5, y: 1.4, w: W - 1, h: 5.7, fontSize: 16, fit: 'shrink' });
       });
     }
     if (d.conclusion) {
-      s = pptx.addSlide();
-      text(s, 'Conclusion', { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 30, bold: true, color: C.primaire });
-      text(s, d.conclusion, { x: 0.8, y: 1.5, w: W - 1.6, h: 4.8, fontSize: 24, fit: 'shrink', valign: 'middle' });
+      s = pptx.addSlide({ masterName: 'WL' });
+      text(s, 'À retenir', { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 30, bold: true, color: C.primaire, fontFace: TITRE });
+      // Même texte que la projection : « À retenir : » en tête retiré (c'est le titre).
+      var concl = d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '');
+      text(s, concl.charAt(0).toUpperCase() + concl.slice(1), { x: 0.8, y: 1.5, w: W - 1.6, h: 4.8, fontSize: 24, fit: 'shrink', valign: 'middle' });
     }
     var name = 'bilan-' + d.title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pptx';
     return pptx.writeFile({ fileName: name });
