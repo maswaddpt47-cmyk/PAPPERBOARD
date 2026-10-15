@@ -152,7 +152,8 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .btn-choice { min-height: 4rem; font-size: 1.2rem; padding: .75rem; white-space: normal; }
 .choices-2 .btn-choice { min-height: 6rem; font-size: 1.5rem; font-family: var(--wl-police-titre); }
 .choices-scale .btn-choice { font-family: var(--wl-police-titre); font-size: 1.5rem; }
-.btn-choice[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-primaire); }
+/* Choix sélectionné : brun neutre (13:1), ni rouge (lu « faux ») ni vert (réservé à la bonne réponse). */
+.btn-choice[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-texte); border-color: var(--wl-texte); }
 .btn-choice[aria-pressed="true"]::before { content: "✓"; }
 .btn-choice:disabled[aria-pressed="true"] { opacity: 1; }
 /* Correction : contour vert foncé (6,4:1) + mention écrite, pas la couleur seule. */
@@ -319,7 +320,9 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .s-results .wall-item .likes { margin-left: auto; }
 .dots-rank { margin: 0; padding-left: 1.8em; display: grid; gap: .6rem; }
 .dots-rank li::marker { font-family: var(--wl-police-titre); font-weight: bold; font-size: 1.2em; }
-.dots-row { display: grid; grid-template-columns: minmax(7rem, 34%) minmax(6rem, 1fr) max-content; gap: .75rem; align-items: center; }
+/* Idée large (moins de retours à la ligne), décompte en colonne fixe près des gommettes. */
+.dots-row { display: grid; grid-template-columns: minmax(9rem, 50%) minmax(5rem, 1fr) 9em; gap: .75rem; align-items: center; }
+.dots-row .bar-value { justify-self: start; }
 .dots-row .bar-value { font-size: 1em; }
 .dots-text { justify-self: start; background: #FFF1A8; color: #2E2118; border-radius: 4px; padding: .3em .6em; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, .25); }
 .dots-grouped { color: #4D3600; font-weight: normal; }
