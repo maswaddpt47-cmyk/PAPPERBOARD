@@ -27,6 +27,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
   <section id="join" class="card" hidden>
     <h1>Rejoindre l'atelier</h1>
     <form id="join-form" novalidate>
+      <p id="join-info" class="join-info" role="status" hidden></p>
       <label for="code">Code affiché à l'écran (5 caractères)</label>
       <input id="code" name="code" class="input-code" autocomplete="off" autocapitalize="characters"
              spellcheck="false" maxlength="5" inputmode="text" required aria-describedby="join-error">

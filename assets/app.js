@@ -37,21 +37,26 @@
 
   function view(id) {
     ['join', 'wait', 'ended', 'question'].forEach(function (v) { WL.show($(v), v === id); });
+    WL.show($('leave-btn'), id !== 'join'); // rien à quitter tant qu'on n'a pas rejoint
   }
 
   // --- Rejoindre --------------------------------------------------------------
 
-  function showJoin(message) {
+  /** info : message de confirmation (en vert, en haut), sinon message d'erreur. */
+  function showJoin(message, info) {
     if (poller) poller.stop();
     pendingStore.del('pending'); // session introuvable ou quittée : rien ne repartira
     code = null;
     view('join');
-    $('join-error').textContent = message || '';
+    $('join-error').textContent = info ? '' : message || '';
+    $('join-info').textContent = info ? message : '';
+    WL.show($('join-info'), !!info);
     $('code').focus();
   }
 
   function join(c) {
     $('join-error').textContent = '';
+    WL.show($('join-info'), false);
     banner('Connexion…');
     return WL.api('join', { body: { s: c }, headers: headers() }).then(function (r) {
       banner('');
@@ -522,7 +527,7 @@
       csrf = null;
       $('session-title').textContent = '';
       if (history.replaceState) history.replaceState(null, '', location.pathname);
-      showJoin('Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.');
+      showJoin('✓ Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.', true);
     });
   });
 

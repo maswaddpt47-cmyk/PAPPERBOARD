@@ -158,6 +158,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
   #answer-form:has(> .choices, > .checks) > .send-bar { grid-column: 2; grid-row: 1; margin-top: 0; position: sticky; top: 1rem; }
 }
 .explain { border-left: 4px solid var(--wl-accent); padding: .5rem .75rem; background: var(--wl-fond); margin: .75rem 0 0; }
+.join-info { font-weight: bold; color: var(--wl-ok); background: var(--wl-fond); border-left: 4px solid var(--wl-ok); padding: .6rem .8rem; margin: 0 0 1rem; }
 .answer-status { font-weight: bold; color: var(--wl-ok); min-height: 1.5em; }
 .my-result { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 
