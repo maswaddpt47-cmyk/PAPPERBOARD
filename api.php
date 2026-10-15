@@ -82,11 +82,12 @@ function api_public_session(string $code): array
     return $s;
 }
 
-/** Session terminée : plus aucun contenu servi publiquement. */
+/** Session terminée : plus aucun contenu servi publiquement, sauf la
+ *  conclusion (« à retenir »). Le détail passe par le bilan projeté. */
 function api_ended_view(array $s): array
 {
     return ['ok' => true, 'title' => $s['title'], 'ended' => true, 'question' => null,
-        'recap' => wl_recap($s), 'conclusion' => $s['conclusion'] ?? '',
+        'conclusion' => $s['conclusion'] ?? '',
         'code' => $s['code'], 'joinUrl' => wl_join_url($s['code']), 'participants' => count($s['participants']),
         'qrHidden' => !empty($s['qrHidden']),
         'pollMs' => (int)wl_config()['poll_ms'], 'now' => time()];

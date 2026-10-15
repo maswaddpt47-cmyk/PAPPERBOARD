@@ -457,7 +457,10 @@
           el('p', { class: 'meta' }, WL.typeLabel(q) + ' — ' + WL.plural(q.results.total, 'réponse')
             + (q.duration ? ' — ' + q.duration + ' s' : '') + (i === d.current ? ' — projetée' : ''))),
         el('div', { class: 'row wrap' },
-          el('button', { type: 'button', class: 'btn', disabled: i === d.current, title: 'Afficher cette question sur la projection et ouvrir son vote',
+          // Session terminée : la projection reste sur la conclusion, projeter ne ferait rien.
+          el('button', { type: 'button', class: 'btn', disabled: i === d.current || d.ended,
+            title: d.ended ? 'Session terminée : « Rouvrir la session » (Réglages) pour projeter une question, ou touche B sur la projection pour le bilan'
+              : 'Afficher cette question sur la projection et ouvrir son vote',
             onclick: function () { control('goto', { qid: q.id }); } }, 'Projeter'),
           el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Monter', title: 'Monter d\'un rang', disabled: i === 0,
             onclick: function () { act('question_move', { qid: q.id, dir: -1 }); } }, '↑'),

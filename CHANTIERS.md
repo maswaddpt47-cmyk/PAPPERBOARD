@@ -239,10 +239,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   par participant : ses idées seraient reliées entre elles (anonymat, choix de
   l'utilisateur du 15/10/2026 après alerte).
 
-- **Fin de session** (15/10/2026) : projection = conclusion seule (le détail passe
-  par le bilan, touche B) ; téléphones = récap (`wl_recap`, une ligne par
-  question) + conclusion, même page rouverte après la fin (409 → on écoute
-  quand même). Récap : jamais une réponse libre, une idée du mur si publiée.
+- **Fin de session** (15/10/2026, choix de l'utilisateur) : projection et
+  téléphones = conclusion seule (« à retenir »), même page rouverte après la fin
+  (409 → on écoute quand même) ; le détail passe par le bilan (touche B). Le
+  récap (`wl_recap`) ne sert plus qu'à l'animateur : PowerPoint, archive.
 
 - **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
   toutes les questions et texte à copier pour une IA (synthèse, conclusion,

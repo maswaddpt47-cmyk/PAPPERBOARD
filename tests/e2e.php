@@ -376,9 +376,11 @@ check(($admin->get("api.php?action=admin_state&s=$code")['json']['synthesis'] ??
 check(!str_contains(json_encode($p[0]->get("api.php?action=state&s=$code")['json']), 'Point un'), 'synthèse jamais envoyée aux téléphones');
 $admin->post('control', ['s' => $code, 'op' => 'end']);
 $end = $admin->get("api.php?action=screen&s=$code")['json'];
-$recap = array_column($end['recap'] ?? [], 'summary', 'text');
-check(str_ends_with($recap['Avez-vous un smartphone ?'] ?? '', 'bonnes réponses') && ($end['conclusion'] ?? '') === 'À retenir : un mot de passe ne se partage pas.', 'fin : récap (quiz) et conclusion projetés');
-check(!str_contains(json_encode($end['recap'] ?? [], JSON_UNESCAPED_UNICODE), 'Dupont'), 'fin : jamais le texte d\'une réponse libre dans le récap');
+check(!isset($end['recap']) && ($end['conclusion'] ?? '') === 'À retenir : un mot de passe ne se partage pas.', 'fin : conclusion seule projetée (pas de récap public)');
+$adminRecap = $admin->get("api.php?action=admin_state&s=$code")['json']['recap'] ?? [];
+$recap = array_column($adminRecap, 'summary', 'text');
+check(str_ends_with($recap['Avez-vous un smartphone ?'] ?? '', 'bonnes réponses'), 'fin : récap (quiz) gardé pour l\'animateur (PowerPoint)');
+check(!str_contains(json_encode($adminRecap, JSON_UNESCAPED_UNICODE), 'Dupont'), 'fin : jamais le texte d\'une réponse libre dans le récap');
 check(($p[0]->get("api.php?action=state&s=$code")['json']['conclusion'] ?? '') !== '', 'fin : conclusion envoyée aux téléphones');
 $cc = $admin->post('session_create', ['title' => 'Conclusion'])['json']['code'] ?? '';
 $rawc = json_encode([['type' => 'wordcloud', 'text' => 'Un mot ?'], ['type' => 'conclusion', 'text' => 'Bravo à tous.']]);

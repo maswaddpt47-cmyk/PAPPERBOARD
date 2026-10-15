@@ -212,7 +212,12 @@ var WL = (function () {
       });
       container.appendChild(list);
     }
-    if (d.conclusion) container.appendChild(el('p', { class: 'explain recap-conclusion' }, d.conclusion));
+    if (d.conclusion) {
+      // Titre « À retenir » ; le même début dans le texte est retiré (pas de doublon).
+      container.appendChild(el('h2', { class: 'recap-title' }, 'À retenir'));
+      container.appendChild(el('p', { class: 'explain recap-conclusion' },
+        d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '')));
+    }
   }
 
   /** Couleur stable d'un mot (elle ne change pas quand l'ordre change). */
