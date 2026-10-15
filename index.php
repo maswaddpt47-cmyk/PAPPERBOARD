@@ -65,7 +65,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
     <strong>Base légale</strong> : <?= wl_h($legal) ?>.</p>
-    <p><strong>Données</strong> : vos réponses ; un identifiant au hasard enregistré sur ce téléphone
+    <p><strong>Données</strong> : vos réponses ; un identifiant au hasard enregistré sur cet appareil (téléphone, tablette ou ordinateur)
     pour une journée, qui évite les votes en double ; votre adresse IP, gardée seulement sous forme
     codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
     ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées.</p>
@@ -77,7 +77,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     l'animateur de retirer une réponse ; ensuite, écrivez à : <?= wl_h($contact) ?>.
     Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </details>
-  <p><button id="leave-btn" class="btn btn-ghost" type="button">Quitter et effacer ce téléphone</button></p>
+  <p><button id="leave-btn" class="btn btn-ghost" type="button">Quitter et effacer cet appareil</button></p>
 </footer>
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('app.js') ?>"></script>

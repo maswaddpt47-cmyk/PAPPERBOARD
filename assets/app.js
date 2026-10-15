@@ -522,7 +522,7 @@
       csrf = null;
       $('session-title').textContent = '';
       if (history.replaceState) history.replaceState(null, '', location.pathname);
-      showJoin('Vous avez quitté l\'atelier. Ce téléphone ne garde plus rien de WoocLight.');
+      showJoin('Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.');
     });
   });
 
