@@ -477,7 +477,13 @@
   }
 
   ['open-btn', 'show-btn'].forEach(function (id) {
-    $(id).addEventListener('click', function () { control($(id).dataset.next); });
+    $(id).addEventListener('click', function () {
+      var op = $(id).dataset.next, q = data.questions[data.current];
+      // Fermer ou afficher sans aucune réponse : confirmation (constaté le 15/10/2026).
+      if ((op === 'close' || op === 'show') && q && q.state !== 'draft' && q.results.total === 0
+        && !confirm('Personne n\'a encore répondu. ' + (op === 'close' ? 'Fermer le vote' : 'Afficher') + ' quand même ?')) return;
+      control(op);
+    });
   });
   document.querySelectorAll('#live [data-op]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -741,7 +747,8 @@
         el('input', { type: 'checkbox', value: i, checked: true }),
         el('span', null, el('strong', null, it.text),
           el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
-          detail ? el('span', { class: 'meta gen-detail' }, detail) : null))));
+          detail ? el('span', { class: 'meta gen-detail' }, detail) : null,
+          it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null))));
     });
     WL.show($('gen-preview'), true);
     $('gen-save').disabled = !genChecked().length;

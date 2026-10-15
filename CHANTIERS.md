@@ -77,6 +77,10 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   intermittent du test « direct » trouvée le 15/10/2026.
 ## Points à ne pas défaire
 
+- Fermer ou afficher un vote **sans aucune réponse** demande confirmation (15/10/2026) :
+  `confirm` côté animateur, second appui sous 4 s sur la projection (`step()`).
+  Tenu par `tests/navigateur.js`. Import : avertissement non bloquant si un
+  intitulé de gommettes cite une colonne sans `column` (`wl_import_parse`, e2e).
 - Hook `SessionStart` (`.claude/settings.json`, créé par l'utilisateur le
   15/10/2026, commande testée) : il lance `scripts/check-chantiers.sh`. La
   plateforme interdit à Claude d'écrire ce fichier : toute modification passe
@@ -276,11 +280,8 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
-- 15/10/2026 — Avertir avant de fermer ou d'afficher un vote à 0 réponse (vu :
-  « 0 / 2 ont répondu » fermé sans que personne ait pu voter).
 - 15/10/2026 — « x / n ont répondu » : ne compter que les téléphones actifs
-  récemment (un téléphone éteint compte encore, limite connue).
-- 15/10/2026 — Import : avertir si l'intitulé de gommettes cite une colonne sans
-  `column` (toutes les idées sont alors proposées).
+  récemment. Demande un battement de cœur (écriture périodique, sans changer les
+  versions) : touche au polling en lecture seule et au test de coût. À décider.
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.

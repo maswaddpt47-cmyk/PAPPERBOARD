@@ -523,6 +523,7 @@ function api_questions_import(array $b): void
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
             ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain']))
+                + (isset($it['warning']) ? ['warning' => $it['warning']] : [])
             : $it, $items)]);
     }
     $keep = array_values(array_unique(array_map('intval', is_array($b['keep'] ?? null) ? $b['keep'] : [])));

@@ -491,6 +491,10 @@ $copied = '\\[ { "type": "poll", "text": "Copié depuis l\'appli", "options": \\
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $copied, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Copié depuis l\'appli',
     'import : « \\[ » ajoutés par l\'affichage d\'une IA retirés');
 check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [1]) === 0, 'import : tout ou rien');
+$colRaw = fn(array $dots) => json_encode([['type' => 'postit', 'text' => 'Idées', 'options' => ['Ce qui aide', 'Ce qui freine']], $dots + ['type' => 'dots', 'source' => 1, 'budget' => 3]], JSON_UNESCAPED_UNICODE);
+$warn = fn(array $dots) => $admin->post('questions_import', ['s' => $gen, 'raw' => $colRaw($dots), 'preview' => true])['json']['items'][1]['warning'] ?? '';
+check(str_contains($warn(['text' => 'Parmi les idées de la colonne « Ce qui aide », lesquelles tester ?']), 'Ce qui aide'), 'import : intitulé qui cite une colonne sans « column » signalé');
+check($warn(['text' => 'Parmi les idées de la colonne « Ce qui aide » ?', 'column' => 'Ce qui aide']) === '' && $warn(['text' => 'Lesquelles tester ?']) === '', 'import : pas d\'avertissement si la colonne est précisée ou non citée');
 $r = $admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 1, 2, 4, 5, 7]]);
 expect_status($r, 200, 'import : ajout');
 $gq = $admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [];

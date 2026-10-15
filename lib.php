@@ -779,6 +779,16 @@ function wl_import_parse(string $raw): array
             $items[$i] = ['error' => 'Gommettes : la source doit être un mur ou un post-it placé avant dans la liste.'];
             continue;
         }
+        if ($src !== null && ($it['column'] ?? '') === '' && ($items[$src]['q']['type'] ?? '') === 'postit') {
+            // L'intitulé cite une colonne mais « column » manque : toutes les idées seraient proposées.
+            $text = wl_fold($it['q']['text']);
+            foreach ($items[$src]['q']['options'] as $name) {
+                if (count($items[$src]['q']['options']) > 1 && mb_strlen($name) >= 4 && str_contains($text, wl_fold(wl_clean_text($name)))) {
+                    $items[$i]['warning'] = 'l\'intitulé cite la colonne « ' . $name . ' » mais « column » est absent : toutes les idées seront proposées.';
+                    break;
+                }
+            }
+        }
         if ($src !== null && ($it['column'] ?? '') !== '') {
             $names = array_map(fn($o) => wl_fold(wl_clean_text($o)), $items[$src]['q']['options']);
             $col = array_search(wl_fold(wl_clean_text($it['column'])), $names, true);

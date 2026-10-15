@@ -315,6 +315,23 @@
     return last.position >= last.count ? 'end' : 'next';
   }
 
+  /** Bouton central ou Espace : fermer ou afficher sans aucune réponse demande
+   *  un second appui dans les 4 secondes (un vote fermé trop tôt, 15/10/2026). */
+  var warnUntil = 0;
+  function step() {
+    var op = stepOp(), q = last && last.question;
+    var post = q && (q.type === 'wall' || q.type === 'postit');
+    var none = q && q.state !== 'draft' && !(post ? last.contributors : last.answered);
+    if ((op === 'close' || op === 'show') && none && Date.now() >= warnUntil) {
+      warnUntil = Date.now() + 4000;
+      pilotLabel();
+      setTimeout(pilotLabel, 4100);
+      return;
+    }
+    warnUntil = 0;
+    control(op);
+  }
+
   function pilotLabel() {
     if (!csrf) return;
     var board = !!(last && last.board), ended = !!(last && last.ended);
@@ -344,6 +361,7 @@
     $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
       : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : op === 'end' ? 'Récap et conclusion'
       : q ? 'Question suivante' : 'Commencer';
+    if (Date.now() < warnUntil) $('p-step').textContent = 'Aucune réponse : confirmer ?';
     $('p-step').title = {
       open: 'Les participants peuvent répondre', close: 'Plus aucune réponse acceptée',
       show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
@@ -369,7 +387,7 @@
     var next = function () { if (!ended()) control(onBoard() ? 'board_next' : 'next'); };
     $('p-prev').addEventListener('click', prev);
     $('p-next').addEventListener('click', next);
-    $('p-step').addEventListener('click', function () { control(stepOp()); });
+    $('p-step').addEventListener('click', step);
     $('p-reopen').addEventListener('click', reopen);
     $('p-board').addEventListener('click', function () { control('board'); });
     document.addEventListener('keydown', function (e) {
@@ -377,7 +395,7 @@
       var k = e.key;
       if (k === 'ArrowRight' || k === 'PageDown') next();
       else if (k === 'ArrowLeft' || k === 'PageUp') prev();
-      else if (k === ' ' || k === 'Enter') { if (!ended()) control(stepOp()); }
+      else if (k === ' ' || k === 'Enter') { if (!ended()) step(); }
       else if (k === 'b' || k === 'B') control(onBoard() ? 'board_off' : 'board');
       else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
       else if (k === 'f' || k === 'F') toggleFullscreen();

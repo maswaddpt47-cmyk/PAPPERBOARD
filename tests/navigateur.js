@@ -106,6 +106,19 @@ function check(cond, label) {
   // Vrai/Faux corrigé et modifiable : un appui envoie tout de suite, sans « Envoyer ».
   await admin.click('#live [data-op="next"]');
   await phone.waitForSelector('.btn-choice >> text=Vrai');
+  await admin.waitForFunction(() => /Vrai ou faux/.test(document.getElementById('live-text').textContent));
+  // Fermer un vote sans aucune réponse demande confirmation (espace animateur et projection).
+  let warned = '';
+  admin.once('dialog', d => { warned = d.message(); d.dismiss(); });
+  await admin.click('#open-btn');
+  check(/Personne n'a encore répondu/.test(warned), 'animateur : confirmation avant de fermer un vote sans réponse');
+  check((await admin.textContent('#open-btn')) === 'Fermer le vote', 'animateur : vote resté ouvert après refus');
+  const early = await admin.context().newPage();
+  await early.goto(BASE + 'screen.php?s=' + code);
+  await early.waitForFunction(() => document.getElementById('p-step') && document.getElementById('p-step').textContent === 'Fermer le vote');
+  await early.click('#p-step');
+  check(/confirmer/.test(await early.textContent('#p-step')), 'projection : un second appui demandé pour fermer sans réponse');
+  await early.close();
   votes.length = 0;
   await phone.click('.btn-choice >> text=Vrai');
   await phone.waitForFunction(() => /Réponse enregistrée/.test(document.getElementById('answer-status').textContent));
