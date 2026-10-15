@@ -8,20 +8,7 @@ Testé par l'utilisateur le 15/10/2026 sur PC (Edge), portable et téléphone,
 atelier « Temps d'écran » de bout en bout : pilotage, Envoyer, sondage au
 toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
 
-## En cours (15/10/2026, session interrompue possible) — branche `claude/sharp-knuth-n5x6xb`
-
-Demande de l'utilisateur (« la totale ») : signaler une difficulté, Oser demander,
-pseudonymes + classement (option par session, podium rangs 1-3), brise-glaces
-(météo en émojis, un mot, plutôt ceci ou cela), option « que des QCM » pour l'IA.
-- **Fait et commité** : serveur des 3 premières (tenu par e2e, 300 vérifications
-  vertes), écrans téléphone / animateur (onglet Animer) / projection.
-- **Fait aussi** : brise-glaces (Préparer, « Ajouter en premier »), option
-  « Que des quiz » de la génération par IA, mention dans « Confidentialité ».
-- **À faire** : captures des nouveaux écrans, README, puis CI verte et avance
-  de `main`. Rien n'est en ligne.
-- Côté utilisateur ensuite : fiche `docs/registre-traitement.md` (pseudonymes
-  et questions anonymes, effacés avec la session, jamais archivés).
-
+## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
@@ -296,6 +283,13 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - **QR code masquable** (15/10/2026) depuis Animer (`qrHidden`, projection seule) ;
   touche Q le montre quand même en grand. Récap de fin réduit au-dessus de la
   barre de pilotage (elle le chevauchait, capture de l'utilisateur).
+
+- **Signaux, Oser demander, pseudonymes, brise-glaces** (en ligne le 15/10/2026,
+  demande de l'utilisateur) : signaux 2 min pour l'animateur seul (jamais sur la
+  projection, vue de la salle), téléphones non réveillés ; questions publiées après
+  relecture, auteur jamais servi ; pseudonymes par session, effacés à la
+  désactivation, jamais archivés ; podium rangs 1-3. Tenu par e2e. À vérifier sur
+  téléphone ; fiche `docs/registre-traitement.md` à compléter par l'utilisateur.
 
 ## Pistes d'amélioration
 
