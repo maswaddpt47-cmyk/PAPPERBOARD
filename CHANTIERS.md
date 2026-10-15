@@ -57,10 +57,6 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   immédiat possible si l'utilisateur le préfère (moins de contrôle des noms).
 ## Limites connues
 
-- Gommettes : elles portent sur **tous** les post-its de la question source,
-  pas sur une colonne (constaté le 14/10/2026 : vote « solutions » sur un
-  post-it « freins / solutions »). Contournement : post-it à une seule colonne
-  quand il est suivi d'un vote.
 - `php -S` ignore `.htaccess` : le refus de `lib.php`, `config.php`, `data/`
   n'est testé que sur le vrai serveur, par l'étape « Vérifier la mise en
   ligne » de `ci-deploy.yml` (verte le 14/10/2026).
@@ -266,6 +262,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Mur : les « j'aime » ne sont possibles que **publié et vote ouvert**
   (`wl_like`). Le bouton central du pilotage publie donc le mur avant de fermer
   le vote (15/10/2026 : fermé avant publication, tous les cœurs restaient à 0).
+
+- Gommettes sur **une colonne** du post-it source (`column`, 15/10/2026, -1 =
+  toutes) : formulaire, import (nom de la colonne), export. Tenu par e2e.
+- Post-its colorés **au hasard mais stable** (`noteColor`, d'après l'id), jamais
+  par participant : ses idées seraient reliées entre elles (anonymat, choix de
+  l'utilisateur du 15/10/2026 après alerte).
 
 ## Pistes d'amélioration
 

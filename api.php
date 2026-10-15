@@ -368,7 +368,7 @@ function api_question_save(array $b): void
     $in = is_array($b['question'] ?? null) ? $b['question'] : throw new WlError('Question manquante.');
     $id = wl_update(api_code($b), function (array &$s) use ($in) {
         if (($in['type'] ?? '') === 'dots') {
-            api_check_source($s, (string)($in['source'] ?? ''), (string)($in['id'] ?? ''));
+            api_check_source($s, (string)($in['source'] ?? ''), (string)($in['id'] ?? ''), is_numeric($in['column'] ?? null) ? (int)$in['column'] : -1);
         }
         if (!empty($in['id'])) {
             $i = wl_question_index($s, $in['id']);
@@ -410,7 +410,7 @@ function api_questions_import(array $b): void
     $items = wl_import_parse((string)($b['raw'] ?? ''));
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'explain']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain']))
             : $it, $items)]);
     }
     $keep = array_values(array_unique(array_map('intval', is_array($b['keep'] ?? null) ? $b['keep'] : [])));
@@ -445,10 +445,13 @@ function api_questions_import(array $b): void
 }
 
 /** La question source des gommettes doit être un mur ou un post-it de la session. */
-function api_check_source(array $s, string $source, string $self): void
+function api_check_source(array $s, string $source, string $self, int $column = -1): void
 {
     foreach ($s['questions'] as $q) {
         if ($q['id'] === $source && $q['id'] !== $self && in_array($q['type'], WL_POST_TYPES, true)) {
+            if ($column >= 0 && ($q['type'] !== 'postit' || !isset($q['options'][$column]))) {
+                throw new WlError('Colonne absente du post-it choisi.');
+            }
             return;
         }
     }

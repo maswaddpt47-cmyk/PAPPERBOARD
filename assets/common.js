@@ -193,6 +193,14 @@ var WL = (function () {
     return TYPES.mcq + (q.multi ? ' — plusieurs réponses possibles' : ' — une seule réponse');
   }
 
+  /** Couleur d'un post-it : au hasard mais stable (tirée de son identifiant).
+   *  Jamais par participant : ses idées seraient reliées entre elles (anonymat). */
+  function noteColor(id) {
+    var h = 0;
+    for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 997;
+    return 'board-c' + (h % 6);
+  }
+
   /** Couleur stable d'un mot (elle ne change pas quand l'ordre change). */
   function colorOf(text) {
     var h = 0;
@@ -292,9 +300,9 @@ var WL = (function () {
     var grid = el('div', { class: 'board' });
     grid.style.gridTemplateColumns = 'repeat(' + res.columns.length + ', minmax(10rem, 1fr))';
     res.columns.forEach(function (name, c) {
-      var col = el('section', { class: 'board-col board-c' + (c % 6) }, el('h3', { class: 'board-title' }, name));
+      var col = el('section', { class: 'board-col' }, el('h3', { class: 'board-title' }, name));
       top.filter(function (p) { return p.col === c; }).forEach(function (p) {
-        var note = keep(nodes, p.id, function () { return el('div', { class: 'note' }); });
+        var note = keep(nodes, p.id, function () { return el('div', { class: 'note ' + noteColor(p.id) }); });
         clear(note).appendChild(el('p', { class: 'note-text' }, p.text));
         note.classList.toggle('wall-hidden', !!p.hidden);
         if (opts.onAdmin) note.appendChild(noteTools(p, top, res.columns, opts));
@@ -399,7 +407,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel, noteColor: noteColor,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };

@@ -400,7 +400,7 @@
       if (name && columns.length > 1) box.appendChild(el('h3', { class: 'board-title' }, name));
       var list = el('ul', { class: 'wall' });
       mineHere.forEach(function (p) {
-        var item = el('li', { class: 'wall-item' + (q.type === 'postit' ? ' note board-c' + (c % 6) : '') }, el('span', { class: 'post-text' }, p.text));
+        var item = el('li', { class: 'wall-item' + (q.type === 'postit' ? ' note ' + WL.noteColor(p.id) : '') }, el('span', { class: 'post-text' }, p.text));
         if (q.type === 'wall' && q.showResults) {
           item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-like', 'aria-pressed': String(p.liked), disabled: !open,
             'aria-label': (p.liked ? 'Ne plus aimer' : 'Aimer') + ' : ' + p.text,

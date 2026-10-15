@@ -119,6 +119,18 @@
     act('questions_duration', { duration: n });
   });
 
+  /** Gommettes : colonnes du post-it source (« toutes » par défaut). */
+  function fillColumns(selected) {
+    var src = data.questions.filter(function (o) { return o.id === $('qf-source').value; })[0];
+    var cols = WL.clear($('qf-column'));
+    var many = !!src && src.type === 'postit' && src.options.length > 1;
+    WL.show($('qf-column-box'), many);
+    if (!many) return;
+    cols.appendChild(el('option', { value: '-1' }, 'Toutes les colonnes'));
+    src.options.forEach(function (name, i) { cols.appendChild(el('option', { value: String(i), selected: selected === i }, name)); });
+  }
+  $('qf-source').addEventListener('change', function () { fillColumns(-1); });
+
   function control(op, extra) {
     return act('control', Object.assign({ op: op }, extra));
   }
@@ -293,6 +305,7 @@
       }
     });
     if (!sources.options.length) sources.appendChild(el('option', { value: '' }, 'Créez d\'abord un post-it collectif ou un mur'));
+    fillColumns(q ? q.column : -1);
     $('qf-duration').value = q ? q.duration : 0;
     $('qf-change').checked = q ? q.allowChange : true;
     $('qf-live').checked = q ? q.live !== false : true;
@@ -316,7 +329,7 @@
     var question = {
       type: $('qf-type').value, text: $('qf-text').value, explain: $('qf-explain').value, options: optionLines(),
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
-      source: $('qf-source').value,
+      source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
       reveal: $('qf-reveal').value, live: $('qf-live').checked,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
@@ -377,7 +390,8 @@
       '- "wall" : mur d\'idées, chacun publie de courts messages.',
       '- "postit" : post-it collectif ; "options" : 2 à 4 colonnes (ex. "Points forts", "Difficultés").',
       '- "dots" : vote par gommettes sur les idées d\'un mur ou d\'un post-it placé AVANT ; '
-        + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3).',
+        + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3) ; '
+        + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées.',
       '',
       'Réponds UNIQUEMENT par une liste JSON valide, sans texte autour. Exemple de format :',
       '[',

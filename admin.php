@@ -172,6 +172,8 @@ header('Cache-Control: no-store');
           <select id="qf-scale"><option value="5">de 1 à 5</option><option value="10">de 1 à 10</option></select></div>
         <div id="qf-source-box"><label for="qf-source" title="Les gommettes se collent sur les post-its ou messages de cette question">Idées à départager : celles de la question</label>
           <select id="qf-source"></select>
+          <div id="qf-column-box" hidden><label for="qf-column" title="Seules les idées de cette colonne reçoivent des gommettes">Colonne</label>
+            <select id="qf-column"></select></div>
           <p class="meta">Les idées n'apparaissent qu'une fois cette question publiée.</p></div>
         <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label" title="Nombre de points à répartir ; pour les gommettes, nombre de gommettes par personne">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>

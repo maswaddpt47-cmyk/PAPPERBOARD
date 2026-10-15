@@ -248,6 +248,12 @@ $admin->post('control', ['s' => $code, 'op' => 'show']); // publier la source
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
 $st = $wstate($p[0]);
 check(count($st['items']) === 2 && in_array('Identifiants oubliés', array_merge(...array_column($st['items'], 'grouped')), true), 'gommettes : idées principales, regroupées dessous');
+expect_status($admin->post('question_save', ['s' => $code, 'question' => ['type' => 'dots', 'text' => 'X', 'source' => $postitId, 'column' => 5]]), 400, 'gommettes : colonne inconnue refusée');
+$dotsCol = $save(['type' => 'dots', 'text' => 'Difficultés seulement', 'source' => $postitId, 'column' => 1]);
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsCol]);
+check($wstate($p[0])['items'] === [], 'gommettes : seules les idées de la colonne choisie (toutes déplacées en colonne 1)');
+$admin->post('question_delete', ['s' => $code, 'qid' => $dotsCol]);
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
 expect_status($p[0]->vote($code, $dotsId, [$b => 2, $a => 1]), 200, 'coller 3 gommettes');
 expect_status($p[1]->vote($code, $dotsId, [$b => 4]), 400, 'plus de gommettes que permis refusé');
 expect_status($p[1]->vote($code, $dotsId, ['nzzzz' => 1]), 400, 'idée inconnue refusée');
@@ -403,7 +409,7 @@ $raw = "Voici vos questions :\n```json\n" . json_encode([
     ['type' => 'mcq', 'text' => 'Signes d\'alerte ?', 'options' => ['Urgence', 'Fautes', 'Logo'], 'correct' => ['urgence', 'Fautes']],
     ['type' => 'mcq', 'text' => 'Bonne réponse inventée', 'options' => ['A', 'B'], 'correct' => ['C']],
     ['type' => 'postit', 'text' => 'Vos réflexes', 'options' => ['Je fais', 'Je ne fais pas']],
-    ['type' => 'dots', 'text' => 'Le plus utile ?', 'source' => 5, 'budget' => 3],
+    ['type' => 'dots', 'text' => 'Le plus utile ?', 'source' => 5, 'budget' => 3, 'column' => 'je fais'],
     ['type' => 'dots', 'text' => 'Source invalide', 'source' => 2],
     ['type' => 'scale', 'text' => 'À l\'aise ?', 'scaleMax' => 10],
 ], JSON_UNESCAPED_UNICODE) . "\n```\nBon atelier !";

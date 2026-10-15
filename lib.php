@@ -506,6 +506,8 @@ function wl_clean_question(array $in, ?array $old = null): array
         'scaleMax' => ($in['scaleMax'] ?? 5) == 10 ? 10 : 5,
         'budget' => max(1, min(100, (int)($in['budget'] ?? ($type === 'dots' ? 3 : 10)))),
         'source' => $type === 'dots' ? (string)($in['source'] ?? '') : '',
+        // Gommettes sur une seule colonne du post-it source (-1 : toutes).
+        'column' => $type === 'dots' && is_numeric($in['column'] ?? null) ? max(-1, (int)$in['column']) : -1,
         'duration' => wl_clean_duration($in['duration'] ?? 0),
         'explain' => wl_clean_explain($in['explain'] ?? ''),
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
@@ -594,7 +596,7 @@ function wl_structure_changed(array $old, array $new): bool
     $relevant = ['mcq' => 'multi', 'scale' => 'scaleMax', 'points' => 'budget', 'dots' => 'budget'][$new['type']] ?? null;
     return ($new['type'] !== 'postit' && count($old['options']) !== count($new['options']))
         || ($relevant && $old[$relevant] !== $new[$relevant])
-        || ($new['type'] === 'dots' && ($old['source'] ?? '') !== $new['source']);
+        || ($new['type'] === 'dots' && (($old['source'] ?? '') !== $new['source'] || ($old['column'] ?? -1) !== $new['column']));
 }
 
 function wl_clean_options(string $type, mixed $options): array
@@ -693,7 +695,7 @@ function wl_import_parse(string $raw): array
             if ($q['type'] === 'dots') {
                 $q['source'] = '#' . ((int)($in['source'] ?? 0) - 1);
             }
-            $items[] = ['q' => $q];
+            $items[] = ['q' => $q, 'column' => is_string($in['column'] ?? null) ? $in['column'] : ''];
         } catch (WlError $e) {
             $items[] = ['error' => $e->getMessage()];
         }
@@ -702,9 +704,17 @@ function wl_import_parse(string $raw): array
         $src = isset($it['q']) && $it['q']['type'] === 'dots' ? (int)substr($it['q']['source'], 1) : null;
         if ($src !== null && ($src >= $i || !in_array($items[$src]['q']['type'] ?? '', WL_POST_TYPES, true))) {
             $items[$i] = ['error' => 'Gommettes : la source doit être un mur ou un post-it placé avant dans la liste.'];
+            continue;
+        }
+        if ($src !== null && ($it['column'] ?? '') !== '') {
+            $names = array_map(fn($o) => wl_fold(wl_clean_text($o)), $items[$src]['q']['options']);
+            $col = array_search(wl_fold(wl_clean_text($it['column'])), $names, true);
+            $items[$i] = $col === false || $items[$src]['q']['type'] !== 'postit'
+                ? ['error' => 'Gommettes : colonne « ' . wl_clean_text($it['column']) . ' » absente du post-it source.']
+                : ['q' => ['column' => $col] + $items[$i]['q']];
         }
     }
-    return $items;
+    return array_map(fn($it) => array_diff_key($it, ['column' => 1]), $items);
 }
 
 /** Liste JSON comprise entre le premier « [ » et le dernier « ] », ou null. */
@@ -747,7 +757,7 @@ function wl_import_input(array $in): array
 function wl_export_questions(array $s): array
 {
     $pos = array_flip(array_column($s['questions'], 'id'));
-    return array_map(function ($q) use ($pos) {
+    return array_map(function ($q) use ($pos, $s) {
         $out = ['type' => $q['type'], 'text' => $q['text']];
         if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit'], true)) {
             $out['options'] = $q['options'];
@@ -767,6 +777,10 @@ function wl_export_questions(array $s): array
         }
         if ($q['type'] === 'dots' && isset($pos[$q['source']])) {
             $out['source'] = $pos[$q['source']] + 1;
+            $name = $s['questions'][$pos[$q['source']]]['options'][$q['column'] ?? -1] ?? null;
+            if ($name !== null) {
+                $out['column'] = $name;
+            }
         }
         if (($q['explain'] ?? '') !== '') {
             $out['explain'] = $q['explain'];
@@ -998,7 +1012,7 @@ function wl_public_question(array $q): array
         'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'],
         'multi' => $q['multi'], 'scaleMax' => $q['scaleMax'], 'budget' => $q['budget'],
         'duration' => $q['duration'], 'closesAt' => $q['closesAt'], 'state' => $q['state'],
-        'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '',
+        'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '', 'column' => $q['column'] ?? -1,
         'reveal' => $q['reveal'] ?? 'manual',
         'graded' => !empty($q['correct']), // quiz : le téléphone garde « Envoyer » (pas la bonne réponse)
         'correct' => $show ? $q['correct'] : [],
@@ -1329,7 +1343,8 @@ function wl_dot_items(array $s, array $q): array
     }
     $items = [];
     foreach ($src['posts'] as $p) {
-        if ($p['parent'] === null && !in_array($p['id'], $src['hidden'], true)) {
+        $column = $q['column'] ?? -1;
+        if ($p['parent'] === null && !in_array($p['id'], $src['hidden'], true) && ($column < 0 || ($p['col'] ?? 0) === $column)) {
             $items[$p['id']] = ['id' => $p['id'], 'text' => $p['text'], 'grouped' => []];
         }
     }

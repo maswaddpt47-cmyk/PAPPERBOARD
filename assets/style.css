@@ -239,12 +239,12 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .note-sub { margin: .35rem 0 0; padding-top: .35rem; border-top: 1px dashed rgba(31, 42, 48, .4); }
 .note-tools { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
 .note-tools select { width: auto; min-height: 2.5rem; font-size: .85rem; padding: .2rem .4rem; }
-.board-c0 .note, .note.board-c0 { background: #FFF1A8; }
-.board-c1 .note, .note.board-c1 { background: #D6EEF6; }
-.board-c2 .note, .note.board-c2 { background: #EEF3C9; }
-.board-c3 .note, .note.board-c3 { background: #D3E8EB; }
-.board-c4 .note, .note.board-c4 { background: #E9EEF3; }
-.board-c5 .note, .note.board-c5 { background: #F9DCC8; }
+.note.board-c0 { background: #FFF1A8; }
+.note.board-c1 { background: #D6EEF6; }
+.note.board-c2 { background: #EEF3C9; }
+.note.board-c3 { background: #D3E8EB; }
+.note.board-c4 { background: #E9EEF3; }
+.note.board-c5 { background: #F9DCC8; }
 .posts { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 .posts h2 { font-size: 1.05rem; }
 .posts .wall { grid-template-columns: 1fr; }
