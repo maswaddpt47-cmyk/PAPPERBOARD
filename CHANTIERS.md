@@ -10,9 +10,8 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
 ## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** `php ~/www/purge.php` : créée chez Alwaysdata le
-   15/10/2026 (déclaré par l'utilisateur), **non vérifiée** : pas de lancement
-   à la main (SSH par mot de passe coupé) ; un email d'erreur d'Alwaysdata
-   signalerait un échec, son absence ne prouve rien. À confirmer : ne pas l'espacer.
+   15/10/2026 (déclaré), **non vérifiée** (SSH par mot de passe coupé) : un email
+   d'erreur signalerait un échec, son absence ne prouve rien. Ne pas l'espacer.
 2. **À vérifier sur téléphone et projection** (en ligne le 15/10/2026 ; refonte,
    PowerPoint et bilan projeté validés par l'utilisateur le 15/10/2026) :
    **onglets** de l'espace animateur, archive anonyme (Archiver, consultation,
@@ -21,11 +20,9 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
    Puis un **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
 3. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
    annonce encore la suppression après 30 jours, alors que WoocLight archive
-   désormais des résultats anonymes ; à compléter pour les pseudonymes et
-   « Oser demander ».
-4. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
-   nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
-   absurdes ni trois échelles.
+   désormais des résultats anonymes ; à compléter (pseudonymes, « Oser demander »).
+4. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
+   mauvaises réponses absurdes ni de trois échelles ?
 5. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
 6. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
