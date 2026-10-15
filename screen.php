@@ -36,6 +36,10 @@ wl_security_headers();
     <p id="s-timer" class="s-timer" hidden></p>
     <div id="s-results" class="s-results" aria-live="polite"></div>
   </section>
+  <section id="s-show" class="s-show" hidden>
+    <h2 id="s-show-title" class="s-show-title"></h2>
+    <div id="s-show-body" class="s-results"></div>
+  </section>
   <section id="s-ended" hidden><p class="s-join-line s-thanks">Session terminée. Merci !</p><div id="s-recap"></div></section>
 </main>
 <nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>

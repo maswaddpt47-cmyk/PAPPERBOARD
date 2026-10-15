@@ -56,6 +56,33 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <div id="my-result" class="my-result" hidden></div>
     <div id="posts" class="posts" hidden></div>
   </section>
+
+  <section id="me-card" class="card me-card" hidden>
+    <p id="pseudo-line" class="pseudo-line"></p>
+    <p id="score-line" class="meta"></p>
+  </section>
+
+  <section id="asks" class="card" hidden aria-labelledby="asks-title">
+    <h2 id="asks-title">Oser demander</h2>
+    <p class="meta">Posez votre question sans votre nom. L'animateur la lit avant de l'afficher à tous.</p>
+    <form id="ask-form" class="ask-form" novalidate>
+      <label for="ask-text" class="sr-only">Votre question</label>
+      <input id="ask-text" maxlength="80" autocomplete="off" placeholder="Votre question…">
+      <button class="btn btn-primary" type="submit">Envoyer</button>
+    </form>
+    <p id="ask-error" class="error" role="alert"></p>
+    <ul id="ask-list" class="ask-list"></ul>
+  </section>
+
+  <section id="signal" class="card signal-card" hidden aria-labelledby="signal-title">
+    <h2 id="signal-title" class="signal-title">Un souci ? Dites-le à l'animateur</h2>
+    <div class="signal-btns">
+      <button type="button" class="btn btn-signal" data-kind="fast" aria-pressed="false">🐢 Trop vite</button>
+      <button type="button" class="btn btn-signal" data-kind="again" aria-pressed="false">🔁 À réexpliquer</button>
+      <button type="button" class="btn btn-signal" data-kind="help" aria-pressed="false">✋ Besoin d'aide</button>
+    </div>
+    <p id="signal-status" class="meta" role="status" aria-live="polite">Anonyme : l'animateur voit seulement combien de personnes l'ont signalé.</p>
+  </section>
 </main>
 <footer class="footer">
   <details>

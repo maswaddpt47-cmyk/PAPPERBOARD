@@ -65,10 +65,17 @@
     var board = !!d.board; // tableau de bord projeté, une question par diapositive
     document.body.classList.toggle('s-noqr', !!d.qrHidden); // touche Q : le montre quand même en grand
     // Résultats à l'écran : question et QR réduits, la place va aux résultats.
-    document.body.classList.toggle('s-live', (board || !d.ended) && !!q && !!d.results);
-    WL.show($('s-ended'), d.ended && !board);
-    WL.show($('s-welcome'), !board && !d.ended && !q);
-    WL.show($('s-question'), board || (!d.ended && !!q));
+    var show = d.show || ''; // « Oser demander » ou podium, à la demande de l'animateur
+    document.body.classList.toggle('s-live', !show && (board || !d.ended) && !!q && !!d.results);
+    WL.show($('s-show'), !!show);
+    WL.show($('s-ended'), d.ended && !board && !show);
+    WL.show($('s-welcome'), !board && !show && !d.ended && !q);
+    WL.show($('s-question'), !show && (board || (!d.ended && !!q)));
+    if (show) {
+      clearInterval(timer);
+      renderShow(d);
+      return;
+    }
     if (board) {
       renderBoard(d);
       return;
@@ -107,6 +114,40 @@
       WL.counter($('s-results'), q.id, answeredText(d, unit), done, d.participants, all, all ? 'Tout le monde a répondu.' : msg);
       fitQuestion();
     }
+  }
+
+  /** Questions des participants (les plus votées d'abord) ou podium. */
+  function renderShow(d) {
+    var body = WL.clear($('s-show-body'));
+    if (d.show === 'asks') {
+      $('s-show-title').textContent = 'Vos questions';
+      if (!d.asks.length) body.appendChild(el('p', { class: 's-waiting' }, 'Aucune question publiée pour le moment.'));
+      var list = el('ol', { class: 's-asks' });
+      d.asks.forEach(function (a) {
+        list.appendChild(el('li', { class: 's-ask' + (a.answered ? ' is-answered' : '') },
+          el('span', { class: 's-ask-text' }, (a.answered ? '✓ ' : '') + a.text),
+          el('span', { class: 's-ask-votes' }, '✋ ' + a.votes)));
+      });
+      body.appendChild(list);
+    } else {
+      $('s-show-title').textContent = 'Podium';
+      if (!d.podium.length) {
+        body.appendChild(el('p', { class: 's-waiting' }, d.scored ? 'Personne n\'a encore marqué de point.' : 'Corrigez un quiz pour lancer le classement.'));
+      } else {
+        // Ordre des marches : 2e, 1er, 3e (ex aequo : même marche).
+        var steps = el('div', { class: 's-podium' });
+        [2, 1, 3].forEach(function (rank) {
+          var who = d.podium.filter(function (r) { return r.rank === rank; });
+          if (!who.length) return;
+          steps.appendChild(el('div', { class: 's-step s-step-' + rank },
+            el('p', { class: 's-step-names' }, who.map(function (r) { return r.name; }).join(' · ')),
+            el('p', { class: 's-step-score' }, WL.plural(who[0].score, 'point') + ' / ' + d.scored),
+            el('p', { class: 's-step-rank' }, rank === 1 ? '1er' : rank + 'e')));
+        });
+        body.appendChild(steps);
+      }
+    }
+    WL.fitResults(body);
   }
 
   /** Bilan projeté : une question par diapositive, ses résultats tels qu'ils
@@ -249,6 +290,7 @@
   function stepOp() {
     var q = last && last.question;
     if (last && last.board) return 'board_off';
+    if (last && last.show) return 'show_off';
     if (!q) return 'next';
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
     if (q.state === 'draft') return 'open';
@@ -265,10 +307,18 @@
     var board = !!(last && last.board), ended = !!(last && last.ended);
     WL.show($('s-pilot'), true);
     // Session terminée : seul le bilan se pilote encore.
-    ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || !ended); });
+    var shown = !!(last && last.show);
+    ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
     WL.show($('p-board'), !board);
+    if (last && last.show) {
+      $('p-step').textContent = 'Revenir à la question';
+      $('p-step').title = 'Arrête la projection ' + (last.show === 'asks' ? 'des questions' : 'du podium') + ' (Espace)';
+      $('p-count').textContent = '';
+      WL.show($('p-prev'), false);
+      WL.show($('p-next'), false);
+      return;
+    }
     if (board) {
-      $('p-step').textContent = 'Quitter le bilan';
       $('p-step').title = 'Revient à la projection de la question en cours (B)';
       $('p-count').textContent = '';
       $('p-prev').disabled = last.board.position <= 1;
@@ -298,7 +348,7 @@
     WL.show($('s-pilot'), true);
     pilotLabel();
     var onBoard = function () { return !!(last && last.board); };
-    var ended = function () { return !onBoard() && !!(last && last.ended); };
+    var ended = function () { return !onBoard() && !(last && last.show) && !!(last && last.ended); };
     var prev = function () { if (!ended()) control(onBoard() ? 'board_prev' : 'prev'); };
     var next = function () { if (!ended()) control(onBoard() ? 'board_next' : 'next'); };
     $('p-prev').addEventListener('click', prev);

@@ -120,6 +120,7 @@ header('Cache-Control: no-store');
 
       <div class="card" id="live">
         <h2>Pilotage en direct</h2>
+        <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les téléphones ; chacun s'efface après 2 minutes"></p>
         <p id="live-pos" class="meta"></p>
         <p id="live-text" class="live-text"></p>
         <p id="live-state" class="live-state" aria-live="polite"></p>
@@ -133,6 +134,26 @@ header('Cache-Control: no-store');
           <button class="btn btn-danger" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button">Réinitialiser</button>
         </div>
         <div id="live-results" class="live-results"></div>
+      </div>
+      </div>
+
+      <div class="grid2">
+      <div class="card" id="asks-card">
+        <h2>Oser demander</h2>
+        <p class="meta">Questions anonymes des participants, à tout moment. Vous les lisez avant de les publier (un nom peut s'y glisser).</p>
+        <p class="row wrap"><button id="asks-btn" class="btn" type="button"></button>
+          <button id="asks-screen" class="btn" type="button" title="Projette les questions publiées, les plus votées d'abord"></button></p>
+        <ul id="asks-admin" class="ask-list"></ul>
+      </div>
+
+      <div class="card" id="pseudo-card">
+        <h2>Pseudonymes et classement</h2>
+        <p class="meta">Option de cette session : chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
+          les quiz corrigés comptent un point par bonne réponse. Seul le podium (rangs 1 à 3) est projeté.
+          Les pseudonymes sont effacés si vous désactivez l'option, et jamais archivés.</p>
+        <p class="row wrap"><button id="pseudo-btn" class="btn" type="button"></button>
+          <button id="podium-btn" class="btn" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
+        <ol id="ranking" class="ranking"></ol>
       </div>
       </div>
     </div>

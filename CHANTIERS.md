@@ -8,7 +8,19 @@ Testé par l'utilisateur le 15/10/2026 sur PC (Edge), portable et téléphone,
 atelier « Temps d'écran » de bout en bout : pilotage, Envoyer, sondage au
 toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
 
-## Restant, par priorité — tout côté utilisateur
+## En cours (15/10/2026, session interrompue possible) — branche `claude/sharp-knuth-n5x6xb`
+
+Demande de l'utilisateur (« la totale ») : signaler une difficulté, Oser demander,
+pseudonymes + classement (option par session, podium rangs 1-3), brise-glaces
+(météo en émojis, un mot, plutôt ceci ou cela), option « que des QCM » pour l'IA.
+- **Fait et commité** : serveur des 3 premières (tenu par e2e, 300 vérifications
+  vertes), écrans téléphone / animateur (onglet Animer) / projection.
+- **À faire** : vérifier ces écrans (captures), brise-glaces et option QCM
+  (`admin.js`, `genPrompt`), mention des pseudonymes dans « Confidentialité »
+  (`index.php`), README, puis CI verte et avance de `main`. Rien n'est en ligne.
+- Côté utilisateur ensuite : fiche `docs/registre-traitement.md` (pseudonymes
+  et questions anonymes, effacés avec la session, jamais archivés).
+
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.

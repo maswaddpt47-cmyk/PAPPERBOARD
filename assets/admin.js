@@ -367,8 +367,55 @@
     }
     renderLive(d);
     renderList(d);
+    renderExtras(d);
     tips();
   }
+
+  // --- Signaux, Oser demander, pseudonymes ---------------------------------------
+
+  var SIGNALS = { fast: '🐢 Trop vite', again: '🔁 À réexpliquer', help: '✋ Besoin d\'aide' };
+
+  function renderExtras(d) {
+    var sig = WL.clear($('signals')), any = false;
+    Object.keys(SIGNALS).forEach(function (k) {
+      var n = (d.signals || {})[k] || 0;
+      any = any || n > 0;
+      sig.appendChild(el('span', { class: 'signal-count' + (n ? ' is-on' : '') }, SIGNALS[k] + ' : ' + n));
+    });
+    sig.classList.toggle('is-on', any);
+
+    $('asks-btn').textContent = d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »';
+    $('asks-screen').textContent = d.show === 'asks' ? 'Arrêter la projection des questions' : 'Projeter les questions';
+    var list = WL.clear($('asks-admin'));
+    if (!d.asks.length) list.appendChild(el('li', { class: 'meta' }, d.asksOpen ? 'Aucune question pour le moment.' : 'Fermé : les téléphones ne proposent pas de poser une question.'));
+    d.asks.forEach(function (a) {
+      var op = function (o) { return function () { if (o !== 'delete' || confirm('Supprimer cette question ?')) act('ask_admin', { aid: a.id, op: o }); }; };
+      list.appendChild(el('li', { class: 'ask-item' + (a.answered ? ' is-answered' : '') + (a.published ? '' : ' is-pending') },
+        el('span', { class: 'ask-text' }, a.text),
+        el('span', { class: 'meta' }, (a.published ? 'Publiée' : 'À relire') + ' · ' + WL.plural(a.votes, 'vote') + (a.answered ? ' · répondue' : '')),
+        el('span', { class: 'row wrap' },
+          el('button', { type: 'button', class: 'btn btn-small' + (a.published ? '' : ' btn-primary'), onclick: op(a.published ? 'unpublish' : 'publish') }, a.published ? 'Masquer' : 'Publier'),
+          el('button', { type: 'button', class: 'btn btn-small', onclick: op(a.answered ? 'unanswered' : 'answered') }, a.answered ? 'Pas encore répondue' : 'Répondue'),
+          el('button', { type: 'button', class: 'btn btn-small btn-danger', onclick: op('delete') }, 'Supprimer'))));
+    });
+
+    $('pseudo-btn').textContent = d.pseudo ? 'Désactiver les pseudonymes' : 'Activer les pseudonymes';
+    $('podium-btn').textContent = d.show === 'podium' ? 'Arrêter la projection du podium' : 'Projeter le podium';
+    $('podium-btn').disabled = !d.pseudo;
+    var rank = WL.clear($('ranking'));
+    WL.show(rank, d.pseudo);
+    (d.ranking || []).forEach(function (r) {
+      rank.appendChild(el('li', null, el('strong', null, r.rank + '. '), r.name + ' — ' + WL.plural(r.score, 'point')));
+    });
+  }
+
+  $('asks-btn').addEventListener('click', function () { control(data.asksOpen ? 'asks_close' : 'asks_open'); });
+  $('asks-screen').addEventListener('click', function () { control(data.show === 'asks' ? 'show_off' : 'show_asks'); });
+  $('pseudo-btn').addEventListener('click', function () {
+    if (data.pseudo && !confirm('Désactiver ? Les pseudonymes et le classement seront effacés.')) return;
+    control(data.pseudo ? 'pseudo_off' : 'pseudo_on');
+  });
+  $('podium-btn').addEventListener('click', function () { control(data.show === 'podium' ? 'show_off' : 'show_podium'); });
 
   /** Bulles d'info des boutons dont le libellé change selon l'état. */
   var TIPS = {

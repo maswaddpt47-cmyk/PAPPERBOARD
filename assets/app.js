@@ -37,6 +37,10 @@
 
   function view(id) {
     ['join', 'wait', 'ended', 'question'].forEach(function (v) { WL.show($(v), v === id); });
+    // Pendant l'atelier seulement : signaler, oser demander, pseudonyme.
+    var live = id === 'wait' || id === 'question';
+    WL.show($('signal'), live);
+    if (!live) { WL.show($('asks'), false); WL.show($('me-card'), false); }
     WL.show($('leave-btn'), id !== 'join'); // rien à quitter tant qu'on n'a pas rejoint
   }
 
@@ -115,7 +119,7 @@
     $('leave-btn').classList.toggle('blink', !!data.ended);
     if (data.ended) { view('ended'); WL.renderRecap($('recap'), data); pendingStore.del('pending'); return; }
     if (!data.joined) { join(code); return; } // données purgées ou cookie perdu
-    if (!data.question) { view('wait'); return; }
+    if (!data.question) { view('wait'); renderExtras(data); return; }
     view('question');
     var q = data.question;
     // Les contributions (mur, post-it) n'entrent pas dans la clé : elles
@@ -127,8 +131,64 @@
       renderQuestion(q, data.mine);
     }
     renderPosts(q, data.posts);
+    renderExtras(data);
     flushPending();
   }
+
+  // --- Pseudonyme, Oser demander, signaler une difficulté ----------------------
+
+  function renderExtras(data) {
+    WL.show($('me-card'), !!data.pseudo);
+    if (data.pseudo) {
+      $('pseudo-line').textContent = 'Votre pseudo : ' + data.pseudo;
+      $('score-line').textContent = data.score && data.score.of
+        ? 'Bonnes réponses : ' + data.score.n + ' / ' + data.score.of : 'Le score compte les quiz corrigés.';
+    }
+    WL.show($('asks'), !!data.asksOpen);
+    if (!data.asksOpen) return;
+    var list = WL.clear($('ask-list'));
+    if (!data.asks.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune question affichée pour le moment.'));
+    data.asks.forEach(function (a) {
+      var item = el('li', { class: 'ask-item' + (a.answered ? ' is-answered' : '') }, el('span', { class: 'ask-text' }, a.text));
+      if (a.pending) {
+        item.appendChild(el('span', { class: 'meta' }, 'En attente de l\'animateur'));
+      } else if (a.mine) {
+        item.appendChild(el('span', { class: 'meta' }, 'Votre question · ' + WL.plural(a.votes, 'vote')));
+      } else {
+        item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-like', 'aria-pressed': String(a.voted),
+          'aria-label': (a.voted ? 'Retirer mon vote' : 'Moi aussi') + ' : ' + a.text,
+          onclick: function () { postAction('ask_vote', { aid: a.id }, $('ask-error')); } }, '✋ ' + a.votes + ' moi aussi'));
+      }
+      if (a.answered) item.appendChild(el('span', { class: 'ask-done' }, '✓ Répondu'));
+      list.appendChild(item);
+    });
+  }
+
+  $('ask-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = $('ask-text');
+    if (!input.value.trim()) { $('ask-error').textContent = 'Écrivez votre question.'; return; }
+    postAction('ask', { text: input.value }, $('ask-error')).then(function (ok) { if (ok) input.value = ''; });
+  });
+
+  // Un signal à la fois ; le même bouton le retire ; il s'efface seul après 2 min.
+  var signalTimer = null;
+  function showSignal(kind) {
+    document.querySelectorAll('.btn-signal').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.kind === kind)); });
+    $('signal-status').textContent = kind
+      ? '✓ Signalé (anonyme). Touchez à nouveau pour annuler.'
+      : 'Anonyme : l\'animateur voit seulement combien de personnes l\'ont signalé.';
+  }
+  document.querySelectorAll('.btn-signal').forEach(function (b) {
+    b.addEventListener('click', function () {
+      WL.api('signal', { body: { s: code, kind: b.dataset.kind }, headers: headers() }).then(function (r) {
+        if (r.status !== 200) { $('signal-status').textContent = r.data.error || 'Refusé.'; return; }
+        showSignal(r.data.signal);
+        clearTimeout(signalTimer);
+        if (r.data.signal) signalTimer = setTimeout(function () { showSignal(null); }, r.data.ttl * 1000);
+      }, function () { $('signal-status').textContent = 'Pas de connexion : réessayez dans un instant.'; });
+    });
+  });
 
   // --- Question et formulaire de réponse ---------------------------------------
 

@@ -201,6 +201,23 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .answer-status { font-weight: bold; color: var(--wl-ok); min-height: 1.5em; }
 .my-result { border-top: 2px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 
+/* Signaler une difficulté, Oser demander, pseudonyme (téléphone). */
+.signal-title { font-size: 1.05rem; margin: 0 0 .6rem; }
+.signal-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.btn-signal { white-space: normal; font-size: .95rem; padding: .5rem .3rem; min-height: 3.5rem; }
+.btn-signal[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-texte); border-color: var(--wl-texte); }
+.ask-form { display: flex; gap: .5rem; }
+.ask-form input { flex: 1; min-width: 0; }
+.ask-list { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.ask-item { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; padding: .6rem .75rem;
+  background: var(--wl-carte); border: 1px solid var(--wl-bord); border-radius: var(--wl-rayon); }
+.ask-text { flex: 1 1 12rem; font-weight: bold; }
+.ask-item.is-answered { opacity: .75; }
+.ask-item.is-pending { border-style: dashed; border-color: var(--wl-champ); }
+.ask-done { color: var(--wl-ok); font-weight: bold; }
+.me-card { text-align: center; }
+.pseudo-line { font-family: var(--wl-police-titre); font-size: 1.4rem; font-weight: bold; color: var(--wl-primaire); margin: 0; }
+
 /* --- Résultats (projection, animateur, participant) ------------------------ */
 
 .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
@@ -371,6 +388,12 @@ label.btn { cursor: pointer; }
 .gen-list .check { align-items: flex-start; }
 .gen-list input { margin-top: .3rem; }
 
+/* Compteurs de signaux (anonymes) au-dessus du pilotage. */
+.signals { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+.signal-count { padding: .2rem .6rem; border-radius: 999px; background: var(--wl-piste); color: var(--wl-texte-doux); font-size: .9rem; }
+.signal-count.is-on { background: var(--wl-alerte-fond); color: var(--wl-alerte-texte); border: 2px solid var(--wl-alerte-bord); font-weight: bold; }
+.ranking { margin: .5rem 0 0; padding-left: 0; list-style: none; display: grid; gap: .25rem; }
+
 /* --- Projection ------------------------------------------------------------- */
 
 .screen {
@@ -485,6 +508,25 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }
 .s-noqr .screen-main { margin-right: 0; }
+
+/* Projection : « Oser demander » et podium (à la demande de l'animateur). */
+.s-show-title { font-family: var(--wl-police-titre); font-size: 1.4em; margin: .2em 0 .6em; }
+.s-asks { list-style: none; margin: 0; padding: 0; display: grid; gap: .5em; }
+.s-ask { display: flex; align-items: center; gap: 1em; padding: .5em .8em; background: var(--wl-carte);
+  border-radius: var(--wl-rayon); border-left: .3em solid var(--wl-primaire); }
+.s-ask-text { flex: 1; }
+.s-ask-votes { font-family: var(--wl-police-titre); font-weight: bold; white-space: nowrap; }
+.s-ask.is-answered { opacity: .6; border-left-color: var(--wl-ok); }
+[data-theme="dark"] .screen .s-ask { border-top: 2px solid #8A6A50; border-right: 2px solid #8A6A50; border-bottom: 2px solid #8A6A50; }
+.s-podium { display: flex; justify-content: center; align-items: flex-end; gap: 1.5em; margin-top: 1em; }
+.s-step { flex: 0 1 14em; text-align: center; border-radius: var(--wl-rayon) var(--wl-rayon) 0 0; padding: .6em .5em 0;
+  background: var(--wl-carte); border: 2px solid var(--wl-bord); }
+.s-step-1 { min-height: 9em; border-color: var(--wl-pastille); border-width: 4px; }
+.s-step-2 { min-height: 7em; }
+.s-step-3 { min-height: 5.5em; }
+.s-step-names { font-family: var(--wl-police-titre); font-weight: bold; font-size: 1.1em; margin: 0 0 .2em; }
+.s-step-score { margin: 0; color: var(--wl-texte-doux); }
+.s-step-rank { font-family: var(--wl-police-titre); font-size: 2em; font-weight: bold; color: var(--wl-pastille); margin: .2em 0; }
 
 /* --- Impression ---------------------------------------------------------------- */
 
