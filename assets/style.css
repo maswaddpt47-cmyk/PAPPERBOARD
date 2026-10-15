@@ -89,6 +89,8 @@ main { max-width: 64rem; margin: 0 auto; padding: 1rem; }
 @media (min-width: 52rem) { .grid2 { grid-template-columns: 1fr 1.4fr; } }
 
 .footer { max-width: 34rem; margin: 1rem auto 2rem; padding: 0 1rem; font-size: .85rem; color: var(--wl-texte-doux); }
+/* Aligné sur le texte des cartes : marge de main + bordure + marge intérieure de .card. */
+.participant .footer { padding: 0 calc(2.25rem + 1px); }
 .footer summary { cursor: pointer; min-height: var(--wl-cible); display: flex; align-items: center; }
 
 /* --- Formulaires et boutons ------------------------------------------------ */
@@ -157,7 +159,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 /* Participant sur grand écran (PC, tablette à l'horizontale) : page plus large,
    texte plus grand, 4 choix ou plus sur deux colonnes. Téléphone inchangé. */
 @media (min-width: 900px) {
-  .participant main { max-width: 64rem; }
+  .participant main, .participant .footer { max-width: 64rem; }
   .participant .q-text { font-size: 1.8rem; }
   .participant .btn-choice { font-size: 1.35rem; }
   .participant .check-big { font-size: 1.3rem; }
