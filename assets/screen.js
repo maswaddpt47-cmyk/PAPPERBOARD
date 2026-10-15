@@ -197,7 +197,9 @@
     // Mur : publier AVANT de fermer, sinon personne ne peut plus aimer.
     if (open && q.type === 'wall' && !q.showResults) return 'show';
     if (open) return 'close';
-    return q.showResults ? 'next' : 'show';
+    if (!q.showResults) return 'show';
+    // Dernière question terminée : la suite est le récap et la conclusion.
+    return last.position >= last.count ? 'end' : 'next';
   }
 
   function pilotLabel() {
@@ -206,11 +208,13 @@
     var q = last && last.question, op = stepOp();
     var post = q && (q.type === 'wall' || q.type === 'postit');
     $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
-      : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : q ? 'Question suivante' : 'Commencer';
+      : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : op === 'end' ? 'Récap et conclusion'
+      : q ? 'Question suivante' : 'Commencer';
     $('p-step').title = {
       open: 'Les participants peuvent répondre', close: 'Plus aucune réponse acceptée',
       show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
-      next: 'Passe à la question suivante'
+      next: 'Passe à la question suivante',
+      end: 'Termine la session : récap et conclusion sur la projection et les téléphones (« Rouvrir la session » dans l\'espace animateur pour revenir)'
     }[op] + ' (Espace)';
     $('p-count').textContent = q && q.state !== 'draft'
       ? (post ? last.contributors : last.answered) + ' / ' + last.participants + (post ? ' ont participé' : ' ont répondu') : '';
