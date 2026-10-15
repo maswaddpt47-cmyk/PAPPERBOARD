@@ -331,7 +331,7 @@ label.btn { cursor: pointer; }
 .recap-box { text-align: left; }
 #s-ended { padding-top: .5em; }
 .s-thanks { text-align: center; margin: 0 0 .3em; }
-#s-recap { font-size: .8em; }
+#s-recap { font-size: 1.2em; } /* conclusion seule, réduite par fitRecap() si elle déborde */
 #s-ended:has(.recap) .s-thanks { font-size: 1.1em; }
 /* Plus de 6 questions : récap sur deux colonnes, lisible de loin. */
 #s-recap .recap:has(> li:nth-child(7)) { columns: 2; column-gap: 3em; }

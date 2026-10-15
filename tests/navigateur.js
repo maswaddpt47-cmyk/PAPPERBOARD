@@ -17,9 +17,10 @@ function check(cond, label) {
   const errors = [];
   const watch = (page, name) => {
     page.on('pageerror', e => errors.push(name + ' : ' + e.message));
-    // La coupure réseau provoquée plus bas produit une erreur attendue.
+    // Erreurs attendues : la coupure réseau provoquée plus bas, et le refus
+    // (409) de rejoindre une session terminée quand la page est rouverte.
     page.on('console', m => {
-      if (m.type() === 'error' && !/ERR_INTERNET_DISCONNECTED/.test(m.text())) errors.push(name + ' : ' + m.text());
+      if (m.type() === 'error' && !/ERR_INTERNET_DISCONNECTED|status of 409/.test(m.text())) errors.push(name + ' : ' + m.text());
     });
   };
 
@@ -115,12 +116,20 @@ function check(cond, label) {
   await screen.waitForFunction(() => /constructor/.test(document.getElementById('s-results').textContent), null, { timeout: 10000 });
   check(true, 'mot « constructor » affiché sans erreur');
 
-  // Session terminée.
+  // Session terminée, avec une conclusion.
+  await admin.click('#t-prep');
+  await admin.fill('#conclusion', 'Conclusion de test');
+  await admin.click('#conclusion-btn');
+  await admin.waitForFunction(() => document.getElementById('conclusion-saved').textContent !== '');
   admin.once('dialog', d => d.accept());
   await admin.click('#t-settings');
   await admin.click('#end-btn');
   await phone.waitForSelector('#ended:not([hidden])');
   check(true, 'fin de session sur le téléphone');
+  await phone.reload();
+  await phone.waitForSelector('#ended:not([hidden])');
+  await phone.waitForFunction(() => /Conclusion de test/.test(document.getElementById('recap').textContent));
+  check(true, 'page rouverte après la fin : conclusion affichée sur le téléphone');
 
   // Bilan projeté depuis une projection pilotée (cookie animateur), après la fin.
   const pilot = await admin.context().newPage();

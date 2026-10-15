@@ -61,7 +61,9 @@
     return WL.api('join', { body: { s: c }, headers: headers() }).then(function (r) {
       banner('');
       if (r.status !== 200) {
-        if (r.status === 409 && /terminée/.test(r.data.error)) { view('ended'); return; }
+        // Session terminée (page rouverte après la fin) : on écoute quand même,
+        // pour afficher le récap et la conclusion.
+        if (r.status === 409 && /terminée/.test(r.data.error)) { code = c; startPolling(); return; }
         store.del('code');
         showJoin(r.data.error);
         return;

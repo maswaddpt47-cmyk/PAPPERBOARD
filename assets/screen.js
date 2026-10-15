@@ -74,7 +74,8 @@
       return;
     }
     if (d.ended) {
-      WL.renderRecap($('s-recap'), d);
+      // Conclusion seule : le détail par question passe par le bilan projeté (B).
+      WL.renderRecap($('s-recap'), { conclusion: d.conclusion });
       fitRecap();
       return;
     }

@@ -239,11 +239,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   par participant : ses idées seraient reliées entre elles (anonymat, choix de
   l'utilisateur du 15/10/2026 après alerte).
 
-- **Récap et conclusion de fin** (15/10/2026) : « Terminer la session » affiche
-  sur la projection et les téléphones une ligne par question (`wl_recap`) puis la
-  conclusion de la session (600 caractères ; saisie, ou élément
-  `{"type": "conclusion"}` de l'IA, repris par l'export). Jamais le texte d'une
-  réponse libre ; une idée du mur seulement si publiée. Tenu par e2e.
+- **Fin de session** (15/10/2026) : projection = conclusion seule (le détail passe
+  par le bilan, touche B) ; téléphones = récap (`wl_recap`, une ligne par
+  question) + conclusion, même page rouverte après la fin (409 → on écoute
+  quand même). Récap : jamais une réponse libre, une idée du mur si publiée.
 
 - **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
   toutes les questions et texte à copier pour une IA (synthèse, conclusion,
