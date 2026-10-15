@@ -157,7 +157,7 @@
     box.style.fontSize = '';
     // Place de la barre de pilotage réservée dès le départ (cookie animateur) :
     // sinon son apparition, en pleine montée, changerait la taille du texte.
-    var limit = window.innerHeight - (document.body.dataset.pilot ? 90 : 40);
+    var limit = $('s-pilot').hidden && document.body.dataset.pilot ? window.innerHeight - 110 : WL.screenLimit();
     // Position finale, montée en cours ou non (décalage de l'animation retiré).
     var bottom = function () {
       var m = getComputedStyle(box).transform.match(/matrix\(([^)]+)\)/);
@@ -178,7 +178,7 @@
   function fitQuestion() {
     var text = $('s-text');
     text.style.fontSize = '';
-    var limit = window.innerHeight - 90;
+    var limit = WL.screenLimit();
     var fits = function () { return $('s-results').getBoundingClientRect().bottom <= limit; };
     if (document.body.classList.contains('s-live') || fits()) return;
     var lo = 12, hi = parseFloat(getComputedStyle(text).fontSize);

@@ -216,8 +216,8 @@ var WL = (function () {
     if (d.conclusion) {
       // Titre « À retenir » ; le même début dans le texte est retiré (pas de doublon).
       container.appendChild(el('h2', { class: 'recap-title' }, 'À retenir'));
-      container.appendChild(el('p', { class: 'explain recap-conclusion' },
-        d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '')));
+      var text = d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '');
+      container.appendChild(el('p', { class: 'explain recap-conclusion' }, text.charAt(0).toUpperCase() + text.slice(1)));
     }
   }
 
@@ -255,8 +255,15 @@ var WL = (function () {
    *  agrandi au plus grand corps qui tient. Autres résultats : corps réduit
    *  seulement s'ils débordent (longs choix sur deux lignes, nombreux choix).
    *  À rappeler après chaque affichage et quand la fenêtre change de taille. */
+  /** Bas utilisable de la projection : au-dessus de la barre de pilotage
+   *  quand elle est affichée (sa hauteur dépend de la feuille de style). */
+  function screenLimit() {
+    var pilot = document.getElementById('s-pilot');
+    return pilot && !pilot.hidden ? pilot.getBoundingClientRect().top - 12 : window.innerHeight - 40;
+  }
+
   function fitResults(container) {
-    var limit = window.innerHeight - 90;
+    var limit = screenLimit();
     var cloudBox = container.querySelector('.cloud-fit');
     var box = cloudBox || container;
     var fits = function () {
@@ -435,7 +442,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };
