@@ -43,7 +43,8 @@ wl_security_headers();
   <button id="p-step" class="btn btn-primary" type="button"></button>
   <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
-  <span class="s-keys">Clavier : ← → · Espace · Q (QR code) · F (plein écran)</span>
+  <button id="p-board" class="btn" type="button" title="Projette le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Bilan</button>
+  <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
 </nav>
 <aside class="qr-corner" aria-label="Rejoindre la session">
   <div id="qr" class="qr"></div>

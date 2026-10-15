@@ -1188,6 +1188,33 @@ function wl_screen_view(array $s): array
     ];
 }
 
+/** Questions du tableau de bord projeté : celles qui ont été posées (pas
+ *  restées en brouillon), dans l'ordre de la session. */
+function wl_board_questions(array $s): array
+{
+    return array_values(array_filter($s['questions'], fn($q) => $q['state'] !== 'draft'));
+}
+
+/** Tableau de bord projeté, une question par diapositive ($s['board'] = rang).
+ *  Mêmes règles que la projection de la question en direct : résultats
+ *  seulement s'ils ont été affichés (ou projetés en direct), réponses
+ *  masquées exclues, correction et explication seulement après affichage. */
+function wl_board_view(array $s): array
+{
+    $list = wl_board_questions($s);
+    $i = max(0, min((int)$s['board'], count($list) - 1));
+    $q = $list[$i] ?? null;
+    return [
+        'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
+        'participants' => count($s['participants']),
+        'board' => ['position' => $i + 1, 'count' => count($list)],
+        'question' => $q ? wl_public_question($q) : null,
+        'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
+        'joinUrl' => wl_join_url($s['code']), 'now' => time(),
+        'pollMs' => (int)wl_config()['poll_ms'],
+    ];
+}
+
 /** Projection en direct dès l'ouverture du vote. Les téléphones, eux, attendent
  *  « Afficher les résultats » : sinon chaque vote les ferait tous recharger.
  *  Question enregistrée avant l'option : en direct si son type le permet. */

@@ -228,6 +228,11 @@ Envies » → regrouper les doublons depuis l'écran animateur → **Publier** �
 Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
 
 **Après**
+- **Bilan projeté** : touche **B** ou bouton **Bilan** sur la projection pilotée
+  (ou « Projeter le bilan » dans l'onglet Bilan) : une question par diapositive,
+  **→ / ←** pour avancer, **B** ou « Quitter le bilan » pour revenir. Possible
+  aussi après « Terminer la session ». Seuls les résultats déjà montrés pendant
+  l'atelier sont projetés.
 - **Exporter en PowerPoint** (carte « Bilan de l'atelier ») : une diapositive par
   question, le récap et la conclusion, à présenter ou imprimer.
 - **Exporter en CSV (tout)** pour le bilan interne, ou **CSV à diffuser** (sans

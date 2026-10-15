@@ -265,7 +265,11 @@ function api_like(array $b): void
 function api_screen(): void
 {
     $s = api_public_session(api_code($_GET));
-    wl_json_etag('s' . $s['version'] . wl_time_tag($s), fn() => $s['ended'] ? api_ended_view($s) : ['ok' => true] + wl_screen_view($s));
+    wl_json_etag('s' . $s['version'] . wl_time_tag($s), fn() => match (true) {
+        ($s['board'] ?? -1) >= 0 => ['ok' => true] + wl_board_view($s),
+        $s['ended'] => api_ended_view($s),
+        default => ['ok' => true] + wl_screen_view($s),
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -308,7 +312,7 @@ function api_admin_state(): void
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
-            'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
+            'board' => ($s['board'] ?? -1) >= 0, 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
     });
@@ -571,7 +575,25 @@ function api_question_move(array $b): void
 function api_control(array $b): void
 {
     $op = (string)($b['op'] ?? '');
-    wl_update(api_code($b), function (array &$s) use ($op, $b) {
+    // Tableau de bord projeté : seule la projection change, pas les téléphones.
+    $board = in_array($op, ['board', 'board_next', 'board_prev', 'board_off'], true);
+    wl_update(api_code($b), function (array &$s) use ($op, $b, $board) {
+        if ($board) {
+            $n = count(wl_board_questions($s));
+            if ($op !== 'board_off' && $n === 0) {
+                throw new WlError('Aucune question posée : rien à montrer.', 409);
+            }
+            $at = $s['board'] ?? -1;
+            $s['board'] = match ($op) {
+                'board' => 0, 'board_off' => -1,
+                'board_next' => min(max($at, 0) + 1, $n - 1), 'board_prev' => max($at - 1, 0),
+            };
+            return;
+        }
+        // Piloter une question ou la session reprend la projection normale.
+        if ($op !== 'lock' && $op !== 'unlock') {
+            $s['board'] = -1;
+        }
         if (in_array($op, ['next', 'prev', 'goto'], true)) {
             $target = match ($op) {
                 'next' => $s['current'] + 1, 'prev' => $s['current'] - 1,
@@ -596,7 +618,7 @@ function api_control(array $b): void
             throw new WlError('Aucune question.', 404);
         }
         api_apply_op($s['questions'][$s['current']], $op);
-    });
+    }, !$board);
     wl_json(['ok' => true]);
 }
 

@@ -122,6 +122,21 @@ function check(cond, label) {
   await phone.waitForSelector('#ended:not([hidden])');
   check(true, 'fin de session sur le téléphone');
 
+  // Bilan projeté depuis une projection pilotée (cookie animateur), après la fin.
+  const pilot = await admin.context().newPage();
+  watch(pilot, 'projection pilotée');
+  await pilot.setViewportSize({ width: 1280, height: 720 });
+  await pilot.goto(BASE + 'screen.php?s=' + code);
+  await pilot.click('#p-board');
+  await pilot.waitForFunction(() => /^Bilan — 1 \//.test(document.getElementById('s-meta').textContent));
+  await pilot.keyboard.press('ArrowRight');
+  await pilot.waitForFunction(() => /^Bilan — 2 \//.test(document.getElementById('s-meta').textContent));
+  check(true, 'bilan projeté : diapositive suivante à la flèche');
+  await pilot.click('#p-step');
+  await pilot.waitForSelector('#s-ended:not([hidden])');
+  check(await pilot.locator('#p-step').isHidden(), 'bilan quitté : retour au récap de fin');
+  await pilot.close();
+
   // --- Génération par une IA : texte copié, réponse collée, aperçu, ajout ----------
   await admin.click('#t-prep');
   await admin.click('#gen-btn');

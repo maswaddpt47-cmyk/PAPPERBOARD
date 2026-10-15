@@ -16,7 +16,9 @@ toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
    l'utilisateur) : **onglets** de l'espace animateur (Préparer / Animer / Bilan /
    Réglages ; accueil Sessions / Archives), archive anonyme (bouton Archiver,
    consultation, PowerPoint, réutilisation), export PowerPoint du bilan ouvert
-   dans PowerPoint, synthèse enregistrée, post-its colorés au hasard. Puis un
+   dans PowerPoint, synthèse enregistrée, post-its colorés au hasard, **bilan
+   projeté** (touche B sur la projection, 15/10/2026 : lisibilité de chaque
+   diapositive sur l'écran de la salle). Puis un
    **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
 3. **Prochaine étape proposée : prompt de design** pour l'apparence (couleurs,
    typographie, icônes, maquettes téléphone / projection / animateur), à soumettre
@@ -274,6 +276,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (`wl_tab`, stockage facultatif). Tout reste dans la page : les identifiants
   des éléments n'ont pas changé. Les tests navigateur cliquent l'onglet avant
   d'agir (un élément d'un panneau masqué n'est pas cliquable).
+
+- **Bilan projeté** (15/10/2026, « façon slide ») : `board` = rang (-1 : arrêt),
+  questions posées seulement. Une diapositive ne montre **que ce que la
+  projection a déjà montré** (`wl_board_view`, décision prise seule : la
+  projection est publique avec le code). Téléphones non réveillés ; toute autre
+  commande (sauf inscriptions) l'arrête. Tenu par e2e et `tests/navigateur.js`.
 
 ## Pistes d'amélioration
 

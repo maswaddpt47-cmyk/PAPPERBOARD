@@ -61,11 +61,16 @@
     var q = d.question;
     last = d;
     pilotLabel();
+    var board = !!d.board; // tableau de bord projeté, une question par diapositive
     // Résultats à l'écran : question et QR réduits, la place va aux résultats.
-    document.body.classList.toggle('s-live', !d.ended && !!q && !!d.results);
-    WL.show($('s-ended'), d.ended);
-    WL.show($('s-welcome'), !d.ended && !q);
-    WL.show($('s-question'), !d.ended && !!q);
+    document.body.classList.toggle('s-live', (board || !d.ended) && !!q && !!d.results);
+    WL.show($('s-ended'), d.ended && !board);
+    WL.show($('s-welcome'), !board && !d.ended && !q);
+    WL.show($('s-question'), board || (!d.ended && !!q));
+    if (board) {
+      renderBoard(d);
+      return;
+    }
     if (d.ended) {
       WL.renderRecap($('s-recap'), d);
       fitRecap();
@@ -99,6 +104,32 @@
         el('p', null, all ? 'Tout le monde a répondu.' : msg)));
       fitQuestion();
     }
+  }
+
+  /** Bilan projeté : une question par diapositive, ses résultats tels qu'ils
+   *  ont été montrés pendant l'atelier (rien de plus, voir wl_board_view). */
+  function renderBoard(d) {
+    var q = d.question;
+    clearInterval(timer);
+    WL.show($('s-timer'), false);
+    $('s-text').style.fontSize = '';
+    if (!q) {
+      $('s-meta').textContent = 'Bilan';
+      $('s-text').textContent = 'Aucune question posée.';
+      WL.clear($('s-results'));
+      return;
+    }
+    $('s-meta').textContent = 'Bilan — ' + d.board.position + ' / ' + d.board.count + ' — ' + WL.typeLabel(q);
+    $('s-text').textContent = q.text;
+    if (!d.results) {
+      WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
+        el('p', null, 'Résultats non affichés pendant l\'atelier.')));
+      fitQuestion();
+      return;
+    }
+    WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
+    if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
+    WL.fitResults($('s-results'));
   }
 
   /** Récap de fin : réduit pour tenir dans l'écran avec la conclusion. */
@@ -191,6 +222,7 @@
    *  résultats (publier pour mur et post-it), puis passer à la suivante. */
   function stepOp() {
     var q = last && last.question;
+    if (last && last.board) return 'board_off';
     if (!q) return 'next';
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
     if (q.state === 'draft') return 'open';
@@ -204,7 +236,19 @@
 
   function pilotLabel() {
     if (!csrf) return;
-    WL.show($('s-pilot'), !(last && last.ended)); // session terminée : rien à piloter
+    var board = !!(last && last.board), ended = !!(last && last.ended);
+    WL.show($('s-pilot'), true);
+    // Session terminée : seul le bilan se pilote encore.
+    ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || !ended); });
+    WL.show($('p-board'), !board);
+    if (board) {
+      $('p-step').textContent = 'Quitter le bilan';
+      $('p-step').title = 'Revient à la projection de la question en cours (B)';
+      $('p-count').textContent = '';
+      $('p-prev').disabled = last.board.position <= 1;
+      $('p-next').disabled = last.board.position >= last.board.count;
+      return;
+    }
     var q = last && last.question, op = stepOp();
     var post = q && (q.type === 'wall' || q.type === 'postit');
     $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
@@ -227,15 +271,21 @@
     csrf = r.data.csrf;
     WL.show($('s-pilot'), true);
     pilotLabel();
-    $('p-prev').addEventListener('click', function () { control('prev'); });
-    $('p-next').addEventListener('click', function () { control('next'); });
+    var onBoard = function () { return !!(last && last.board); };
+    var ended = function () { return !onBoard() && !!(last && last.ended); };
+    var prev = function () { if (!ended()) control(onBoard() ? 'board_prev' : 'prev'); };
+    var next = function () { if (!ended()) control(onBoard() ? 'board_next' : 'next'); };
+    $('p-prev').addEventListener('click', prev);
+    $('p-next').addEventListener('click', next);
     $('p-step').addEventListener('click', function () { control(stepOp()); });
+    $('p-board').addEventListener('click', function () { control('board'); });
     document.addEventListener('keydown', function (e) {
       if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
       var k = e.key;
-      if (k === 'ArrowRight' || k === 'PageDown') control('next');
-      else if (k === 'ArrowLeft' || k === 'PageUp') control('prev');
-      else if (k === ' ' || k === 'Enter') control(stepOp());
+      if (k === 'ArrowRight' || k === 'PageDown') next();
+      else if (k === 'ArrowLeft' || k === 'PageUp') prev();
+      else if (k === ' ' || k === 'Enter') { if (!ended()) control(stepOp()); }
+      else if (k === 'b' || k === 'B') control(onBoard() ? 'board_off' : 'board');
       else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
       else if (k === 'f' || k === 'F') toggleFullscreen();
       else return;

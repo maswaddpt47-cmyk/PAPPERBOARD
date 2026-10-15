@@ -146,6 +146,7 @@ header('Cache-Control: no-store');
       <p class="row wrap"><button id="bilan-copy" class="btn btn-primary" type="button" title="Copie le bilan chiffré et la consigne de synthèse, à coller dans une IA">Copier le bilan pour une IA</button>
         <button id="bilan-pptx" class="btn btn-primary" type="button" data-src="<?= wl_asset('pptxgen.bundle.js') ?>" title="Une diapositive par question (graphiques modifiables), le récap et la conclusion : à présenter ou imprimer">Exporter en PowerPoint</button>
         <button id="bilan-show" class="btn" type="button" title="Affiche les résultats de toutes les questions">Voir le tableau de bord</button>
+        <button id="bilan-screen" class="btn" type="button" title="Sur la projection, une question par diapositive avec ses résultats tels qu'ils ont été montrés ; flèches pour avancer"></button>
         <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
       <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
       <div id="bilan-board" class="bilan-board" hidden></div>

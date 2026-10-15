@@ -439,6 +439,23 @@ foreach ([[$off, 'nuage sans direct'], [$quiz, 'quiz (correction)']] as [$id, $l
     check($screenRes() === null, "direct : $label pas projeté avant « Afficher »");
 }
 
+// --- Bilan projeté, une question par diapositive ---------------------------------
+$phone = "api.php?action=state&s=$dir";
+$viewer->poll($phone);
+$admin->post('control', ['s' => $dir, 'op' => 'board']);
+check($viewer->poll($phone)['status'] === 304, 'bilan projeté : les téléphones ne se rafraîchissent pas');
+$slide = fn() => $admin->get("api.php?action=screen&s=$dir")['json'];
+$b = $slide();
+check(($b['board']['count'] ?? 0) === 3 && ($b['results']['counts'] ?? null) === [0, 1], 'bilan projeté : diapositive 1 / 3, résultats du sondage');
+$admin->post('control', ['s' => $dir, 'op' => 'board_next']);
+$admin->post('control', ['s' => $dir, 'op' => 'board_next']);
+$admin->post('control', ['s' => $dir, 'op' => 'board_next']);
+$b = $slide();
+check(($b['board']['position'] ?? 0) === 3 && $b['results'] === null && ($b['question']['correct'] ?? null) === [],
+    'bilan projeté : rien de plus que pendant l\'atelier (quiz non affiché : ni résultats ni correction)');
+$admin->post('control', ['s' => $dir, 'op' => 'show']);
+check(!isset($slide()['board']), 'bilan projeté : piloter une question reprend la projection normale');
+
 // --- Import de questions générées par une IA (copier-coller) -------------------
 $gen = $admin->post('session_create', ['title' => 'Générée'])['json']['code'] ?? '';
 $raw = "Voici vos questions :\n```json\n" . json_encode([

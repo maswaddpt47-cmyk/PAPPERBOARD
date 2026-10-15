@@ -330,6 +330,8 @@
     $('bilan-show').textContent = 'Masquer le tableau de bord';
   });
 
+  $('bilan-screen').addEventListener('click', function () { control(data.board ? 'board_off' : 'board'); });
+
   function control(op, extra) {
     return act('control', Object.assign({ op: op }, extra));
   }
@@ -356,6 +358,7 @@
     $('ed-questions').href = 'api.php?action=export&format=questions&s=' + d.code;
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' connecté' + (d.participants > 1 ? 's' : '');
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
+    $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
     if (qrFor !== d.joinUrl) {
       WL.qr($('ed-qr'), d.joinUrl, 4);
