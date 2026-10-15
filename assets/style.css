@@ -251,6 +251,10 @@ legend { font-weight: bold; padding: 0 .25rem; }
 /* Projection : colonnes égales, assez larges pour un mot long (≈ 10 lettres de
    la taille du texte) ; une phrase longue passe à la ligne entre deux mots. */
 .s-results .wall { grid-template-columns: repeat(auto-fill, minmax(10em, 1fr)); }
+/* Le texte garde ses mots entiers ; les « j'aime » passent dessous s'il manque de place. */
+.s-results .wall-item { flex-wrap: wrap; overflow-wrap: normal; }
+.s-results .wall-item > :first-child { flex: 1 1 auto; min-width: min-content; }
+.s-results .wall-item .likes { margin-left: auto; }
 .dots-rank { margin: 0; padding-left: 1.6em; display: grid; gap: .6rem; }
 .dots-row { display: grid; grid-template-columns: minmax(8rem, 40%) 1fr auto; gap: .75rem; align-items: center; }
 .dots-grouped { color: var(--wl-texte-doux); font-weight: normal; }
