@@ -9,8 +9,10 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
 
 ## Restant, par priorité — tout côté utilisateur
 
-1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
-   elle, la purge n'a lieu qu'au fil des visites.
+1. **Tâche planifiée horaire** `php ~/www/purge.php` : créée chez Alwaysdata le
+   15/10/2026 (déclaré par l'utilisateur), **non vérifiée** : pas de lancement
+   à la main (SSH par mot de passe coupé) ; un email d'erreur d'Alwaysdata
+   signalerait un échec, son absence ne prouve rien. À confirmer : ne pas l'espacer.
 2. **À vérifier sur téléphone et projection** (en ligne le 15/10/2026 ; refonte,
    PowerPoint et bilan projeté validés par l'utilisateur le 15/10/2026) :
    **onglets** de l'espace animateur, archive anonyme (Archiver, consultation,
