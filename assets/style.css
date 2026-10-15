@@ -263,7 +263,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 
 @keyframes wl-pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .bar-fill, .cloud-word, .is-new, .s-results .bar-good { transition: none; animation: none; }
+  .bar-fill, .cloud-word, .is-new, .s-results .bar-good, .s-roll { transition: none; animation: none; }
 }
 
 /* --- Animateur ---------------------------------------------------------------- */
@@ -376,6 +376,10 @@ label.btn { cursor: pointer; }
 /* Touche Q : QR code en grand au centre. */
 .s-qr-big .qr-corner { right: 50%; bottom: 50%; transform: translate(50%, 50%); width: min(70vh, 60vw); padding: 1rem; }
 .s-qr-big .qr-code { font-size: clamp(1.2rem, 3vw, 3rem); }
+/* Fin de session : la conclusion monte du bas de l'écran (générique). */
+@keyframes wl-roll { from { transform: translateY(100vh); } to { transform: none; } }
+.s-roll { animation: wl-roll 7s cubic-bezier(.25, .6, .3, 1); }
+.s-rolling { overflow: hidden; }
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }
 .s-noqr .screen-main { margin-right: 0; }

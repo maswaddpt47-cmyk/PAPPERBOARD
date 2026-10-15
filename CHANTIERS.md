@@ -242,7 +242,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - **Fin de session** (15/10/2026, choix de l'utilisateur) : projection et
   téléphones = conclusion seule (« à retenir »), même page rouverte après la fin
   (409 → on écoute quand même) ; le détail passe par le bilan (touche B). Le
-  récap (`wl_recap`) ne sert plus qu'à l'animateur : PowerPoint, archive.
+  récap ne sert plus qu'à PowerPoint et archive. Projection : la conclusion monte
+  du bas, façon générique, une fois par texte (`rollIn`, rien si mouvement réduit).
 
 - **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
   toutes les questions et texte à copier pour une IA (synthèse, conclusion,

@@ -39,7 +39,7 @@
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
   window.addEventListener('resize', function () {
-    if (!$('s-ended').hidden) fitRecap();
+    if (!$('s-ended').hidden && !document.body.classList.contains('s-rolling')) fitRecap();
     else if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
   });
   document.addEventListener('fullscreenchange', function () {
@@ -77,6 +77,7 @@
       // Conclusion seule : le détail par question passe par le bilan projeté (B).
       WL.renderRecap($('s-recap'), { conclusion: d.conclusion });
       fitRecap();
+      rollIn(d.conclusion);
       return;
     }
     if (!q) {
@@ -134,6 +135,22 @@
     if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
     WL.fitResults($('s-results'));
   }
+
+  /** Conclusion qui monte du bas de l'écran, façon générique : une fois par
+   *  texte (un rafraîchissement ne la rejoue pas). Après fitRecap(), qui
+   *  mesure la position finale. */
+  var rolled = null;
+  function rollIn(text) {
+    if (!text || text === rolled) return;
+    rolled = text;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var box = $('s-recap');
+    box.classList.remove('s-roll');
+    void box.offsetWidth; // relance l'animation
+    document.body.classList.add('s-rolling'); // pas de barre de défilement pendant la montée
+    box.classList.add('s-roll');
+  }
+  $('s-recap').addEventListener('animationend', function () { document.body.classList.remove('s-rolling'); });
 
   /** Récap de fin : réduit pour tenir dans l'écran avec la conclusion. */
   function fitRecap() {
