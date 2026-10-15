@@ -681,7 +681,8 @@
       '- "postit" : post-it collectif ; "options" : 2 à 4 colonnes (ex. "Points forts", "Difficultés").',
       '- "dots" : vote par gommettes sur les idées d\'un mur ou d\'un post-it placé AVANT ; '
         + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3) ; '
-        + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées.',
+        + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées ; '
+        + 'obligatoire dès que l\'intitulé cite une colonne, sinon toutes les idées sont proposées.',
       '',
       '- Termine la liste par un élément {"type": "conclusion", "text": "…"} : 2 à 4 phrases (600 caractères au plus) '
         + 'à retenir de l\'atelier, concrètes et adaptées au public, affichées à la fin avec le récap des réponses.',

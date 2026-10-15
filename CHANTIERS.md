@@ -33,9 +33,8 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
-Fait côté hébergement (14/10/2026, déclaré par l'utilisateur) : HTTPS forcé,
-SSH par clé seule, fichiers de clé supprimés. Secret `ALWAYSDATA_KNOWN_HOSTS`
-présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
+Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
+clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent (mesuré), ruleset sur `main`.
 
 ## Décisions à trancher
 
@@ -199,6 +198,7 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
   (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
   Import tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
+  Gommettes : `column` obligatoire si l'intitulé cite une colonne (15/10/2026).
   Texte pour l'IA : affirmation = « truefalse », jamais « yesno » (15/10/2026).
   « Que des quiz » (case du formulaire) ne change que le texte pour l'IA :
   l'import valide pareil côté serveur, aucune règle n'est imposée au contenu.
