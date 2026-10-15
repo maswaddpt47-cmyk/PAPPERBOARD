@@ -456,6 +456,23 @@
 
   $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied')); });
 
+  /** Copie l'adresse de participation (code compris) pour l'envoyer par SMS ou
+   *  mail ; sans presse-papiers, la sélectionne pour un Ctrl+C. */
+  $('ed-url-copy').addEventListener('click', function () {
+    var link = $('ed-url'), note = $('ed-url-copied');
+    var done = function () { note.textContent = 'Adresse copiée : collez-la dans un SMS ou un mail.'; };
+    var manual = function () {
+      var range = document.createRange();
+      range.selectNodeContents(link);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      note.textContent = 'Adresse sélectionnée : copiez-la (Ctrl+C).';
+    };
+    if (!data) return;
+    if (navigator.clipboard) navigator.clipboard.writeText(data.joinUrl).then(done, manual);
+    else manual();
+  });
+
   // Fichier JSON : lu dans le navigateur, puis vérifié comme une réponse collée.
   $('gen-file').addEventListener('change', function () {
     var file = $('gen-file').files[0];

@@ -198,7 +198,8 @@ Journal des erreurs PHP : interface Alwaysdata > **Logs**, ou `~/admin/logs/` en
 **Accueil (5 min)**
 - Projection en plein écran : la page d'accueil affiche l'adresse et le code en grand.
 - Aider ceux qui n'ont jamais scanné de QR code : appareil photo du téléphone,
-  pointer l'écran, toucher le lien. Sinon, taper l'adresse et le code.
+  pointer l'écran, toucher le lien. Sinon, taper l'adresse et le code, ou
+  recevoir le lien par SMS ou mail (**Copier l'adresse** dans l'espace animateur).
 - Le compteur « 20 participants » en haut de la projection confirme que tout le monde est là.
 
 **Pendant (questions)**
