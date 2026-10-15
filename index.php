@@ -79,7 +79,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     l'animateur de retirer une réponse ; ensuite, écrivez à : <?= wl_h($contact) ?>.
     Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </details>
-  <p><button id="leave-btn" class="btn btn-ghost" type="button">Quitter et effacer cet appareil</button></p>
+  <p><button id="leave-btn" class="btn btn-ghost" type="button" title="Quitter l'atelier : cet appareil ne garde plus rien de WoocLight">Quitter</button></p>
 </footer>
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('app.js') ?>"></script>
