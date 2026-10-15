@@ -90,10 +90,10 @@ header('Cache-Control: no-store');
 
     <div class="card">
       <h2>Questions</h2>
-      <ol id="q-list" class="list q-list"></ol>
-      <p class="row wrap"><label for="all-duration">Durée pour toutes les questions, en secondes (0 = sans limite)</label>
+      <p class="row wrap"><label for="all-duration" title="Chaque question aura cette durée de vote, avec compte à rebours sur la projection">Durée pour toutes les questions, en secondes (0 = sans limite)</label>
         <input id="all-duration" type="number" min="0" max="3600" step="5" value="30">
         <button id="all-duration-btn" class="btn" type="button" title="Donne cette durée à toutes les questions de la session (un vote en cours garde son compte à rebours)">Appliquer à toutes</button></p>
+      <ol id="q-list" class="list q-list"></ol>
       <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button">+ Ajouter une question</button>
         <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
     </div>
@@ -166,30 +166,30 @@ header('Cache-Control: no-store');
           <label for="qf-options" id="qf-options-label">Choix (un par ligne, 2 à 10)</label>
           <textarea id="qf-options" rows="4"></textarea>
         </div>
-        <label id="qf-multi-box" class="check"><input id="qf-multi" type="checkbox"> Plusieurs réponses possibles</label>
+        <label id="qf-multi-box" class="check" title="Le participant peut cocher plusieurs choix"><input id="qf-multi" type="checkbox"> Plusieurs réponses possibles</label>
         <fieldset id="qf-correct-box"><legend>Bonne(s) réponse(s) (optionnel, pour un quiz)</legend><div id="qf-correct"></div></fieldset>
         <div id="qf-scale-box"><label for="qf-scale">Échelle</label>
           <select id="qf-scale"><option value="5">de 1 à 5</option><option value="10">de 1 à 10</option></select></div>
-        <div id="qf-source-box"><label for="qf-source">Idées à départager : celles de la question</label>
+        <div id="qf-source-box"><label for="qf-source" title="Les gommettes se collent sur les post-its ou messages de cette question">Idées à départager : celles de la question</label>
           <select id="qf-source"></select>
           <p class="meta">Les idées n'apparaissent qu'une fois cette question publiée.</p></div>
-        <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label">Points à répartir</label>
+        <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label" title="Nombre de points à répartir ; pour les gommettes, nombre de gommettes par personne">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
-        <label for="qf-duration">Durée en secondes (0 = sans limite)</label>
+        <label for="qf-duration" title="Compte à rebours du vote ; 0 = pas de limite">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">
-        <label for="qf-reveal">Correction et résultats</label>
+        <label for="qf-reveal" title="Quand la bonne réponse et les résultats s'affichent">Correction et résultats</label>
         <select id="qf-reveal">
           <option value="manual">Quand je clique sur « Afficher les résultats »</option>
           <option value="end">Automatiquement à la fin du temps (durée obligatoire)</option>
           <option value="instant">Immédiate : chaque participant voit la correction dès qu'il a répondu</option>
         </select>
-        <label id="qf-live-box" class="check"><input id="qf-live" type="checkbox" checked> Afficher les réponses en direct sur la projection, dès l'ouverture du vote</label>
-        <label class="check"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
+        <label id="qf-live-box" class="check" title="Sondage, nuage, échelle, points : la projection se met à jour à chaque vote, sans clic"><input id="qf-live" type="checkbox" checked> Afficher les réponses en direct sur la projection, dès l'ouverture du vote</label>
+        <label class="check" title="Le participant peut changer son vote avant la fermeture ; ignoré si la correction est immédiate"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
         <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>
         <div class="row">
-          <button class="btn btn-primary" id="qf-save" value="save" type="submit">Enregistrer</button>
-          <button class="btn" id="qf-cancel" value="cancel" type="button">Annuler</button>
+          <button class="btn btn-primary" id="qf-save" title="Enregistrer la question dans la session" value="save" type="submit">Enregistrer</button>
+          <button class="btn" id="qf-cancel" title="Fermer sans enregistrer" value="cancel" type="button">Annuler</button>
         </div>
       </form>
     </dialog>

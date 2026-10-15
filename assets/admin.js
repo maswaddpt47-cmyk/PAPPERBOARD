@@ -229,14 +229,14 @@
           el('p', { class: 'meta' }, WL.TYPES[q.type] + ' — ' + WL.plural(q.results.total, 'réponse')
             + (q.duration ? ' — ' + q.duration + ' s' : '') + (i === d.current ? ' — projetée' : ''))),
         el('div', { class: 'row wrap' },
-          el('button', { type: 'button', class: 'btn', disabled: i === d.current,
+          el('button', { type: 'button', class: 'btn', disabled: i === d.current, title: 'Afficher cette question sur la projection et ouvrir son vote',
             onclick: function () { control('goto', { qid: q.id }); } }, 'Projeter'),
-          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Monter', disabled: i === 0,
+          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Monter', title: 'Monter d\'un rang', disabled: i === 0,
             onclick: function () { act('question_move', { qid: q.id, dir: -1 }); } }, '↑'),
-          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Descendre', disabled: i === d.questions.length - 1,
+          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Descendre', title: 'Descendre d\'un rang', disabled: i === d.questions.length - 1,
             onclick: function () { act('question_move', { qid: q.id, dir: 1 }); } }, '↓'),
-          el('button', { type: 'button', class: 'btn', onclick: function () { openDialog(q); } }, 'Modifier'),
-          el('button', { type: 'button', class: 'btn btn-danger', onclick: function () {
+          el('button', { type: 'button', class: 'btn', title: 'Changer l\'intitulé, les choix, la durée… (efface les réponses si le type ou les choix changent)', onclick: function () { openDialog(q); } }, 'Modifier'),
+          el('button', { type: 'button', class: 'btn btn-danger', title: 'Supprimer la question et ses réponses', onclick: function () {
             if (confirm('Supprimer cette question et ses réponses ?')) act('question_delete', { qid: q.id });
           } }, 'Supprimer'))));
     });
