@@ -166,7 +166,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 
 .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
 .bar { display: grid; grid-template-columns: minmax(6rem, 30%) 1fr auto; gap: .75rem; align-items: center; }
-.bar-label { overflow-wrap: anywhere; }
+.bar-label { overflow-wrap: break-word; }
 .bar-track { display: block; height: 1.6em; background: rgba(111, 111, 110, .15); border-radius: 6px; overflow: hidden; }
 .bar-fill { display: block; height: 100%; width: 0; background: var(--wl-barre); border-radius: 6px; transition: width .8s ease, height .8s ease; }
 .bar-good .bar-fill { background: var(--wl-barre-ok); }
@@ -205,7 +205,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .wall-item {
   display: flex; justify-content: space-between; align-items: center; gap: .5rem;
   padding: .6rem .8rem; background: var(--wl-carte); border-left: 6px solid #A5B4FC;
-  border-radius: 6px; overflow-wrap: anywhere;
+  border-radius: 6px; overflow-wrap: break-word;
 }
 .wall-hidden { opacity: .5; text-decoration: line-through; }
 
@@ -222,7 +222,7 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .board-title { font-size: 1em; margin: .25rem .25rem .5rem; }
 .note {
   color: #1F2937; background: #FFF1A8; border-radius: 4px; padding: .5rem .6rem; margin-bottom: .5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .25); overflow-wrap: anywhere;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .25); overflow-wrap: break-word;
 }
 .note-text { margin: 0; font-weight: bold; }
 .note-sub { margin: .35rem 0 0; padding-top: .35rem; border-top: 1px dashed rgba(31, 42, 48, .4); }
@@ -237,6 +237,10 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .posts { border-top: 1px solid var(--wl-bord); margin-top: 1rem; padding-top: 1rem; }
 .posts h2 { font-size: 1.05rem; }
 .posts .wall { grid-template-columns: 1fr; }
+/* Projection : chaque réponse prend la largeur de ses mots, jamais un mot coupé
+   (break-word ne coupe qu'un mot plus large que l'écran). */
+.s-results .wall { display: flex; flex-wrap: wrap; }
+.s-results .wall-item { flex: 0 1 auto; max-width: 100%; }
 .dots-rank { margin: 0; padding-left: 1.6em; display: grid; gap: .6rem; }
 .dots-row { display: grid; grid-template-columns: minmax(8rem, 40%) 1fr auto; gap: .75rem; align-items: center; }
 .dots-grouped { color: var(--wl-texte-doux); font-weight: normal; }
