@@ -74,6 +74,9 @@
     timerFor(q);
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
+      if (q.type === 'wall' && q.state === 'open') {
+        $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre téléphone : touchez ♥.'));
+      }
       if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
       WL.fitResults($('s-results'));
     } else {
@@ -149,6 +152,8 @@
     if (!q) return 'next';
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
     if (q.state === 'draft') return 'open';
+    // Mur : publier AVANT de fermer, sinon personne ne peut plus aimer.
+    if (open && q.type === 'wall' && !q.showResults) return 'show';
     if (open) return 'close';
     return q.showResults ? 'next' : 'show';
   }

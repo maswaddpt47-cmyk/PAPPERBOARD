@@ -272,7 +272,7 @@ var WL = (function () {
       var item = keep(nodes, p.id, function () { return el('li', { class: 'wall-item' }); });
       clear(item).appendChild(el('span', { class: 'post-text' }, p.text));
       item.classList.toggle('wall-hidden', !!p.hidden);
-      item.appendChild(el('span', { class: 'likes', 'aria-label': p.likes + ' j\'aime' }, '♥ ' + p.likes));
+      item.appendChild(el('span', { class: 'likes' }, '♥ ' + p.likes + ' j\'aime'));
       if (opts.onHide) item.appendChild(hideButton(p, opts.onHide));
       list.appendChild(item);
     });

@@ -152,7 +152,7 @@
     'Fermer le vote': 'Plus aucune réponse acceptée pour cette question',
     'Afficher les résultats': 'Montre les résultats (et la bonne réponse) sur la projection et les téléphones',
     'Masquer les résultats': 'Retire les résultats de la projection et des téléphones',
-    'Publier (projection et téléphones)': 'Après relecture : rend les contributions visibles de tous',
+    'Publier (projection et téléphones)': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
     'Masquer aux participants': 'Les participants ne voient plus que leurs propres contributions',
     'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
     'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',

@@ -263,6 +263,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   avant les résultats »). Le texte pour l'IA la demande avec sa source ou
   « pas de source sûre ». Import et export `.json` la reprennent.
 
+- Mur : les « j'aime » ne sont possibles que **publié et vote ouvert**
+  (`wl_like`). Le bouton central du pilotage publie donc le mur avant de fermer
+  le vote (15/10/2026 : fermé avant publication, tous les cœurs restaient à 0).
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*

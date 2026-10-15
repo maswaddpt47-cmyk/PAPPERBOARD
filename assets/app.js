@@ -404,7 +404,7 @@
         if (q.type === 'wall' && q.showResults) {
           item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-like', 'aria-pressed': String(p.liked), disabled: !open,
             'aria-label': (p.liked ? 'Ne plus aimer' : 'Aimer') + ' : ' + p.text,
-            onclick: function () { postAction('like', { qid: q.id, pid: p.id }, err); } }, '♥ ' + p.likes));
+            onclick: function () { postAction('like', { qid: q.id, pid: p.id }, err); } }, '♥ ' + p.likes + ' j\'aime'));
         }
         if (p.mine && open) {
           item.appendChild(el('button', { type: 'button', class: 'btn btn-small btn-danger', 'aria-label': 'Retirer : ' + p.text,
