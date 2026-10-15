@@ -378,7 +378,7 @@ label.btn { cursor: pointer; }
   min-height: 100vh; font-size: clamp(1rem, 2.2vw, 2.2rem);
 }
 [data-theme="dark"] .screen {
-  --wl-texte: #FBF1E2; --wl-texte-doux: #E5D3BE; --wl-fond: #2A1B14; --wl-carte: #3A271D; --wl-bord: #5A4030; --wl-piste: #5A4030;
+  --wl-texte: #FBF1E2; --wl-texte-doux: #E5D3BE; --wl-fond: #2A1B14; --wl-carte: #553A2A; --wl-bord: #5A4030; --wl-piste: #5A4030;
   --wl-barre: #F2A07F; --wl-barre-ok: #7FD36B; --wl-ok: #7FD36B; --wl-ko: #FFB4A0; --wl-accent: #6FD0C8; --wl-focus: #6FD0C8;
   --wl-b1: #F2A07F; --wl-b2: #6FD0C8; --wl-b3: #F0C455; --wl-b4: #E8A0CC; --wl-b5: #B5D97A; --wl-b6: #8DB8F0; --wl-b7: #E5D3BE;
   --wl-primaire: #F2A07F; --wl-ombre: 0 2px 0 rgba(0, 0, 0, .35);
@@ -386,6 +386,9 @@ label.btn { cursor: pointer; }
 [data-theme="dark"] .screen .cloud-c0 { color: #F2A07F; }
 [data-theme="dark"] .screen .cloud-c1 { color: #6FD0C8; }
 [data-theme="dark"] .screen .cloud-c3 { color: #E8A0CC; }
+/* Cartes visibles au vidéoprojecteur (les noirs y sont écrasés) : fond 1,6:1 + contour 3,4:1 sur le fond. */
+[data-theme="dark"] .screen .wall-item { border-top: 2px solid #8A6A50; border-left: 2px solid #8A6A50; border-right: 2px solid #8A6A50; }
+[data-theme="dark"] .screen .explain, [data-theme="dark"] .screen .s-explain { border-top: 2px solid #8A6A50; border-right: 2px solid #8A6A50; border-bottom: 2px solid #8A6A50; }
 [data-theme="dark"] .screen .btn { color: var(--wl-texte); border-color: var(--wl-texte-doux); background: transparent; }
 [data-theme="dark"] .screen .btn:hover { background: var(--wl-carte); }
 [data-theme="dark"] .screen .btn-primary { color: #2A1B14; background: #F2A07F; border-color: #F2A07F; }
