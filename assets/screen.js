@@ -38,7 +38,7 @@
     }, 800);
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
-  window.addEventListener('resize', function () { WL.fitCloud($('s-results')); });
+  window.addEventListener('resize', function () { WL.fitResults($('s-results')); });
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
   });
@@ -75,7 +75,7 @@
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
       if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
-      WL.fitCloud($('s-results'));
+      WL.fitResults($('s-results'));
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
         : q.state === 'open' ? 'Répondez sur votre téléphone !' : 'Les votes sont fermés.';

@@ -323,7 +323,9 @@ label.btn { cursor: pointer; }
 .s-live .screen-head { padding: .6rem 2rem .9rem; }
 .s-live .s-meta { font-size: .7em; margin-top: .6em; }
 .s-live .s-text { font-size: .95em; margin: .1em 0 .9em; }
-.s-live .s-results .bar-track { height: clamp(1.6em, 7vh, 3.2em); }
+.s-live .s-results .bar-track { height: 1.5em; }
+/* Projection : colonne des choix plus large (moins de retours à la ligne). */
+.s-results .bars:not(.bars-scale) > .bar { grid-template-columns: minmax(8rem, 42%) 1fr auto; }
 .s-live .s-timer { font-size: 1.2em; }
 .s-live .screen-main { margin-right: clamp(7rem, 11vw, 11rem); padding: .3rem 2rem 0; }
 .s-live .qr-corner { width: clamp(6rem, 9vw, 9rem); padding: .4rem; }

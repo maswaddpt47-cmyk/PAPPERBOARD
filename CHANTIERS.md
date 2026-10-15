@@ -239,7 +239,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
   ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
   CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
-- **Nuage de mots projeté** (15/10/2026) : `WL.fitCloud()` ajuste la taille de
+- **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit les barres qui
+  débordent (7 longs choix + explication tiennent en 1280x720) ; nuage : ajuste la taille de
   l'ensemble pour tenir dans l'écran (mesuré en local, Chromium, 3 à 60 mots,
   1280x720 et 1920x1000 : aucun défilement). Mots horizontaux, jamais de
   rotation (lisibilité de loin pour des seniors). Tailles relatives 35-100 %

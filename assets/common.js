@@ -195,7 +195,7 @@ var WL = (function () {
   }
 
   /** Nuage : taille de police proportionnelle à la fréquence (1 à 4 em). Sur la
-   *  projection (.s-results), les tailles sont relatives et fitCloud() ajuste
+   *  projection (.s-results), les tailles sont relatives et fitResults() ajuste
    *  l'ensemble pour qu'il tienne dans l'écran, quel que soit le nombre de mots. */
   function cloud(container, q, words) {
     var nodes = memory(container, q);
@@ -215,20 +215,25 @@ var WL = (function () {
     return box;
   }
 
-  /** Agrandit le nuage au plus grand corps qui tient entre son haut et le bas
-   *  de la fenêtre (sans défilement ni mot coupé). À rappeler après chaque
-   *  affichage et quand la fenêtre change de taille. */
-  function fitCloud(container) {
-    var box = container.querySelector('.cloud-fit');
-    if (!box) return;
-    // Tout le bloc de résultats (nuage + total des réponses) doit finir au-dessus
-    // de la barre de pilotage, sans faire défiler la page.
-    var limit = window.innerHeight - 80;
-    var lo = 12, hi = 160;
+  /** Projection : le bloc de résultats (barres ou nuage, total, explication)
+   *  doit finir au-dessus de la barre de pilotage, sans défilement. Nuage :
+   *  agrandi au plus grand corps qui tient. Autres résultats : corps réduit
+   *  seulement s'ils débordent (longs choix sur deux lignes, nombreux choix).
+   *  À rappeler après chaque affichage et quand la fenêtre change de taille. */
+  function fitResults(container) {
+    var limit = window.innerHeight - 90;
+    var cloudBox = container.querySelector('.cloud-fit');
+    var box = cloudBox || container;
+    var fits = function () {
+      return container.getBoundingClientRect().bottom <= limit && (!cloudBox || box.scrollWidth <= box.clientWidth);
+    };
+    box.style.fontSize = '';
+    var lo = 12, hi = cloudBox ? 160 : parseFloat(getComputedStyle(box).fontSize);
+    if (!cloudBox && fits()) return;
     for (var i = 0; i < 9; i++) {
       var mid = (lo + hi) / 2;
       box.style.fontSize = mid + 'px';
-      if (container.getBoundingClientRect().bottom <= limit && box.scrollWidth <= box.clientWidth) lo = mid; else hi = mid;
+      if (fits()) lo = mid; else hi = mid;
     }
     box.style.fontSize = lo + 'px';
   }
@@ -388,7 +393,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitCloud: fitCloud,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };
