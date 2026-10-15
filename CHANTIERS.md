@@ -219,10 +219,6 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
-- 15/10/2026 — « Copier l'adresse » (validé sur le terrain le 15/10/2026) :
-  copier un message prêt à envoyer (« Rejoignez l'atelier : <lien> — code
-  XXXXX ») plutôt que le lien seul ; sur téléphone, bouton **Partager** natif
-  (SMS, WhatsApp) en plus.
 - 14/10/2026 — Génération par API (bouton « Générer » sans copier-coller) :
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.

@@ -55,7 +55,8 @@ header('Cache-Control: no-store');
         <div id="ed-qr" class="qr qr-admin"></div>
         <p>Code : <strong id="ed-code" class="code-big"></strong></p>
         <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
-        <p><button id="ed-url-copy" class="btn" type="button">Copier l'adresse</button>
+        <p class="row wrap"><button id="ed-url-copy" class="btn" type="button">Copier l'invitation</button>
+          <button id="ed-url-share" class="btn" type="button" hidden>Partager</button>
           <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
         <p><a id="ed-screen" class="btn" target="_blank" rel="noopener">Ouvrir la projection</a></p>
         <p class="row wrap">
