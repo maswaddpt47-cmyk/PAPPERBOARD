@@ -478,11 +478,11 @@
   $('gen-raw').addEventListener('input', genReset);
 
   /** Affiche le texte dans la zone dédiée et le copie (sinon le sélectionne). */
-  function copyText(text, note) {
+  function copyText(text, note, where) {
     var box = $('gen-prompt');
     box.value = text;
     WL.show(box, true);
-    var done = function () { note.textContent = 'Copié : collez-le dans l\'IA.'; };
+    var done = function () { note.textContent = 'Copié : collez-le dans ' + (where || 'l\'IA') + '.'; };
     var manual = function () { box.select(); note.textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, manual);
     else manual();
@@ -522,7 +522,7 @@
     ].join('\n');
   }
 
-  $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied')); });
+  $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied'), 'une autre IA que celle qui a généré les questions'); });
 
   /** Message d'invitation : lien (code compris) et code à taper en secours. */
   function invitation() {

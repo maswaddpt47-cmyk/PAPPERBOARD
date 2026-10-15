@@ -141,7 +141,8 @@ header('Cache-Control: no-store');
           <p class="meta">Facultatif, pour un nouveau thème ou un public sensible : faites relire par une <strong>autre</strong> IA
             que celle qui a écrit les questions (nouvelle conversation). Elle doit citer ses sources :
             <strong>ouvrez chaque lien avant de vous y fier</strong>, une IA peut en inventer.</p>
-          <p><button id="gen-review" class="btn" title="Copie une consigne pour faire relire les questions par une autre IA, sources exigées" type="button">Copier la consigne de relecture</button>
+          <p><button id="gen-review" class="btn" title="Copie une consigne pour faire relire les questions par une autre IA que celle qui les a générées, sources exigées" type="button">Copier la consigne de relecture</button>
+            <span class="meta">À coller dans une <strong>autre IA</strong> que celle qui a généré les questions.</span>
             <span id="gen-review-copied" class="meta" aria-live="polite"></span></p>
         </div>
         <p id="gen-error" class="error" role="alert"></p>

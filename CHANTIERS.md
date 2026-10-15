@@ -1,24 +1,21 @@
 # CHANTIERS — WoocLight
 
-État au **14/10/2026** — commit de référence : voir `git log -1 main`.
+État au **15/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
-le 14/10/2026, vérifications après déploiement comprises : fichiers sensibles
-refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
-(CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
+à chaque mise à jour de `main`, vérifications après déploiement comprises).
+`config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
+Testé par l'utilisateur le 15/10/2026 sur PC (Edge), portable et téléphone,
+atelier « Temps d'écran » de bout en bout : pilotage, Envoyer, sondage au
+toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
 
 ## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** chez Alwaysdata : `php ~/www/purge.php`. Sans
    elle, la purge n'a lieu qu'au fil des visites.
-2. **Tester avec `docs/mode-emploi-test.pdf`** sur téléphone et projection,
-   dont mur, post-it, gommettes et les trois modes de correction. Vérifier en
-   particulier les changements du 14/10/2026, non vus sur un vrai téléphone :
-   bouton **Envoyer** après le choix (Oui/Non, sondage, échelle…), bouton
-   d'envoi visible au-dessus du clavier, Entrée qui publie sur le mur,
-   projection **en direct** du nuage de mots et du sondage sans clic.
-   Et ceux du 15/10/2026 : pilotage de la projection (flèches, Espace, Q,
-   télécommande, boutons en bas à gauche), affichage réduit pendant les
-   résultats, bulles d'info des boutons (souris seulement).
+2. **À vérifier après le 15/10/2026** (livré, pas encore vu chez l'utilisateur) :
+   récap et conclusion de fin de session, post-its colorés au hasard,
+   gommettes limitées à une colonne, page participant élargie sur PC. Puis un
+   **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
 3. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
@@ -179,59 +176,23 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   clic (correction, relecture des noms). Les **téléphones** n'affichent toujours
   les résultats qu'après « Afficher » : sinon chaque vote les ferait tous
   recharger. Tenu par `tests/e2e.php` (« Projection en direct »).
-- Génération par une IA (14/10/2026) : copier-coller, WoocLight n'appelle aucune
-  IA. La réponse collée est lue et validée **côté serveur** (`wl_import_parse`,
-  mêmes règles que le formulaire) ; bonnes réponses données **par leur texte**
-  (une IA se trompe sur les numéros), refusées si absentes des choix ; gommettes
-  reliées à leur source par sa position dans la liste. Ajout tout ou rien.
-  Les « \[ », « \] » et espaces insécables ajoutés par l'affichage d'une IA
-  (copie depuis l'application ChatGPT, constaté le 14/10/2026) sont retirés.
-  Un fichier `.json` importé suit le même chemin (lu dans le navigateur, 60 Ko
-  au plus, puis vérifié par le serveur).
-  Mesuré le 14/10/2026 sur de vraies réponses : ChatGPT (mails frauduleux,
-  10 puis 20 questions ; temps d'écran, 20) et Gemini (temps d'écran, 20),
-  toutes acceptées. Comparaison sur le même thème : ChatGPT donne des mauvaises
-  réponses crédibles et un ton nuancé ; Gemini des mauvaises réponses absurdes
-  (« rétrécissement des bras »), des chiffres à nuancer et 3 échelles finales.
-  D'où deux consignes dans le texte pour l'IA (`genPrompt`, `admin.js`) :
-  « mauvaises réponses crédibles, jamais absurdes » et « une seule échelle, en
-  fin d'atelier ». Gemini a ensuite ignoré « Public : collégiens » (vouvoiement,
-  exemples d'adultes) : 3e consigne « chaque question s'adresse directement à ce
-  public : tutoiement pour des enfants ou des adolescents ». Exemple corrigé de
-  12 questions : `docs/exemples/temps-ecran-collegiens.json`.
-  Mistral et Claude (même texte, 20/20 acceptées). Évaluation croisée
-  anonymisée (versions A-D, consigne imposant public → fond → forme →
-  classement, 14/10/2026) par les quatre IA : **ChatGPT > Claude > Mistral >
-  Gemini**, unanime sauf Claude qui s'était classé premier. Mesuré : 2 IA sur 4
-  se classent premières (ChatGPT, Claude) ; Gemini et Mistral, qui se classent
-  dernière et troisième, sont les juges neutres et tranchent. Constats communs :
-  Gemini ignore le public, Mistral a deux erreurs de fond, les distracteurs
-  restent le point faible de toutes, la règle 20-20-20 est toujours incomplète.
-  ⚠️ Âge légal des réseaux sociaux : trois IA citent trois lois différentes
-  (2023, juillet 2026, 24/08/2026 censurée) — non vérifié par Claude (après
-  juin 2026) : aucune question d'âge légal sans vérification sur Légifrance.
-  Leçon : une IA ne relit jamais sa propre version ; aucune ne dispense de
-  relire les corrections des quiz. D'où le bouton **Copier la consigne de
-  relecture** (aperçu de l'import, `reviewPrompt`, `admin.js`) : ordre public →
-  fond → sources → forme, sources officielles exigées, « pas de source sûre »
-  plutôt qu'une référence inventée. Méthode conseillée : générer (ChatGPT),
-  « Vérifier », relire l'aperçu ; relecture par une autre IA pour un nouveau
-  thème ; jamais de question d'âge légal ou de loi sans Légifrance.
-  **Règle : l'IA qui écrit ne relit pas** (décision de l'utilisateur,
-  14/10/2026). Une nouvelle conversation avec la même IA ne suffit pas : même
-  anonymisées, ChatGPT et Claude ont classé leur version première. Questions de
-  ChatGPT → relecture par Gemini ou Mistral (juges neutres du test) ou Claude.
-  L'utilisateur ouvre les liens des sources et tranche.
-  Cycle complet essayé le 14/10/2026 (numérique responsable, seniors, 15 q.) :
-  relecture par une autre IA de bonne qualité (sources précises, « pas de
-  source sûre » assumé, corrections prêtes) ; corrections renvoyées **en un seul
-  collage** à l'IA auteure avec « Applique exactement les corrections… redonne
-  la liste JSON complète » ; 15/15 acceptées. Reste une relecture humaine
-  rapide : l'IA auteure a changé la colonne d'un post-it sans adapter son
-  intitulé, et trois questions demandaient presque la même chose. Pas de
-  seconde relecture par IA (tourne en rond). Série validée → **Questions (.json)**.
-  Les quatre IA ont produit 20 questions, trop pour une séance :
-  conseiller 10 à 12 (décocher dans l'aperçu).
+- **Génération par une IA** (14/10/2026) : copier-coller, WoocLight n'appelle
+  aucune IA. Réponse collée validée **côté serveur** (`wl_import_parse`, mêmes
+  règles que le formulaire), tout ou rien ; bonnes réponses données **par leur
+  texte** ; gommettes reliées à leur source par sa position ; « \[ », « \] » et
+  espaces insécables de l'affichage d'une IA retirés ; `.json` de 60 Ko au plus.
+  Consignes du texte pour l'IA (`genPrompt`) tirées des essais du 14/10/2026 sur
+  ChatGPT, Gemini, Mistral et Claude : mauvaises réponses crédibles, une seule
+  échelle en fin d'atelier, s'adresser au public (tutoiement des jeunes),
+  explication sourcée ou « pas de source sûre », conclusion en fin de liste,
+  QCM multiple plutôt que sondage quand plusieurs réponses vont ensemble.
+  Évaluation croisée anonymisée : ChatGPT > Claude > Mistral > Gemini ; deux IA
+  sur quatre se classent premières. **Règle : l'IA qui écrit ne relit pas**
+  (décision de l'utilisateur) : relecture par une IA d'un autre éditeur
+  (« Copier la consigne de relecture » : public → fond → sources → forme), les
+  liens sont ouverts par l'utilisateur, pas de seconde relecture par IA.
+  ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
+  (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
   format que l'import, **sans aucune réponse de participant**, réglages compris
   (durée, correction, modification, direct). Réimporter un export redonne le
