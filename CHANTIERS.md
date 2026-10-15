@@ -87,6 +87,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   (hypothèse non vérifiée sur le terrain). « Tout le monde a répondu » peut donc
   ne jamais s'afficher : fermer le vote quand le compteur ne bouge plus.
 
+- Test instable (15/10/2026) : e2e « direct : nuage sans direct pas projeté
+  avant « Afficher » » échoue environ 1 fois sur 10 (2 fois sur 20 lancements
+  locaux), sans changement de code. Cause non trouvée ; bloque le passage sur
+  `main` quand il tombe. À instrumenter (statut de `goto`, question projetée).
+
 ## Points à ne pas défaire
 
 - **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
@@ -265,8 +270,9 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   reportée par l'utilisateur après essai du copier-coller. Nouveau sous-traitant
   à déclarer, clé dans `config.php`, limite de générations, audit Codex.
 - 14/10/2026 — Texte pour l'IA : consigne de forme tirée de Mistral
-  (« une affirmation → Vrai/Faux, pas Oui/Non ; plusieurs bonnes réponses
-  possibles → QCM multiple, pas sondage »). À ajouter si l'écart se répète.
+  (« une affirmation → Vrai/Faux, pas Oui/Non »). À ajouter si l'écart se
+  répète. (Le volet « plusieurs réponses → QCM multiple » est ajouté le
+  15/10/2026 : l'écart s'est répété sur un sondage d'activités.)
 - 09/10/2026 — Classement par points : trier les barres du plus au moins de
   points (un « classement » se lit de haut en bas).
 *Écartées :* aucune.

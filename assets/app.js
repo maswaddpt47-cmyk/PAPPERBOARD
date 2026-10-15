@@ -131,7 +131,7 @@
   }
 
   function renderQuestion(q, mine) {
-    $('q-meta').textContent = WL.TYPES[q.type];
+    $('q-meta').textContent = WL.typeLabel(q);
     $('q-text').textContent = q.text;
     var form = WL.clear($('answer-form'));
     var open = isOpen(q);
@@ -206,6 +206,7 @@
 
   function checkboxes(form, q, mine, locked) {
     var box = el('fieldset', { class: 'checks' }, el('legend', { class: 'sr-only' }, q.text));
+    form.appendChild(el('p', { class: 'meta' }, 'Plusieurs réponses possibles : cochez toutes celles qui conviennent.'));
     q.options.forEach(function (label, i) {
       var input = el('input', { type: 'checkbox', value: i, disabled: locked, checked: Array.isArray(mine) && mine.indexOf(i) !== -1 });
       box.appendChild(el('label', { class: 'check-big' + markClass(q, i) }, input, el('span', null, label)));

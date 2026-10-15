@@ -69,7 +69,7 @@
       $('s-code-big').textContent = d.code;
       return;
     }
-    $('s-meta').textContent = 'Question ' + d.position + ' / ' + d.count + ' — ' + WL.TYPES[q.type];
+    $('s-meta').textContent = 'Question ' + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
     timerFor(q);
     if (d.results) {

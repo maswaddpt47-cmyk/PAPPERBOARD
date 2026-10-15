@@ -183,7 +183,7 @@
       return;
     }
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, d.now - Date.now() / 1000) === 0);
-    $('live-pos').textContent = 'Question projetée : ' + (d.current + 1) + ' / ' + d.questions.length + ' — ' + WL.TYPES[q.type];
+    $('live-pos').textContent = 'Question projetée : ' + (d.current + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q);
     $('live-text').textContent = q.text;
     $('live-state').textContent = (open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé')
       + ' — ' + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution')
@@ -227,7 +227,7 @@
     d.questions.forEach(function (q, i) {
       list.appendChild(el('li', { class: 'list-item' + (i === d.current ? ' is-current' : '') },
         el('div', { class: 'grow' }, el('strong', null, q.text),
-          el('p', { class: 'meta' }, WL.TYPES[q.type] + ' — ' + WL.plural(q.results.total, 'réponse')
+          el('p', { class: 'meta' }, WL.typeLabel(q) + ' — ' + WL.plural(q.results.total, 'réponse')
             + (q.duration ? ' — ' + q.duration + ' s' : '') + (i === d.current ? ' — projetée' : ''))),
         el('div', { class: 'row wrap' },
           el('button', { type: 'button', class: 'btn', disabled: i === d.current, title: 'Afficher cette question sur la projection et ouvrir son vote',
@@ -368,7 +368,8 @@
       '- "yesno" : question Oui/Non ; "correct" facultatif : "Oui" ou "Non".',
       '- "truefalse" : affirmation ; "correct" : "Vrai" ou "Faux".',
       '- "mcq" : quiz ; "options" : les choix ; "correct" : liste des textes des bonnes réponses ; "multi": true s\'il y en a plusieurs.',
-      '- "poll" : sondage d\'opinion, sans bonne réponse ; "options".',
+      '- "poll" : sondage d\'opinion, UNE seule réponse, sans bonne réponse ; "options". '
+        + 'Si plusieurs réponses peuvent être vraies en même temps pour une personne, utilise "mcq" avec "multi": true et sans "correct".',
       '- "wordcloud" : réponse en un ou deux mots (nuage de mots).',
       '- "text" : réponse libre courte (80 caractères).',
       '- "scale" : échelle d\'accord ou de satisfaction ; "scaleMax" : 5 ou 10.',

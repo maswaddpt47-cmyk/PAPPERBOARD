@@ -187,6 +187,12 @@ var WL = (function () {
     return node;
   }
 
+  /** Libellé du type ; un QCM précise s'il attend une ou plusieurs réponses. */
+  function typeLabel(q) {
+    if (q.type !== 'mcq') return TYPES[q.type];
+    return TYPES.mcq + (q.multi ? ' — plusieurs réponses possibles' : ' — une seule réponse');
+  }
+
   /** Couleur stable d'un mot (elle ne change pas quand l'ordre change). */
   function colorOf(text) {
     var h = 0;
@@ -393,7 +399,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };
