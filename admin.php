@@ -91,6 +91,18 @@ header('Cache-Control: no-store');
       <ol id="q-list" class="list q-list"></ol>
       <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button">+ Ajouter une question</button>
         <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
+      <p class="row wrap"><label for="ice-select" class="sr-only">Brise-glace</label>
+        <select id="ice-select" title="Une question d'échauffement prête à l'emploi, modifiable ensuite">
+          <option value="">Brise-glace…</option>
+          <option value="meteo">☀️ Votre météo du jour</option>
+          <option value="energie">🔋 Votre niveau d'énergie (1 à 5)</option>
+          <option value="mot">💬 Un mot pour vous décrire aujourd'hui</option>
+          <option value="appli">📱 L'appli que vous ouvrez le plus</option>
+          <option value="sms">📞 Plutôt SMS ou appel ?</option>
+          <option value="photo">📷 Plutôt photo ou vidéo ?</option>
+          <option value="papier">📖 Plutôt papier ou écran ?</option>
+        </select>
+        <button id="ice-btn" class="btn" type="button" title="Ajoute le brise-glace en tête de la session">Ajouter en premier</button></p>
     </div>
 
     <div class="card">
@@ -218,6 +230,7 @@ header('Cache-Control: no-store');
           <div><label for="gen-count">Nombre de questions</label>
             <input id="gen-count" type="number" min="3" max="20" value="10"></div>
         </div>
+        <label class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
         <p><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button">Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>

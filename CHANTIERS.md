@@ -15,9 +15,10 @@ pseudonymes + classement (option par session, podium rangs 1-3), brise-glaces
 (météo en émojis, un mot, plutôt ceci ou cela), option « que des QCM » pour l'IA.
 - **Fait et commité** : serveur des 3 premières (tenu par e2e, 300 vérifications
   vertes), écrans téléphone / animateur (onglet Animer) / projection.
-- **À faire** : vérifier ces écrans (captures), brise-glaces et option QCM
-  (`admin.js`, `genPrompt`), mention des pseudonymes dans « Confidentialité »
-  (`index.php`), README, puis CI verte et avance de `main`. Rien n'est en ligne.
+- **Fait aussi** : brise-glaces (Préparer, « Ajouter en premier »), option
+  « Que des quiz » de la génération par IA, mention dans « Confidentialité ».
+- **À faire** : captures des nouveaux écrans, README, puis CI verte et avance
+  de `main`. Rien n'est en ligne.
 - Côté utilisateur ensuite : fiche `docs/registre-traitement.md` (pseudonymes
   et questions anonymes, effacés avec la session, jamais archivés).
 

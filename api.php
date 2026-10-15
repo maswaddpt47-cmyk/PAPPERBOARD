@@ -472,7 +472,7 @@ function api_session_synthesis(array $b): void
 function api_question_save(array $b): void
 {
     $in = is_array($b['question'] ?? null) ? $b['question'] : throw new WlError('Question manquante.');
-    $id = wl_update(api_code($b), function (array &$s) use ($in) {
+    $id = wl_update(api_code($b), function (array &$s) use ($in, $b) {
         if (($in['type'] ?? '') === 'dots') {
             api_check_source($s, (string)($in['source'] ?? ''), (string)($in['id'] ?? ''), is_numeric($in['column'] ?? null) ? (int)$in['column'] : -1);
         }
@@ -485,7 +485,13 @@ function api_question_save(array $b): void
             throw new WlError('50 questions au plus par session.');
         }
         $q = wl_clean_question($in);
-        $s['questions'][] = $q;
+        if (!empty($b['first'])) {
+            // Brise-glace : en tête de session, la question projetée reste la même.
+            array_unshift($s['questions'], $q);
+            $s['current'] += $s['current'] >= 0 ? 1 : 0;
+        } else {
+            $s['questions'][] = $q;
+        }
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);

@@ -621,6 +621,23 @@
   // WoocLight n'appelle aucune IA : l'animateur colle le texte dans l'outil de son
   // choix, puis recolle la réponse. Le serveur la lit et la valide (questions_import).
 
+  // Brise-glaces : modifiables ensuite comme toute question ; vouvoiement par défaut.
+  var ICE = {
+    meteo: { type: 'poll', text: 'Votre météo du jour ?', options: ['☀️ Grand soleil', '🌤️ Quelques nuages', '🌧️ Pluie', '⛈️ Orage'] },
+    energie: { type: 'scale', text: 'Votre niveau d\'énergie en ce moment ?', scaleMax: 5 },
+    mot: { type: 'wordcloud', text: 'Un mot pour vous décrire aujourd\'hui ?' },
+    appli: { type: 'wordcloud', text: 'L\'appli que vous ouvrez le plus souvent ?' },
+    sms: { type: 'poll', text: 'Plutôt SMS ou appel ?', options: ['💬 SMS', '📞 Appel'] },
+    photo: { type: 'poll', text: 'Plutôt photo ou vidéo ?', options: ['📷 Photo', '🎬 Vidéo'] },
+    papier: { type: 'poll', text: 'Pour lire, plutôt papier ou écran ?', options: ['📖 Papier', '📱 Écran'] }
+  };
+  $('ice-btn').addEventListener('click', function () {
+    var tpl = ICE[$('ice-select').value];
+    if (!tpl) { banner('Choisissez un brise-glace dans la liste.'); return; }
+    act('question_save', { question: tpl, first: true });
+    $('ice-select').value = '';
+  });
+
   function genPrompt() {
     return [
       'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
@@ -632,12 +649,15 @@
       '- Langage simple, phrases courtes, adapté au public. Aucun nom de personne réelle.',
       '- Chaque question s\'adresse directement à ce public : tutoiement pour des enfants ou des adolescents, '
         + 'exemples tirés de leur quotidien.',
-      '- Varie les types et utilise chacun au moins une fois si le nombre le permet, dans un ordre d\'atelier : '
-        + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
+      $('gen-qcm').checked
+        ? '- Uniquement des quiz à bonne réponse : "mcq" (avec "correct"), "truefalse" ou "yesno" (avec "correct"), surtout des "mcq". '
+          + 'Ni sondage, ni nuage, ni mur, ni post-it, ni gommettes, ni échelle.'
+        : '- Varie les types et utilise chacun au moins une fois si le nombre le permet, dans un ordre d\'atelier : '
+          + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
       '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
       '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
       '- Quiz : mauvaises réponses crédibles, qui font réfléchir, jamais absurdes ni comiques.',
-      '- Une seule échelle (« scale »), en toute fin d\'atelier.',
+      $('gen-qcm').checked ? '- Pas d\'échelle.' : '- Une seule échelle (« scale »), en toute fin d\'atelier.',
       '- Chaque question a un champ "explain" : 2 ou 3 phrases (300 caractères au plus) affichées avec les résultats '
         + 'pour lancer l\'échange : la bonne réponse et pourquoi, ou un chiffre de repère pour un sondage, avec sa source '
         + '(organisme officiel, étude nommée). Si tu n\'as pas de source sûre, écris « pas de source sûre » plutôt qu\'en inventer une.',

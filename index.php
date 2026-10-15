@@ -95,7 +95,9 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
     <strong>But</strong> : animer l'atelier et en faire le bilan.
     <strong>Base légale</strong> : <?= wl_h($legal) ?>.</p>
-    <p><strong>Données</strong> : vos réponses ; un identifiant au hasard enregistré sur cet appareil (téléphone, tablette ou ordinateur)
+    <p><strong>Données</strong> : vos réponses (et vos questions « Oser demander », publiées seulement après relecture par l'animateur) ;
+    si l'animateur l'active, un pseudonyme tiré au hasard (ex. « Panda curieux ») et votre nombre de bonnes réponses aux quiz,
+    effacés avec la session ; un identifiant au hasard enregistré sur cet appareil (téléphone, tablette ou ordinateur)
     pour une journée, qui évite les votes en double ; votre adresse IP, gardée seulement sous forme
     codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
     ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées.</p>
