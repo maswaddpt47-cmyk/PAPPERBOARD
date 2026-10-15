@@ -417,9 +417,12 @@ check(($screenRes()['counts'] ?? null) === [0, 1], 'direct : sondage projeté pe
 $st = $viewer->get("api.php?action=state&s=$dir")['json'];
 check(empty($st['question']['showResults']) && !isset($st['results']) && empty($st['result']), 'direct : les téléphones n\'affichent pas les résultats (coût du polling)');
 foreach ([$off => 'nuage sans direct', $quiz => 'quiz (correction)'] as $id => $label) {
-    $admin->post('control', ['s' => $dir, 'op' => 'goto', 'qid' => $id]);
-    $admin->post('control', ['s' => $dir, 'op' => 'open']);
-    check($screenRes() === null, "direct : $label pas projeté avant « Afficher »");
+    $g = $admin->post('control', ['s' => $dir, 'op' => 'goto', 'qid' => $id]);
+    $o = $admin->post('control', ['s' => $dir, 'op' => 'open']);
+    $sv = $admin->get("api.php?action=screen&s=$dir")['json'];
+    // Échec rare et inexpliqué (15/10/2026) : le message dit ce que la projection a reçu.
+    check(($sv['results'] ?? null) === null, "direct : $label pas projeté avant « Afficher » (goto {$g['status']}, open {$o['status']}, projetée : "
+        . json_encode(array_intersect_key($sv['question'] ?? [], array_flip(['id', 'type', 'state', 'showResults'])), JSON_UNESCAPED_UNICODE) . ", attendue : $id)");
 }
 
 // --- Import de questions générées par une IA (copier-coller) -------------------
