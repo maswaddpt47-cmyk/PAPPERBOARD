@@ -44,6 +44,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
   <section id="ended" class="card center" hidden>
     <p class="big">La session est terminée.</p>
     <p>Merci pour votre participation !</p>
+    <div id="recap" class="recap-box"></div>
   </section>
 
   <section id="question" class="card" hidden aria-labelledby="q-text">

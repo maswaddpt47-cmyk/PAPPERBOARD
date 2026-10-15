@@ -66,7 +66,12 @@
     WL.show($('s-ended'), d.ended);
     WL.show($('s-welcome'), !d.ended && !q);
     WL.show($('s-question'), !d.ended && !!q);
-    if (d.ended || !q) {
+    if (d.ended) {
+      WL.renderRecap($('s-recap'), d);
+      fitRecap();
+      return;
+    }
+    if (!q) {
       $('s-url').textContent = d.joinUrl.replace(/^https?:\/\//, '').replace(/\/\?s=.*/, '');
       $('s-code-big').textContent = d.code;
       return;
@@ -94,6 +99,21 @@
         el('p', null, all ? 'Tout le monde a répondu.' : msg)));
       fitQuestion();
     }
+  }
+
+  /** Récap de fin : réduit pour tenir dans l'écran avec la conclusion. */
+  function fitRecap() {
+    var box = $('s-recap');
+    box.style.fontSize = '';
+    var limit = window.innerHeight - 40;
+    if (box.getBoundingClientRect().bottom <= limit) return;
+    var lo = 10, hi = parseFloat(getComputedStyle(box).fontSize);
+    for (var i = 0; i < 8; i++) {
+      var mid = (lo + hi) / 2;
+      box.style.fontSize = mid + 'px';
+      if (box.getBoundingClientRect().bottom <= limit) lo = mid; else hi = mid;
+    }
+    box.style.fontSize = lo + 'px';
   }
 
   /** Pendant le vote : une longue question est réduite pour que le décompte
@@ -182,6 +202,7 @@
 
   function pilotLabel() {
     if (!csrf) return;
+    WL.show($('s-pilot'), !(last && last.ended)); // session terminée : rien à piloter
     var q = last && last.question, op = stepOp();
     var post = q && (q.type === 'wall' || q.type === 'postit');
     $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'

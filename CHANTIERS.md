@@ -271,6 +271,12 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   par participant : ses idées seraient reliées entre elles (anonymat, choix de
   l'utilisateur du 15/10/2026 après alerte).
 
+- **Récap et conclusion de fin** (15/10/2026) : « Terminer la session » affiche
+  sur la projection et les téléphones une ligne par question (`wl_recap`) puis la
+  conclusion de la session (600 caractères ; saisie, ou élément
+  `{"type": "conclusion"}` de l'IA, repris par l'export). Jamais le texte d'une
+  réponse libre ; une idée du mur seulement si publiée. Tenu par e2e.
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*

@@ -107,7 +107,7 @@
     state = data;
     offset = data.now - Date.now() / 1000;
     $('session-title').textContent = data.title;
-    if (data.ended) { view('ended'); poller.stop(); pendingStore.del('pending'); return; }
+    if (data.ended) { view('ended'); WL.renderRecap($('recap'), data); poller.stop(); pendingStore.del('pending'); return; }
     if (!data.joined) { join(code); return; } // données purgées ou cookie perdu
     if (!data.question) { view('wait'); return; }
     view('question');

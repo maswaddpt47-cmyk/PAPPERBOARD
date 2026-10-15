@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'session_conclusion', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -86,6 +86,8 @@ function api_public_session(string $code): array
 function api_ended_view(array $s): array
 {
     return ['ok' => true, 'title' => $s['title'], 'ended' => true, 'question' => null,
+        'recap' => wl_recap($s), 'conclusion' => $s['conclusion'] ?? '',
+        'code' => $s['code'], 'joinUrl' => wl_join_url($s['code']), 'participants' => count($s['participants']),
         'pollMs' => (int)wl_config()['poll_ms'], 'now' => time()];
 }
 
@@ -305,7 +307,7 @@ function api_admin_state(): void
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
-        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
+        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'current' => $s['current'], 'participants' => count($s['participants']),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
@@ -358,6 +360,15 @@ function api_session_rename(array $b): void
     $title = api_title($b);
     wl_update(api_code($b), function (array &$s) use ($title) {
         $s['title'] = $title;
+    });
+    wl_json(['ok' => true]);
+}
+
+function api_session_conclusion(array $b): void
+{
+    $text = wl_clean_conclusion($b['conclusion'] ?? '');
+    wl_update(api_code($b), function (array &$s) use ($text) {
+        $s['conclusion'] = $text;
     });
     wl_json(['ok' => true]);
 }
@@ -416,6 +427,9 @@ function api_questions_import(array $b): void
     $keep = array_values(array_unique(array_map('intval', is_array($b['keep'] ?? null) ? $b['keep'] : [])));
     sort($keep);
     foreach ($keep as $i) {
+        if (isset($items[$i]['conclusion'])) {
+            continue;
+        }
         if (!isset($items[$i]['q'])) {
             throw new WlError('Question ' . ($i + 1) . ' : ' . ($items[$i]['error'] ?? 'introuvable.'));
         }
@@ -433,6 +447,10 @@ function api_questions_import(array $b): void
         }
         $ids = [];
         foreach ($keep as $i) {
+            if (isset($items[$i]['conclusion'])) {
+                $s['conclusion'] = $items[$i]['conclusion'];
+                continue;
+            }
             $q = $items[$i]['q'];
             if ($q['type'] === 'dots') {
                 $q['source'] = $ids[(int)substr($q['source'], 1)];
@@ -441,7 +459,7 @@ function api_questions_import(array $b): void
             $s['questions'][] = $q;
         }
     });
-    wl_json(['ok' => true, 'added' => count($keep)]);
+    wl_json(['ok' => true, 'added' => count(array_filter($keep, fn($i) => isset($items[$i]['q'])))]);
 }
 
 /** La question source des gommettes doit être un mur ou un post-it de la session. */

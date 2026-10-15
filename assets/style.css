@@ -323,6 +323,15 @@ label.btn { cursor: pointer; }
 .s-all { color: var(--wl-barre-ok); }
 .s-explain { border-left: .25em solid var(--wl-barre-ok); padding: .4em .7em; margin: .6em 0 0; font-size: .8em; line-height: 1.35; background: var(--wl-carte); border-radius: 0 var(--wl-rayon) var(--wl-rayon) 0; }
 .s-hint { font-size: .8em; color: var(--wl-texte-doux); margin: .4em 0 0; }
+.recap-title { font-size: 1.2em; margin: 1rem 0 .5rem; }
+.recap { margin: 0; padding-left: 1.4em; text-align: left; }
+.recap li { margin: .35em 0; }
+.recap-q { display: block; color: var(--wl-texte-doux); font-size: .85em; }
+.recap-a { display: block; }
+.recap-box { text-align: left; }
+#s-ended { padding-top: .5em; }
+.s-thanks { text-align: center; margin: 0 0 .3em; }
+#s-recap { font-size: .8em; }
 .s-pcount { font-size: 1.1rem; padding: 0 .5rem; }
 .s-welcome { text-align: center; margin-top: 3em; }
 .s-join-line { font-size: 1.8em; margin: .4em 0; }

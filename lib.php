@@ -698,6 +698,11 @@ function wl_import_parse(string $raw): array
     $items = [];
     foreach ($list as $in) {
         try {
+            // Dernier élément possible : la conclusion de l'atelier (pas une question).
+            if (is_array($in) && ($in['type'] ?? '') === 'conclusion') {
+                $items[] = ['conclusion' => wl_clean_conclusion($in['text'] ?? '')];
+                continue;
+            }
             $q = wl_clean_question(wl_import_input(is_array($in) ? $in : []));
             if ($q['type'] === 'dots') {
                 $q['source'] = '#' . ((int)($in['source'] ?? 0) - 1);
@@ -764,7 +769,8 @@ function wl_import_input(array $in): array
 function wl_export_questions(array $s): array
 {
     $pos = array_flip(array_column($s['questions'], 'id'));
-    return array_map(function ($q) use ($pos, $s) {
+    $conclusion = ($s['conclusion'] ?? '') !== '' ? [['type' => 'conclusion', 'text' => $s['conclusion']]] : [];
+    return [...array_map(function ($q) use ($pos, $s) {
         $out = ['type' => $q['type'], 'text' => $q['text']];
         if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit'], true)) {
             $out['options'] = $q['options'];
@@ -794,7 +800,7 @@ function wl_export_questions(array $s): array
         }
         return $out + ['duration' => $q['duration'], 'reveal' => $q['reveal'] ?? 'manual',
             'allowChange' => $q['allowChange'], 'live' => $q['live'] ?? true];
-    }, $s['questions']);
+    }, $s['questions']), ...$conclusion];
 }
 
 // ---------------------------------------------------------------------------
@@ -946,6 +952,64 @@ function wl_results(array $q, bool $admin = false, ?array $s = null): array
         }
     }
     return $r + ['counts' => $counts];
+}
+
+/** Récap de fin de session : une ligne par question qui a reçu des réponses.
+ *  Jamais le texte d'une réponse libre (elle peut contenir un nom) ; une idée
+ *  du mur seulement si le mur a été publié et l'idée non masquée. */
+function wl_recap(array $s): array
+{
+    $lines = [];
+    foreach ($s['questions'] as $q) {
+        $r = wl_results($q, false, $s);
+        if (!$r['total']) {
+            continue;
+        }
+        $pct = fn(int $n) => round(100 * $n / $r['total']) . ' %';
+        $top = function (array $counts) use ($q) {
+            arsort($counts);
+            return $q['options'][array_key_first($counts)] ?? '';
+        };
+        $line = match (true) {
+            (bool)$q['correct'] => (function () use ($q) {
+                $good = 0;
+                $want = $q['correct'];
+                sort($want);
+                foreach ($q['answers'] as $a) {
+                    $v = (array)$a['v'];
+                    sort($v);
+                    $good += $v === $want ? 1 : 0;
+                }
+                return $good . ' / ' . count($q['answers']) . ' bonnes réponses';
+            })(),
+            in_array($q['type'], ['yesno', 'truefalse', 'poll', 'mcq'], true)
+                => 'Le plus choisi : ' . $top($r['counts']) . ' (' . $pct(max($r['counts'])) . ')',
+            $q['type'] === 'wordcloud' => 'Mots les plus cités : ' . implode(', ', array_column(array_slice($r['words'], 0, 3), 'text')),
+            $q['type'] === 'scale' => 'Moyenne : ' . str_replace('.', ',', (string)$r['average']) . ' / ' . $q['scaleMax'],
+            $q['type'] === 'points' => 'En tête : ' . $top($r['counts']),
+            $q['type'] === 'dots' && $r['items'] => 'En tête : « ' . $r['items'][0]['text'] . ' » (' . wl_plural($r['items'][0]['n'], 'gommette') . ')',
+            $q['type'] === 'wall' && wl_shown($q) && $r['posts']
+                => 'Idée la plus aimée : « ' . $r['posts'][0]['text'] . ' » (♥ ' . $r['posts'][0]['likes'] . ')',
+            default => wl_plural($r['total'], ['wall' => 'message', 'postit' => 'post-it'][$q['type']] ?? 'réponse'),
+        };
+        $lines[] = ['text' => $q['text'], 'summary' => $line];
+    }
+    return $lines;
+}
+
+function wl_plural(int $n, string $word): string
+{
+    return $n . ' ' . $word . ($n > 1 && !str_ends_with($word, 's') ? 's' : '');
+}
+
+/** Conclusion de l'animateur, affichée sous le récap. 600 caractères. */
+function wl_clean_conclusion(mixed $text): string
+{
+    $text = wl_clean_text($text);
+    if (wl_strlen($text) > 600) {
+        throw new WlError('Conclusion : 600 caractères au plus.');
+    }
+    return $text;
 }
 
 /** Regroupe sans casse ni accents ; affiche la forme la plus fréquente. */

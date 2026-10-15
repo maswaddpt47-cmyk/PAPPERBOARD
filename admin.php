@@ -98,6 +98,15 @@ header('Cache-Control: no-store');
         <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
     </div>
 
+    <div class="card">
+      <h2>Conclusion</h2>
+      <p class="meta">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et téléphones).</p>
+      <label for="conclusion" class="sr-only">Conclusion de l'atelier</label>
+      <textarea id="conclusion" rows="3" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
+      <p class="row wrap"><button id="conclusion-btn" class="btn" type="button" title="Enregistrer la conclusion de cette session">Enregistrer la conclusion</button>
+        <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
+    </div>
+
     <dialog id="gen-dialog" aria-labelledby="gen-title">
       <form id="gen-form" method="dialog" novalidate>
         <h2 id="gen-title">Générer ou importer des questions</h2>

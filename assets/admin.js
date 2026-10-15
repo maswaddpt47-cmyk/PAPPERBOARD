@@ -4,7 +4,7 @@
 
 (function () {
   var el = WL.el, $ = WL.$;
-  var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null;
+  var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null;
 
   function banner(text) {
     $('banner').textContent = text || '';
@@ -131,6 +131,12 @@
   }
   $('qf-source').addEventListener('change', function () { fillColumns(-1); });
 
+  $('conclusion-btn').addEventListener('click', function () {
+    act('session_conclusion', { conclusion: $('conclusion').value }).then(function () {
+      $('conclusion-saved').textContent = 'Conclusion enregistrée.';
+    });
+  });
+
   function control(op, extra) {
     return act('control', Object.assign({ op: op }, extra));
   }
@@ -138,6 +144,11 @@
   function render(d) {
     data = d;
     $('ed-title').textContent = d.title;
+    // Ne pas écraser une conclusion en cours de saisie à chaque rafraîchissement.
+    if (document.activeElement !== $('conclusion') && conclusionFor !== d.code + '|' + d.conclusion) {
+      $('conclusion').value = d.conclusion || '';
+      conclusionFor = d.code + '|' + d.conclusion;
+    }
     $('ed-code').textContent = d.code;
     $('ed-url').textContent = d.joinUrl;
     $('ed-url').href = d.joinUrl;
@@ -393,12 +404,16 @@
         + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3) ; '
         + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées.',
       '',
+      '- Termine la liste par un élément {"type": "conclusion", "text": "…"} : 2 à 4 phrases (600 caractères au plus) '
+        + 'à retenir de l\'atelier, concrètes et adaptées au public, affichées à la fin avec le récap des réponses.',
+      '',
       'Réponds UNIQUEMENT par une liste JSON valide, sans texte autour. Exemple de format :',
       '[',
       '  {"type": "wordcloud", "text": "Un mot pour dire ce que vous évoque …"},',
       '  {"type": "mcq", "text": "…", "options": ["…", "…", "…"], "correct": ["…"], "explain": "… Source : …"},',
       '  {"type": "postit", "text": "…", "options": ["…", "…"]},',
-      '  {"type": "dots", "text": "…", "source": 3, "budget": 3}',
+      '  {"type": "dots", "text": "…", "source": 3, "budget": 3},',
+      '  {"type": "conclusion", "text": "À retenir : …"}',
       ']'
     ].join('\n');
   }
@@ -433,6 +448,12 @@
       if (it.error) {
         list.appendChild(el('li', { class: 'list-item' }, el('div', { class: 'grow' },
           el('p', { class: 'error' }, 'Question ' + (i + 1) + ' écartée : ' + it.error))));
+        return;
+      }
+      if (it.conclusion !== undefined) {
+        list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
+          el('input', { type: 'checkbox', value: i, checked: true }),
+          el('span', null, el('strong', null, 'Conclusion de l\'atelier'), el('span', { class: 'meta gen-detail' }, it.conclusion)))));
         return;
       }
       var detail = genDetail(it);

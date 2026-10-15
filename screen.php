@@ -36,7 +36,7 @@ wl_security_headers();
     <p id="s-timer" class="s-timer" hidden></p>
     <div id="s-results" class="s-results" aria-live="polite"></div>
   </section>
-  <section id="s-ended" class="s-welcome" hidden><p class="s-join-line">Session terminée. Merci !</p></section>
+  <section id="s-ended" hidden><p class="s-join-line s-thanks">Session terminée. Merci !</p><div id="s-recap"></div></section>
 </main>
 <nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>

@@ -201,6 +201,20 @@ var WL = (function () {
     return 'board-c' + (h % 6);
   }
 
+  /** Fin de session : récap (une ligne par question) puis conclusion. */
+  function renderRecap(container, d) {
+    clear(container);
+    if (d.recap && d.recap.length) {
+      container.appendChild(el('h2', { class: 'recap-title' }, 'Ce qu\'on retient de l\'atelier'));
+      var list = el('ol', { class: 'recap' });
+      d.recap.forEach(function (r) {
+        list.appendChild(el('li', null, el('span', { class: 'recap-q' }, r.text), el('strong', { class: 'recap-a' }, r.summary)));
+      });
+      container.appendChild(list);
+    }
+    if (d.conclusion) container.appendChild(el('p', { class: 'explain recap-conclusion' }, d.conclusion));
+  }
+
   /** Couleur stable d'un mot (elle ne change pas quand l'ordre change). */
   function colorOf(text) {
     var h = 0;
@@ -407,7 +421,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel, noteColor: noteColor,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
     TYPES: TYPES, plural: plural, renderResults: renderResults,
     remaining: remaining, formatTime: formatTime
   };
