@@ -32,6 +32,10 @@
     document.documentElement.requestFullscreen().catch(function (e) {
       error('Plein écran refusé par le navigateur (' + (e && e.message || 'raison inconnue') + ') : essayez la touche F11.');
     });
+    // Ni accepté ni refusé (poste verrouillé, extension…) : ne jamais rester muet.
+    setTimeout(function () {
+      if (!document.fullscreenElement) error('Le navigateur n\'a pas activé le plein écran : essayez la touche F11.');
+    }, 800);
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
   window.addEventListener('resize', function () { WL.fitCloud($('s-results')); });
