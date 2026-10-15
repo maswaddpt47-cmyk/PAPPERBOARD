@@ -525,8 +525,15 @@ function wl_clean_question(array $in, ?array $old = null): array
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
     wl_check_reveal($q);
     if ($old && wl_structure_changed($old, $q)) {
-        // Les réponses déjà reçues ne correspondent plus aux choix : on repart de zéro.
+        // Les réponses déjà reçues ne correspondent plus aux choix : on repart de
+        // zéro. Un vote ouvert le reste (modifier en direct ne doit pas bloquer
+        // les participants, constaté le 15/10/2026) ; sinon, retour au brouillon.
+        $wasOpen = $old['state'] === 'open';
         wl_reset_question($q);
+        if ($wasOpen) {
+            $q['state'] = 'open';
+            $q['closesAt'] = $q['duration'] ? time() + $q['duration'] : null;
+        }
     }
     return $q;
 }

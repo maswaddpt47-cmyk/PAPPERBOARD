@@ -173,6 +173,13 @@ $adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
 check($adm['questions'][3]['results']['total'] === 0 && $adm['questions'][3]['state'] === 'draft', 'un choix retiré : votes effacés');
 expect_status($admin->get("api.php?action=export&s=$code"), 200, 'export après modification');
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll']] + $questions['poll']]);
+$admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
+$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'options' => ['Peu', 'Moyen', 'Beaucoup', 'Énormément']] + $questions['poll']]);
+$adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
+check($adm['questions'][3]['state'] === 'open', 'choix modifiés pendant le vote : réponses effacées, vote toujours ouvert');
+$admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll']] + $questions['poll']]);
+$admin->post('control', ['s' => $code, 'op' => 'close']);
 
 // --- Durée : vote refusé une fois le temps écoulé ----------------------------
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'duration' => 30] + $questions['poll']]);

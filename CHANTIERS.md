@@ -125,6 +125,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Modifier le type, le nombre de choix, l'échelle, le budget ou le choix
   multiple d'une question **efface ses réponses** (`wl_structure_changed()`,
   même règle dans `admin.js`) : sinon les résultats plantent. Tenu par e2e.
+  Un vote **ouvert reste ouvert** après cette modification (15/10/2026 : sinon
+  les participants ne pouvaient plus voter sans comprendre pourquoi).
 - Animations : barres mises à jour sur place (jamais détachées du DOM, sinon
   la transition saute) ; mots et réponses libres réutilisés, seul un élément
   nouveau porte `is-new` et joue l'apparition (sinon tout clignote à chaque vote).
