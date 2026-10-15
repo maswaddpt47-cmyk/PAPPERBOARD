@@ -4,20 +4,18 @@
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
-Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelier
-« Temps d'écran » de bout en bout.
+Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
 ## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** `php ~/www/purge.php` : créée chez Alwaysdata le
    15/10/2026 (déclaré), **non vérifiée** (SSH par mot de passe coupé) : un email
    d'erreur signalerait un échec, son absence ne prouve rien. Ne pas l'espacer.
-2. **À vérifier sur téléphone et projection** (en ligne le 15/10/2026 ; refonte,
-   PowerPoint et bilan projeté validés par l'utilisateur le 15/10/2026) :
-   **onglets** de l'espace animateur, archive anonyme (Archiver, consultation,
-   réutilisation), synthèse enregistrée, post-its colorés, signaux, « Oser
-   demander », pseudonymes et podium, brise-glaces, option « Que des quiz ».
-   Puis un **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
+2. **À vérifier** : onglets de l'espace animateur, archive anonyme (Archiver,
+   consultation, réutilisation), synthèse enregistrée, post-its colorés (signaux,
+   « Oser demander », pseudonymes, podium, brise-glaces, Vrai/Faux au toucher,
+   « Rouvrir le vote » : validés par l'utilisateur le 15/10/2026). Puis un
+   **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
 3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
    15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
    par l'utilisateur** (responsable de traitement).
@@ -88,18 +86,15 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   Département). Le RGPD s'applique : l'utilisateur est responsable de
   traitement ; ses mentions (`responsable`, `contact`, `base_legale`) sont dans
   `config.php`, hors du dépôt public. Fiche : `docs/registre-traitement.md`.
-
 - Déploiement **automatique** à chaque mise à jour de `main`, sans approbation
   manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset
   de `main` (tests exigés). GitHub Pages coupé (14/10/2026).
-
 - Clés (14/10/2026) : aucune à conserver, toutes se recréent (README étapes
   2-3 ; secret et sel : `configurer.php`). Pas de sauvegarde chiffrée ici.
 - Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
   `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
   déploiement part dans `~/www/wooclight/`), données dans `~/wooclight-data`,
   adresse https://wooclight.alwaysdata.net.
-
 - Mur et post-it : les contributions des autres ne sont visibles (téléphones
   et projection) qu'après **Publier** — relecture et masquage d'abord, une
   contribution peut contenir un nom (décision prise seule le 09/10/2026 ;
@@ -109,7 +104,6 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 - Gommettes : elles visent les post-its **principaux** visibles de la question
   source ; un post-it regroupé compte pour son principal. Identifiants de post
   préfixés `n` : jamais de clé numérique en JSON.
-
 - Session = écran d'accueil d'abord (`current = -1`) ; « Suivante » vers une
   question jamais ouverte **ouvre le vote** (choix de l'utilisateur, 09/10/2026).
 - Modifier le type, le nombre de choix, l'échelle, le budget ou le choix
@@ -120,7 +114,6 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 - Animations : barres mises à jour sur place (jamais détachées du DOM, sinon
   la transition saute) ; mots et réponses libres réutilisés, seul un élément
   nouveau porte `is-new` et joue l'apparition (sinon tout clignote à chaque vote).
-
 - **Polling** : deux versions par session. `pversion` (ce que voit un
   téléphone) ne bouge pas quand un autre participant vote ; `version`
   (projection, animateur) bouge à chaque vote. Sinon 150 téléphones
@@ -204,7 +197,6 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   format que l'import, **sans aucune réponse de participant**, réglages compris
   (durée, correction, modification, direct). Réimporter un export redonne le
   même fichier : tenu par `tests/e2e.php` (« Export des questions »).
-
 - **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
   ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
@@ -222,47 +214,39 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
   15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
   en local dans Chromium).
-
 - **Explication par question** (`explain`, 15/10/2026, demande de l'utilisateur) :
   400 caractères au plus, envoyée aux téléphones et à la projection **seulement
   avec les résultats** (`wl_public_question`, tenu par e2e « explication cachée
   avant les résultats »). Le texte pour l'IA la demande avec sa source ou
   « pas de source sûre ». Import et export `.json` la reprennent.
-
 - Mur : les « j'aime » ne sont possibles que **publié et vote ouvert**
   (`wl_like`). Le bouton central du pilotage publie donc le mur avant de fermer
   le vote (15/10/2026 : fermé avant publication, tous les cœurs restaient à 0).
-
 - Gommettes sur **une colonne** du post-it source (`column`, 15/10/2026, -1 =
   toutes) : formulaire, import (nom de la colonne), export. Tenu par e2e.
 - Post-its colorés **au hasard mais stable** (`noteColor`, d'après l'id), jamais
   par participant : ses idées seraient reliées entre elles (anonymat, choix de
   l'utilisateur du 15/10/2026 après alerte).
-
 - **Fin de session** (15/10/2026, choix de l'utilisateur) : projection et
   téléphones = conclusion seule (« à retenir »), même page rouverte après la fin
   (409 → on écoute quand même) ; le détail passe par le bilan (touche B). Le
   récap ne sert plus qu'à PowerPoint et archive. Projection : la conclusion monte
   du bas, façon générique, une fois par texte (`rollIn`, rien si mouvement réduit).
-
 - **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
   toutes les questions et texte à copier pour une IA (synthèse, conclusion,
   recommandations). Résultats regroupés seulement ; réponses écrites (libres,
   mur, post-it) **décochées par défaut** car elles peuvent contenir un nom, et
   jamais les réponses masquées. Les téléphones écoutent encore après la fin
   (304) : une conclusion ajoutée ensuite leur parvient.
-
 - **Export PowerPoint du bilan** (15/10/2026) : généré dans le navigateur par
   PptxGenJS 4.0.1 copié dans `assets/` (licence MIT, chargé seulement à l'export,
   aucune donnée envoyée ailleurs). Graphiques natifs modifiables, réponses
   masquées exclues. Vérifié en local : fichier ouvert par python-pptx et
   LibreOffice (9 diapositives) ; pas encore ouvert dans PowerPoint.
-
 - **Synthèse de l'IA** (`synthesis`, 15/10/2026) : collée par l'animateur dans
   la carte Bilan, 6000 caractères, retours à la ligne gardés ; jamais envoyée
   aux téléphones (tenu par e2e), reprise dans l'export PowerPoint, effacée avec
   la session par la purge.
-
 - **Archive anonyme au lieu de suppression** (choix de l'utilisateur, 15/10/2026,
   option 1 après alerte RGPD) : la purge (`wl_purge`) et le bouton « Archiver »
   écrivent `archives/<date>-<id>.json` (questions, explications, résultats
@@ -270,13 +254,11 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
   réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
   personnelle). Tenu par e2e. Mentions de confidentialité à jour.
-
 - **Onglets** (15/10/2026, demande de l'utilisateur : page sans fin) : un groupe
   `.tabs` commande ses panneaux par `aria-controls` ; onglet de session retenu
   (`wl_tab`, stockage facultatif). Tout reste dans la page : les identifiants
   des éléments n'ont pas changé. Les tests navigateur cliquent l'onglet avant
   d'agir (un élément d'un panneau masqué n'est pas cliquable).
-
 - **Bilan projeté** (15/10/2026, « façon slide ») : `board` = rang (-1 : arrêt),
   questions posées seulement. Une diapositive ne montre **que ce que la
   projection a déjà montré** (`wl_board_view`, décision prise seule : la
@@ -285,7 +267,6 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 - **QR code masquable** (15/10/2026) depuis Animer (`qrHidden`, projection seule) ;
   touche Q le montre quand même en grand. Récap de fin réduit au-dessus de la
   barre de pilotage (elle le chevauchait, capture de l'utilisateur).
-
 - **Signaux, Oser demander, pseudonymes, brise-glaces** (en ligne le 15/10/2026,
   demande de l'utilisateur) : signaux 2 min pour l'animateur seul (jamais sur la
   projection, vue de la salle), téléphones non réveillés ; questions publiées après
@@ -294,6 +275,12 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 
 ## Pistes d'amélioration
 
-*Proposées, en attente :* aucune.
+*Proposées, en attente :*
+- 15/10/2026 — Avertir avant de fermer ou d'afficher un vote à 0 réponse (vu :
+  « 0 / 2 ont répondu » fermé sans que personne ait pu voter).
+- 15/10/2026 — « x / n ont répondu » : ne compter que les téléphones actifs
+  récemment (un téléphone éteint compte encore, limite connue).
+- 15/10/2026 — Import : avertir si l'intitulé de gommettes cite une colonne sans
+  `column` (toutes les idées sont alors proposées).
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.
