@@ -121,6 +121,20 @@
       s.addTable(rows, { x: 0.5, y: 1.1, w: W - 1, colW: [7.6, 4.73], fontFace: FONT, fontSize: 12, color: C.texte,
         border: { type: 'solid', pt: 1, color: 'D1D5DB' }, autoPage: true, autoPageRepeatHeader: true });
     }
+    if (d.synthesis) {
+      // Une diapositive par tranche de ~1200 caractères, coupée entre deux paragraphes.
+      var parts = [], cur = '';
+      d.synthesis.split(/\n\n+/).forEach(function (para) {
+        if (cur && (cur + '\n\n' + para).length > 1200) { parts.push(cur); cur = para; } else { cur = cur ? cur + '\n\n' + para : para; }
+      });
+      if (cur) parts.push(cur);
+      parts.forEach(function (part, k) {
+        s = pptx.addSlide();
+        text(s, 'Synthèse et recommandations' + (parts.length > 1 ? ' (' + (k + 1) + '/' + parts.length + ')' : ''),
+          { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 28, bold: true, color: C.primaire });
+        text(s, part, { x: 0.5, y: 1.4, w: W - 1, h: 5.7, fontSize: 16, fit: 'shrink' });
+      });
+    }
     if (d.conclusion) {
       s = pptx.addSlide();
       text(s, 'Conclusion', { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 30, bold: true, color: C.primaire });

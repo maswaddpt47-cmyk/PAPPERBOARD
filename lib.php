@@ -1002,6 +1002,20 @@ function wl_plural(int $n, string $word): string
     return $n . ' ' . $word . ($n > 1 && !str_ends_with($word, 's') ? 's' : '');
 }
 
+/** Synthèse rédigée par une IA à partir du bilan, collée et relue par
+ *  l'animateur : visible de lui seul et dans l'export PowerPoint. Les retours
+ *  à la ligne sont gardés (paragraphes, listes). 6000 caractères. */
+function wl_clean_synthesis(mixed $text): string
+{
+    $text = is_string($text) && preg_match('//u', $text) ? str_replace(["\r\n", "\r"], "\n", $text) : '';
+    $text = preg_replace('/[^\P{Cc}\n\t]+|\p{Cf}+/u', '', $text);
+    $text = trim(preg_replace("/\n{3,}/", "\n\n", preg_replace('/[ \t]+/u', ' ', $text)));
+    if (wl_strlen($text) > 6000) {
+        throw new WlError('Synthèse : 6000 caractères au plus.');
+    }
+    return $text;
+}
+
 /** Conclusion de l'animateur, affichée sous le récap. 600 caractères. */
 function wl_clean_conclusion(mixed $text): string
 {

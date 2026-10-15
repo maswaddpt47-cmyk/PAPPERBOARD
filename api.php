@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_conclusion', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'session_conclusion', 'session_synthesis', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -307,7 +307,7 @@ function api_admin_state(): void
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
-        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
+        return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
@@ -370,6 +370,16 @@ function api_session_conclusion(array $b): void
     wl_update(api_code($b), function (array &$s) use ($text) {
         $s['conclusion'] = $text;
     });
+    wl_json(['ok' => true]);
+}
+
+function api_session_synthesis(array $b): void
+{
+    $text = wl_clean_synthesis($b['synthesis'] ?? '');
+    // Animateur seulement : les téléphones n'ont pas à se rafraîchir.
+    wl_update(api_code($b), function (array &$s) use ($text) {
+        $s['synthesis'] = $text;
+    }, false);
     wl_json(['ok' => true]);
 }
 

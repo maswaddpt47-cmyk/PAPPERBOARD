@@ -253,6 +253,11 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   masquées exclues. Vérifié en local : fichier ouvert par python-pptx et
   LibreOffice (9 diapositives) ; pas encore ouvert dans PowerPoint.
 
+- **Synthèse de l'IA** (`synthesis`, 15/10/2026) : collée par l'animateur dans
+  la carte Bilan, 6000 caractères, retours à la ligne gardés ; jamais envoyée
+  aux téléphones (tenu par e2e), reprise dans l'export PowerPoint, effacée avec
+  la session par la purge.
+
 ## Pistes d'amélioration
 
 *Proposées, en attente :*

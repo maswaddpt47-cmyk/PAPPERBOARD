@@ -4,7 +4,7 @@
 
 (function () {
   var el = WL.el, $ = WL.$;
-  var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null;
+  var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null, synthesisFor = null;
 
   function banner(text) {
     $('banner').textContent = text || '';
@@ -131,6 +131,12 @@
   }
   $('qf-source').addEventListener('change', function () { fillColumns(-1); });
 
+  $('synthesis-btn').addEventListener('click', function () {
+    act('session_synthesis', { synthesis: $('synthesis').value }).then(function () {
+      $('synthesis-saved').textContent = 'Synthèse enregistrée.';
+    });
+  });
+
   $('conclusion-btn').addEventListener('click', function () {
     act('session_conclusion', { conclusion: $('conclusion').value }).then(function () {
       $('conclusion-saved').textContent = 'Conclusion enregistrée.';
@@ -233,6 +239,10 @@
     if (document.activeElement !== $('conclusion') && conclusionFor !== d.code + '|' + d.conclusion) {
       $('conclusion').value = d.conclusion || '';
       conclusionFor = d.code + '|' + d.conclusion;
+    }
+    if (document.activeElement !== $('synthesis') && synthesisFor !== d.code + '|' + d.synthesis) {
+      $('synthesis').value = d.synthesis || '';
+      synthesisFor = d.code + '|' + d.synthesis;
     }
     $('ed-code').textContent = d.code;
     $('ed-url').textContent = d.joinUrl;

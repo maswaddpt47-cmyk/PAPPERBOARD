@@ -119,7 +119,11 @@ header('Cache-Control: no-store');
         <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
       <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
       <div id="bilan-board" class="bilan-board" hidden></div>
-      <p class="meta">Collez ensuite la conclusion proposée par l'IA dans la carte « Conclusion » ci-dessus, après l'avoir relue.</p>
+      <label for="synthesis">Synthèse et recommandations de l'IA (relues ; visibles de vous seul et dans l'export PowerPoint)</label>
+      <textarea id="synthesis" rows="8" maxlength="6000" placeholder="Collez ici la réponse de l'IA, après relecture."></textarea>
+      <p class="row wrap"><button id="synthesis-btn" class="btn" type="button" title="Enregistrer la synthèse avec la session (effacée avec elle par la purge)">Enregistrer la synthèse</button>
+        <span id="synthesis-saved" class="meta" aria-live="polite"></span></p>
+      <p class="meta">Collez la conclusion proposée par l'IA dans la carte « Conclusion » ci-dessus, après l'avoir relue.</p>
     </div>
 
     <dialog id="gen-dialog" aria-labelledby="gen-title">
