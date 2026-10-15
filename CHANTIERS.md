@@ -20,27 +20,24 @@ toucher, décomptes, explications, mur et « j'aime », post-it, gommettes.
    projeté** (touche B sur la projection, 15/10/2026 : lisibilité de chaque
    diapositive sur l'écran de la salle). Puis un
    **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
-3. **Refonte « Papier & Terre »** en ligne le 15/10/2026 (`INTEGRATION.md`) : à
-   valider sur téléphone et projection (anneau, jauge, thème clair, gommettes).
-   Retour arrière possible : revenir au commit `145dc25`.
-4. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
+3. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
    annonce encore la suppression après 30 jours, alors que WoocLight archive
    désormais des résultats anonymes. À ajuster par l'utilisateur s'il le souhaite.
-5. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
+4. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
-6. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+5. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-7. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+6. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (peut être
    supprimée) ; PAPPERBOARD ajouté aux deux rappels d'audit Codex.
-8. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
+7. Facultatif : `contact` dans `config.php` (réactiver un moment le mot de
    passe SSH, `php ~/www/configurer.php`, répondre `N` au mot de passe,
    recouper l'accès par mot de passe). Journaux Apache et sauvegardes
    d'Alwaysdata à regarder une fois.
-9. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
+8. **Hook `SessionStart`** : refusé à Claude par la plateforme (09/10/2026). À
    créer : même `.claude/settings.json` que NEWGEN, hook réduit à
    `bash "$CLAUDE_PROJECT_DIR/scripts/check-chantiers.sh" "$CLAUDE_PROJECT_DIR/CHANTIERS.md"`.
 
@@ -147,9 +144,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 - Jeton participant jamais stocké en clair (HMAC) ; IP seulement hachée.
 - Déploiement `rsync` **sans `--delete`** : `config.php` (et `data/` s'il est
   dans le site) vivent sur le serveur hors dépôt.
-- Palette neutre (14/10/2026) : primaire `#4338CA` (7,9:1 sur blanc), accent
-  `#0F766E` (5,5:1), barres `#6366F1` / `#16A34A` (graphiques ≥ 3:1). Mesuré
-  avec la formule WCAG ; revérifier tout nouveau couple texte/fond.
+- Charte « Papier & Terre » (validée le 15/10/2026, `INTEGRATION.md`) : terre
+  `#A83A1A`, bonne réponse `#2F6B1F` + coche (jamais la couleur seule), choix
+  sélectionné brun neutre, Georgia/Verdana. Graphiques : `assets/charts.js`
+  (anneau, jauge, compteur) ; PowerPoint dessiné aux mêmes couleurs (thème clair).
 - **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
   multiples (point 2) — inhérent à un vote sans compte ; atténué par
   « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.

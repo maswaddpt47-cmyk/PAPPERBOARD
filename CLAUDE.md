@@ -72,7 +72,8 @@ Alerter sans attendre, au format :
 
 ## 5. Couleurs
 
-Palette neutre (projet personnel, 14/10/2026) : variables `--wl-*` en tête de
-`assets/style.css`, Verdana. Aucune couleur ni logo d'une institution (un
+Charte « Papier & Terre » (validée le 15/10/2026, `INTEGRATION.md`) : variables
+`--wl-*` en tête de `assets/style.css`, Georgia (titres) et Verdana ; le
+PowerPoint du bilan (`assets/bilan-pptx.js`) reprend les couleurs du thème clair. Aucune couleur ni logo d'une institution (un
 outil personnel ne doit pas passer pour un outil officiel). Tout couple texte/fond
 vérifié AA (4,5:1), éléments graphiques 3:1.
