@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'question_save', 'questions_import', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
+    'session_rename', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin'];
 
 try {
     wl_maybe_purge();
@@ -382,6 +382,24 @@ function api_question_save(array $b): void
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** Même durée pour toutes les questions de la session (0 = sans limite). Un
+ *  vote déjà ouvert garde son compte à rebours ; la durée vaut à la prochaine
+ *  ouverture. Sans durée, une correction « à la fin du temps » repasse au clic. */
+function api_questions_duration(array $b): void
+{
+    $duration = wl_clean_duration($b['duration'] ?? 0);
+    wl_update(api_code($b), function (array &$s) use ($duration) {
+        foreach ($s['questions'] as &$q) {
+            $q['duration'] = $duration;
+            if (!$duration && ($q['reveal'] ?? 'manual') === 'end') {
+                $q['reveal'] = 'manual';
+            }
+        }
+        unset($q);
+    });
+    wl_json(['ok' => true]);
 }
 
 /** Questions générées par une IA : aperçu (preview) ou ajout de celles retenues

@@ -91,6 +91,9 @@ header('Cache-Control: no-store');
     <div class="card">
       <h2>Questions</h2>
       <ol id="q-list" class="list q-list"></ol>
+      <p class="row wrap"><label for="all-duration">Durée pour toutes les questions, en secondes (0 = sans limite)</label>
+        <input id="all-duration" type="number" min="0" max="3600" step="5" value="30">
+        <button id="all-duration-btn" class="btn" type="button" title="Donne cette durée à toutes les questions de la session (un vote en cours garde son compte à rebours)">Appliquer à toutes</button></p>
       <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button">+ Ajouter une question</button>
         <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
     </div>

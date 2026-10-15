@@ -429,6 +429,14 @@ $copy = $admin->post('session_create', ['title' => 'Copie'])['json']['code'] ?? 
 expect_status($admin->post('questions_import', ['s' => $copy, 'raw' => $exp['body'], 'keep' => range(0, 6)]), 200, 'export questions : réimport');
 check($admin->get("api.php?action=export&format=questions&s=$copy")['body'] === $exp['body'], 'export questions : réimport identique (réglages compris)');
 
+// --- Même durée pour toutes les questions ------------------------------------------
+$admin->post('questions_duration', ['s' => $copy, 'duration' => 45]);
+$all = json_decode($admin->get("api.php?action=export&format=questions&s=$copy")['body'], true);
+check(array_unique(array_column($all, 'duration')) === [45], 'durée appliquée à toutes les questions');
+$admin->post('questions_duration', ['s' => $copy, 'duration' => 0]);
+$all = json_decode($admin->get("api.php?action=export&format=questions&s=$copy")['body'], true);
+check(!in_array('end', array_column($all, 'reveal'), true), 'sans durée, plus de correction « à la fin du temps »');
+
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {
     check(is_array(json_decode(file_get_contents($f), true)), 'JSON valide : ' . basename($f));

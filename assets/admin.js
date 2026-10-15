@@ -113,6 +113,12 @@
     return post(action, Object.assign({ s: code }, body)).then(function () { poller.refresh(); });
   }
 
+  $('all-duration-btn').addEventListener('click', function () {
+    var n = Math.round(Number($('all-duration').value));
+    if (!(n >= 0 && n <= 3600)) { banner('Durée entre 0 et 3600 secondes.'); return; }
+    act('questions_duration', { duration: n });
+  });
+
   function control(op, extra) {
     return act('control', Object.assign({ op: op }, extra));
   }
