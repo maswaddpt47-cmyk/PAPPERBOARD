@@ -18,9 +18,9 @@ Testé par l'utilisateur le 15/10/2026 (PC Edge, portable, téléphone) : atelie
    réutilisation), synthèse enregistrée, post-its colorés, signaux, « Oser
    demander », pseudonymes et podium, brise-glaces, option « Que des quiz ».
    Puis un **atelier réel** à 10 participants ou plus (charge, wifi de la salle).
-3. **Fiche `docs/registre-traitement.md`** (tenue par l'utilisateur seul) : elle
-   annonce encore la suppression après 30 jours, alors que WoocLight archive
-   désormais des résultats anonymes ; à compléter (pseudonymes, « Oser demander »).
+3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
+   15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
+   par l'utilisateur** (responsable de traitement).
 4. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 5. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -269,7 +269,7 @@ présent (mesuré : pas d'avertissement `accept-new`), ruleset sur `main`.
   regroupés, récap anonyme, conclusion, synthèse) puis suppriment la session.
   Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
   réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
-  personnelle). Tenu par e2e. Mentions de confidentialité à jour ; `docs/registre-traitement.md` laissé tel quel (l'utilisateur le tient lui-même, 15/10/2026).
+  personnelle). Tenu par e2e. Mentions de confidentialité à jour.
 
 - **Onglets** (15/10/2026, demande de l'utilisateur : page sans fin) : un groupe
   `.tabs` commande ses panneaux par `aria-controls` ; onglet de session retenu
