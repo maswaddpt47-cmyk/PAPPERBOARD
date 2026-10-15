@@ -14,7 +14,7 @@ header('Cache-Control: no-store');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>WoocLight — Animateur</title>
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 </head>
 <body class="admin">
 <header class="topbar"><span class="brand">WoocLight</span><span class="topbar-title">Animateur</span>
@@ -46,7 +46,7 @@ header('Cache-Control: no-store');
     <p><button id="back-btn" class="btn btn-ghost" type="button">← Mes sessions</button></p>
     <div class="row wrap">
       <h1 id="ed-title" class="grow"></h1>
-      <button id="rename-btn" class="btn" type="button">Renommer</button>
+      <button id="rename-btn" class="btn" title="Changer le titre de la session (affiché sur la projection)" type="button">Renommer</button>
     </div>
 
     <div class="grid2">
@@ -55,15 +55,15 @@ header('Cache-Control: no-store');
         <div id="ed-qr" class="qr qr-admin"></div>
         <p>Code : <strong id="ed-code" class="code-big"></strong></p>
         <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
-        <p class="row wrap"><button id="ed-url-copy" class="btn" type="button">Copier l'invitation</button>
-          <button id="ed-url-share" class="btn" type="button" hidden>Partager</button>
+        <p class="row wrap"><button id="ed-url-copy" class="btn" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button">Copier l'invitation</button>
+          <button id="ed-url-share" class="btn" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage du téléphone)" type="button" hidden>Partager</button>
           <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
-        <p><a id="ed-screen" class="btn" target="_blank" rel="noopener">Ouvrir la projection</a></p>
+        <p><a id="ed-screen" class="btn" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener">Ouvrir la projection</a></p>
         <p class="row wrap">
-          <a id="ed-csv" class="btn">Exporter en CSV (tout)</a>
-          <a id="ed-csv-public" class="btn">CSV à diffuser (sans réponses masquées)</a>
-          <a id="ed-print" class="btn" target="_blank" rel="noopener">Version imprimable</a>
-          <a id="ed-questions" class="btn">Questions (.json, sans les réponses)</a>
+          <a id="ed-csv" class="btn" title="Toutes les réponses, réponses masquées comprises, pour Excel (bilan interne)">Exporter en CSV (tout)</a>
+          <a id="ed-csv-public" class="btn" title="Réponses pour Excel, sans celles que vous avez masquées (à partager)">CSV à diffuser (sans réponses masquées)</a>
+          <a id="ed-print" class="btn" title="Page des résultats à imprimer ou enregistrer en PDF" target="_blank" rel="noopener">Version imprimable</a>
+          <a id="ed-questions" class="btn" title="Enregistre les questions (sans aucune réponse) pour les réutiliser dans une autre session">Questions (.json, sans les réponses)</a>
         </p>
         <p><span id="ed-participants"></span></p>
         <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>
@@ -76,13 +76,13 @@ header('Cache-Control: no-store');
         <p id="live-text" class="live-text"></p>
         <p id="live-state" class="live-state" aria-live="polite"></p>
         <div class="row wrap">
-          <button class="btn" data-op="prev" type="button">← Précédente</button>
-          <button class="btn" data-op="next" type="button">Suivante →</button>
+          <button class="btn" data-op="prev" title="Revenir à la question précédente sur la projection" type="button">← Précédente</button>
+          <button class="btn" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante →</button>
         </div>
         <div class="row wrap">
           <button class="btn btn-primary" id="open-btn" type="button"></button>
           <button class="btn" id="show-btn" type="button"></button>
-          <button class="btn btn-danger" data-op="reset" type="button">Réinitialiser</button>
+          <button class="btn btn-danger" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button">Réinitialiser</button>
         </div>
         <div id="live-results" class="live-results"></div>
       </div>
@@ -91,8 +91,8 @@ header('Cache-Control: no-store');
     <div class="card">
       <h2>Questions</h2>
       <ol id="q-list" class="list q-list"></ol>
-      <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" type="button">+ Ajouter une question</button>
-        <button id="gen-btn" class="btn" type="button">Générer ou importer (JSON)</button></p>
+      <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button">+ Ajouter une question</button>
+        <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
     </div>
 
     <dialog id="gen-dialog" aria-labelledby="gen-title">
@@ -113,7 +113,7 @@ header('Cache-Control: no-store');
           <div><label for="gen-count">Nombre de questions</label>
             <input id="gen-count" type="number" min="3" max="20" value="10"></div>
         </div>
-        <p><button id="gen-copy" class="btn btn-primary" type="button">Copier le texte pour l'IA</button>
+        <p><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button">Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
         <p class="meta">2. Collez ici toute la réponse de l'IA, ou importez un fichier JSON au même format
@@ -122,14 +122,14 @@ header('Cache-Control: no-store');
           <input id="gen-file" class="sr-only" type="file" accept=".json,.txt,application/json,text/plain"></p>
         <label for="gen-raw" class="sr-only">Réponse de l'IA ou contenu du fichier</label>
         <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
-        <p><button id="gen-check" class="btn" type="button">Vérifier la réponse</button></p>
+        <p><button id="gen-check" class="btn" title="Contrôle la réponse de l'IA et affiche l'aperçu des questions" type="button">Vérifier la réponse</button></p>
         <div id="gen-preview" hidden>
           <p class="meta">3. Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong></p>
           <ol id="gen-list" class="list gen-list"></ol>
           <p class="meta">Facultatif, pour un nouveau thème ou un public sensible : faites relire par une <strong>autre</strong> IA
             que celle qui a écrit les questions (nouvelle conversation). Elle doit citer ses sources :
             <strong>ouvrez chaque lien avant de vous y fier</strong>, une IA peut en inventer.</p>
-          <p><button id="gen-review" class="btn" type="button">Copier la consigne de relecture</button>
+          <p><button id="gen-review" class="btn" title="Copie une consigne pour faire relire les questions par une autre IA, sources exigées" type="button">Copier la consigne de relecture</button>
             <span id="gen-review-copied" class="meta" aria-live="polite"></span></p>
         </div>
         <p id="gen-error" class="error" role="alert"></p>
@@ -192,8 +192,8 @@ header('Cache-Control: no-store');
     </dialog>
   </section>
 </main>
-<script src="assets/qrcode.js"></script>
-<script src="assets/common.js"></script>
-<script src="assets/admin.js"></script>
+<script src="<?= wl_asset('qrcode.js') ?>"></script>
+<script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('admin.js') ?>"></script>
 </body>
 </html>

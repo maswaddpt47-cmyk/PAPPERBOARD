@@ -48,6 +48,7 @@
     }
     var q = d.question;
     last = d;
+    pilotLabel();
     // Résultats à l'écran : question et QR réduits, la place va aux résultats.
     document.body.classList.toggle('s-live', !d.ended && !!q && !!d.results);
     WL.show($('s-ended'), d.ended);
@@ -121,27 +122,46 @@
     }, function () { busy = false; });
   }
 
-  /** Espace : ouvrir le vote, le fermer, afficher les résultats, puis suivante. */
-  function step() {
+  /** Espace ou bouton central : ouvrir le vote, le fermer, afficher les
+   *  résultats (publier pour mur et post-it), puis passer à la suivante. */
+  function stepOp() {
     var q = last && last.question;
-    if (!q) return control('next');
+    if (!q) return 'next';
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
-    if (q.state === 'draft') control('open');
-    else if (open) control('close');
-    else if (!q.showResults) control('show');
-    else control('next');
+    if (q.state === 'draft') return 'open';
+    if (open) return 'close';
+    return q.showResults ? 'next' : 'show';
+  }
+
+  function pilotLabel() {
+    if (!csrf) return;
+    var q = last && last.question, op = stepOp();
+    var post = q && (q.type === 'wall' || q.type === 'postit');
+    $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
+      : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : q ? 'Question suivante' : 'Commencer';
+    $('p-step').title = {
+      open: 'Les participants peuvent répondre', close: 'Plus aucune réponse acceptée',
+      show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
+      next: 'Passe à la question suivante'
+    }[op] + ' (Espace)';
+    $('p-prev').disabled = !last || last.position === 0;
+    $('p-next').disabled = !!last && last.position >= last.count;
   }
 
   if (document.body.dataset.pilot) WL.api('me').then(function (r) {
     if (!r.data || !r.data.admin) return;
     csrf = r.data.csrf;
-    WL.show($('s-keys'), true);
+    WL.show($('s-pilot'), true);
+    pilotLabel();
+    $('p-prev').addEventListener('click', function () { control('prev'); });
+    $('p-next').addEventListener('click', function () { control('next'); });
+    $('p-step').addEventListener('click', function () { control(stepOp()); });
     document.addEventListener('keydown', function (e) {
       if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
       var k = e.key;
       if (k === 'ArrowRight' || k === 'PageDown') control('next');
       else if (k === 'ArrowLeft' || k === 'PageUp') control('prev');
-      else if (k === ' ' || k === 'Enter') step();
+      else if (k === ' ' || k === 'Enter') control(stepOp());
       else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
       else return;
       e.preventDefault();

@@ -137,6 +137,26 @@
     }
     renderLive(d);
     renderList(d);
+    tips();
+  }
+
+  /** Bulles d'info des boutons dont le libellé change selon l'état. */
+  var TIPS = {
+    'Ouvrir le vote': 'Les participants peuvent répondre sur leur téléphone',
+    'Fermer le vote': 'Plus aucune réponse acceptée pour cette question',
+    'Afficher les résultats': 'Montre les résultats (et la bonne réponse) sur la projection et les téléphones',
+    'Masquer les résultats': 'Retire les résultats de la projection et des téléphones',
+    'Publier (projection et téléphones)': 'Après relecture : rend les contributions visibles de tous',
+    'Masquer aux participants': 'Les participants ne voient plus que leurs propres contributions',
+    'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
+    'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',
+    'Terminer la session': 'Les téléphones affichent « Session terminée » ; les résultats restent',
+    'Rouvrir la session': 'Les participants peuvent de nouveau répondre'
+  };
+  function tips() {
+    ['open-btn', 'show-btn', 'lock-btn', 'end-btn'].forEach(function (id) {
+      $(id).title = TIPS[$(id).textContent] || '';
+    });
   }
 
   function renderLive(d) {

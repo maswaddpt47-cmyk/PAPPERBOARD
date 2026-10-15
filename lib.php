@@ -140,6 +140,13 @@ function wl_base_path(): string
     return rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
 }
 
+/** Chemin d'une ressource de assets/ avec sa date de modification : après un
+ *  déploiement, le navigateur recharge le fichier au lieu de garder l'ancien. */
+function wl_asset(string $file): string
+{
+    return 'assets/' . $file . '?v=' . (int)@filemtime(__DIR__ . '/assets/' . $file);
+}
+
 /** URL publique de l'application (sans / final). */
 function wl_base_url(): string
 {

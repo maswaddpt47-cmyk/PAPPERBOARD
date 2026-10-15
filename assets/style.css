@@ -285,7 +285,10 @@ label.btn { cursor: pointer; }
 }
 .qr-corner .qr-img { width: 100%; height: auto; image-rendering: pixelated; display: block; }
 .qr-code { margin: .3rem 0 0; font-size: clamp(.9rem, 1.6vw, 1.6rem); }
+/* Pilotage (animateur connecté) : barre en bas à gauche, hors du QR code. */
+.s-pilot { position: fixed; left: 1.5rem; bottom: 1rem; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; font-size: 1rem; }
 .s-keys { font-size: .85rem; color: var(--wl-texte-doux); }
+.screen-main { padding-bottom: 5rem; }
 /* Résultats affichés : en-tête, question et QR réduits. */
 .s-live .screen-head { padding: .3rem 2rem; }
 .s-live .s-text { font-size: 1.3em; margin: .1em 0 .4em; }

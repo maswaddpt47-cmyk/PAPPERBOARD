@@ -12,7 +12,7 @@ wl_security_headers();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WoocLight — Projection</title>
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 </head>
 <?php // Cookie animateur présent : la page tentera le pilotage (vérifié par api.php). ?>
 <body class="screen"<?= isset($_COOKIE['WLADMIN']) ? ' data-pilot="1"' : '' ?>>
@@ -21,7 +21,6 @@ wl_security_headers();
   <h1 id="s-title" class="s-title"></h1>
   <div class="screen-tools">
     <span id="s-count" class="s-count" aria-live="polite"></span>
-    <span id="s-keys" class="s-keys" hidden>← → question · Espace : vote, résultats · Q : QR code</span>
     <button id="theme-btn" class="btn btn-ghost" type="button">Thème clair</button>
     <button id="full-btn" class="btn btn-ghost" type="button">Plein écran</button>
   </div>
@@ -39,12 +38,18 @@ wl_security_headers();
   </section>
   <section id="s-ended" class="s-welcome" hidden><p class="s-join-line">Session terminée. Merci !</p></section>
 </main>
+<nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
+  <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
+  <button id="p-step" class="btn btn-primary" type="button"></button>
+  <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
+  <span class="s-keys">Clavier : ← → · Espace · Q (QR code)</span>
+</nav>
 <aside class="qr-corner" aria-label="Rejoindre la session">
   <div id="qr" class="qr"></div>
   <p class="qr-code">Code <strong id="s-code"></strong></p>
 </aside>
-<script src="assets/qrcode.js"></script>
-<script src="assets/common.js"></script>
-<script src="assets/screen.js"></script>
+<script src="<?= wl_asset('qrcode.js') ?>"></script>
+<script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('screen.js') ?>"></script>
 </body>
 </html>

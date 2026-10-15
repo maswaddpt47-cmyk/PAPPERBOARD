@@ -17,7 +17,8 @@ refusés, HTTP redirigé vers HTTPS). `config.php` créé par `configurer.php`
    d'envoi visible au-dessus du clavier, Entrée qui publie sur le mur,
    projection **en direct** du nuage de mots et du sondage sans clic.
    Et ceux du 15/10/2026 : pilotage de la projection (flèches, Espace, Q,
-   télécommande), affichage réduit pendant les résultats.
+   télécommande, boutons en bas à gauche), affichage réduit pendant les
+   résultats, bulles d'info des boutons (souris seulement).
 3. **Régénérer « temps d'écran » avec Gemini** (texte pour l'IA avec les deux
    nouvelles consignes) : vérifier qu'il ne donne plus de mauvaises réponses
    absurdes ni trois échelles.
@@ -222,6 +223,10 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
   ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
   CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
+- Ressources appelées par `wl_asset()` (`?v=` date du fichier) : sans lui, un
+  navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
+  15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
+  en local dans Chromium).
 
 ## Pistes d'amélioration
 

@@ -635,7 +635,7 @@ function api_export_print(array $s, bool $all): never
     header('Cache-Control: no-store');
     $title = wl_h($s['title']);
     echo "<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\"><title>Résultats — $title</title>"
-        . '<link rel="stylesheet" href="assets/style.css"></head><body class="print">'
+        . '<link rel="stylesheet" href="' . wl_asset('style.css') . '"></head><body class="print">'
         . "<h1>$title</h1><p>Code " . wl_h($s['code']) . ' — exporté le ' . date('d/m/Y à H:i')
         . ' — ' . count($s['participants']) . ' participant(s)</p>';
     $byQuestion = [];
@@ -651,6 +651,6 @@ function api_export_print(array $s, bool $all): never
         echo '</tbody></table></section>';
     }
     echo '<p class="no-print"><button type="button" id="print-btn" class="btn">Imprimer</button></p>'
-        . '<script src="assets/print.js"></script></body></html>';
+        . '<script src="' . wl_asset('print.js') . '"></script></body></html>';
     exit;
 }
