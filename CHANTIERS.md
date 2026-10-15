@@ -78,8 +78,8 @@ d'avertissement `accept-new` au déploiement du 14/10/2026), ruleset sur `main`.
 
 - Plein écran de la projection : sans effet dans le Chrome du PC de
   l'utilisateur (ni bouton ni Fn+F11), fonctionne dans Edge sur le même PC
-  (constaté le 15/10/2026). Cause hors WoocLight, supposée : réglage imposé à ce
-  Chrome (`chrome://policy`, FullscreenAllowed) ou extension. Le bouton
+  (constaté le 15/10/2026). Cause mesurée le 15/10/2026 : règle
+  `FullscreenAllowed = false` imposée à ce Chrome (niveau ordinateur). Le bouton
   affiche un message au lieu de rester muet. Contournement : projeter avec Edge.
 
 ## Points à ne pas défaire
