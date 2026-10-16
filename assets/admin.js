@@ -167,7 +167,11 @@
   });
 
   $('demo-btn').addEventListener('click', function () {
-    post('session_demo', {}).then(function (d) { openSession(d.code); });
+    post('session_demo', {}).then(function (d) {
+      // Fonctions en essai activées : le défi à étapes ferme la démo (la salle fictive y a déjà coché des étapes).
+      var more = beta ? post('question_save', { s: d.code, question: CHALLENGES.notifs }) : Promise.resolve();
+      more.then(function () { openSession(d.code); });
+    });
   });
 
   // --- Éditeur et pilotage ---------------------------------------------------------

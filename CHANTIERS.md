@@ -145,6 +145,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Démo (`WL_DEMO_THEMES`) : bonne réponse fixée par thème ; « Supprimer les démos ». Les
   12 participants fictifs répondent aussi aux questions ajoutées (sauf mur et post-it)
   et 10 restent « actifs » (`wl_demo_simulate`, e2e) ; démos anciennes : 12 premiers inscrits.
+  Avec « fonctions en essai » cochées, la démo se termine par le défi à étapes (nav).
 
 **Affichage**
 - Charte « Papier & Terre » (`INTEGRATION.md`) : bonne réponse en vert avec coche,
