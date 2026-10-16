@@ -283,13 +283,12 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .cloud-fit .cloud-word { transition: none; margin: .05em .25em; }
 /* Le mot le plus cité respire (lent, 3 % d'amplitude : la lecture n'est pas gênée). */
 .cloud-top { animation: wl-respire 6s ease-in-out infinite; }
-/* Projection : chaque mot flotte doucement, décalé des autres (mouvement vertical
-   seulement : il ne fausse pas la mesure de largeur de fitResults). */
-.cloud-fit .cloud-word { animation: wl-flotte 5s ease-in-out infinite; }
-.cloud-fit .cloud-word:nth-child(4n+2) { animation-duration: 6s; animation-delay: -1.5s; }
-.cloud-fit .cloud-word:nth-child(4n+3) { animation-duration: 5.5s; animation-delay: -3s; }
-.cloud-fit .cloud-word:nth-child(4n) { animation-duration: 6.5s; animation-delay: -4.5s; }
-.cloud-fit .cloud-word.cloud-top { animation: wl-flotte-top 6s ease-in-out infinite; }
+/* Projection : chaque mot flotte doucement (mouvement vertical seulement : il ne
+   fausse pas la mesure de largeur de fitResults). Durée unique de 6 s, phase de
+   chaque mot posée par common.js d'après l'horloge ; calque graphique (will-change)
+   pour un mouvement fluide sur téléphone, sans recalage au pixel. */
+.cloud-fit .cloud-word { animation: wl-flotte 6s ease-in-out infinite; will-change: transform; }
+.cloud-fit .cloud-word.cloud-top { animation-name: wl-flotte-top; }
 .is-new { animation: wl-pop .4s ease-out; }
 .cloud-c0 { color: var(--wl-primaire); }
 .cloud-c1 { color: var(--wl-accent); }

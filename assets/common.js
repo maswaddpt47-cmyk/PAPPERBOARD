@@ -259,6 +259,13 @@ var WL = (function () {
       span.title = w.n + ' fois';
       span.classList.toggle('cloud-top', w.n === max && words.length > 1);
       span.style.fontSize = (fit ? 0.35 + 0.65 * w.n / max : 1 + 3 * w.n / max).toFixed(2) + 'em';
+      // Flottement : phase calculée d'après l'horloge, propre à chaque mot. Une
+      // mise à jour recrée l'animation sans saut (elle reprend où elle en était).
+      if (fit) {
+        var h = 0, key = w.text.toLowerCase();
+        for (var i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 997;
+        span.style.animationDelay = -((Date.now() + 1000 * (h % 6)) % 6000) + 'ms';
+      }
       box.appendChild(span);
       box.appendChild(document.createTextNode(' '));
     });

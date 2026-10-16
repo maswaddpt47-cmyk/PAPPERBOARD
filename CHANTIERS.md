@@ -204,7 +204,8 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   police divisée par 2 à chaque mise à jour (mesuré le 16/10/2026 sur la démo,
   écran 449 px : 74 → 32 px ; corrigé : 74 → 74). Non tenu par un test (le
   nuage à 2 mots du test navigateur ne reproduit pas). Vie du nuage : flottement
-  vertical décalé par mot (`wl-flotte`), jamais horizontal (fausserait la largeur). « Rouvrir le
+  vertical par mot (`wl-flotte`, 6 s, phase d'après l'horloge : pas de saut à une mise
+  à jour ; `will-change` contre les à-coups), jamais horizontal (fausserait la largeur). « Rouvrir le
   vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
 - **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit ce qui déborde
   (7 longs choix + explication en 1280x720) ; nuage ajusté à l'écran (3 à 60 mots,
