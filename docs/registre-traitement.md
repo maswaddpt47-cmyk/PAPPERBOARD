@@ -5,8 +5,7 @@ traitement** depuis le 14/10/2026 (projet personnel, le CD47 n'est pas
 concerné). Rédaction assistée par Claude (IA), à relire et valider par le
 responsable. Son nom et son adresse de contact ne figurent pas ici (dépôt
 public) : ils sont dans `config.php` et affichés aux participants
-(« Confidentialité »). Version V0.4 (15/10/2026) : mise à jour après les ajouts du 15/10/2026,
-vérifiée dans le code (`lib.php` : archive, purge, pseudonymes, signaux).
+(« Confidentialité »). Version V1 (16/10/2026), validée par le responsable de traitement ; ajout du 16/10/2026 : heure du dernier signe de vie du téléphone (décompte des présents).
 
 | Rubrique | Contenu |
 |---|---|
@@ -15,7 +14,7 @@ vérifiée dans le code (`lib.php` : archive, purge, pseudonymes, signaux).
 | Finalité | Recueillir les réponses anonymes des participants à un atelier (sondages, quiz, nuages de mots, murs et post-its, questions anonymes, signaux de rythme, classement des quiz) pour animer la séance, en dresser le bilan et en garder une archive anonyme |
 | Base légale | Intérêt légitime de l'organisateur à animer l'atelier (art. 6.1.f RGPD) ; texte affiché réglable (`base_legale` dans `config.php`) |
 | Personnes concernées | Participants aux ateliers (adultes et éventuellement mineurs) ; l'animateur |
-| Données collectées | Réponses aux questions ; identifiant aléatoire du téléphone (cookie + stockage local, une journée, sans lien avec l'identité, différent d'une session à l'autre) ; empreinte irréversible de l'adresse IP (HMAC avec sel secret) pour limiter les abus, effacée au bout de 2 heures au plus. Textes écrits (réponses libres, nuage, mur, post-it, questions « Oser demander »), « j'aime », gommettes et signaux de rythme (« Trop vite », « À réexpliquer », « Besoin d'aide », rattachés à l'identifiant aléatoire, 2 minutes). Si l'option est active pour la session : un **pseudonyme tiré au hasard** (« Panda curieux », jamais saisi par le participant), effacé à la désactivation de l'option. **Aucun nom, e-mail ni compte.** Données **pseudonymisées**, pas anonymes au sens du RGPD. |
+| Données collectées | Réponses aux questions ; identifiant aléatoire du téléphone (cookie + stockage local, une journée, sans lien avec l'identité, différent d'une session à l'autre) ; empreinte irréversible de l'adresse IP (HMAC avec sel secret) pour limiter les abus, effacée au bout de 2 heures au plus. Textes écrits (réponses libres, nuage, mur, post-it, questions « Oser demander »), « j'aime », gommettes et signaux de rythme (« Trop vite », « À réexpliquer », « Besoin d'aide », rattachés à l'identifiant aléatoire, 2 minutes). Heure du dernier signe de vie du téléphone (toutes les 60 s, pour compter les téléphones encore présents), effacée avec la session. Si l'option est active pour la session : un **pseudonyme tiré au hasard** (« Panda curieux », jamais saisi par le participant), effacé à la désactivation de l'option. **Aucun nom, e-mail ni compte.** Données **pseudonymisées**, pas anonymes au sens du RGPD. |
 | Données sensibles | Aucune demandée. Risque résiduel : un participant peut taper un nom ou une information personnelle dans un texte écrit (réponse libre, mur, post-it, question « Oser demander ») → les contributions des autres ne s'affichent qu'après « Publier » et les questions après relecture ; l'animateur peut masquer un texte, la session peut être supprimée immédiatement |
 | Mineurs | Possible : aucune donnée identifiante demandée |
 | Destinataires | L'animateur (seul à voir les signaux de rythme) ; les participants de la séance voient les résultats projetés (réponses masquées et textes non publiés exclus) ; une IA externe si l'animateur y copie le texte du bilan (voir « Transferts hors UE ») |

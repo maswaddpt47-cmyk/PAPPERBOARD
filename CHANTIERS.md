@@ -17,18 +17,15 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    « Supprimer les démos ». Validé le 16/10/2026 : nuage lisible et fluide sur la
    projection au téléphone. Le plus simple : **Créer une session de
    démonstration**. Puis un **atelier réel** à 10 participants ou plus.
-2. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
-   15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
-   par l'utilisateur** (responsable de traitement).
-3. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
+2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
-4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+4. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (à supprimer).
-6. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
+5. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
@@ -84,7 +81,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 **Décisions de l'utilisateur**
 - Projet personnel (14/10/2026) : ni charte, ni DPD, ni Archives du CD47.
   L'utilisateur est responsable de traitement ; mentions dans `config.php`,
-  fiche `docs/registre-traitement.md`.
+  fiche `docs/registre-traitement.md` (V1 validée le 16/10/2026 ; la tenir à jour
+  à chaque nouvelle donnée, avec les mentions « Confidentialité » d'`index.php`).
 - Déploiement automatique à chaque avance de `main`, garde-fou : ruleset (tests).
 - Archive anonyme au lieu de suppression (15/10/2026) : jamais jeton, réponse une
   à une, texte de participant, pseudonyme ni IP (e2e). Démos jamais archivées.
