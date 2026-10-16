@@ -171,7 +171,12 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 ## Pistes d'amélioration
 
-*Proposées, en attente :* aucune. *Faites le 16/10/2026* : avant / après, clôture
-prête à l'emploi, taille du texte (A− / A+).
+*Proposées, en attente :*
+- 16/10/2026 — Exercices pratiques après un quiz : (1) question « défi » à étapes
+  (chacun coche « fait », l'animateur voit x / n par étape, anonyme) ; (2) lien ou
+  QR vers un outil réel + « réussi / besoin d'aide » ; (3) fiche mémo à emporter
+  (Word/PDF) tirée des corrections. Limite : tout est déclaratif, rien ne prouve
+  qu'un geste a été fait ; les consignes diffèrent entre Android et iPhone.
+*Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte.
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.
