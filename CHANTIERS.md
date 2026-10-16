@@ -211,7 +211,12 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   « Bilan » à la dernière question ou après la fin (touche B toujours active).
   Téléphone (écran tactile étroit) : glisser ← → remplace Précédente / Suivante
   (geste horizontal ≥ 60 px et deux fois plus large que haut ; tenu par
-  `tests/navigateur.js`). « Rouvrir le
+  `tests/navigateur.js`). Boutons compacts sur écran étroit (cible 44 px).
+- Glissement des lignes réordonnées (`WL.playFlip`) : **mur et gommettes
+  seulement**. Sur le nuage, les mots encore décalés faussaient `fitResults` :
+  police divisée par 2 à chaque mise à jour (mesuré le 16/10/2026 sur la démo,
+  écran 449 px : 74 → 32 px ; corrigé : 74 → 74). Non tenu par un test (le
+  nuage à 2 mots du test navigateur ne reproduit pas). « Rouvrir le
   vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
 - **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit les barres qui
   débordent (7 longs choix + explication tiennent en 1280x720) ; nuage : ajuste la taille de

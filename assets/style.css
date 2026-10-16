@@ -520,6 +520,9 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .qr-corner, .s-live .qr-corner { width: 5.5rem; padding: .3rem; right: .75rem; bottom: .75rem; }
   .s-pilot { max-width: calc(100% - 8rem); }
   .s-keys { display: none; } /* pas de clavier sur un téléphone */
+  /* Boutons du pilotage plus compacts (cible tactile 44 px gardée). */
+  .s-pilot { gap: .35rem; }
+  .s-pilot .btn { font-size: .9rem; min-height: 2.75rem; padding: .3rem .75rem; }
 }
 /* Écran tactile étroit : glisser remplace Précédente / Suivante. */
 .s-swipe { display: none; font-size: .85rem; color: var(--wl-texte-doux); }

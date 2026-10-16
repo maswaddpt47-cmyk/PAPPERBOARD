@@ -408,7 +408,10 @@ var WL = (function () {
     opts = typeof opts === 'function' ? { onHide: opts } : (opts || {});
     var onHide = opts.onHide;
     if (!res) { clear(container); return; }
-    var before = WL.measure ? WL.measure(container) : null; // glissement des lignes réordonnées
+    // Glissement des lignes réordonnées : mur et gommettes seulement. Sur le nuage,
+    // les mots encore décalés faussaient fitResults (police divisée par 2 à chaque
+    // mise à jour, mesuré le 16/10/2026).
+    var before = WL.measure && (q.type === 'wall' || q.type === 'dots') ? WL.measure(container) : null;
     var onScreen = container.classList.contains('s-results');
     var node;
     var none = function (text) { return el('p', { class: 'meta' }, text); };
