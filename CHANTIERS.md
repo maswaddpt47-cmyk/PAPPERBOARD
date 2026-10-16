@@ -8,10 +8,7 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
 
 ## Restant, par priorité — tout côté utilisateur
 
-1. **Tâche planifiée horaire** `php ~/www/purge.php` (créée le 15/10/2026) :
-   regarder l'onglet **Réglages** d'une session après 21 h 10 le 16/10/2026 (mise
-   en ligne du témoin à 20 h 05) : ✓ dernier passage, ou ⚠️ si plus de 2 h ou aucun.
-2. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
+1. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
    validé, 15/10/2026) : onglets de l'espace animateur, archive anonyme, synthèse
    enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
    podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
@@ -20,18 +17,18 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    « Supprimer les démos ». Validé le 16/10/2026 : nuage lisible et fluide sur la
    projection au téléphone. Le plus simple : **Créer une session de
    démonstration**. Puis un **atelier réel** à 10 participants ou plus.
-3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
+2. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
    15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
    par l'utilisateur** (responsable de traitement).
-4. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
+3. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
-5. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
+4. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
    chacun (sinon le blocage après échecs se fait par IP).
-6. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
+5. **Routine d'audit trimestriel** (`trig_01J6ZMsLHKbgXAQsRYgQL16q`, invisible
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (à supprimer).
-7. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
+6. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
@@ -137,7 +134,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - `wl_asset()` (`?v=`) : sans lui, un navigateur garde l'ancien JS.
 - Rsync sans `--delete` (`config.php` vit sur le serveur).
 - Purge horaire à ne pas espacer (« 2 h au plus » de traces d'IP annoncées) ;
-  `purge.php` note `last-cron`, affiché dans Réglages. Seule l'activité de
+  `purge.php` note `last-cron`, affiché dans Réglages (passage vérifié le
+  16/10/2026 à 21 h 00 : la tâche planifiée tourne). Seule l'activité de
   l'animateur repousse la purge. Verrous `rl/shard-*.lock` jamais supprimés.
 - Session animateur : 2 h sans écriture, 12 h au plus ; blocage par appareil.
 - Fermer ou afficher un vote sans réponse : confirmation (nav).
