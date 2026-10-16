@@ -78,216 +78,87 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   intermittent du test « direct » trouvée le 15/10/2026.
 ## Points à ne pas défaire
 
-- Fermer ou afficher un vote **sans aucune réponse** demande confirmation (15/10/2026) :
-  `confirm` côté animateur, second appui sous 4 s sur la projection (`step()`).
-  Tenu par `tests/navigateur.js`. Import : avertissement non bloquant si un
-  intitulé de gommettes cite une colonne sans `column` (`wl_import_parse`, e2e).
-- Hook `SessionStart` (`.claude/settings.json`, créé par l'utilisateur le
-  15/10/2026, commande testée) : il lance `scripts/check-chantiers.sh`. La
-  plateforme interdit à Claude d'écrire ce fichier : toute modification passe
-  par l'utilisateur.
-- **Projet personnel** (décision de l'utilisateur, 14/10/2026) : le CD47 n'est
-  pas concerné (ni charte, ni DPD, ni Archives départementales, ni registre du
-  Département). Le RGPD s'applique : l'utilisateur est responsable de
-  traitement ; ses mentions (`responsable`, `contact`, `base_legale`) sont dans
-  `config.php`, hors du dépôt public. Fiche : `docs/registre-traitement.md`.
-- Déploiement **automatique** à chaque mise à jour de `main`, sans approbation
-  manuelle (choix de l'utilisateur, 14/10/2026) : le garde-fou est le ruleset
-  de `main` (tests exigés). GitHub Pages coupé (14/10/2026).
-- Clés (14/10/2026) : aucune à conserver, toutes se recréent (README étapes
-  2-3 ; secret et sel : `configurer.php`). Pas de sauvegarde chiffrée ici.
-- Hébergement (14/10/2026) : compte Alwaysdata `wooclight`, appli à la racine
-  `~/www/` (variable GitHub `WOOCLIGHT_CHEMIN` = `www/`, sans elle le
-  déploiement part dans `~/www/wooclight/`), données dans `~/wooclight-data`,
-  adresse https://wooclight.alwaysdata.net.
-- Mur et post-it : les contributions des autres ne sont visibles (téléphones
-  et projection) qu'après **Publier** — relecture et masquage d'abord, une
-  contribution peut contenir un nom (décision prise seule le 09/10/2026 ;
-  affichage immédiat possible si l'utilisateur le préfère). Chaque contribution rafraîchit les
-  téléphones (`pversion`), contrairement aux votes : coût accepté, les
-  contributions sont bien plus rares que les rafraîchissements.
-- Gommettes : elles visent les post-its **principaux** visibles de la question
-  source ; un post-it regroupé compte pour son principal. Identifiants de post
-  préfixés `n` : jamais de clé numérique en JSON.
-- Session = écran d'accueil d'abord (`current = -1`) ; « Suivante » vers une
-  question jamais ouverte **ouvre le vote** (choix de l'utilisateur, 09/10/2026).
-- Modifier le type, le nombre de choix, l'échelle, le budget ou le choix
-  multiple d'une question **efface ses réponses** (`wl_structure_changed()`,
-  même règle dans `admin.js`) : sinon les résultats plantent. Tenu par e2e.
-  Un vote **ouvert reste ouvert** après cette modification (15/10/2026 : sinon
-  les participants ne pouvaient plus voter sans comprendre pourquoi).
-- Animations : barres mises à jour sur place (jamais détachées du DOM, sinon
-  la transition saute) ; mots et réponses libres réutilisés, seul un élément
-  nouveau porte `is-new` et joue l'apparition (sinon tout clignote à chaque vote).
-- **Polling** : deux versions par session. `pversion` (ce que voit un
-  téléphone) ne bouge pas quand un autre participant vote ; `version`
-  (projection, animateur) bouge à chaque vote. Sinon 150 téléphones
-  retéléchargent tout à chaque vote. Tenu par `tests/e2e.php` (section
-  « Coût ») : 30 rafraîchissements sans changement = 30 × 304, 0 octet.
-- Renvoyer **la même réponse** est accepté même si la modification est
-  interdite : c'est la reprise après coupure réseau, pas un double vote.
-- Jamais d'`innerHTML` ni de script ou style en ligne : la CSP les bloque
-  (`default-src 'none'`). Tout texte reçu passe par `textContent`.
-- Jeton participant jamais stocké en clair (HMAC) ; IP seulement hachée.
-- Déploiement `rsync` **sans `--delete`** : `config.php` (et `data/` s'il est
-  dans le site) vivent sur le serveur hors dépôt.
-- Charte « Papier & Terre » (validée le 15/10/2026, `INTEGRATION.md`) : terre
-  `#A83A1A`, bonne réponse `#2F6B1F` + coche (jamais la couleur seule), choix
-  sélectionné brun neutre, Georgia/Verdana. Graphiques : `assets/charts.js`
-  (anneau, jauge, compteur) ; PowerPoint dessiné aux mêmes couleurs (thème clair).
-  Classement par points : barres triées du plus au moins de points
-  (`sortByPoints`, 15/10/2026), déplacées seulement si l'ordre change.
-  Cartes en thème sombre : contraste AA conservé (texte 4,5:1, graphique 3:1).
-- `/security-review` (15/10/2026) : rien retenu ; `admin.php` après la ligne 80 et
-  les JS lus par recherche seulement. `reveal: end` (affichage à la fin du
-  temps) est refusé pour réponse libre, mur et post-it : une réponse peut
-  contenir un nom (`wl_check_reveal`, 15/10/2026, tenu par e2e).
-- **Audit Codex, points non retenus en l'état** (10/10/2026) : identités
-  multiples (point 2) — inhérent à un vote sans compte ; atténué par
-  « Fermer les inscriptions » ; pour un vote à enjeu, utiliser un autre outil.
-  Secret de projection séparé du code (point 4) — la projection ne montre que
-  ce que voient les participants dans la salle ; écarté.
-- Session animateur : 2 h sans **écriture** (le rafraîchissement automatique
-  ne compte pas), 12 h au plus depuis la connexion. Blocage de connexion par
-  appareil connu (cookie signé `wl_dev`), sinon par IP.
-- Rétention : seule l'activité de l'animateur (`activity`) repousse la purge ;
-  `purge.php` (ligne de commande seulement) la lance chaque heure.
-- Les « 2 heures au plus » de traces d'IP annoncées aux participants tiennent
-  à la tâche planifiée **horaire** de `purge.php` : ne pas l'espacer.
-- Verrous de limitation : 16 fichiers `rl/shard-*.lock` jamais supprimés ; la
-  purge n'efface que les compteurs `rl/*.json`.
-- Clé participant dérivée du code de session : deux sessions ne se relient pas.
-- **Envoyer ou toucher** (15/10/2026) : sondage, échelle, Oui/Non et Vrai/Faux
-  **modifiables** (même corrigés, `app.js` `pickOne`) : un appui envoie tout de
-  suite, on en touche un autre pour changer. QCM corrigé (`graded`), réponse figée
-  (correction immédiate) ou QCM multiple : un appui sélectionne, **Envoyer** vote
-  (14/10/2026 : l'envoi en un geste déroutait). Oui/Non et Vrai/Faux corrigés
-  envoient au toucher (choix de l'utilisateur, 15/10/2026, sauf réponse figée).
-  Envoyer : à droite des choix sur écran large, sous
-  les choix sur téléphone (barre collée essayée : elle cachait les choix). Tenu
-  par `tests/navigateur.js` (figé : « choisir n'envoie rien avant Envoyer » ;
-  Vrai/Faux corrigé : « un appui envoie tout de suite »).
-  Pendant une saisie (nuage, réponse libre, mur, post-it), le bouton d'envoi
-  est ramené à l'écran (le clavier du téléphone le cachait, hypothèse du
-  14/10/2026) ; sur mur et post-it, Entrée publie.
-- **Projection en direct** (choix de l'utilisateur, 14/10/2026) : sondage,
-  nuage, échelle, points (`WL_LIVE_TYPES`) projetés dès l'ouverture du vote,
-  case décochable par question. Quiz, réponse libre, mur, post-it attendent le
-  clic (correction, relecture des noms). Les **téléphones** n'affichent toujours
-  les résultats qu'après « Afficher » : sinon chaque vote les ferait tous
-  recharger. Tenu par `tests/e2e.php` (« Projection en direct »).
-- **Génération par une IA** (14/10/2026) : copier-coller, WoocLight n'appelle
-  aucune IA. Réponse collée validée **côté serveur** (`wl_import_parse`, mêmes
-  règles que le formulaire), tout ou rien ; bonnes réponses données par leur
-  texte ; gommettes reliées à leur source par sa position ; « \[ », « \] » et
-  espaces insécables retirés ; `.json` de 60 Ko au plus. Consignes (`genPrompt`)
-  tirées des essais du 14/10/2026 (ChatGPT, Gemini, Mistral, Claude) : mauvaises
-  réponses crédibles, une échelle en fin d'atelier, tutoiement des jeunes,
-  explication sourcée ou « pas de source sûre », QCM multiple si plusieurs réponses
-  vont ensemble, affirmation = « truefalse », `column` obligatoire pour des
-  gommettes qui citent une colonne. « Que des quiz » ne change que ce texte.
-  **L'IA qui écrit ne relit pas** (décision de l'utilisateur) : relecture par
-  une IA d'un autre éditeur, liens ouverts par l'utilisateur. ⚠️ Jamais de
-  question d'âge légal ou de loi sans Légifrance. Tenu par e2e et navigateur.
-- Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
-  format que l'import, **sans aucune réponse de participant**, réglages compris
-  (durée, correction, modification, direct). Réimporter un export redonne le
-  même fichier : tenu par `tests/e2e.php` (« Export des questions »).
-- **Pilotage depuis la projection** (15/10/2026) : seulement avec le cookie
-  animateur (`data-pilot`), vérifié par `me` et `control` (session + CSRF) ; aucun
-  nouveau droit. Barre allégée (16/10/2026) : « Suivante » masquée si le bouton
-  central l'est déjà, décompte non répété, « Bilan » en fin de session (touche B
-  toujours). Téléphone : glisser ← → remplace Précédente / Suivante (≥ 60 px,
-  deux fois plus large que haut ; tenu par navigateur), boutons 44 px.
-  « Rouvrir le vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
-- Glissement des lignes réordonnées (`WL.playFlip`) : **mur et gommettes
-  seulement**. Sur le nuage, les mots encore décalés faussaient `fitResults` :
-  police divisée par 2 à chaque mise à jour (mesuré le 16/10/2026 sur la démo,
-  écran 449 px : 74 → 32 px ; corrigé : 74 → 74). Non tenu par un test (le
-  nuage à 2 mots du test navigateur ne reproduit pas). Vie du nuage : flottement
-  vertical par mot (`wl-flotte`, 6 s, phase d'après l'horloge : pas de saut à une mise
-  à jour ; `will-change` contre les à-coups ; fluide sur le téléphone de l'utilisateur,
-  16/10/2026), jamais horizontal (fausserait la largeur).
-- **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit ce qui déborde
-  (7 longs choix + explication en 1280x720) ; nuage ajusté à l'écran (3 à 60 mots,
-  mesuré sans défilement), mots horizontaux, 60 plus cités au plus. `.s-live` :
-  question réduite, barres plus hautes. Sous 760 px : pas de marge pour le QR.
-- Ressources appelées par `wl_asset()` (`?v=` date du fichier) : sans lui, un
-  navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
-  15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
-  en local dans Chromium).
-- **Explication par question** (`explain`, 15/10/2026, demande de l'utilisateur) :
-  400 caractères au plus, envoyée aux téléphones et à la projection **seulement
-  avec les résultats** (`wl_public_question`, tenu par e2e « explication cachée
-  avant les résultats »). Le texte pour l'IA la demande avec sa source ou
-  « pas de source sûre ». Import et export `.json` la reprennent.
-- Mur : les « j'aime » ne sont possibles que **publié et vote ouvert**
-  (`wl_like`). Le bouton central du pilotage publie donc le mur avant de fermer
-  le vote (15/10/2026 : fermé avant publication, tous les cœurs restaient à 0).
-- Gommettes sur **une colonne** du post-it source (`column`, 15/10/2026, -1 =
-  toutes) : formulaire, import (nom de la colonne), export. Tenu par e2e.
-- Post-its colorés **au hasard mais stable** (`noteColor`, d'après l'id), jamais
-  par participant : ses idées seraient reliées entre elles (anonymat, choix de
-  l'utilisateur du 15/10/2026 après alerte).
-- **Fin de session** (15/10/2026, choix de l'utilisateur) : projection et
-  téléphones = conclusion seule (« à retenir »), même page rouverte après la fin
-  (409 → on écoute quand même) ; le détail passe par le bilan (touche B). Le
-  récap ne sert plus qu'à PowerPoint et archive. Projection : la conclusion monte
-  du bas, façon générique, une fois par texte (`rollIn`, rien si mouvement réduit).
-- **Bilan de l'atelier** (espace animateur, 15/10/2026) : tableau de bord de
-  toutes les questions et texte à copier pour une IA (synthèse, conclusion,
-  recommandations). Résultats regroupés seulement ; réponses écrites (libres,
-  mur, post-it) **décochées par défaut** car elles peuvent contenir un nom, et
-  jamais les réponses masquées. Les téléphones écoutent encore après la fin
-  (304) : une conclusion ajoutée ensuite leur parvient.
-- **Export PowerPoint du bilan** (15/10/2026) : généré dans le navigateur par
-  PptxGenJS 4.0.1 copié dans `assets/` (licence MIT, chargé seulement à l'export,
-  aucune donnée envoyée ailleurs), réponses masquées exclues. Barres et colonnes
-  d'échelle **dessinées en formes** (un graphique PowerPoint n'arrondit pas ses
-  barres) ; anneau Oui/Non et jauge restent des graphiques natifs. Ouvert et
-  validé dans PowerPoint par l'utilisateur le 15/10/2026.
-- **Synthèse de l'IA** (`synthesis`, 15/10/2026) : collée par l'animateur dans
-  la carte Bilan, 6000 caractères, retours à la ligne gardés ; jamais envoyée
-  aux téléphones (tenu par e2e), reprise dans l'export PowerPoint, effacée avec
-  la session par la purge.
-- **Archive anonyme au lieu de suppression** (choix de l'utilisateur, 15/10/2026,
-  option 1 après alerte RGPD) : la purge (`wl_purge`) et le bouton « Archiver »
-  écrivent `archives/<date>-<id>.json` (questions, explications, résultats
-  regroupés, récap anonyme, conclusion, synthèse) puis suppriment la session.
-  Jamais : jeton, réponse une à une, texte écrit par un participant (nuage,
-  réponse libre, mur, post-it, gommettes), IP. Gardée sans limite (plus de donnée
-  personnelle). Tenu par e2e. Mentions de confidentialité à jour.
-- **Onglets** (15/10/2026, demande de l'utilisateur : page sans fin) : un groupe
-  `.tabs` commande ses panneaux par `aria-controls` ; onglet de session retenu
-  (`wl_tab`, stockage facultatif). Tout reste dans la page : les identifiants
-  des éléments n'ont pas changé. Les tests navigateur cliquent l'onglet avant
-  d'agir (un élément d'un panneau masqué n'est pas cliquable).
-- **Bilan projeté** (15/10/2026, « façon slide ») : `board` = rang (-1 : arrêt),
-  questions posées seulement. Une diapositive ne montre **que ce que la
-  projection a déjà montré** (`wl_board_view`, décision prise seule : la
-  projection est publique avec le code). Téléphones non réveillés ; toute autre
-  commande (sauf inscriptions) l'arrête. Tenu par e2e et `tests/navigateur.js`.
-- **QR code masquable** (15/10/2026) depuis Animer (`qrHidden`, projection seule) ;
-  touche Q le montre quand même en grand. Récap de fin réduit au-dessus de la
-  barre de pilotage (elle le chevauchait, capture de l'utilisateur).
-- **Signaux, Oser demander, pseudonymes, brise-glaces** (en ligne le 15/10/2026,
-  demande de l'utilisateur) : signaux 2 min pour l'animateur seul (jamais sur la
-  projection, vue de la salle), téléphones non réveillés ; questions publiées après
-  relecture, auteur jamais servi ; pseudonymes par session, effacés à la
-  désactivation, jamais archivés ; podium rangs 1-3. Tenu par e2e.
+Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
+« (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
-- **Téléphones actifs** (16/10/2026) : signe de vie (`ping`) toutes les 60 s,
-  sans avancer aucune version (personne n'est réveillé, tenu par e2e). « x / n »
-  compte les actifs (arrivée, signe de vie ou réponse à la question en cours
-  depuis moins de 3 min ; un participant qui a répondu compte toujours). ETag
-  projection et animateur : + minute courante, pour recompter sans écriture.
-- **Preuve de passage de la purge** (16/10/2026) : `purge.php` touche `last-cron`
-  (distinct de `last-purge`, que les visites mettent à jour) ; Réglages l'affiche.
-- **Session de démonstration** (16/10/2026, `wl_demo_fill`, 4 thèmes tirés au
-  hasard dans `WL_DEMO_THEMES`, bonne réponse fixée par thème) : 12 participants
-  fictifs, une question de chaque type, Oser demander, pseudonymes, signaux ;
-  pour vérifier les écrans seul. « Supprimer les démos » (accueil) les efface
-  toutes ; la purge ne les archive jamais (résultats inventés). Tenu par e2e.
+**Décisions de l'utilisateur**
+- Projet personnel (14/10/2026) : ni charte, ni DPD, ni Archives du CD47.
+  L'utilisateur est responsable de traitement ; mentions dans `config.php`,
+  fiche `docs/registre-traitement.md`.
+- Déploiement automatique à chaque avance de `main`, garde-fou : ruleset (tests).
+- Archive anonyme au lieu de suppression (15/10/2026) : jamais jeton, réponse une
+  à une, texte de participant, pseudonyme ni IP (e2e). Démos jamais archivées.
+- Fin de session : conclusion seule (« À retenir ») sur projection et téléphones ;
+  le détail passe par le bilan (touche B).
+- Projection en direct : sondage, nuage, échelle, points dès l'ouverture du vote ;
+  quiz et textes attendent le clic. Téléphones : résultats après « Afficher » (e2e).
+- Toucher ou Envoyer : sondage, échelle, Oui/Non, Vrai/Faux envoient au toucher et
+  restent modifiables ; QCM corrigé, réponse figée, QCM multiple : Envoyer (nav).
+- « Suivante » vers une question jamais ouverte ouvre son vote.
+- Post-its colorés d'après leur id, jamais par participant (anonymat).
+- L'IA qui écrit ne relit pas ; WoocLight n'appelle aucune IA (copier-coller).
+  ⚠️ Jamais de question d'âge légal ou de loi sans Légifrance.
+- Pseudonymes : option par session, effacés à la désactivation ; podium rangs 1-3.
+
+**Hébergement et outillage**
+- Alwaysdata, compte `wooclight`, appli dans `~/www/` (variable GitHub
+  `WOOCLIGHT_CHEMIN` = `www/`), données dans `~/wooclight-data`. Aucune clé à
+  conserver : tout se recrée (README, `configurer.php`).
+- Hook `SessionStart` (`.claude/settings.json`) : écrit par l'utilisateur seul,
+  la plateforme l'interdit à Claude.
+
+**Anonymat et sécurité**
+- Mur, post-it, « Oser demander » : visibles des autres seulement après
+  publication par l'animateur (un nom peut s'y glisser) ; auteur jamais servi (e2e).
+- `reveal: end` refusé pour réponse libre, mur et post-it (e2e).
+- Bilan pour une IA : réponses écrites décochées par défaut, masquées jamais.
+- Signaux : animateur seul, jamais sur la projection (vue de la salle).
+- Bilan projeté : ne montre que ce que la projection a déjà montré (e2e).
+- Pilotage depuis la projection : cookie animateur puis `me` + `control` (CSRF).
+- Jamais d'`innerHTML` ni de script ou style en ligne (CSP `default-src 'none'`).
+- Jeton participant en HMAC, IP hachée ; clé participant dérivée du code.
+- Audit Codex 10/10/2026, écartés : identités multiples (vote sans compte,
+  « Fermer les inscriptions ») ; secret de projection (elle montre la salle).
+
+**Coût et robustesse**
+- Deux versions : `pversion` (téléphones) ne bouge pas quand un autre vote ;
+  30 rafraîchissements sans changement = 30 × 304 (e2e « Coût »). Contributions
+  et questions publiées réveillent les téléphones : coût accepté (rares).
+- Signe de vie toutes les 60 s sans avancer de version (e2e) ; « x / n » compte
+  les actifs (< 3 min, ou ayant répondu). ETag projection et animateur : + minute.
+- Même réponse renvoyée = reprise réseau, acceptée même sans modification.
+- Changer type, choix, échelle ou budget efface les réponses ; un vote ouvert
+  reste ouvert (e2e).
+- Identifiants de question parfois tout en chiffres : toujours en chaîne comme
+  clé PHP. Identifiants de post préfixés `n`.
+- `wl_asset()` (`?v=`) : sans lui, un navigateur garde l'ancien JS.
+- Rsync sans `--delete` (`config.php` vit sur le serveur).
+- Purge horaire à ne pas espacer (« 2 h au plus » de traces d'IP annoncées) ;
+  `purge.php` note `last-cron`, affiché dans Réglages. Seule l'activité de
+  l'animateur repousse la purge. Verrous `rl/shard-*.lock` jamais supprimés.
+- Session animateur : 2 h sans écriture, 12 h au plus ; blocage par appareil.
+- Fermer ou afficher un vote sans réponse : confirmation (nav).
+- Session : écran d'accueil d'abord (`current = -1`).
+- Explication et synthèse : jamais envoyées avant les résultats / jamais aux
+  téléphones (e2e). Export `.json` des questions sans aucune réponse (e2e).
+- Gommettes : sur les post-its principaux publiés, une colonne possible (e2e).
+- Démo (`WL_DEMO_THEMES`) : bonne réponse fixée par thème ; « Supprimer les démos ».
+
+**Affichage**
+- Charte « Papier & Terre » (`INTEGRATION.md`) : bonne réponse en vert avec coche,
+  jamais la couleur seule ; contraste AA, y compris cartes en thème sombre.
+- `fitResults` : tout tient sans défilement (1280x720). Sous 760 px, pas de
+  marge pour le QR (nuage à 251 px sur 449 sinon).
+- Glissement des lignes (`playFlip`) : mur et gommettes seulement. Sur le nuage,
+  il divisait la police par 2 à chaque mise à jour (16/10/2026, non testé : le
+  nuage à 2 mots du test ne reproduit pas). Flottement du nuage : vertical
+  seulement, phase d'après l'horloge, `will-change` (fluide, validé 16/10/2026).
+- Animations : barres mises à jour sur place ; seul un élément nouveau porte `is-new`.
+- Mur : « j'aime » seulement publié et vote ouvert ; le bouton central publie
+  donc avant de fermer.
+- PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
+- Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal ; nav).
+- Onglets : les tests cliquent l'onglet avant d'agir (panneau masqué).
 
 ## Pistes d'amélioration
 
