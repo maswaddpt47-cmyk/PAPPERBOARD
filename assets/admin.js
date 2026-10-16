@@ -280,6 +280,7 @@
     } else if (withTexts && q.type === 'postit') {
       r.posts.filter(function (p) { return !p.hidden; }).forEach(function (p) { out.push('  - [' + (q.options[p.col] || '') + '] « ' + p.text + ' »'); });
     }
+    if (r.compare) out.push('  - Évolution : ' + WL.compareText(r.compare));
     return out;
   }
 
@@ -568,6 +569,25 @@
     return FIXED[type] || $('qf-options').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
   }
 
+  /** Avant / après : les questions précédentes de même forme (quiz avec bonne
+   *  réponse et mêmes choix, ou échelle de même taille). */
+  var compareWanted = '';
+  function fillCompare() {
+    var type = $('qf-type').value, keep = $('qf-compare').value || compareWanted;
+    compareWanted = '';
+    var sel = WL.clear($('qf-compare'));
+    var options = JSON.stringify(optionLines()), scale = Number($('qf-scale').value);
+    var upTo = editing ? data.questions.findIndex(function (o) { return o.id === editing.id; }) : data.questions.length;
+    var list = ['yesno', 'truefalse', 'mcq', 'scale'].indexOf(type) === -1 ? [] : data.questions.slice(0, upTo).filter(function (e) {
+      return e.type === type && (type === 'scale' ? e.scaleMax === scale : e.correct.length && JSON.stringify(e.options) === options);
+    });
+    sel.appendChild(el('option', { value: '' }, 'Aucune'));
+    list.forEach(function (e) {
+      sel.appendChild(el('option', { value: e.id, selected: e.id === keep }, (data.questions.indexOf(e) + 1) + '. ' + e.text));
+    });
+    WL.show($('qf-compare-box'), list.length > 0);
+  }
+
   /** Affiche les champs utiles au type choisi, et les cases « bonne réponse ». */
   function syncForm(correct) {
     var type = $('qf-type').value;
@@ -584,6 +604,7 @@
     var written = ['text', 'wall', 'postit'].indexOf(type) !== -1;
     $('qf-reveal').querySelector('option[value="end"]').disabled = written;
     if (written && $('qf-reveal').value === 'end') $('qf-reveal').value = 'manual';
+    fillCompare();
     var quiz = ['yesno', 'truefalse', 'mcq'].indexOf(type) !== -1;
     WL.show($('qf-correct-box'), quiz);
     if (!quiz) return;
@@ -618,6 +639,8 @@
     $('qf-live').checked = q ? q.live !== false : true;
     $('qf-reveal').value = q ? (q.reveal || 'manual') : 'manual';
     $('qf-error').textContent = '';
+    WL.clear($('qf-compare'));
+    compareWanted = q ? (q.compare || '') : '';
     syncForm(q ? q.correct : []);
     $('q-dialog').showModal();
     $('qf-text').focus();
@@ -629,6 +652,7 @@
     syncForm([]);
   });
   $('qf-options').addEventListener('input', function () { syncForm(); });
+  $('qf-scale').addEventListener('change', fillCompare);
   $('qf-cancel').addEventListener('click', function () { $('q-dialog').close(); });
 
   $('q-form').addEventListener('submit', function (e) {
@@ -638,7 +662,7 @@
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
-      reveal: $('qf-reveal').value, live: $('qf-live').checked,
+      reveal: $('qf-reveal').value, live: $('qf-live').checked, compare: $('qf-compare').value,
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
     if (editing) {
@@ -735,6 +759,8 @@
         + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3) ; '
         + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées ; '
         + 'obligatoire dès que l\'intitulé cite une colonne, sinon toutes les idées sont proposées.',
+      '- "compare" (facultatif, sur un quiz ou une "scale" posés une seconde fois en fin d\'atelier) : numéro d\'une question précédente '
+        + 'de même type et mêmes choix, pour mesurer la progression (avant / après).',
       '',
       '- Termine la liste par un élément {"type": "conclusion", "text": "…"} : 2 à 4 phrases (600 caractères au plus) '
         + 'à retenir de l\'atelier, concrètes et adaptées au public, affichées à la fin avec le récap des réponses.',

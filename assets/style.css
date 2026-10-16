@@ -252,6 +252,8 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .bars-scale .bar-fill { width: 100%; height: 0; border-radius: 8px; background: var(--wl-b3); }
 .s-results .bars-scale .bar-track { height: 40vh; }
 .results-foot { color: var(--wl-texte-doux); margin-top: .75rem; }
+.results-compare { font-weight: bold; color: var(--wl-texte); margin-top: .5rem; }
+.s-results .results-compare { font-size: 1.3rem; text-align: center; }
 
 /* Anneau Oui / Non, Vrai / Faux (projection). */
 .donut { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1em 1.5em; }

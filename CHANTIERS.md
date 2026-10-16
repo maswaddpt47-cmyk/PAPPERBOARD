@@ -13,9 +13,10 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
    podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
    barres de points ; ajouts du 16/10/2026 : « x actifs », bouton « ❓ Questions »,
-   barre de pilotage allégée et glisser ← → au téléphone, démos à 4 thèmes et
-   « Supprimer les démos ». Validé le 16/10/2026 sur téléphone : nuage lisible et
-   fluide, session de démonstration ; le reste à tester sur ordinateur. Le plus simple : **Créer une session de
+   barre de pilotage allégée et glisser ← → au téléphone, démos à 4 thèmes, avant /
+   après, « Clôture… », A− / A+ sur le téléphone, « Supprimer les démos ». Validé le
+   16/10/2026 sur téléphone : nuage lisible et fluide, session de démonstration ;
+   le reste à tester sur ordinateur. Le plus simple : **Créer une session de
    démonstration**. Puis un **atelier réel** à 10 participants ou plus.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
@@ -157,6 +158,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   donc avant de fermer.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
 - Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal ; nav).
+- Avant / après (`compare`, 16/10/2026) : quiz (bonne réponse) ou échelle posés deux
+  fois, même type et mêmes choix, « avant » placé avant (`wl_compare_shape`, e2e).
+  **Agrégats seulement** (% de bonnes réponses, moyenne) : jamais relier un
+  participant d'un passage à l'autre (anonymat). Visible avec les résultats sur la
+  projection, dans le bilan, le PowerPoint et le CSV ; pas sur le téléphone.
 - Onglets : les tests cliquent l'onglet avant d'agir (panneau masqué).
 - Taille du texte du téléphone (A− / A+, `html[data-size]`, stockage local, effacée
   par « Quitter » : promesse « ne garde plus rien ») ; tout est en `rem` (nav).
@@ -164,6 +170,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 ## Pistes d'amélioration
 
-*Proposées, en attente :* aucune.
+*Proposées, en attente :* aucune. *Faites le 16/10/2026* : avant / après, clôture
+prête à l'emploi, taille du texte (A− / A+).
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.

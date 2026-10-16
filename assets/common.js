@@ -453,7 +453,17 @@ var WL = (function () {
       : plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
     container.appendChild(el('p', { class: 'results-foot' }, foot));
+    if (res.compare) container.appendChild(el('p', { class: 'results-compare' }, compareText(res.compare)));
     if (before && WL.playFlip) WL.playFlip(container, before);
+  }
+
+  /** Avant / après, en une ligne (même texte que `wl_compare_text` côté PHP). */
+  function compareText(c) {
+    var fmt = function (v) { return String(v).replace('.', ','); };
+    var unit = function (v) { return c.kind === 'average' ? fmt(v) + ' / ' + c.max : v + ' % de bonnes réponses'; };
+    var d = Math.round((c.after - c.before) * 10) / 10;
+    var delta = d === 0 ? 'stable' : (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + (c.kind === 'average' ? '' : ' points');
+    return 'Avant : ' + unit(c.before) + ' — Après : ' + unit(c.after) + ' (' + delta + ')';
   }
 
   /** Secondes restantes avant closesAt, corrigées du décalage d'horloge. */
@@ -468,7 +478,7 @@ var WL = (function () {
 
   return {
     el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
-    TYPES: TYPES, plural: plural, renderResults: renderResults,
+    TYPES: TYPES, plural: plural, renderResults: renderResults, compareText: compareText,
     remaining: remaining, formatTime: formatTime
   };
 }());

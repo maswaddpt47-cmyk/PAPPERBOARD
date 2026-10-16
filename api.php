@@ -356,7 +356,7 @@ function api_admin_state(): void
     // Participants actifs : recalculés chaque minute même sans écriture.
     wl_json_etag('a' . $s['version'] . wl_time_tag($s) . ($live ? '-' . intdiv(time(), 10) : '') . '-' . intdiv(time(), 60), function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
-            'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
+            'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true, 'compare' => $q['compare'] ?? '',
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
@@ -414,6 +414,7 @@ function api_session_duplicate(array $b): void
         wl_reset_question($q);
         $q['id'] = $ids[$q['id']];
         $q['source'] = $ids[$q['source'] ?? ''] ?? '';
+        $q['compare'] = $ids[$q['compare'] ?? ''] ?? '';
         return $q;
     }, $src['questions']);
     $title = preg_replace('/^(.{0,120}).*$/us', '$1', 'Copie de ' . $src['title']);
@@ -513,8 +514,10 @@ function api_question_save(array $b): void
         }
         if (!empty($in['id'])) {
             $i = wl_question_index($s, $in['id']);
-            $s['questions'][$i] = wl_clean_question($in, $s['questions'][$i]);
-            return $s['questions'][$i]['id'];
+            $q = wl_clean_question($in, $s['questions'][$i]);
+            api_check_compare($s, $q, $i);
+            $s['questions'][$i] = $q;
+            return $q['id'];
         }
         if (count($s['questions']) >= WL_MAX_QUESTIONS) {
             throw new WlError('50 questions au plus par session.');
@@ -522,14 +525,33 @@ function api_question_save(array $b): void
         $q = wl_clean_question($in);
         if (!empty($b['first'])) {
             // Brise-glace : en tête de session, la question projetée reste la même.
+            $q['compare'] = ''; // rien ne la précède
             array_unshift($s['questions'], $q);
             $s['current'] += $s['current'] >= 0 ? 1 : 0;
         } else {
+            api_check_compare($s, $q, count($s['questions']));
             $s['questions'][] = $q;
         }
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** Avant / après : la question « avant » doit précéder et avoir la même forme. */
+function api_check_compare(array $s, array $q, int $pos): void
+{
+    if (($q['compare'] ?? '') === '') {
+        return;
+    }
+    foreach (array_slice($s['questions'], 0, $pos) as $e) {
+        if ($e['id'] === $q['compare']) {
+            if (wl_compare_shape($e, $q)) {
+                return;
+            }
+            break;
+        }
+    }
+    throw new WlError('Avant / après : choisissez une question précédente de même type et avec les mêmes choix (quiz avec bonne réponse, ou échelle).');
 }
 
 /** Même durée pour toutes les questions de la session (0 = sans limite). Un
@@ -557,7 +579,7 @@ function api_questions_import(array $b): void
     $items = wl_import_parse((string)($b['raw'] ?? ''));
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare']))
                 + (isset($it['warning']) ? ['warning' => $it['warning']] : [])
             : $it, $items)]);
     }
@@ -573,6 +595,9 @@ function api_questions_import(array $b): void
         $src = $items[$i]['q']['type'] === 'dots' ? (int)substr($items[$i]['q']['source'], 1) : null;
         if ($src !== null && !in_array($src, $keep, true)) {
             throw new WlError('Question ' . ($i + 1) . ' (gommettes) : cochez aussi sa source, la question ' . ($src + 1) . '.');
+        }
+        if (str_starts_with($items[$i]['q']['compare'] ?? '', '#') && !in_array((int)substr($items[$i]['q']['compare'], 1), $keep, true)) {
+            throw new WlError('Question ' . ($i + 1) . ' (avant / après) : cochez aussi la question ' . ((int)substr($items[$i]['q']['compare'], 1) + 1) . '.');
         }
     }
     if (!$keep) {
@@ -591,6 +616,9 @@ function api_questions_import(array $b): void
             $q = $items[$i]['q'];
             if ($q['type'] === 'dots') {
                 $q['source'] = $ids[(int)substr($q['source'], 1)];
+            }
+            if (str_starts_with($q['compare'] ?? '', '#')) {
+                $q['compare'] = $ids[(int)substr($q['compare'], 1)];
             }
             $ids[$i] = $q['id'];
             $s['questions'][] = $q;
@@ -804,6 +832,9 @@ function api_export_rows(array $s, bool $all): array
         $res = wl_results($q, $all, $s);
         foreach (api_result_lines($q, $res) as [$label, $value]) {
             $rows[] = [$n + 1, $q['text'], api_type_label($q['type']), $label, $value, $res['total']];
+        }
+        if (!empty($res['compare'])) {
+            $rows[] = [$n + 1, $q['text'], api_type_label($q['type']), 'Avant / après', wl_compare_text($res['compare']), $res['total']];
         }
     }
     return $rows;

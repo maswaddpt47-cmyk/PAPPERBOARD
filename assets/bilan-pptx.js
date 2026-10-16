@@ -203,6 +203,7 @@
     if (q.type === 'scale' && r.average !== null) foot += ' — moyenne ' + String(r.average).replace('.', ',') + ' / ' + q.scaleMax;
     var line = (d.recap || []).filter(function (x) { return x.text === q.text; })[0];
     if (line && q.correct && q.correct.length) foot += ' — ' + line.summary;
+    if (r.compare) foot += ' — ' + WL.compareText(r.compare);
     if (q.explain) {
       // Encadré comme sur la projection : carte claire, filet vert à gauche.
       text(slide, q.explain, { x: 0.5, y: 5.5, w: W - 1, h: 1.2, fontSize: 15, fit: 'shrink', fill: { color: C.carte }, margin: 10,

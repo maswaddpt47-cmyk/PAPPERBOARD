@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots'];
 const WL_WRITTEN_TYPES = ['text', 'wall', 'postit']; // texte libre : relu avant d'être montré, jamais en affichage automatique
+const WL_COMPARE_TYPES = ['yesno', 'truefalse', 'mcq', 'scale']; // avant / après : une valeur chiffrée par passage
 const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
 // Résultats projetés en direct (sans « Afficher ») : ni correction à dévoiler,
 // ni texte libre à relire avant projection (choix de l'utilisateur, 14/10/2026).
@@ -422,7 +423,7 @@ function wl_archive_session(array $s): string
 {
     $questions = array_map(function ($q) use ($s) {
         $r = wl_results($q, false, $s);
-        $kept = ['total' => $r['total']] + array_intersect_key($r, array_flip(['counts', 'average']));
+        $kept = ['total' => $r['total']] + array_intersect_key($r, array_flip(['counts', 'average', 'compare']));
         if ($q['type'] === 'postit') {
             $kept['columns'] = $q['options'];
         }
@@ -565,6 +566,8 @@ function wl_clean_question(array $in, ?array $old = null): array
         'scaleMax' => ($in['scaleMax'] ?? 5) == 10 ? 10 : 5,
         'budget' => max(1, min(100, (int)($in['budget'] ?? ($type === 'dots' ? 3 : 10)))),
         'source' => $type === 'dots' ? (string)($in['source'] ?? '') : '',
+        // Avant / après : identifiant d'une question précédente de même forme (quiz ou échelle).
+        'compare' => in_array($type, WL_COMPARE_TYPES, true) ? preg_replace('/[^0-9a-f]/', '', (string)($in['compare'] ?? '')) : '',
         // Gommettes sur une seule colonne du post-it source (-1 : toutes).
         'column' => $type === 'dots' && is_numeric($in['column'] ?? null) ? max(-1, (int)$in['column']) : -1,
         'duration' => wl_clean_duration($in['duration'] ?? 0),
@@ -769,12 +772,22 @@ function wl_import_parse(string $raw): array
             if ($q['type'] === 'dots') {
                 $q['source'] = '#' . ((int)($in['source'] ?? 0) - 1);
             }
+            if (is_array($in) && in_array($q['type'], WL_COMPARE_TYPES, true) && is_numeric($in['compare'] ?? null)) {
+                $q['compare'] = '#' . ((int)$in['compare'] - 1);
+            }
             $items[] = ['q' => $q, 'column' => is_string($in['column'] ?? null) ? $in['column'] : ''];
         } catch (WlError $e) {
             $items[] = ['error' => $e->getMessage()];
         }
     }
     foreach ($items as $i => $it) {
+        if (isset($it['q']) && str_starts_with($it['q']['compare'] ?? '', '#')) {
+            $ref = (int)substr($it['q']['compare'], 1);
+            if ($ref >= $i || !isset($items[$ref]['q']) || !wl_compare_shape($items[$ref]['q'], $it['q'])) {
+                $items[$i] = ['error' => 'Avant / après : la question « avant » doit précéder, avoir le même type et les mêmes choix (quiz avec bonne réponse, ou échelle).'];
+                continue;
+            }
+        }
         $src = isset($it['q']) && $it['q']['type'] === 'dots' ? (int)substr($it['q']['source'], 1) : null;
         if ($src !== null && ($src >= $i || !in_array($items[$src]['q']['type'] ?? '', WL_POST_TYPES, true))) {
             $items[$i] = ['error' => 'Gommettes : la source doit être un mur ou un post-it placé avant dans la liste.'];
@@ -866,6 +879,9 @@ function wl_export_questions(array $s): array
             if ($name !== null) {
                 $out['column'] = $name;
             }
+        }
+        if (($q['compare'] ?? '') !== '' && isset($pos[$q['compare']]) && $pos[$q['compare']] < $pos[$q['id']]) {
+            $out['compare'] = $pos[$q['compare']] + 1;
         }
         if (($q['explain'] ?? '') !== '') {
             $out['explain'] = $q['explain'];
@@ -998,6 +1014,75 @@ function wl_question_index(array $s, mixed $qid): int
 /** Résultats agrégés d'une question. $admin : inclut les réponses masquées.
  *  $s (la session) n'est utile qu'aux gommettes, qui votent sur une autre question. */
 function wl_results(array $q, bool $admin = false, ?array $s = null): array
+{
+    $r = wl_results_base($q, $admin, $s);
+    $compare = $s !== null && ($q['compare'] ?? '') !== '' ? wl_compare_results($q, $s) : null;
+    return $compare ? $r + ['compare' => $compare] : $r;
+}
+
+/** Une question « avant » et une question « après » se comparent si elles ont la
+ *  même forme : même type, mêmes choix (ou même échelle), et une bonne réponse
+ *  chacune pour un quiz. */
+function wl_compare_shape(array $before, array $after): bool
+{
+    if ($before['type'] !== $after['type'] || !in_array($after['type'], WL_COMPARE_TYPES, true)) {
+        return false;
+    }
+    if ($after['type'] === 'scale') {
+        return $before['scaleMax'] === $after['scaleMax'];
+    }
+    return $before['options'] === $after['options'] && $before['correct'] && $after['correct'];
+}
+
+/** Valeur chiffrée d'un passage : moyenne (échelle) ou part de bonnes réponses en %. */
+function wl_compare_value(array $q): ?array
+{
+    $answers = array_column($q['answers'], 'v');
+    if (!$answers) {
+        return null;
+    }
+    if ($q['type'] === 'scale') {
+        return ['v' => round(array_sum($answers) / count($answers), 1), 'n' => count($answers)];
+    }
+    $want = $q['correct'];
+    sort($want);
+    $right = count(array_filter($answers, function ($a) use ($want) {
+        $a = (array)$a;
+        sort($a);
+        return $a === $want;
+    }));
+    return ['v' => (int)round(100 * $right / count($answers)), 'n' => count($answers)];
+}
+
+/** Agrégats seulement (jamais une réponse isolée) : avant, après, et de quoi les lire. */
+function wl_compare_results(array $q, array $s): ?array
+{
+    foreach ($s['questions'] as $e) {
+        if ($e['id'] === $q['id']) {
+            return null; // la question « avant » doit venir avant
+        }
+        if ($e['id'] !== $q['compare']) {
+            continue;
+        }
+        $before = wl_compare_shape($e, $q) ? wl_compare_value($e) : null;
+        $after = $before ? wl_compare_value($q) : null;
+        return $after ? ['kind' => $q['type'] === 'scale' ? 'average' : 'correct', 'max' => $q['scaleMax'],
+            'before' => $before['v'], 'after' => $after['v'], 'nBefore' => $before['n'], 'nAfter' => $after['n']] : null;
+    }
+    return null;
+}
+
+/** « Avant : 38 % de bonnes réponses — Après : 75 % (+37 points) » (même texte que common.js). */
+function wl_compare_text(array $c): string
+{
+    $fmt = fn($v) => str_replace('.', ',', (string)$v);
+    $unit = fn($v) => $c['kind'] === 'average' ? $fmt($v) . ' / ' . $c['max'] : $v . ' %' . ' de bonnes réponses';
+    $d = round($c['after'] - $c['before'], 1);
+    $delta = $d == 0 ? 'stable' : ($d > 0 ? '+' : '−') . $fmt(abs($d)) . ($c['kind'] === 'average' ? '' : ' points');
+    return 'Avant : ' . $unit($c['before']) . ' — Après : ' . $unit($c['after']) . ' (' . $delta . ')';
+}
+
+function wl_results_base(array $q, bool $admin = false, ?array $s = null): array
 {
     $answers = array_column($q['answers'], 'v');
     $r = ['total' => count($answers)];

@@ -518,6 +518,53 @@ $admin->post('questions_duration', ['s' => $copy, 'duration' => 0]);
 $all = json_decode($admin->get("api.php?action=export&format=questions&s=$copy")['body'], true);
 check(!in_array('end', array_column($all, 'reveal'), true), 'sans durée, plus de correction « à la fin du temps »');
 
+// --- Avant / après : un quiz et une échelle posés deux fois ----------------------
+$cmp = $admin->post('session_create', ['title' => 'Progression'])['json']['code'] ?? '';
+$sv = fn(array $q) => $admin->post('question_save', ['s' => $cmp, 'question' => $q]);
+$mcq = ['type' => 'mcq', 'options' => ['Urgence', 'Logo', 'Orthographe'], 'correct' => [0]];
+$beforeId = $sv($mcq + ['text' => 'Avant : un faux SMS se repère à…'])['json']['id'] ?? '';
+expect_status($sv(array_merge($mcq, ['text' => 'Autres choix', 'options' => ['A', 'B'], 'compare' => $beforeId])), 400, 'avant/après : choix différents refusés');
+expect_status($sv(array_merge($mcq, ['text' => 'Inconnue', 'compare' => 'aaaaaaaa'])), 400, 'avant/après : question inconnue refusée');
+expect_status($sv(array_merge($mcq, ['text' => 'Sans bonne réponse', 'correct' => [], 'compare' => $beforeId])), 400, 'avant/après : quiz sans bonne réponse refusé');
+$afterId = $sv(array_merge($mcq, ['text' => 'Après : un faux SMS se repère à…', 'compare' => $beforeId]))['json']['id'] ?? '';
+$sc = fn(array $q) => $sv(array_merge(['type' => 'scale', 'scaleMax' => 5], $q));
+$sc1 = $sc(['text' => 'Avant : à l\'aise avec le numérique ?'])['json']['id'] ?? '';
+expect_status($sc(['text' => 'Échelle plus longue', 'scaleMax' => 10, 'compare' => $sc1]), 400, 'avant/après : échelles de tailles différentes refusées');
+$sc2 = $sc(['text' => 'Après : à l\'aise avec le numérique ?', 'compare' => $sc1])['json']['id'] ?? '';
+$cl = [new Client($base), new Client($base)];
+foreach ($cl as $c) { $c->join($cmp); }
+$cmpGo = fn(string $qid) => $admin->post('control', ['s' => $cmp, 'op' => 'goto', 'qid' => $qid]);
+$cmpGo($beforeId);
+$cl[0]->vote($cmp, $beforeId, 1);
+$cl[1]->vote($cmp, $beforeId, 0);
+$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$cmpGo($afterId);
+foreach ($cl as $c) { expect_status($c->vote($cmp, $afterId, 0), 200, 'avant/après : vote'); }
+$admin->post('control', ['s' => $cmp, 'op' => 'show']);
+$cq = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'] ?? [];
+$cr = $cq[1]['results']['compare'] ?? [];
+check(($cr['kind'] ?? '') === 'correct' && ($cr['before'] ?? -1) === 50 && ($cr['after'] ?? -1) === 100, 'avant/après : 50 % puis 100 % de bonnes réponses');
+check(!isset($cq[0]['results']['compare']), 'avant/après : la question « avant » n\'affiche aucune comparaison');
+check(($cl[0]->get("api.php?action=screen&s=$cmp")['json']['results']['compare']['after'] ?? 0) === 100, 'avant/après : visible sur la projection avec les résultats');
+$cmpGo($sc1);
+$cl[0]->vote($cmp, $sc1, 2);
+$cl[1]->vote($cmp, $sc1, 4);
+$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$cmpGo($sc2);
+$cl[0]->vote($cmp, $sc2, 4);
+$cl[1]->vote($cmp, $sc2, 5);
+$cr = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'][3]['results']['compare'] ?? [];
+check(($cr['kind'] ?? '') === 'average' && ($cr['before'] ?? 0) == 3 && ($cr['after'] ?? 0) == 4.5, 'avant/après : moyennes 3 puis 4,5 sur une échelle');
+$dup = $admin->post('session_duplicate', ['s' => $cmp])['json']['code'] ?? '';
+$dq = $admin->get("api.php?action=admin_state&s=$dup")['json']['questions'] ?? [];
+check(($dq[1]['compare'] ?? '') === ($dq[0]['id'] ?? '-') && ($dq[3]['compare'] ?? '') === ($dq[2]['id'] ?? '-'), 'avant/après : la copie de session garde le lien, vers ses propres questions');
+$expc = $admin->get("api.php?action=export&format=questions&s=$cmp");
+check((json_decode($expc['body'], true)[1]['compare'] ?? 0) === 1, 'avant/après : exporté par position');
+$cc = $admin->post('session_create', ['title' => 'Progression copie'])['json']['code'] ?? '';
+expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => range(0, 3)]), 200, 'avant/après : réimport');
+check($admin->get("api.php?action=export&format=questions&s=$cc")['body'] === $expc['body'], 'avant/après : réimport identique');
+expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => [1]]), 400, 'avant/après : import sans la question « avant » refusé');
+
 // --- Signaler une difficulté, Oser demander, pseudonymes et classement -----------
 $ws = $admin->post('session_create', ['title' => 'Atelier élèves'])['json']['code'] ?? '';
 $el = [new Client($base), new Client($base), new Client($base)];

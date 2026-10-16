@@ -306,6 +306,8 @@ header('Cache-Control: no-store');
           <p class="meta">Les idées n'apparaissent qu'une fois cette question publiée.</p></div>
         <div id="qf-budget-box"><label for="qf-budget" id="qf-budget-label" title="Nombre de points à répartir ; pour les gommettes, nombre de gommettes par personne">Points à répartir</label>
           <input id="qf-budget" type="number" min="1" max="100" value="10"></div>
+        <div id="qf-compare-box" hidden><label for="qf-compare" title="Même question posée plus tôt : l'écart (bonnes réponses ou moyenne) s'affiche avec les résultats, dans le bilan et le PowerPoint">Comparer avec une question précédente (avant / après)</label>
+          <select id="qf-compare"></select></div>
         <label for="qf-explain" title="Encadré affiché sous les résultats, sur la projection et les téléphones, jamais avant">Explication affichée avec les résultats (facultatif, 400 caractères)</label>
         <textarea id="qf-explain" rows="3" maxlength="400" placeholder="Ex. : Vrai — la lumière bleue freine la mélatonine. Source : …"></textarea>
         <label for="qf-duration" title="Compte à rebours du vote ; 0 = pas de limite">Durée en secondes (0 = sans limite)</label>
