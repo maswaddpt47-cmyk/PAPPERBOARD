@@ -14,8 +14,8 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
    barres de points ; ajouts du 16/10/2026 : « x actifs », bouton « ❓ Questions »,
    barre de pilotage allégée et glisser ← → au téléphone, démos à 4 thèmes et
-   « Supprimer les démos ». Validé le 16/10/2026 : nuage lisible et fluide sur la
-   projection au téléphone. Le plus simple : **Créer une session de
+   « Supprimer les démos ». Validé le 16/10/2026 sur téléphone : nuage lisible et
+   fluide, session de démonstration ; le reste à tester sur ordinateur. Le plus simple : **Créer une session de
    démonstration**. Puis un **atelier réel** à 10 participants ou plus.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
