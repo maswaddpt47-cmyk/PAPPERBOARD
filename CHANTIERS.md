@@ -244,9 +244,10 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   (304) : une conclusion ajoutée ensuite leur parvient.
 - **Export PowerPoint du bilan** (15/10/2026) : généré dans le navigateur par
   PptxGenJS 4.0.1 copié dans `assets/` (licence MIT, chargé seulement à l'export,
-  aucune donnée envoyée ailleurs). Graphiques natifs modifiables, réponses
-  masquées exclues. Vérifié en local : fichier ouvert par python-pptx et
-  LibreOffice (9 diapositives) ; pas encore ouvert dans PowerPoint.
+  aucune donnée envoyée ailleurs), réponses masquées exclues. Barres et colonnes
+  d'échelle **dessinées en formes** (un graphique PowerPoint n'arrondit pas ses
+  barres) ; anneau Oui/Non et jauge restent des graphiques natifs. Ouvert et
+  validé dans PowerPoint par l'utilisateur le 15/10/2026.
 - **Synthèse de l'IA** (`synthesis`, 15/10/2026) : collée par l'animateur dans
   la carte Bilan, 6000 caractères, retours à la ligne gardés ; jamais envoyée
   aux téléphones (tenu par e2e), reprise dans l'export PowerPoint, effacée avec
