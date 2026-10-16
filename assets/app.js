@@ -20,6 +20,18 @@
     ['code', 'token', 'csrf', 'since', 'pending'].forEach(store.del);
   }
 
+  // Taille du texte (A− / A+) : 0 = normal, 1 et 2 = plus grand ; gardée sur le téléphone seulement.
+  var size = Math.min(2, Math.max(0, Number(store.get('size')) || 0));
+  function applySize() {
+    if (size) document.documentElement.setAttribute('data-size', String(size));
+    else document.documentElement.removeAttribute('data-size');
+    $('size-down').disabled = size === 0;
+    $('size-up').disabled = size === 2;
+  }
+  $('size-down').addEventListener('click', function () { size = Math.max(0, size - 1); store.set('size', String(size)); applySize(); });
+  $('size-up').addEventListener('click', function () { size = Math.min(2, size + 1); store.set('size', String(size)); applySize(); });
+  applySize();
+
   var code = null, csrf = store.get('csrf'), poller = null;
   var state = null, renderKey = '', offset = 0, timer = null, sending = false;
 
@@ -600,9 +612,11 @@
 
   $('leave-btn').addEventListener('click', function () {
     WL.api('leave', { body: {} }).then(function () {}, function () {}).then(function () {
-      ['code', 'token', 'csrf', 'since'].forEach(store.del);
+      ['code', 'token', 'csrf', 'since', 'size'].forEach(store.del);
       pendingStore.del('pending');
       csrf = null;
+      size = 0;
+      applySize();
       $('session-title').textContent = '';
       if (history.replaceState) history.replaceState(null, '', location.pathname);
       showJoin('✓ Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.', true);

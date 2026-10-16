@@ -20,7 +20,9 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 </head>
 <body class="participant">
-<header class="topbar"><span class="brand">WoocLight</span><span id="session-title" class="topbar-title"></span></header>
+<header class="topbar"><span class="brand">WoocLight</span><span id="session-title" class="topbar-title"></span>
+  <span class="size-tools"><button id="size-down" class="btn btn-ghost btn-size" type="button" aria-label="Texte plus petit" title="Texte plus petit">A−</button>
+  <button id="size-up" class="btn btn-ghost btn-size" type="button" aria-label="Texte plus grand" title="Texte plus grand">A+</button></span></header>
 <main id="main" tabindex="-1">
   <div id="banner" class="banner" role="status" aria-live="polite" hidden></div>
 

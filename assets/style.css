@@ -74,6 +74,11 @@ a:hover { color: var(--wl-primaire-fonce); }
 .topbar-title { flex: 1; font-size: .95rem; }
 .topbar .btn-ghost { color: #FFFFFF; border-color: #FFFFFF; }
 .topbar .btn-ghost:hover { background: var(--wl-primaire-fonce); }
+.size-tools { display: flex; gap: .4rem; }
+.btn-size { min-width: 2.75rem; padding: .3rem .5rem; font-weight: bold; }
+/* Taille du texte réglée par le participant (A− / A+), réglage gardé sur son téléphone. */
+html[data-size="1"] { font-size: 125%; }
+html[data-size="2"] { font-size: 140%; }
 
 main { max-width: 64rem; margin: 0 auto; padding: 1rem; }
 .participant main { max-width: 34rem; }
