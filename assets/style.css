@@ -283,6 +283,13 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .cloud-fit .cloud-word { transition: none; margin: .05em .25em; }
 /* Le mot le plus cité respire (lent, 3 % d'amplitude : la lecture n'est pas gênée). */
 .cloud-top { animation: wl-respire 6s ease-in-out infinite; }
+/* Projection : chaque mot flotte doucement, décalé des autres (mouvement vertical
+   seulement : il ne fausse pas la mesure de largeur de fitResults). */
+.cloud-fit .cloud-word { animation: wl-flotte 5s ease-in-out infinite; }
+.cloud-fit .cloud-word:nth-child(4n+2) { animation-duration: 6s; animation-delay: -1.5s; }
+.cloud-fit .cloud-word:nth-child(4n+3) { animation-duration: 5.5s; animation-delay: -3s; }
+.cloud-fit .cloud-word:nth-child(4n) { animation-duration: 6.5s; animation-delay: -4.5s; }
+.cloud-fit .cloud-word.cloud-top { animation: wl-flotte-top 6s ease-in-out infinite; }
 .is-new { animation: wl-pop .4s ease-out; }
 .cloud-c0 { color: var(--wl-primaire); }
 .cloud-c1 { color: var(--wl-accent); }
@@ -358,6 +365,8 @@ legend { font-weight: bold; padding: 0 .25rem; }
 @keyframes wl-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes wl-bonne { from { outline-color: transparent; outline-offset: 12px; } to { outline-color: var(--wl-barre-ok); outline-offset: 3px; } }
 @keyframes wl-respire { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@keyframes wl-flotte { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-.08em); } }
+@keyframes wl-flotte-top { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-.06em) scale(1.04); } }
 @keyframes wl-respire-btn { 50% { background: var(--wl-primaire); color: #FFFFFF; } }
 @keyframes wl-anneau { 0% { transform: scale(.7); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(1.25); opacity: 0; } }
 @keyframes wl-roll { from { transform: translateY(100vh); } to { transform: none; } }
