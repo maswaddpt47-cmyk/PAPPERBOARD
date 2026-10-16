@@ -158,6 +158,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
 - Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal ; nav).
 - Onglets : les tests cliquent l'onglet avant d'agir (panneau masqué).
+- Taille du texte du téléphone (A− / A+, `html[data-size]`, stockage local, effacée
+  par « Quitter » : promesse « ne garde plus rien ») ; tout est en `rem` (nav).
+- Clôture prête à l'emploi : ajoutée par l'import (validé côté serveur), à la fin (nav).
 
 ## Pistes d'amélioration
 
