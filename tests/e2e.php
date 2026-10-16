@@ -574,6 +574,28 @@ $admin->post('session_archive', ['s' => $ws]);
 $rawWs = implode('', array_map('file_get_contents', glob("$data/archives/*.json")));
 check(!str_contains($rawWs, $names[0]) && !str_contains($rawWs, 'TikTok'), 'archive : ni pseudonyme, ni question d\'un participant');
 
+// --- Démo, téléphones actifs, preuve de passage de la purge horaire --------------
+$demo = $admin->post('session_demo', [])['json']['code'] ?? '';
+$dm = $admin->get("api.php?action=admin_state&s=$demo")['json'];
+check(count($dm['questions'] ?? []) === 10 && ($dm['participants'] ?? 0) === 12 && ($dm['active'] ?? 0) === 10,
+    'démo : 10 questions, 12 participants fictifs dont 10 actifs');
+check(count($dm['asks'] ?? []) === 3 && count($dm['ranking'] ?? []) === 12 && ($dm['questions'][9]['results']['total'] ?? 0) === 12,
+    'démo : Oser demander, classement et gommettes remplis');
+$admin->post('control', ['s' => $demo, 'op' => 'goto', 'qid' => $dm['questions'][7]['id']]); // mur : aucune réponse « vote »
+check(($admin->get("api.php?action=screen&s=$demo")['json']['active'] ?? 0) === 10, 'projection : dénominateur = téléphones actifs');
+$pinger = new Client($base);
+expect_status($pinger->post('ping', ['s' => $demo]), 403, 'signe de vie sans jeton refusé');
+$pinger->join($demo);
+$pingPath = "api.php?action=state&s=$demo";
+$pinger->poll($pingPath);
+expect_status($pinger->post('ping', ['s' => $demo]), 200, 'signe de vie');
+check($pinger->poll($pingPath)['status'] === 304, 'un signe de vie ne réveille aucun téléphone');
+check(($admin->get("api.php?action=admin_state&s=$demo")['json']['active'] ?? 0) === 11, 'le nouveau téléphone compte parmi les actifs');
+shell_exec('php ' . escapeshellarg(dirname(__DIR__) . '/purge.php'));
+$cron = $admin->get("api.php?action=admin_state&s=$demo")['json']['lastCron'] ?? 0;
+check($cron >= time() - 30, 'purge horaire : passage noté pour l\'onglet Réglages');
+$admin->post('session_delete', ['s' => $demo]);
+
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {
     check(is_array(json_decode(file_get_contents($f), true)), 'JSON valide : ' . basename($f));

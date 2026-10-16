@@ -44,6 +44,7 @@ header('Cache-Control: no-store');
       <input id="new-title" placeholder="Titre de la nouvelle session" maxlength="120" required>
       <button class="btn btn-primary" type="submit">Créer</button>
     </form>
+    <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button></p>
     <ul id="session-list" class="list"></ul>
     </div>
     <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>
@@ -209,6 +210,7 @@ header('Cache-Control: no-store');
         <button id="end-btn" class="btn" type="button"></button></p>
       <p class="row wrap"><button id="ed-archive" class="btn" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)">Archiver la session</button>
         <button id="ed-delete" class="btn btn-danger" type="button" title="Efface la session et toutes ses réponses">Supprimer la session</button></p>
+      <p id="cron-state" class="cron-state" role="status" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"></p>
     </div>
     </div>
 

@@ -49,6 +49,8 @@
   // --- Affichage ----------------------------------------------------------------
 
   function render(d) {
+    // Dénominateur des « x / n » : téléphones actifs (signe de vie < 3 min).
+    d.present = d.active === undefined ? d.participants : d.active;
     offset = d.now - Date.now() / 1000;
     error('');
     document.title = d.title + ' — WoocLight';
@@ -97,7 +99,7 @@
     $('s-text').style.fontSize = '';
     timerFor(q);
     if (d.results) {
-      WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
+      WL.renderResults($('s-results'), q, d.results, { participants: d.present });
       if (q.type === 'wall' && q.state === 'open') {
         $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre appareil : touchez ♥.'));
       }
@@ -109,9 +111,9 @@
       var unit = { wall: 'message', postit: 'post-it' }[q.type] || 'réponse';
       // Décompte « 3 / 5 » pour savoir quand fermer le vote (mur et post-it :
       // nombre de contributions, une personne peut en publier plusieurs).
-      var all = d.participants > 0 && (unit === 'réponse' ? d.answered : d.contributors) >= d.participants;
+      var all = d.present > 0 && (unit === 'réponse' ? d.answered : d.contributors) >= d.present;
       var done = unit === 'réponse' ? d.answered : d.contributors;
-      WL.counter($('s-results'), q.id, answeredText(d, unit), done, d.participants, all, all ? 'Tout le monde a répondu.' : msg);
+      WL.counter($('s-results'), q.id, answeredText(d, unit), done, d.present, all, all ? 'Tout le monde a répondu.' : msg);
       fitQuestion();
     }
   }
@@ -173,7 +175,7 @@
       fitQuestion();
       return;
     }
-    WL.renderResults($('s-results'), q, d.results, { participants: d.participants });
+    WL.renderResults($('s-results'), q, d.results, { participants: d.present });
     if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
     WL.fitResults($('s-results'));
   }
@@ -234,8 +236,8 @@
   }
 
   function answeredText(d, unit) {
-    return unit === 'réponse' ? d.answered + ' / ' + d.participants + ' ont répondu'
-      : d.contributors + ' / ' + d.participants + ' ont participé (' + WL.plural(d.answered, unit) + ')';
+    return unit === 'réponse' ? d.answered + ' / ' + d.present + ' ont répondu'
+      : d.contributors + ' / ' + d.present + ' ont participé (' + WL.plural(d.answered, unit) + ')';
   }
 
   function timerFor(q) {
@@ -369,7 +371,7 @@
       end: 'Termine la session : récap et conclusion sur la projection et les téléphones (« Rouvrir la session » dans l\'espace animateur pour revenir)'
     }[op] + ' (Espace)';
     $('p-count').textContent = q && q.state !== 'draft'
-      ? (post ? last.contributors : last.answered) + ' / ' + last.participants + (post ? ' ont participé' : ' ont répondu') : '';
+      ? (post ? last.contributors : last.answered) + ' / ' + last.present + (post ? ' ont participé' : ' ont répondu') : '';
     $('p-prev').disabled = !last || last.position === 0;
     $('p-next').disabled = !!last && last.position >= last.count;
     var voting = !!q && q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);

@@ -9,10 +9,10 @@ require __DIR__ . '/lib.php';
 wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
-const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote'];
+const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
+    'session_rename', 'session_demo', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
 
 try {
     wl_maybe_purge();
@@ -257,6 +257,20 @@ function api_post_delete(array $b): void
     wl_json(['ok' => true]);
 }
 
+/** Signe de vie du téléphone (toutes les 60 s) : sert au décompte des
+ *  participants actifs ; aucune version n'avance, personne n'est réveillé. */
+function api_ping(array $b): void
+{
+    $token = api_token();
+    if (!$token || !hash_equals(wl_participant_csrf($token), api_csrf_header())) {
+        throw new WlError('Jeton de sécurité manquant : rechargez la page.', 403);
+    }
+    wl_rate('tk|' . $token, (int)wl_config()['rate_token']);
+    $code = api_code($b);
+    wl_seen($code, wl_participant_key($token, $code));
+    wl_json(['ok' => true]);
+}
+
 /** Signaler une difficulté : seul l'animateur voit les compteurs, les
  *  téléphones ne sont pas réveillés. */
 function api_signal(array $b): void
@@ -292,7 +306,8 @@ function api_like(array $b): void
 function api_screen(): void
 {
     $s = api_public_session(api_code($_GET));
-    wl_json_etag('s' . $s['version'] . wl_time_tag($s), fn() => match (true) {
+    // Une fois par minute, la projection recompte les téléphones actifs.
+    wl_json_etag('s' . $s['version'] . wl_time_tag($s) . '-' . intdiv(time(), 60), fn() => match (true) {
         ($s['board'] ?? -1) >= 0 => ['ok' => true] + wl_board_view($s),
         in_array($s['show'] ?? '', ['asks', 'podium'], true) => ['ok' => true] + wl_show_view($s),
         $s['ended'] => api_ended_view($s),
@@ -338,12 +353,14 @@ function api_admin_state(): void
     // Signaux en cours : l'ETag change toutes les 10 s pour que les compteurs
     // s'effacent d'eux-mêmes (sinon 304 jusqu'à la prochaine écriture).
     $live = array_filter($s['signals'] ?? [], fn($x) => time() - $x['t'] < WL_SIGNAL_TTL + 15);
-    wl_json_etag('a' . $s['version'] . wl_time_tag($s) . ($live ? '-' . intdiv(time(), 10) : ''), function () use ($s) {
+    // Participants actifs : recalculés chaque minute même sans écriture.
+    wl_json_etag('a' . $s['version'] . wl_time_tag($s) . ($live ? '-' . intdiv(time(), 10) : '') . '-' . intdiv(time(), 60), function () use ($s) {
         $questions = array_map(fn($q) => array_merge(wl_public_question(['showResults' => true] + $q), [
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true,
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
+            'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'demo' => !empty($s['demo']),
             'signals' => wl_signal_counts($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
             'pseudo' => !empty($s['pseudo']), 'ranking' => !empty($s['pseudo']) ? wl_ranking($s) : [], 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
@@ -358,6 +375,14 @@ function api_title(array $b): string
         throw new WlError('Le titre est obligatoire (120 caractères au plus).');
     }
     return $title;
+}
+
+/** Session de démonstration : participants fictifs, pour vérifier les écrans seul. */
+function api_session_demo(array $b): void
+{
+    $s = wl_create_session('Démo — Temps d\'écran');
+    wl_update($s['code'], fn(array &$x) => wl_demo_fill($x));
+    wl_json(['ok' => true, 'code' => $s['code']]);
 }
 
 function api_session_create(array $b): void

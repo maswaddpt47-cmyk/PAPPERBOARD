@@ -1190,7 +1190,7 @@ function wl_screen_view(array $s): array
     $q = wl_current_question($s);
     return [
         'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
-        'participants' => count($s['participants']),
+        'participants' => count($s['participants']), 'active' => wl_active_count($s),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
@@ -1794,4 +1794,140 @@ function wl_show_view(array $s): array
     return $base + ($s['show'] === 'asks'
         ? ['asks' => wl_asks_view($s, '')]
         : ['podium' => wl_podium($s), 'scored' => count(wl_scored_questions($s))]);
+}
+
+// ---------------------------------------------------------------------------
+// Tâche planifiée : preuve de passage
+// ---------------------------------------------------------------------------
+
+/** Dernier passage de purge.php lancé par la tâche planifiée (null : jamais).
+ *  Distinct de last-purge, que les simples visites mettent aussi à jour. */
+function wl_last_cron(): ?int
+{
+    $f = wl_data_dir() . '/last-cron';
+    return is_file($f) ? filemtime($f) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Téléphones actifs : signe de vie toutes les 60 s, sans réveiller personne
+// ---------------------------------------------------------------------------
+
+const WL_ACTIVE_TTL = 180; // sans signe de vie depuis 3 min : téléphone éteint ou parti
+
+/** Note le signe de vie d'un participant. N'avance aucune version : ni les
+ *  téléphones ni la projection ne se rafraîchissent pour ça (coût du polling). */
+function wl_seen(string $code, string $pkey): void
+{
+    wl_locked_json(wl_session_file($code), function (array &$s) use ($pkey) {
+        if (!isset($s['participants'][$pkey])) {
+            throw new WlError('Rejoignez d\'abord la session avec son code.', 403);
+        }
+        $s['seen'][$pkey] = time();
+    }, true);
+}
+
+/** Participants actifs : signe de vie, arrivée ou réponse à la question en
+ *  cours depuis moins de 3 min. Sert de dénominateur à « x / n ont répondu ». */
+function wl_active_count(array $s, ?int $now = null): int
+{
+    $now ??= time();
+    $q = wl_current_question($s);
+    $n = 0;
+    foreach ($s['participants'] as $pkey => $joined) {
+        $last = max((int)$joined, (int)($s['seen'][$pkey] ?? 0), (int)($q['answers'][$pkey]['t'] ?? 0));
+        $n += $now - $last < WL_ACTIVE_TTL || isset($q['answers'][$pkey]) ? 1 : 0;
+    }
+    return $n;
+}
+
+// ---------------------------------------------------------------------------
+// Session de démonstration (participants fictifs, pour répéter seul)
+// ---------------------------------------------------------------------------
+
+/** Remplit une session neuve : une question de chaque type, résultats affichés,
+ *  12 participants fictifs, questions « Oser demander », pseudonymes, signaux. */
+function wl_demo_fill(array &$s): void
+{
+    $mk = fn(array $in) => wl_clean_question($in);
+    $q = [
+        $mk(['type' => 'poll', 'text' => 'Votre météo du jour ?', 'options' => ['☀️ Grand soleil', '🌤️ Quelques nuages', '🌧️ Pluie', '⛈️ Orage']]),
+        $mk(['type' => 'yesno', 'text' => 'Votre téléphone dort-il hors de la chambre ?', 'correct' => [0],
+            'explain' => 'Hors de la chambre, il ne réveille personne la nuit.']),
+        $mk(['type' => 'mcq', 'text' => 'Quels réglages limitent les notifications ?', 'multi' => true, 'correct' => [0, 1],
+            'options' => ['Ne pas déranger', 'Mode concentration', 'Luminosité', 'Fond d\'écran']]),
+        $mk(['type' => 'truefalse', 'text' => 'La lumière des écrans retarde l\'endormissement.', 'correct' => [0]]),
+        $mk(['type' => 'wordcloud', 'text' => 'Un mot pour « temps d\'écran » ?']),
+        $mk(['type' => 'scale', 'text' => 'Vous sentez-vous capable de faire une pause ?', 'scaleMax' => 5]),
+        $mk(['type' => 'points', 'text' => 'Répartissez 10 points entre vos priorités', 'options' => ['Sommeil', 'Sport', 'Amis'], 'budget' => 10]),
+        $mk(['type' => 'wall', 'text' => 'Une activité sans écran que vous aimez ?']),
+        $mk(['type' => 'postit', 'text' => 'Ce qui aide / ce qui freine', 'options' => ['Ce qui aide', 'Ce qui freine']]),
+    ];
+    $q[] = $mk(['type' => 'dots', 'text' => 'Lesquelles voulez-vous tester ?', 'source' => $q[8]['id'], 'budget' => 3]);
+    $now = time();
+    $p = [];
+    for ($i = 0; $i < 12; $i++) {
+        $p[] = 'p' . substr(bin2hex(random_bytes(8)), 0, 15);
+    }
+    $pick = fn(array $weights) => (function () use ($weights) {
+        $r = random_int(1, array_sum($weights));
+        foreach ($weights as $i => $w) {
+            if (($r -= $w) <= 0) {
+                return $i;
+            }
+        }
+        return 0;
+    })();
+    $words = ['Fatigue', 'Vidéos', 'Jeux', 'Réseaux', 'Sommeil', 'Musique', 'fatigue', 'vidéos', 'Fatigue', 'Messages', 'Jeux', 'Séries'];
+    foreach ($p as $k => $pk) {
+        $answer = fn($v) => ['v' => $v, 't' => $now - 600 + $k];
+        $q[0]['answers'][$pk] = $answer($pick([5, 4, 2, 1]));
+        $q[1]['answers'][$pk] = $answer($pick([8, 4]));
+        $q[2]['answers'][$pk] = $answer(array_values(array_unique([$pick([6, 3, 2, 1]), $pick([3, 6, 1, 1])])));
+        sort($q[2]['answers'][$pk]['v']);
+        $q[3]['answers'][$pk] = $answer($pick([9, 3]));
+        $q[4]['answers'][$pk] = $answer($words[$k]);
+        $q[5]['answers'][$pk] = $answer(1 + $pick([1, 2, 4, 4, 2]));
+        $a = random_int(2, 6);
+        $b = random_int(0, 10 - $a);
+        $q[6]['answers'][$pk] = $answer([$a, $b, 10 - $a - $b]);
+    }
+    $post = fn(int $k, string $text, int $col = 0) => ['id' => 'n' . bin2hex(random_bytes(5)), 'p' => $p[$k],
+        'text' => $text, 'col' => $col, 't' => $now - 500 + $k, 'likes' => [], 'parent' => null];
+    foreach (['Le foot avec les copains', 'Cuisiner en famille', 'Dessiner', 'Lire des mangas', 'Le vélo'] as $k => $t) {
+        $q[7]['posts'][] = $post($k, $t) + [];
+    }
+    $q[7]['posts'][0]['likes'] = array_slice($p, 5, 4);
+    $q[7]['posts'][1]['likes'] = array_slice($p, 6, 2);
+    $q[7]['posts'][2]['likes'] = [$p[9]];
+    foreach ([['Téléphone au salon', 0], ['Un réveil classique', 0], ['Le sport', 0], ['Les notifications', 1], ['L\'ennui', 1], ['Les séries qui enchaînent', 1]] as $k => [$t, $c]) {
+        $q[8]['posts'][] = $post($k, $t, $c);
+    }
+    foreach ($q as &$x) {
+        $x['state'] = 'closed';
+        $x['showResults'] = true;
+    }
+    unset($x);
+    $ids = array_column($q[8]['posts'], 'id');
+    foreach ($p as $k => $pk) {
+        $v = [$ids[$k % 3] => 2, $ids[3 + $k % 3] => 1];
+        ksort($v);
+        $q[9]['answers'][$pk] = ['v' => $v, 't' => $now - 300 + $k];
+    }
+    $s['questions'] = $q;
+    $s['participants'] = array_fill_keys($p, $now - 900);
+    $s['seen'] = array_fill_keys(array_slice($p, 0, 10), $now); // 2 téléphones « partis »
+    $s['asksOpen'] = true;
+    $ask = fn(int $k, string $text, bool $pub, array $votes) => ['id' => 'q' . bin2hex(random_bytes(5)), 'p' => $p[$k],
+        'text' => $text, 't' => $now - 200 + $k, 'votes' => $votes, 'published' => $pub, 'answered' => false];
+    $s['asks'] = [
+        $ask(0, 'Comment couper les notifications la nuit ?', true, array_slice($p, 3, 5)),
+        $ask(1, 'Est-ce que TikTok écoute nos conversations ?', true, array_slice($p, 4, 2)),
+        $ask(2, 'Le mode avion abîme-t-il le téléphone ?', false, []),
+    ];
+    $s['pseudo'] = true;
+    foreach ($p as $pk) {
+        wl_assign_pseudo($s, $pk);
+    }
+    $s['signals'] = [$p[3] => ['k' => 'fast', 't' => $now], $p[4] => ['k' => 'fast', 't' => $now], $p[5] => ['k' => 'help', 't' => $now]];
+    $s['demo'] = true;
 }

@@ -96,7 +96,18 @@
 
   // --- Rafraîchissement -------------------------------------------------------
 
+  // Signe de vie toutes les 60 s : l'animateur et la projection comptent les
+  // téléphones encore là (« x / n ont répondu »). Aucun rafraîchissement déclenché.
+  var pingTimer = null;
+  function startPing() {
+    clearInterval(pingTimer);
+    pingTimer = setInterval(function () {
+      if (code && state && !state.ended) WL.api('ping', { body: { s: code }, headers: headers() }).then(function () {}, function () {});
+    }, 60000);
+  }
+
   function startPolling() {
+    startPing();
     if (poller) poller.stop();
     view('wait');
     poller = new WL.Poller('state', 's=' + code, onState, onStatus);

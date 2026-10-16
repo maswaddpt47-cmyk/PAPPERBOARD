@@ -159,6 +159,10 @@
     });
   });
 
+  $('demo-btn').addEventListener('click', function () {
+    post('session_demo', {}).then(function (d) { openSession(d.code); });
+  });
+
   // --- Éditeur et pilotage ---------------------------------------------------------
 
   // --- Onglets ------------------------------------------------------------------
@@ -356,7 +360,10 @@
     $('ed-csv-public').href = 'api.php?action=export&public=1&s=' + d.code;
     $('ed-print').href = 'api.php?action=export&format=print&s=' + d.code;
     $('ed-questions').href = 'api.php?action=export&format=questions&s=' + d.code;
-    $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' connecté' + (d.participants > 1 ? 's' : '');
+    $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
+      + ' — ' + d.active + ' actif' + (d.active > 1 ? 's' : '');
+    $('ed-participants').title = 'Actif : téléphone ouvert sur l\'atelier depuis moins de 3 minutes';
+    renderCron(d.lastCron, d.now);
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
@@ -369,6 +376,18 @@
     renderList(d);
     renderExtras(d);
     tips();
+  }
+
+  /** Purge automatique : la tâche planifiée horaire tourne-t-elle ? */
+  function renderCron(t, now) {
+    var box = $('cron-state'), min = t ? Math.round((now - t) / 60) : null;
+    var ok = min !== null && min <= 120;
+    box.className = 'cron-state ' + (ok ? 'is-ok' : 'is-ko');
+    box.textContent = min === null
+      ? '⚠️ La purge horaire n\'a jamais tourné : vérifiez la tâche planifiée chez Alwaysdata (php ~/www/purge.php, chaque heure).'
+      : (ok ? '✓ ' : '⚠️ ') + 'Dernier passage de la purge horaire : il y a '
+        + (min < 60 ? WL.plural(min, 'minute') : WL.plural(Math.round(min / 60), 'heure'))
+        + (ok ? '.' : ' : la tâche planifiée ne tourne plus, vérifiez-la chez Alwaysdata.');
   }
 
   // --- Signaux, Oser demander, pseudonymes ---------------------------------------
@@ -460,7 +479,7 @@
     $('live-text').textContent = q.text;
     $('live-state').textContent = (open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé')
       + ' — ' + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution')
-        : q.results.total + ' / ' + d.participants + ' ont répondu') + (q.showResults ? ' — résultats affichés' : '');
+        : q.results.total + ' / ' + d.active + ' ont répondu') + (q.showResults ? ' — résultats affichés' : '');
     $('open-btn').textContent = open ? 'Fermer le vote' : 'Ouvrir le vote';
     $('open-btn').dataset.next = open ? 'close' : 'open';
     $('show-btn').textContent = q.showResults ? 'Masquer les résultats' : 'Afficher les résultats';

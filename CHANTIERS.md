@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **15/10/2026** — commit de référence : voir `git log -1 main`.
+État au **16/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
@@ -8,14 +8,15 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
 
 ## Restant, par priorité — tout côté utilisateur
 
-1. **Tâche planifiée horaire** `php ~/www/purge.php` : créée chez Alwaysdata le
-   15/10/2026 (déclaré), **non vérifiée** (SSH par mot de passe coupé) : un email
-   d'erreur signalerait un échec, son absence ne prouve rien. Ne pas l'espacer.
+1. **Tâche planifiée horaire** `php ~/www/purge.php` (créée le 15/10/2026) :
+   regarder l'onglet **Réglages** d'une session après le 16/10/2026, il affiche
+   son dernier passage (⚠️ si plus de 2 h ou jamais). Ne pas l'espacer.
 2. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
    validé, 15/10/2026) : onglets de l'espace animateur, archive anonyme, synthèse
    enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
    podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
-   barres de points. Puis un **atelier réel** à 10 participants ou plus.
+   barres de points. Le plus simple : **Créer une session de démonstration**
+   (accueil de l'espace animateur). Puis un **atelier réel** à 10 participants ou plus.
 3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
    15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
    par l'utilisateur** (responsable de traitement).
@@ -278,11 +279,19 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   relecture, auteur jamais servi ; pseudonymes par session, effacés à la
   désactivation, jamais archivés ; podium rangs 1-3. Tenu par e2e.
 
+- **Téléphones actifs** (16/10/2026) : signe de vie (`ping`) toutes les 60 s,
+  sans avancer aucune version (personne n'est réveillé, tenu par e2e). « x / n »
+  compte les actifs (arrivée, signe de vie ou réponse à la question en cours
+  depuis moins de 3 min ; un participant qui a répondu compte toujours). ETag
+  projection et animateur : + minute courante, pour recompter sans écriture.
+- **Preuve de passage de la purge** (16/10/2026) : `purge.php` touche `last-cron`
+  (distinct de `last-purge`, que les visites mettent à jour) ; Réglages l'affiche.
+- **Session de démonstration** (16/10/2026, `wl_demo_fill`) : 12 participants
+  fictifs, une question de chaque type, Oser demander, pseudonymes, signaux ;
+  pour vérifier les écrans seul. À supprimer après usage. Tenu par e2e.
+
 ## Pistes d'amélioration
 
-*Proposées, en attente :*
-- 15/10/2026 — « x / n ont répondu » : ne compter que les téléphones actifs
-  récemment. Demande un battement de cœur (écriture périodique, sans changer les
-  versions) : touche au polling en lecture seule et au test de coût. À décider.
+*Proposées, en attente :* aucune.
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.

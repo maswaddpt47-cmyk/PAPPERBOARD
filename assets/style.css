@@ -393,6 +393,9 @@ label.btn { cursor: pointer; }
 .signals { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
 .signal-count { padding: .2rem .6rem; border-radius: 999px; background: var(--wl-piste); color: var(--wl-texte-doux); font-size: .9rem; }
 .signal-count.is-on { background: var(--wl-alerte-fond); color: var(--wl-alerte-texte); border: 2px solid var(--wl-alerte-bord); font-weight: bold; }
+.cron-state { margin: .75rem 0 0; padding: .4rem .7rem; border-radius: var(--wl-rayon); font-size: .9rem; }
+.cron-state.is-ok { color: var(--wl-ok); }
+.cron-state.is-ko { background: var(--wl-alerte-fond); color: var(--wl-alerte-texte); border: 2px solid var(--wl-alerte-bord); }
 .ranking { margin: .5rem 0 0; padding-left: 0; list-style: none; display: grid; gap: .25rem; }
 
 /* --- Projection ------------------------------------------------------------- */

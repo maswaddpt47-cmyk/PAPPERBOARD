@@ -12,4 +12,6 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 require __DIR__ . '/lib.php';
-echo 'WoocLight : ', wl_purge(), " session(s) supprimée(s)\n";
+$count = wl_purge();
+touch(wl_data_dir() . '/last-cron'); // preuve de passage, affichée dans l'onglet Réglages
+echo 'WoocLight : ', $count, " session(s) supprimée(s)\n";
