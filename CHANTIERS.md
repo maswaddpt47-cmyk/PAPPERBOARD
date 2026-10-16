@@ -288,7 +288,8 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   (distinct de `last-purge`, que les visites mettent à jour) ; Réglages l'affiche.
 - **Session de démonstration** (16/10/2026, `wl_demo_fill`) : 12 participants
   fictifs, une question de chaque type, Oser demander, pseudonymes, signaux ;
-  pour vérifier les écrans seul. À supprimer après usage. Tenu par e2e.
+  pour vérifier les écrans seul. « Supprimer les démos » (accueil) les efface
+  toutes ; la purge ne les archive jamais (résultats inventés). Tenu par e2e.
 
 ## Pistes d'amélioration
 

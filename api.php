@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
 
 try {
     wl_maybe_purge();
@@ -383,6 +383,16 @@ function api_session_demo(array $b): void
     $s = wl_create_session('Démo — Temps d\'écran');
     wl_update($s['code'], fn(array &$x) => wl_demo_fill($x));
     wl_json(['ok' => true, 'code' => $s['code']]);
+}
+
+/** Supprime toutes les sessions de démonstration (aucune archive). */
+function api_demo_delete(array $b): void
+{
+    $n = 0;
+    foreach (wl_list_sessions() as $s) {
+        $n += $s['demo'] && wl_delete_session($s['code']) ? 1 : 0;
+    }
+    wl_json(['ok' => true, 'deleted' => $n]);
 }
 
 function api_session_create(array $b): void

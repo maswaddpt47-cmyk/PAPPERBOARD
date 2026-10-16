@@ -594,7 +594,11 @@ check(($admin->get("api.php?action=admin_state&s=$demo")['json']['active'] ?? 0)
 shell_exec('php ' . escapeshellarg(dirname(__DIR__) . '/purge.php'));
 $cron = $admin->get("api.php?action=admin_state&s=$demo")['json']['lastCron'] ?? 0;
 check($cron >= time() - 30, 'purge horaire : passage noté pour l\'onglet Réglages');
-$admin->post('session_delete', ['s' => $demo]);
+$keep = $admin->post('session_create', ['title' => 'Vraie session'])['json']['code'] ?? '';
+check(($admin->post('demo_delete', [])['json']['deleted'] ?? 0) === 1, 'supprimer toutes les démos');
+check($admin->get("api.php?action=admin_state&s=$demo")['status'] === 404 && $admin->get("api.php?action=admin_state&s=$keep")['status'] === 200,
+    'démos supprimées, vraies sessions gardées');
+$admin->post('session_delete', ['s' => $keep]);
 
 // --- Stockage : aucun JSON corrompu ----------------------------------------------
 foreach (glob("$data/sessions/*.json") as $f) {

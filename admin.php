@@ -44,7 +44,8 @@ header('Cache-Control: no-store');
       <input id="new-title" placeholder="Titre de la nouvelle session" maxlength="120" required>
       <button class="btn btn-primary" type="submit">Créer</button>
     </form>
-    <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button></p>
+    <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button>
+      <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
     <ul id="session-list" class="list"></ul>
     </div>
     <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>

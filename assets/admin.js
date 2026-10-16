@@ -63,6 +63,9 @@
       if (r.status === 401) return showLogin('');
       var list = WL.clear($('session-list'));
       if (!r.data.sessions.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune session. Créez-en une ci-dessus.'));
+      var demos = r.data.sessions.filter(function (s) { return s.demo; }).length;
+      WL.show($('demo-delete'), demos > 0);
+      $('demo-delete').textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       r.data.sessions.forEach(function (s) {
         list.appendChild(el('li', { class: 'list-item' },
           el('div', { class: 'grow' }, el('strong', null, s.title),
@@ -157,6 +160,10 @@
       $('new-title').value = '';
       openSession(d.code);
     });
+  });
+
+  $('demo-delete').addEventListener('click', function () {
+    if (confirm('Supprimer toutes les sessions de démonstration ? Vos vraies sessions ne sont pas touchées.')) post('demo_delete', {}).then(showSessions);
   });
 
   $('demo-btn').addEventListener('click', function () {

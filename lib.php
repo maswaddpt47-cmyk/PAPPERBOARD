@@ -358,7 +358,7 @@ function wl_list_sessions(): array
             $list[] = [
                 'code' => $s['code'], 'title' => $s['title'], 'updated' => $s['updated'],
                 'questions' => count($s['questions']), 'participants' => count($s['participants']),
-                'ended' => $s['ended'],
+                'ended' => $s['ended'], 'demo' => !empty($s['demo']),
             ];
         }
     }
@@ -474,7 +474,8 @@ function wl_purge(): int
         $s = json_decode((string)file_get_contents($file), true);
         if (!is_array($s) || wl_retention_start($s) < $limit) {
             // Archive anonyme d'abord (résultats regroupés), puis suppression du détail.
-            if (is_array($s) && !empty($s['questions'])) {
+            // Une démo (participants fictifs) n'est jamais archivée : elle fausserait les bilans.
+            if (is_array($s) && !empty($s['questions']) && empty($s['demo'])) {
                 wl_archive_session($s);
             }
             if (wl_delete_session(basename($file, '.json'), $limit)) {
