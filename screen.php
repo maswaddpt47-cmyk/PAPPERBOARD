@@ -48,6 +48,7 @@ wl_security_headers();
   <button id="p-reopen" class="btn" type="button" title="Rouvre le vote de cette question (les résultats sont masqués avant, sauf pour un mur ou un post-it)" hidden>Rouvrir le vote</button>
   <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
+  <button id="p-asks" class="btn" type="button" title="Projette les questions « Oser demander » publiées, les plus votées d'abord" hidden></button>
   <button id="p-board" class="btn" type="button" title="Projette le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Bilan</button>
   <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
 </nav>

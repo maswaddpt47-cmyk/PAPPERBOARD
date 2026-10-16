@@ -380,7 +380,7 @@ function api_title(array $b): string
 /** Session de démonstration : participants fictifs, pour vérifier les écrans seul. */
 function api_session_demo(array $b): void
 {
-    $s = wl_create_session('Démo — Temps d\'écran');
+    $s = wl_create_session('Démo'); // titre selon le thème tiré (wl_demo_fill)
     wl_update($s['code'], fn(array &$x) => wl_demo_fill($x));
     wl_json(['ok' => true, 'code' => $s['code']]);
 }

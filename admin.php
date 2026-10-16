@@ -134,6 +134,7 @@ header('Cache-Control: no-store');
 
       <div class="card" id="live">
         <h2>Pilotage en direct</h2>
+        <p class="row wrap"><button id="asks-chip" class="btn btn-small" type="button" title="Aller à la carte « Oser demander », plus bas dans cet onglet"></button></p>
         <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les téléphones ; chacun s'efface après 2 minutes"></p>
         <p id="live-pos" class="meta"></p>
         <p id="live-text" class="live-text"></p>

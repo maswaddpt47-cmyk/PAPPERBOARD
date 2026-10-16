@@ -412,6 +412,10 @@
     sig.classList.toggle('is-on', any);
 
     $('asks-btn').textContent = d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »';
+    var pending = d.asks.filter(function (a) { return !a.published; }).length;
+    $('asks-chip').textContent = !d.asksOpen ? '❓ Oser demander : fermé (l\'ouvrir)'
+      : '❓ Oser demander : ' + WL.plural(d.asks.length, 'question') + (pending ? ' dont ' + pending + ' à relire' : '');
+    $('asks-chip').classList.toggle('btn-primary', pending > 0);
     $('asks-screen').textContent = d.show === 'asks' ? 'Arrêter la projection des questions' : 'Projeter les questions';
     var list = WL.clear($('asks-admin'));
     if (!d.asks.length) list.appendChild(el('li', { class: 'meta' }, d.asksOpen ? 'Aucune question pour le moment.' : 'Fermé : les téléphones ne proposent pas de poser une question.'));
@@ -436,6 +440,7 @@
     });
   }
 
+  $('asks-chip').addEventListener('click', function () { $('asks-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   $('asks-btn').addEventListener('click', function () { control(data.asksOpen ? 'asks_close' : 'asks_open'); });
   $('asks-screen').addEventListener('click', function () { control(data.show === 'asks' ? 'show_off' : 'show_asks'); });
   $('pseudo-btn').addEventListener('click', function () {

@@ -286,7 +286,8 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   projection et animateur : + minute courante, pour recompter sans écriture.
 - **Preuve de passage de la purge** (16/10/2026) : `purge.php` touche `last-cron`
   (distinct de `last-purge`, que les visites mettent à jour) ; Réglages l'affiche.
-- **Session de démonstration** (16/10/2026, `wl_demo_fill`) : 12 participants
+- **Session de démonstration** (16/10/2026, `wl_demo_fill`, 4 thèmes tirés au
+  hasard dans `WL_DEMO_THEMES`, bonne réponse fixée par thème) : 12 participants
   fictifs, une question de chaque type, Oser demander, pseudonymes, signaux ;
   pour vérifier les écrans seul. « Supprimer les démos » (accueil) les efface
   toutes ; la purge ne les archive jamais (résultats inventés). Tenu par e2e.

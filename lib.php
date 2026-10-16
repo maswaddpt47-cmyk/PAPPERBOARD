@@ -1192,6 +1192,8 @@ function wl_screen_view(array $s): array
     return [
         'code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
         'participants' => count($s['participants']), 'active' => wl_active_count($s),
+        // Bouton « Questions » du pilotage : nombre de questions publiées seulement.
+        'asksOpen' => !empty($s['asksOpen']), 'asksCount' => count(wl_asks_view($s, '')),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
@@ -1791,7 +1793,7 @@ function wl_show_view(array $s): array
     $base = ['code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
         'participants' => count($s['participants']), 'qrHidden' => !empty($s['qrHidden']),
         'joinUrl' => wl_join_url($s['code']), 'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'],
-        'show' => $s['show']];
+        'show' => $s['show'], 'asksOpen' => !empty($s['asksOpen']), 'asksCount' => count(wl_asks_view($s, ''))];
     return $base + ($s['show'] === 'asks'
         ? ['asks' => wl_asks_view($s, '')]
         : ['podium' => wl_podium($s), 'scored' => count(wl_scored_questions($s))]);
@@ -1845,25 +1847,78 @@ function wl_active_count(array $s, ?int $now = null): int
 // Session de démonstration (participants fictifs, pour répéter seul)
 // ---------------------------------------------------------------------------
 
-/** Remplit une session neuve : une question de chaque type, résultats affichés,
- *  12 participants fictifs, questions « Oser demander », pseudonymes, signaux. */
-function wl_demo_fill(array &$s): void
+/** Thèmes de démonstration (contenu fictif, tiré au hasard à chaque démo). */
+const WL_DEMO_THEMES = [
+    ['title' => 'Temps d\'écran',
+     'poll' => ['Votre météo du jour ?', ['☀️ Grand soleil', '🌤️ Quelques nuages', '🌧️ Pluie', '⛈️ Orage']],
+     'yesno' => ['Votre téléphone dort-il hors de la chambre ?', 'Hors de la chambre, il ne réveille personne la nuit.', 0],
+     'mcq' => ['Quels réglages limitent les notifications ?', ['Ne pas déranger', 'Mode concentration', 'Luminosité', 'Fond d\'écran']],
+     'tf' => ['La lumière des écrans retarde l\'endormissement.', 0],
+     'cloud' => ['Un mot pour « temps d\'écran » ?', ['Fatigue', 'Vidéos', 'Jeux', 'Réseaux', 'Sommeil', 'Musique', 'fatigue', 'vidéos', 'Fatigue', 'Messages', 'Jeux', 'Séries']],
+     'scale' => 'Vous sentez-vous capable de faire une pause ?',
+     'points' => ['Répartissez 10 points entre vos priorités', ['Sommeil', 'Sport', 'Amis']],
+     'wall' => ['Une activité sans écran que vous aimez ?', ['Le foot avec les copains', 'Cuisiner en famille', 'Dessiner', 'Lire des mangas', 'Le vélo']],
+     'postit' => ['Ce qui aide / ce qui freine', ['Ce qui aide', 'Ce qui freine'], ['Téléphone au salon', 'Un réveil classique', 'Le sport', 'Les notifications', 'L\'ennui', 'Les séries qui enchaînent']],
+     'dots' => 'Lesquelles voulez-vous tester ?',
+     'asks' => ['Comment couper les notifications la nuit ?', 'Est-ce que TikTok écoute nos conversations ?', 'Le mode avion abîme-t-il le téléphone ?']],
+    ['title' => 'Arnaques en ligne',
+     'poll' => ['Avez-vous déjà reçu un message suspect ?', ['📱 Par SMS', '📧 Par mail', '📞 Par téléphone', '🙅 Jamais']],
+     'yesno' => ['Votre banque peut-elle vous demander votre code par SMS ?', 'Jamais : une banque ne demande pas de code par SMS ni par mail.', 1],
+     'mcq' => ['Quels signes doivent alerter ?', ['Urgence à agir', 'Lien raccourci', 'Logo officiel', 'Message en français']],
+     'tf' => ['Un site avec un cadenas est forcément honnête.', 1],
+     'cloud' => ['Un mot qui vous fait penser à « arnaque » ?', ['Colis', 'Banque', 'Urgent', 'Piège', 'Lien', 'Faux', 'colis', 'banque', 'Colis', 'Peur', 'Argent', 'Lien']],
+     'scale' => 'Vous sentez-vous capable de repérer une arnaque ?',
+     'points' => ['Répartissez 10 points : quels réflexes en priorité ?', ['Ne pas cliquer', 'Appeler la banque', 'Signaler']],
+     'wall' => ['Une arnaque que vous avez reçue ?', ['Faux colis en attente', 'Faux conseiller bancaire', 'Gain à un concours', 'Amende impayée', 'Compte CAF bloqué']],
+     'postit' => ['Avant de cliquer / après un doute', ['Avant de cliquer', 'Après un doute'], ['Vérifier l\'expéditeur', 'Lire l\'adresse du lien', 'Ne pas se presser', 'Appeler la vraie banque', 'Changer le mot de passe', 'Signaler sur 33700']],
+     'dots' => 'Lesquels allez-vous appliquer ?',
+     'asks' => ['Que faire si j\'ai déjà cliqué sur le lien ?', 'Comment savoir si un SMS vient vraiment de La Poste ?', 'Mon compte peut-il être piraté par un simple appel ?']],
+    ['title' => 'Mots de passe',
+     'poll' => ['Combien de mots de passe différents utilisez-vous ?', ['1 seul', '2 ou 3', 'Plus de 3', 'Je ne sais pas']],
+     'yesno' => ['Notez-vous vos mots de passe sur papier ?', 'Un carnet rangé chez soi est plus sûr qu\'un seul mot de passe pour tout.', null],
+     'mcq' => ['Quels mots de passe sont solides ?', ['Trois mots au hasard', 'Une phrase de passe', 'Sa date de naissance', 'azerty123']],
+     'tf' => ['Un même mot de passe partout, c\'est sans risque s\'il est long.', 1],
+     'cloud' => ['Un mot pour « mot de passe » ?', ['Oubli', 'Galère', 'Sécurité', 'Code', 'Clé', 'oubli', 'Carnet', 'Oubli', 'Stress', 'Code', 'Protection', 'Clé']],
+     'scale' => 'Vos mots de passe sont-ils assez sûrs ?',
+     'points' => ['Répartissez 10 points : quoi protéger d\'abord ?', ['Messagerie', 'Banque', 'Réseaux sociaux']],
+     'wall' => ['Une astuce pour retenir un mot de passe ?', ['Une phrase de chanson', 'Trois mots au hasard', 'Un carnet rangé', 'Un gestionnaire', 'Les initiales d\'une phrase']],
+     'postit' => ['Ce que je fais / ce que je ne fais pas', ['Je fais', 'Je ne fais pas'], ['Mots de passe différents', 'Validation en deux étapes', 'Phrase de passe', 'Changer après une fuite', 'Gestionnaire de mots de passe', 'Vérifier haveibeenpwned']],
+     'dots' => 'Lesquelles allez-vous essayer ?',
+     'asks' => ['C\'est quoi la validation en deux étapes ?', 'Un gestionnaire de mots de passe, c\'est sûr ?', 'Que faire si on a oublié son mot de passe ?']],
+    ['title' => 'Réseaux sociaux',
+     'poll' => ['Le réseau que vous ouvrez le plus ?', ['WhatsApp', 'Facebook', 'Instagram', 'TikTok']],
+     'yesno' => ['Votre profil est-il visible de tout le monde ?', 'Par défaut, beaucoup de profils sont publics : vérifiez vos réglages.', null],
+     'mcq' => ['Quelles informations éviter de publier ?', ['Son adresse', 'Ses dates de vacances', 'Une photo de paysage', 'Son plat préféré']],
+     'tf' => ['Un message supprimé disparaît forcément pour tout le monde.', 1],
+     'cloud' => ['Un mot pour « réseaux sociaux » ?', ['Partage', 'Amis', 'Vidéos', 'Temps', 'Photos', 'partage', 'Infos', 'Amis', 'Pub', 'Vidéos', 'Famille', 'Temps']],
+     'scale' => 'Maîtrisez-vous vos réglages de confidentialité ?',
+     'points' => ['Répartissez 10 points : à quoi servent les réseaux pour vous ?', ['Garder le contact', 'S\'informer', 'Se divertir']],
+     'wall' => ['Un bon usage des réseaux sociaux ?', ['Garder le lien avec la famille', 'Partager ses passions', 'Trouver des infos locales', 'Groupes d\'entraide', 'Suivre des tutos']],
+     'postit' => ['Ce que j\'aime / ce qui me dérange', ['J\'aime', 'Me dérange'], ['Les photos de famille', 'Les groupes du quartier', 'Les vidéos drôles', 'Les fausses infos', 'Les publicités', 'Le temps perdu']],
+     'dots' => 'Lesquels voulez-vous travailler ensemble ?',
+     'asks' => ['Comment rendre mon profil privé ?', 'Comment repérer une fausse information ?', 'Peut-on supprimer un vieux compte ?']],
+];
+
+/** Remplit une session neuve sur un thème tiré au hasard : une question de
+ *  chaque type, résultats affichés, 12 participants fictifs, questions « Oser
+ *  demander », pseudonymes, signaux. Retourne le titre du thème. */
+function wl_demo_fill(array &$s, ?int $theme = null): string
 {
+    $t = WL_DEMO_THEMES[$theme ?? random_int(0, count(WL_DEMO_THEMES) - 1)];
     $mk = fn(array $in) => wl_clean_question($in);
     $q = [
-        $mk(['type' => 'poll', 'text' => 'Votre météo du jour ?', 'options' => ['☀️ Grand soleil', '🌤️ Quelques nuages', '🌧️ Pluie', '⛈️ Orage']]),
-        $mk(['type' => 'yesno', 'text' => 'Votre téléphone dort-il hors de la chambre ?', 'correct' => [0],
-            'explain' => 'Hors de la chambre, il ne réveille personne la nuit.']),
-        $mk(['type' => 'mcq', 'text' => 'Quels réglages limitent les notifications ?', 'multi' => true, 'correct' => [0, 1],
-            'options' => ['Ne pas déranger', 'Mode concentration', 'Luminosité', 'Fond d\'écran']]),
-        $mk(['type' => 'truefalse', 'text' => 'La lumière des écrans retarde l\'endormissement.', 'correct' => [0]]),
-        $mk(['type' => 'wordcloud', 'text' => 'Un mot pour « temps d\'écran » ?']),
-        $mk(['type' => 'scale', 'text' => 'Vous sentez-vous capable de faire une pause ?', 'scaleMax' => 5]),
-        $mk(['type' => 'points', 'text' => 'Répartissez 10 points entre vos priorités', 'options' => ['Sommeil', 'Sport', 'Amis'], 'budget' => 10]),
-        $mk(['type' => 'wall', 'text' => 'Une activité sans écran que vous aimez ?']),
-        $mk(['type' => 'postit', 'text' => 'Ce qui aide / ce qui freine', 'options' => ['Ce qui aide', 'Ce qui freine']]),
+        $mk(['type' => 'poll', 'text' => $t['poll'][0], 'options' => $t['poll'][1]]),
+        $mk(['type' => 'yesno', 'text' => $t['yesno'][0], 'explain' => $t['yesno'][1],
+            'correct' => $t['yesno'][2] === null ? [] : [$t['yesno'][2]]]),
+        $mk(['type' => 'mcq', 'text' => $t['mcq'][0], 'multi' => true, 'correct' => [0, 1], 'options' => $t['mcq'][1]]),
+        $mk(['type' => 'truefalse', 'text' => $t['tf'][0], 'correct' => [$t['tf'][1]]]),
+        $mk(['type' => 'wordcloud', 'text' => $t['cloud'][0]]),
+        $mk(['type' => 'scale', 'text' => $t['scale'], 'scaleMax' => 5]),
+        $mk(['type' => 'points', 'text' => $t['points'][0], 'options' => $t['points'][1], 'budget' => 10]),
+        $mk(['type' => 'wall', 'text' => $t['wall'][0]]),
+        $mk(['type' => 'postit', 'text' => $t['postit'][0], 'options' => $t['postit'][1]]),
     ];
-    $q[] = $mk(['type' => 'dots', 'text' => 'Lesquelles voulez-vous tester ?', 'source' => $q[8]['id'], 'budget' => 3]);
+    $q[] = $mk(['type' => 'dots', 'text' => $t['dots'], 'source' => $q[8]['id'], 'budget' => 3]);
     $now = time();
     $p = [];
     for ($i = 0; $i < 12; $i++) {
@@ -1878,14 +1933,14 @@ function wl_demo_fill(array &$s): void
         }
         return 0;
     })();
-    $words = ['Fatigue', 'Vidéos', 'Jeux', 'Réseaux', 'Sommeil', 'Musique', 'fatigue', 'vidéos', 'Fatigue', 'Messages', 'Jeux', 'Séries'];
+    $words = $t['cloud'][1];
     foreach ($p as $k => $pk) {
         $answer = fn($v) => ['v' => $v, 't' => $now - 600 + $k];
         $q[0]['answers'][$pk] = $answer($pick([5, 4, 2, 1]));
-        $q[1]['answers'][$pk] = $answer($pick([8, 4]));
+        $q[1]['answers'][$pk] = $answer($pick(($t['yesno'][2] ?? 0) === 0 ? [8, 4] : [4, 8]));
         $q[2]['answers'][$pk] = $answer(array_values(array_unique([$pick([6, 3, 2, 1]), $pick([3, 6, 1, 1])])));
         sort($q[2]['answers'][$pk]['v']);
-        $q[3]['answers'][$pk] = $answer($pick([9, 3]));
+        $q[3]['answers'][$pk] = $answer($pick($t['tf'][1] === 0 ? [9, 3] : [3, 9]));
         $q[4]['answers'][$pk] = $answer($words[$k]);
         $q[5]['answers'][$pk] = $answer(1 + $pick([1, 2, 4, 4, 2]));
         $a = random_int(2, 6);
@@ -1894,14 +1949,14 @@ function wl_demo_fill(array &$s): void
     }
     $post = fn(int $k, string $text, int $col = 0) => ['id' => 'n' . bin2hex(random_bytes(5)), 'p' => $p[$k],
         'text' => $text, 'col' => $col, 't' => $now - 500 + $k, 'likes' => [], 'parent' => null];
-    foreach (['Le foot avec les copains', 'Cuisiner en famille', 'Dessiner', 'Lire des mangas', 'Le vélo'] as $k => $t) {
-        $q[7]['posts'][] = $post($k, $t) + [];
+    foreach ($t['wall'][1] as $k => $text) {
+        $q[7]['posts'][] = $post($k, $text);
     }
     $q[7]['posts'][0]['likes'] = array_slice($p, 5, 4);
     $q[7]['posts'][1]['likes'] = array_slice($p, 6, 2);
     $q[7]['posts'][2]['likes'] = [$p[9]];
-    foreach ([['Téléphone au salon', 0], ['Un réveil classique', 0], ['Le sport', 0], ['Les notifications', 1], ['L\'ennui', 1], ['Les séries qui enchaînent', 1]] as $k => [$t, $c]) {
-        $q[8]['posts'][] = $post($k, $t, $c);
+    foreach ($t['postit'][2] as $k => $text) {
+        $q[8]['posts'][] = $post($k, $text, $k < 3 ? 0 : 1);
     }
     foreach ($q as &$x) {
         $x['state'] = 'closed';
@@ -1921,9 +1976,9 @@ function wl_demo_fill(array &$s): void
     $ask = fn(int $k, string $text, bool $pub, array $votes) => ['id' => 'q' . bin2hex(random_bytes(5)), 'p' => $p[$k],
         'text' => $text, 't' => $now - 200 + $k, 'votes' => $votes, 'published' => $pub, 'answered' => false];
     $s['asks'] = [
-        $ask(0, 'Comment couper les notifications la nuit ?', true, array_slice($p, 3, 5)),
-        $ask(1, 'Est-ce que TikTok écoute nos conversations ?', true, array_slice($p, 4, 2)),
-        $ask(2, 'Le mode avion abîme-t-il le téléphone ?', false, []),
+        $ask(0, $t['asks'][0], true, array_slice($p, 3, 5)),
+        $ask(1, $t['asks'][1], true, array_slice($p, 4, 2)),
+        $ask(2, $t['asks'][2], false, []),
     ];
     $s['pseudo'] = true;
     foreach ($p as $pk) {
@@ -1931,4 +1986,6 @@ function wl_demo_fill(array &$s): void
     }
     $s['signals'] = [$p[3] => ['k' => 'fast', 't' => $now], $p[4] => ['k' => 'fast', 't' => $now], $p[5] => ['k' => 'help', 't' => $now]];
     $s['demo'] = true;
+    $s['title'] = 'Démo — ' . $t['title'];
+    return $t['title'];
 }

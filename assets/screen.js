@@ -343,6 +343,9 @@
     ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
     WL.show($('p-board'), !board);
     WL.show($('p-reopen'), false);
+    // « Oser demander » ouvert : bouton pour projeter (ou quitter) les questions.
+    WL.show($('p-asks'), !!(last && (last.asksOpen || last.show === 'asks')));
+    $('p-asks').textContent = last && last.show === 'asks' ? 'Quitter les questions' : '❓ Questions (' + ((last && last.asksCount) || 0) + ')';
     if (last && last.show) {
       $('p-step').textContent = 'Revenir à la question';
       $('p-step').title = 'Arrête la projection ' + (last.show === 'asks' ? 'des questions' : 'du podium') + ' (Espace)';
@@ -392,6 +395,7 @@
     $('p-step').addEventListener('click', step);
     $('p-reopen').addEventListener('click', reopen);
     $('p-board').addEventListener('click', function () { control('board'); });
+    $('p-asks').addEventListener('click', function () { control(last && last.show === 'asks' ? 'show_off' : 'show_asks'); });
     document.addEventListener('keydown', function (e) {
       if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
       var k = e.key;

@@ -544,6 +544,7 @@ check(($st($el[0])['asks'][0]['pending'] ?? false) === true, 'oser demander : so
 check($st($el[1])['asks'] === [], 'oser demander : invisible des autres avant publication');
 expect_status($el[1]->post('ask_vote', ['s' => $ws, 'aid' => $aid]), 409, 'vote sur une question non publiée refusé');
 $admin->post('ask_admin', ['s' => $ws, 'aid' => $aid, 'op' => 'publish']);
+check(($scr()['asksOpen'] ?? false) === true && ($scr()['asksCount'] ?? 0) === 1, 'projection : bouton « Questions » avec le nombre de questions publiées');
 check(($el[1]->post('ask_vote', ['s' => $ws, 'aid' => $aid])['json']['voted'] ?? false) === true, 'vote « moi aussi »');
 expect_status($el[0]->post('ask_vote', ['s' => $ws, 'aid' => $aid]), 409, 'vote pour sa propre question refusé');
 check(($adm()['asks'][0]['votes'] ?? 0) === 1 && !isset($st($el[1])['asks'][0]['p']), 'oser demander : votes comptés, auteur jamais servi');
@@ -577,6 +578,7 @@ check(!str_contains($rawWs, $names[0]) && !str_contains($rawWs, 'TikTok'), 'arch
 // --- Démo, téléphones actifs, preuve de passage de la purge horaire --------------
 $demo = $admin->post('session_demo', [])['json']['code'] ?? '';
 $dm = $admin->get("api.php?action=admin_state&s=$demo")['json'];
+check(str_starts_with($dm['title'] ?? '', 'Démo — '), 'démo : titre du thème tiré au hasard');
 check(count($dm['questions'] ?? []) === 10 && ($dm['participants'] ?? 0) === 12 && ($dm['active'] ?? 0) === 10,
     'démo : 10 questions, 12 participants fictifs dont 10 actifs');
 check(count($dm['asks'] ?? []) === 3 && count($dm['ranking'] ?? []) === 12 && ($dm['questions'][9]['results']['total'] ?? 0) === 12,
