@@ -159,6 +159,12 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
 - Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal) ; le bouton central est
   caché à l'étape « Question suivante » (le glisser fait pareil), jamais aux autres (nav).
+- Défi à étapes (`steps`, 16/10/2026, en essai) : titres d'étapes communs ; variantes
+  facultatives par appareil (2 à 4 : Windows, Mac, iPhone, Android…), même nombre
+  d'étapes ; l'appareil choisi reste dans le navigateur, jamais envoyé ; décocher
+  retire la réponse (tout décoché = plus compté). Visible seulement avec Réglages >
+  « fonctions en essai » (propre à l'ordinateur) ; le serveur accepte le type dans tous
+  les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
 - Avant / après (`compare`, 16/10/2026) : quiz (bonne réponse) ou échelle posés deux
   fois, même type et mêmes choix, « avant » placé avant (`wl_compare_shape`, e2e).
   **Agrégats seulement** (% de bonnes réponses, moyenne) : jamais relier un
@@ -172,12 +178,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
-- 16/10/2026 — Exercices pratiques après un quiz. (1) Défi à étapes : **construit sur
-  la branche `claude/defis-etapes`, pas encore fusionné** (type `steps`, variantes
-  Windows / Mac / iPhone / Android au choix, caché derrière Réglages > « fonctions en
-  essai »). (2) Lien ou QR vers un outil réel + « réussi / besoin d'aide » : à décider.
+- 16/10/2026 — Exercices pratiques après un quiz. (1) Défi à étapes : **en ligne
+  le 16/10/2026, en essai** (voir « Points à ne pas défaire »). (2) Lien ou QR vers un outil réel + « réussi / besoin d'aide » : à décider.
   (3) Fiche mémo à emporter (Word/PDF) : à décider. Limite : tout est déclaratif.
   La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
-*Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte.
+*Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
+défi à étapes (en essai).
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.
