@@ -661,6 +661,22 @@ check(count($dm['asks'] ?? []) === 3 && count($dm['ranking'] ?? []) === 12 && ($
     'démo : Oser demander, classement et gommettes remplis');
 $admin->post('control', ['s' => $demo, 'op' => 'goto', 'qid' => $dm['questions'][7]['id']]); // mur : aucune réponse « vote »
 check(($admin->get("api.php?action=screen&s=$demo")['json']['active'] ?? 0) === 10, 'projection : dénominateur = téléphones actifs');
+// Questions ajoutées à une démo : la salle fictive y répond aussi ; les fictifs restent « actifs » dans le temps.
+$dsave = fn(array $q) => $admin->post('question_save', ['s' => $demo, 'question' => $q])['json']['id'] ?? '';
+$dsave(['type' => 'poll', 'text' => 'Ajout : sondage', 'options' => ['A', 'B', 'C']]);
+$dsave(['type' => 'mcq', 'text' => 'Ajout : quiz', 'options' => ['Bon', 'Mauvais'], 'correct' => [0]]);
+$dsave(['type' => 'steps', 'text' => 'Ajout : défi', 'options' => ['Un', 'Deux', 'Trois']]);
+$dsave(['type' => 'scale', 'text' => 'Ajout : échelle', 'scaleMax' => 5]);
+$dq = $admin->get("api.php?action=admin_state&s=$demo")['json']['questions'];
+check(($dq[10]['results']['total'] ?? 0) === 12 && ($dq[11]['results']['total'] ?? 0) === 12 && ($dq[13]['results']['total'] ?? 0) === 12,
+    'démo : les douze participants fictifs répondent au sondage, au quiz et à l\'échelle ajoutés');
+check(($dq[12]['results']['total'] ?? 0) >= 1 && count($dq[12]['results']['counts'] ?? []) === 3, 'démo : le défi ajouté a des étapes cochées');
+$dfile = "$data/sessions/$demo.json";
+$dj = json_decode(file_get_contents($dfile), true);
+$dj['participants'] = array_map(fn($t) => time() - 3600, $dj['participants']);
+$dj['seen'] = [];
+file_put_contents($dfile, json_encode($dj));
+check(($admin->get("api.php?action=admin_state&s=$demo")['json']['active'] ?? 0) === 10, 'démo : les participants fictifs restent actifs avec le temps (10 sur 12)');
 $pinger = new Client($base);
 expect_status($pinger->post('ping', ['s' => $demo]), 403, 'signe de vie sans jeton refusé');
 $pinger->join($demo);

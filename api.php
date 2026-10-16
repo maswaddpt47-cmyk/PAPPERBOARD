@@ -516,6 +516,9 @@ function api_question_save(array $b): void
             $i = wl_question_index($s, $in['id']);
             $q = wl_clean_question($in, $s['questions'][$i]);
             api_check_compare($s, $q, $i);
+            if (!empty($s['demo'])) {
+                wl_demo_simulate($s, $q); // démo : une question remise à zéro par la modification se repeuple
+            }
             $s['questions'][$i] = $q;
             return $q['id'];
         }
@@ -523,6 +526,9 @@ function api_question_save(array $b): void
             throw new WlError('50 questions au plus par session.');
         }
         $q = wl_clean_question($in);
+        if (!empty($s['demo'])) {
+            wl_demo_simulate($s, $q); // démo : la salle fictive répond aussi aux questions ajoutées
+        }
         if (!empty($b['first'])) {
             // Brise-glace : en tête de session, la question projetée reste la même.
             $q['compare'] = ''; // rien ne la précède
@@ -619,6 +625,9 @@ function api_questions_import(array $b): void
             }
             if (str_starts_with($q['compare'] ?? '', '#')) {
                 $q['compare'] = $ids[(int)substr($q['compare'], 1)];
+            }
+            if (!empty($s['demo'])) {
+                wl_demo_simulate($s, $q);
             }
             $ids[$i] = $q['id'];
             $s['questions'][] = $q;

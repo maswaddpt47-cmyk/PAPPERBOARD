@@ -142,7 +142,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Explication et synthèse : jamais envoyées avant les résultats / jamais aux
   téléphones (e2e). Export `.json` des questions sans aucune réponse (e2e).
 - Gommettes : sur les post-its principaux publiés, une colonne possible (e2e).
-- Démo (`WL_DEMO_THEMES`) : bonne réponse fixée par thème ; « Supprimer les démos ».
+- Démo (`WL_DEMO_THEMES`) : bonne réponse fixée par thème ; « Supprimer les démos ». Les
+  12 participants fictifs répondent aussi aux questions ajoutées (sauf mur et post-it)
+  et 10 restent « actifs » (`wl_demo_simulate`, e2e) ; démos anciennes : 12 premiers inscrits.
 
 **Affichage**
 - Charte « Papier & Terre » (`INTEGRATION.md`) : bonne réponse en vert avec coche,

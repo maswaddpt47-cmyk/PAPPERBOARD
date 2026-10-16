@@ -1988,9 +1988,11 @@ function wl_active_count(array $s, ?int $now = null): int
     $now ??= time();
     $q = wl_current_question($s);
     $n = 0;
+    // Démo : dix des douze participants fictifs restent présents (deux sont « partis »).
+    $present = array_flip(array_slice(wl_demo_fake($s), 0, 10));
     foreach ($s['participants'] as $pkey => $joined) {
         $last = max((int)$joined, (int)($s['seen'][$pkey] ?? 0), (int)($q['answers'][$pkey]['t'] ?? 0));
-        $n += $now - $last < WL_ACTIVE_TTL || isset($q['answers'][$pkey]) ? 1 : 0;
+        $n += $now - $last < WL_ACTIVE_TTL || isset($q['answers'][$pkey]) || isset($present[$pkey]) ? 1 : 0;
     }
     return $n;
 }
@@ -2051,6 +2053,92 @@ const WL_DEMO_THEMES = [
      'asks' => ['Comment rendre mon profil privé ?', 'Comment repérer une fausse information ?', 'Peut-on supprimer un vieux compte ?']],
 ];
 
+/** Participants fictifs d'une démo. Les démos créées avant ce réglage n'ont pas la
+ *  liste : ce sont les douze premiers inscrits (ils précèdent les vrais). */
+function wl_demo_fake(array $s): array
+{
+    return $s['fake'] ?? (!empty($s['demo']) ? array_slice(array_keys($s['participants']), 0, 12) : []);
+}
+
+/** Tirage pondéré : renvoie l'indice choisi. */
+function wl_demo_pick(array $weights): int
+{
+    $r = random_int(1, max(1, array_sum($weights)));
+    foreach ($weights as $i => $w) {
+        if (($r -= $w) <= 0) {
+            return (int)$i;
+        }
+    }
+    return 0;
+}
+
+/** Démo : les participants fictifs répondent à une question ajoutée après coup,
+ *  pour voir une salle pleine. Un « après » (avant / après) progresse. Rien pour
+ *  le mur et le post-it (il faudrait inventer des textes). */
+function wl_demo_simulate(array $s, array &$q): void
+{
+    $fake = wl_demo_fake($s);
+    if (!$fake || $q['answers'] || $q['posts']) {
+        return;
+    }
+    $now = time();
+    $n = count($q['options']);
+    $good = ($q['compare'] ?? '') !== '' ? 85 : 55; // part de bonnes réponses
+    $words = ['Pause', 'Calme', 'Simple', 'Utile', 'Concret', 'Clair', 'Pratique', 'Rapide'];
+    $texts = ['Faire une pause toutes les heures.', 'Couper les notifications le soir.', 'En parler avec mes proches.',
+        'Tester le mode sommeil.', 'Ranger mon téléphone la nuit.'];
+    $dots = $q['type'] === 'dots' ? wl_dot_items($s, $q) : [];
+    foreach ($fake as $k => $pk) {
+        $v = match ($q['type']) {
+            'yesno', 'truefalse', 'mcq', 'poll' => (function () use ($q, $n, $good) {
+                if ($q['correct']) {
+                    $right = random_int(1, 100) <= $good;
+                    $wrong = array_values(array_diff(range(0, $n - 1), $q['correct']));
+                    if ($q['type'] === 'mcq' && $q['multi']) {
+                        return $right ? $q['correct'] : [$wrong[array_rand($wrong)]];
+                    }
+                    return $right ? $q['correct'][0] : $wrong[array_rand($wrong)];
+                }
+                return wl_demo_pick(array_map(fn() => random_int(1, 5), range(1, $n)));
+            })(),
+            'scale' => 1 + wl_demo_pick(array_map(function ($i) use ($q, $good) {
+                $center = ($good > 60 ? .85 : .55) * $q['scaleMax'];
+                return max(1, (int)round(10 - abs($i + 1 - $center) * 2));
+            }, range(0, $q['scaleMax'] - 1))),
+            'wordcloud' => $words[array_rand($words)],
+            'text' => $texts[array_rand($texts)],
+            'points' => (function () use ($n, $q) {
+                $left = $q['budget'];
+                $pts = array_fill(0, $n, 0);
+                while ($left-- > 0) {
+                    $pts[random_int(0, $n - 1)]++;
+                }
+                return $pts;
+            })(),
+            'steps' => (function () use ($n) {
+                $m = wl_demo_pick([1, ...array_fill(1, $n - 1, 3), 5]); // étapes faites, dans l'ordre
+                return $m ? range(0, $m - 1) : null;
+            })(),
+            'dots' => (function () use ($dots, $q) {
+                $votes = [];
+                for ($g = 0; $g < $q['budget'] && $dots; $g++) {
+                    $id = $dots[array_rand($dots)]['id'];
+                    $votes[$id] = ($votes[$id] ?? 0) + 1;
+                }
+                ksort($votes);
+                return $votes ?: null;
+            })(),
+            default => null,
+        };
+        if ($v !== null) {
+            if (is_array($v) && $q['type'] === 'mcq') {
+                sort($v);
+            }
+            $q['answers'][$pk] = ['v' => $v, 't' => $now - 120 + $k];
+        }
+    }
+}
+
 /** Remplit une session neuve sur un thème tiré au hasard : une question de
  *  chaque type, résultats affichés, 12 participants fictifs, questions « Oser
  *  demander », pseudonymes, signaux. Retourne le titre du thème. */
@@ -2076,15 +2164,7 @@ function wl_demo_fill(array &$s, ?int $theme = null): string
     for ($i = 0; $i < 12; $i++) {
         $p[] = 'p' . substr(bin2hex(random_bytes(8)), 0, 15);
     }
-    $pick = fn(array $weights) => (function () use ($weights) {
-        $r = random_int(1, array_sum($weights));
-        foreach ($weights as $i => $w) {
-            if (($r -= $w) <= 0) {
-                return $i;
-            }
-        }
-        return 0;
-    })();
+    $pick = fn(array $weights) => wl_demo_pick($weights);
     $words = $t['cloud'][1];
     foreach ($p as $k => $pk) {
         $answer = fn($v) => ['v' => $v, 't' => $now - 600 + $k];
@@ -2123,6 +2203,7 @@ function wl_demo_fill(array &$s, ?int $theme = null): string
     }
     $s['questions'] = $q;
     $s['participants'] = array_fill_keys($p, $now - 900);
+    $s['fake'] = $p; // pour répondre à leur place aux questions ajoutées ensuite
     $s['seen'] = array_fill_keys(array_slice($p, 0, 10), $now); // 2 téléphones « partis »
     $s['asksOpen'] = true;
     $ask = fn(int $k, string $text, bool $pub, array $votes) => ['id' => 'q' . bin2hex(random_bytes(5)), 'p' => $p[$k],
