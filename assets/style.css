@@ -521,6 +521,12 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .s-pilot { max-width: calc(100% - 8rem); }
   .s-keys { display: none; } /* pas de clavier sur un téléphone */
 }
+/* Écran tactile étroit : glisser remplace Précédente / Suivante. */
+.s-swipe { display: none; font-size: .85rem; color: var(--wl-texte-doux); }
+@media (max-width: 760px) and (pointer: coarse) {
+  #p-prev, #p-next { display: none; }
+  .s-swipe { display: inline; }
+}
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }
 .s-noqr .screen-main { margin-right: 0; }

@@ -402,6 +402,20 @@
     $('p-reopen').addEventListener('click', reopen);
     $('p-board').addEventListener('click', function () { control('board'); });
     $('p-asks').addEventListener('click', function () { control(last && last.show === 'asks' ? 'show_off' : 'show_asks'); });
+    // Téléphone : glisser vers la gauche = suivante, vers la droite = précédente
+    // (remplace les deux boutons). Geste franchement horizontal seulement, pour
+    // ne pas confondre avec un défilement vertical.
+    var touch = null;
+    document.addEventListener('touchstart', function (e) {
+      touch = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (!touch || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y;
+      touch = null;
+      if (Math.abs(dx) < 60 || Math.abs(dx) < 2 * Math.abs(dy)) return;
+      if (dx < 0) next(); else prev();
+    }, { passive: true });
     document.addEventListener('keydown', function (e) {
       if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
       var k = e.key;

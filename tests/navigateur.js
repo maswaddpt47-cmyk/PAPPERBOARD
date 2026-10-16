@@ -172,6 +172,14 @@ function check(cond, label) {
   await pilot.keyboard.press('ArrowRight');
   await pilot.waitForFunction(() => /^Bilan — 2 \//.test(document.getElementById('s-meta').textContent));
   check(true, 'bilan projeté : diapositive suivante à la flèche');
+  // Glisser vers la droite (téléphone) : diapositive précédente.
+  await pilot.evaluate(() => {
+    const t = (x) => new Touch({ identifier: 1, target: document.body, clientX: x, clientY: 300 });
+    document.dispatchEvent(new TouchEvent('touchstart', { touches: [t(100)], changedTouches: [t(100)] }));
+    document.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(260)] }));
+  });
+  await pilot.waitForFunction(() => /^Bilan — 1 \//.test(document.getElementById('s-meta').textContent));
+  check(true, 'glisser vers la droite : diapositive précédente');
   await pilot.click('#p-step');
   await pilot.waitForSelector('#s-ended:not([hidden])');
   check(await pilot.locator('#p-step').isHidden(), 'bilan quitté : retour au récap de fin');
