@@ -367,6 +367,8 @@
       : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : op === 'end' ? 'Récap et conclusion'
       : q ? 'Question suivante' : 'Commencer';
     if (Date.now() < warnUntil) $('p-step').textContent = 'Aucune réponse : confirmer ?';
+    // À l'étape « Question suivante », le glisser fait pareil : le bouton se cache sur téléphone.
+    $('p-step').classList.toggle('s-swipe-only', !!q && op === 'next');
     $('p-step').title = {
       open: 'Les participants peuvent répondre', close: 'Plus aucune réponse acceptée',
       show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',

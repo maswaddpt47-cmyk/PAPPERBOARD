@@ -542,7 +542,7 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 /* Écran tactile étroit : glisser remplace Précédente / Suivante. */
 .s-swipe { display: none; font-size: .85rem; color: var(--wl-texte-doux); }
 @media (max-width: 760px) and (pointer: coarse) {
-  #p-prev, #p-next { display: none; }
+  #p-prev, #p-next, #p-step.s-swipe-only { display: none; }
   .s-swipe { display: inline; }
 }
 /* QR masqué depuis l'espace animateur : la place va au contenu. */

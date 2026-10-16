@@ -157,7 +157,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Mur : « j'aime » seulement publié et vote ouvert ; le bouton central publie
   donc avant de fermer.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
-- Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal ; nav).
+- Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal) ; le bouton central est
+  caché à l'étape « Question suivante » (le glisser fait pareil), jamais aux autres (nav).
 - Avant / après (`compare`, 16/10/2026) : quiz (bonne réponse) ou échelle posés deux
   fois, même type et mêmes choix, « avant » placé avant (`wl_compare_shape`, e2e).
   **Agrégats seulement** (% de bonnes réponses, moyenne) : jamais relier un

@@ -95,6 +95,15 @@ function check(cond, label) {
   check(votes.length === 1, 'vote envoyé par le bouton « Envoyer »');
   check(await phone.getAttribute('.btn-choice >> text=Oui', 'aria-pressed') === 'true', 'choix marqué');
 
+  // Pilote sur téléphone : les étapes ouvrir / fermer / afficher restent des boutons ;
+  // « Question suivante » se cache (le glisser fait pareil).
+  const mob = await (await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true,
+    storageState: await admin.context().storageState() })).newPage();
+  await mob.goto(BASE + 'screen.php?s=' + code);
+  await mob.waitForSelector('#s-pilot:not([hidden])');
+  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Fermer le vote');
+  check(await mob.locator('#p-step').isVisible(), 'pilote sur téléphone : « Fermer le vote » reste un bouton');
+
   // Coût : requêtes du téléphone pendant 10 s sans changement.
   const requests = [];
   phone.on('response', r => { if (r.url().includes('action=state')) requests.push(r.status()); });
@@ -112,6 +121,9 @@ function check(cond, label) {
   check(/100 % · Bonne réponse/.test(await screen.textContent('#s-results .donut-legend .is-good')), 'résultat projeté');
   await phone.waitForSelector('#my-result:not([hidden])');
   check(/Bonne réponse !/.test(await phone.textContent('#my-result')), 'correction sur le téléphone');
+  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Question suivante');
+  check(await mob.locator('#p-step').isHidden(), 'pilote sur téléphone : « Question suivante » caché, le glisser le remplace');
+  await mob.context().close();
 
   // Vrai/Faux corrigé et modifiable : un appui envoie tout de suite, sans « Envoyer ».
   await admin.click('#live [data-op="next"]');
