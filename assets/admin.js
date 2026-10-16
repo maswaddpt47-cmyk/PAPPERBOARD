@@ -44,6 +44,7 @@
       if (r.status !== 200) { $('login-error').textContent = r.data.error; return; }
       $('password').value = '';
       csrf = r.data.csrf;
+      setBeta(r.data.prefs);
       showSessions();
     }, function () { $('login-error').textContent = 'Pas de connexion au serveur.'; });
   });
@@ -715,9 +716,9 @@
   });
 
   // --- Fonctions en essai : défi à étapes ----------------------------------------
-  // Réglage propre à cet ordinateur (jamais envoyé) ; le serveur accepte le type dans tous les cas.
+  // Réglage commun à tous les appareils de l'animateur (prefs.json) ; le serveur accepte le type dans tous les cas.
   var beta = false;
-  try { beta = localStorage.getItem('wl_beta') === '1'; } catch (e) { /* stockage indisponible */ }
+  function setBeta(prefs) { beta = !!(prefs && prefs.beta); applyBeta(); }
   function applyBeta() {
     $('beta-steps').checked = beta;
     $('qf-type-steps').hidden = !beta;
@@ -726,9 +727,7 @@
     WL.show($('gen-defi-box'), beta);
   }
   $('beta-steps').addEventListener('change', function () {
-    beta = $('beta-steps').checked;
-    try { localStorage.setItem('wl_beta', beta ? '1' : '0'); } catch (e) { /* idem */ }
-    applyBeta();
+    post('prefs_save', { beta: $('beta-steps').checked }).then(function (d) { setBeta(d.prefs); });
   });
   applyBeta();
 
@@ -1033,6 +1032,7 @@
 
   WL.api('me').then(function (r) {
     csrf = r.data.csrf || '';
+    setBeta(r.data.prefs);
     if (r.data.admin) showSessions();
     else showLogin('');
   }, function () { showLogin('Pas de connexion au serveur.'); });

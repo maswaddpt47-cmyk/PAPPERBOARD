@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save'];
 
 try {
     wl_maybe_purge();
@@ -321,7 +321,13 @@ function api_screen(): void
 
 function api_me(): void
 {
-    wl_json(['ok' => true, 'admin' => wl_is_admin(), 'csrf' => $_SESSION['csrf'] ?? '']);
+    wl_json(['ok' => true, 'admin' => wl_is_admin(), 'csrf' => $_SESSION['csrf'] ?? '', 'prefs' => wl_is_admin() ? wl_prefs() : null]);
+}
+
+/** Fonctions en essai : un réglage pour tous les appareils de l'animateur. */
+function api_prefs_save(array $b): void
+{
+    wl_json(['ok' => true, 'prefs' => wl_prefs_save($b)]);
 }
 
 function api_login(array $b): void
@@ -331,7 +337,7 @@ function api_login(array $b): void
     }
     wl_login((string)($b['password'] ?? ''));
     wl_maybe_purge();
-    wl_json(['ok' => true, 'csrf' => $_SESSION['csrf']]);
+    wl_json(['ok' => true, 'csrf' => $_SESSION['csrf'], 'prefs' => wl_prefs()]);
 }
 
 function api_logout(array $b): void

@@ -1955,6 +1955,24 @@ function wl_show_view(array $s): array
 // Tâche planifiée : preuve de passage
 // ---------------------------------------------------------------------------
 
+/** Réglages de l'animateur communs à tous ses appareils : fonctions en essai
+ *  (fichier prefs.json dans les données, jamais effacé par la purge). */
+function wl_prefs(): array
+{
+    $f = wl_data_dir() . '/prefs.json';
+    $p = is_file($f) ? json_decode((string)file_get_contents($f), true) : null;
+    return ['beta' => is_array($p) && !empty($p['beta'])];
+}
+
+function wl_prefs_save(array $in): array
+{
+    $prefs = ['beta' => !empty($in['beta'])];
+    $f = wl_data_dir() . '/prefs.json';
+    file_put_contents($f . '.tmp', json_encode($prefs));
+    rename($f . '.tmp', $f);
+    return $prefs;
+}
+
 /** Dernier passage de purge.php lancé par la tâche planifiée (null : jamais).
  *  Distinct de last-purge, que les simples visites mettent aussi à jour. */
 function wl_last_cron(): ?int

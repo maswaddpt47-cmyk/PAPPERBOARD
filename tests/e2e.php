@@ -594,6 +594,16 @@ expect_status($admin->post('questions_import', ['s' => $dcopy, 'raw' => $dx['bod
 check($admin->get("api.php?action=export&format=questions&s=$dcopy")['body'] === $dx['body'], 'défi : réimport identique');
 check(count($admin->get("api.php?action=admin_state&s=" . ($admin->post('session_duplicate', ['s' => $df])['json']['code'] ?? ''))['json']['questions'][0]['variants'] ?? []) === 2, 'défi : la copie de session garde les variantes');
 
+// --- Fonctions en essai : un réglage commun à tous les appareils de l'animateur ---------
+check(($admin->get('api.php?action=me')['json']['prefs']['beta'] ?? null) === false, 'essai : éteint par défaut');
+expect_status($admin->post('prefs_save', ['beta' => true], false), 403, 'essai : réglage sans CSRF refusé');
+check(in_array($dc[0]->post('prefs_save', ['beta' => true])['status'], [401, 403], true), 'essai : réglage refusé à un participant');
+expect_status($admin->post('prefs_save', ['beta' => true]), 200, 'essai : allumé');
+$other = new Client($base);
+$ol = $other->post('login', ['password' => getenv('WL_PASSWORD')]);
+check(($ol['json']['prefs']['beta'] ?? null) === true && ($other->get('api.php?action=me')['json']['prefs']['beta'] ?? null) === true, 'essai : vu par un autre appareil (réglage serveur)');
+$admin->post('prefs_save', ['beta' => false]);
+
 // --- Signaler une difficulté, Oser demander, pseudonymes et classement -----------
 $ws = $admin->post('session_create', ['title' => 'Atelier élèves'])['json']['code'] ?? '';
 $el = [new Client($base), new Client($base), new Client($base)];

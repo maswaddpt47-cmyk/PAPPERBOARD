@@ -228,7 +228,7 @@ header('Cache-Control: no-store');
         <button id="end-btn" class="btn" type="button"></button></p>
       <p class="row wrap"><button id="ed-archive" class="btn" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)">Archiver la session</button>
         <button id="ed-delete" class="btn btn-danger" type="button" title="Efface la session et toutes ses réponses">Supprimer la session</button></p>
-      <label class="check" title="Montre le défi à étapes, encore en essai : il n'apparaît nulle part ailleurs"><input id="beta-steps" type="checkbox"> Afficher les fonctions en essai (défi à étapes)</label>
+      <label class="check" title="Montre le défi à étapes, encore en essai : le réglage vaut pour tous tes appareils, il n'apparaît nulle part ailleurs"><input id="beta-steps" type="checkbox"> Afficher les fonctions en essai (défi à étapes), sur tous mes appareils</label>
       <p id="cron-state" class="cron-state" role="status" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"></p>
     </div>
     </div>

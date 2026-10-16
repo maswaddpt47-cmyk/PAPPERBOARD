@@ -238,10 +238,15 @@ function check(cond, label) {
   check(/utile/.test(await admin.locator('#q-list .list-item').nth(5).textContent())
     && /prochain pas/.test(await admin.locator('#q-list .list-item').nth(7).textContent()), 'clôture : trois questions ajoutées à la fin');
 
-  // Démo avec les fonctions en essai : le défi à étapes ferme la session, la salle fictive l'a déjà commencé.
+  const api = admin.context().request;
+  const csrf = (await (await api.get(BASE + 'api.php?action=me')).json()).csrf;
+  const post = async (action, data) => (await api.post(BASE + 'api.php?action=' + action, { headers: { 'X-WL': '1', 'X-CSRF-Token': csrf }, data })).json();
+
+  // Démo avec les fonctions en essai (réglage commun à tous les appareils) : le défi à étapes
+  // ferme la session, la salle fictive l'a déjà commencé.
+  await post('prefs_save', { beta: true });
   const demoPage = await admin.context().newPage();
   watch(demoPage, 'démo');
-  await demoPage.addInitScript(() => localStorage.setItem('wl_beta', '1'));
   await demoPage.goto(BASE + 'admin.php');
   await demoPage.click('#demo-btn');
   await demoPage.waitForSelector('#editor:not([hidden])');
@@ -249,11 +254,9 @@ function check(cond, label) {
   const lastDemo = demoPage.locator('#q-list .list-item').last();
   check(/Défi à étapes — [1-9]\d* réponses?/.test(await lastDemo.textContent()), 'démo : le défi à étapes est ajouté, avec des étapes déjà cochées');
   await demoPage.close();
+  await post('prefs_save', { beta: false });
 
   // --- Défi à étapes, sur un ordinateur : l'appareil se choisit une fois, « Fait » coche et décoche.
-  const api = admin.context().request;
-  const csrf = (await (await api.get(BASE + 'api.php?action=me')).json()).csrf;
-  const post = async (action, data) => (await api.post(BASE + 'api.php?action=' + action, { headers: { 'X-WL': '1', 'X-CSRF-Token': csrf }, data })).json();
   const ds = (await post('session_create', { title: 'Défi navigateur' })).code;
   const dq = (await post('question_save', { s: ds, question: { type: 'steps', text: 'Coupe les notifications',
     options: ['Ouvrir', 'Couper', 'Vérifier'], variants: { Windows: ['W1', 'W2', 'W3'], Mac: ['M1', 'M2', 'M3'] } } })).id;
