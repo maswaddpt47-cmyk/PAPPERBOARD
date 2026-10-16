@@ -519,6 +519,7 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .screen-main, .s-live .screen-main { margin-right: 0; }
   .qr-corner, .s-live .qr-corner { width: 5.5rem; padding: .3rem; right: .75rem; bottom: .75rem; }
   .s-pilot { max-width: calc(100% - 8rem); }
+  .s-keys { display: none; } /* pas de clavier sur un téléphone */
 }
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }

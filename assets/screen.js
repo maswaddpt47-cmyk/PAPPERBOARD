@@ -379,6 +379,12 @@
     $('p-next').disabled = !!last && last.position >= last.count;
     var voting = !!q && q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
     WL.show($('p-reopen'), !!q && !ended && q.state !== 'draft' && !voting);
+    // Moins de boutons (demande du 16/10/2026) : « Suivante » seulement quand le
+    // bouton central fait autre chose ; décompte déjà projeté en grand ; « Bilan »
+    // à la dernière question (touche B toujours active).
+    WL.show($('p-next'), op !== 'next' && op !== 'end' && !!last && last.position < last.count);
+    WL.show($('p-count'), false);
+    WL.show($('p-board'), ended || (!!last && last.count > 0 && last.position >= last.count));
   }
 
   if (document.body.dataset.pilot) WL.api('me').then(function (r) {

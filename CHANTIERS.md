@@ -205,7 +205,10 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 - **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
   navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
   ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
-  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit. « Rouvrir le
+  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
+  Barre allégée (16/10/2026, demande de l'utilisateur) : « Suivante » masquée quand
+  le bouton central est « Question suivante », décompte non répété (déjà projeté),
+  « Bilan » à la dernière question ou après la fin (touche B toujours active). « Rouvrir le
   vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
 - **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit les barres qui
   débordent (7 longs choix + explication tiennent en 1280x720) ; nuage : ajuste la taille de
