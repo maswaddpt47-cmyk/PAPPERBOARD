@@ -544,6 +544,16 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .qr-corner, .s-live .qr-corner { width: 5.5rem; padding: .3rem; right: .75rem; bottom: .75rem; }
   .s-pilot { max-width: calc(100% - 8rem); }
   .s-keys { display: none; } /* pas de clavier sur un téléphone */
+  /* Gommettes : l'idée sur toute la largeur, puis pastilles et décompte dessous (la
+     grille à largeurs minimales débordait de l'écran : 509 px mesurés sur 390, 16/10/2026). */
+  .dots-row { grid-template-columns: 1fr auto; }
+  .dots-row .dots-text { grid-column: 1 / -1; }
+  .dots-rank { padding-left: 1.4em; }
+  .screen-main { padding-bottom: 8rem; } /* le QR code, fixé en bas à droite, ne cache plus la dernière ligne */
+  .screen-head { padding: .75rem 1rem; }
+  .screen-tools { flex-wrap: wrap; gap: .35rem; }
+  .screen-tools .btn { font-size: .85rem; min-height: 2.75rem; padding: .3rem .6rem; }
+  .s-count { margin-right: .35rem; }
   /* Boutons du pilotage plus compacts (cible tactile 44 px gardée). */
   .s-pilot { gap: .35rem; }
   .s-pilot .btn { font-size: .9rem; min-height: 2.75rem; padding: .3rem .75rem; }

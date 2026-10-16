@@ -281,6 +281,19 @@ function check(cond, label) {
   check(JSON.stringify(dst2.questions[0].results.counts) === '[0,0,0]', 'défi : décocher retire l\'étape');
   await dphone.context().close();
 
+  // Projection des gommettes sur un écran étroit (téléphone) : jamais plus large que l'écran.
+  const wideDemo = (await post('session_demo', {})).code;
+  const wideQs = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + wideDemo)).json()).questions;
+  await post('control', { s: wideDemo, op: 'goto', qid: wideQs.find(x => x.type === 'dots').id });
+  const narrow = await (await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true })).newPage();
+  watch(narrow, 'projection étroite');
+  await narrow.goto(BASE + 'screen.php?s=' + wideDemo);
+  await narrow.waitForSelector('#s-results .dots-row');
+  await narrow.waitForTimeout(800);
+  check(await narrow.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+    'gommettes sur 390 px : la page ne dépasse pas la largeur de l\'écran (pas de défilement horizontal)');
+  await narrow.context().close();
+
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();
   console.log('navigateur : ' + ok + ' vérifications OK, ' + ko + ' échec(s)');

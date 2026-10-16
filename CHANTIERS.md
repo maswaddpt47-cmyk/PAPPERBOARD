@@ -160,6 +160,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Mur : « j'aime » seulement publié et vote ouvert ; le bouton central publie
   donc avant de fermer.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
+- Projection sur écran étroit : rien ne dépasse la largeur (gommettes : grille à 3
+  colonnes fixes = 509 px sur 390, corrigé le 16/10/2026 ; nav, 390 px).
 - Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal) ; le bouton central est
   caché à l'étape « Question suivante » (le glisser fait pareil), jamais aux autres (nav).
 - Défi à étapes (`steps`, 16/10/2026, en essai) : titres d'étapes communs ; variantes
