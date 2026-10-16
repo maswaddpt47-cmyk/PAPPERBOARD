@@ -512,6 +512,14 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
    et le recale au pixel (petit saut constaté le 15/10/2026, hypothèse non vérifiée). */
 #s-recap { will-change: transform; backface-visibility: hidden; }
 .s-rolling { overflow: hidden; }
+/* Projection sur écran étroit (téléphone, tablette en portrait) : la marge
+   réservée au QR code prenait près de la moitié de la largeur (nuage à 251 px
+   sur 449, mesuré le 16/10/2026). Le QR reste en bas à droite. */
+@media (max-width: 760px) {
+  .screen-main, .s-live .screen-main { margin-right: 0; }
+  .qr-corner, .s-live .qr-corner { width: 5.5rem; padding: .3rem; right: .75rem; bottom: .75rem; }
+  .s-pilot { max-width: calc(100% - 8rem); }
+}
 /* QR masqué depuis l'espace animateur : la place va au contenu. */
 .s-noqr:not(.s-qr-big) .qr-corner { display: none; }
 .s-noqr .screen-main { margin-right: 0; }
