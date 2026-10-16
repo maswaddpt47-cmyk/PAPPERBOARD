@@ -680,6 +680,20 @@
     $('ice-select').value = '';
   });
 
+  // Clôture : questions de fin d'atelier, ajoutées à la suite par l'import (validé côté serveur).
+  var CLOSING = {
+    utile: { type: 'scale', text: 'Cet atelier vous a-t-il été utile ?', scaleMax: 5 },
+    retenu: { type: 'wordcloud', text: 'Un mot pour ce que vous retenez de cet atelier ?' },
+    pas: { type: 'text', text: 'Le prochain pas que vous voulez essayer, après cet atelier ?' }
+  };
+  $('end-btn-add').addEventListener('click', function () {
+    var pick = $('end-select').value;
+    var list = pick === 'tout' ? [CLOSING.utile, CLOSING.retenu, CLOSING.pas] : CLOSING[pick] ? [CLOSING[pick]] : null;
+    if (!list) { banner('Choisissez une clôture dans la liste.'); return; }
+    act('questions_import', { raw: JSON.stringify(list), keep: list.map(function (_, i) { return i; }) });
+    $('end-select').value = '';
+  });
+
   function genPrompt() {
     return [
       'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',

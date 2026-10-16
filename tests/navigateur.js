@@ -75,6 +75,16 @@ function check(cond, label) {
   await phone.fill('#code', code.toLowerCase());
   await phone.click('#join-form button');
   await phone.waitForSelector('#question:not([hidden]) .btn-choice');
+  // Taille du texte : A+ agrandit, le réglage reste après rechargement, A− revient.
+  const px = () => phone.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
+  const base = await px();
+  await phone.click('#size-up');
+  check(await px() > base, 'téléphone : A+ agrandit le texte');
+  await phone.reload();
+  await phone.waitForSelector('#question:not([hidden]) .btn-choice');
+  check(await px() > base, 'téléphone : taille du texte gardée après rechargement');
+  await phone.click('#size-down');
+  check(await px() === base, 'téléphone : A− revient à la taille normale');
   const votes = [];
   phone.on('request', r => { if (r.url().includes('action=vote')) votes.push(r.url()); });
   await phone.click('.btn-choice >> text=Oui');
@@ -210,6 +220,11 @@ function check(cond, label) {
   await admin.click('#gen-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 5);
   check(true, 'import d\'un fichier JSON : lu, vérifié, ajouté');
+  await admin.selectOption('#end-select', 'tout');
+  await admin.click('#end-btn-add');
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 8);
+  check(/utile/.test(await admin.locator('#q-list .list-item').nth(5).textContent())
+    && /prochain pas/.test(await admin.locator('#q-list .list-item').nth(7).textContent()), 'clôture : trois questions ajoutées à la fin');
 
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();

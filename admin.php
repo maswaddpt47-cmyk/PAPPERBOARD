@@ -105,6 +105,15 @@ header('Cache-Control: no-store');
           <option value="papier">📖 Plutôt papier ou écran ?</option>
         </select>
         <button id="ice-btn" class="btn" type="button" title="Ajoute le brise-glace en tête de la session">Ajouter en premier</button></p>
+      <p class="row wrap"><label for="end-select" class="sr-only">Clôture</label>
+        <select id="end-select" title="Des questions de fin d'atelier prêtes à l'emploi, modifiables ensuite">
+          <option value="">Clôture…</option>
+          <option value="tout">🏁 Les trois questions de clôture</option>
+          <option value="utile">⭐ Utilité de l'atelier (1 à 5)</option>
+          <option value="retenu">💬 Un mot pour ce que vous retenez</option>
+          <option value="pas">👣 Le prochain pas que vous voulez essayer</option>
+        </select>
+        <button id="end-btn-add" class="btn" type="button" title="Ajoute la clôture à la fin de la session">Ajouter à la fin</button></p>
     </div>
 
     <div class="card">
