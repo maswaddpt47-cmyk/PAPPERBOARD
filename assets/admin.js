@@ -384,7 +384,8 @@
     var ok = min !== null && min <= 120;
     box.className = 'cron-state ' + (ok ? 'is-ok' : 'is-ko');
     box.textContent = min === null
-      ? '⚠️ La purge horaire n\'a jamais tourné : vérifiez la tâche planifiée chez Alwaysdata (php ~/www/purge.php, chaque heure).'
+      ? '⚠️ Aucun passage de la purge horaire noté pour l\'instant. Normal dans l\'heure qui suit une mise à jour ; au-delà, '
+        + 'vérifiez la tâche planifiée chez Alwaysdata (php ~/www/purge.php, chaque heure).'
       : (ok ? '✓ ' : '⚠️ ') + 'Dernier passage de la purge horaire : il y a '
         + (min < 60 ? WL.plural(min, 'minute') : WL.plural(Math.round(min / 60), 'heure'))
         + (ok ? '.' : ' : la tâche planifiée ne tourne plus, vérifiez-la chez Alwaysdata.');
