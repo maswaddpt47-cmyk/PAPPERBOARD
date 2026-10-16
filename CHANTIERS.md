@@ -178,54 +178,37 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   recharger. Tenu par `tests/e2e.php` (« Projection en direct »).
 - **Génération par une IA** (14/10/2026) : copier-coller, WoocLight n'appelle
   aucune IA. Réponse collée validée **côté serveur** (`wl_import_parse`, mêmes
-  règles que le formulaire), tout ou rien ; bonnes réponses données **par leur
-  texte** ; gommettes reliées à leur source par sa position ; « \[ », « \] » et
-  espaces insécables de l'affichage d'une IA retirés ; `.json` de 60 Ko au plus.
-  Consignes du texte pour l'IA (`genPrompt`) tirées des essais du 14/10/2026 sur
-  ChatGPT, Gemini, Mistral et Claude : mauvaises réponses crédibles, une seule
-  échelle en fin d'atelier, s'adresser au public (tutoiement des jeunes),
-  explication sourcée ou « pas de source sûre », conclusion en fin de liste,
-  QCM multiple plutôt que sondage quand plusieurs réponses vont ensemble.
-  Évaluation croisée anonymisée : ChatGPT > Claude > Mistral > Gemini ; deux IA
-  sur quatre se classent premières. **Règle : l'IA qui écrit ne relit pas**
-  (décision de l'utilisateur) : relecture par une IA d'un autre éditeur
-  (« Copier la consigne de relecture » : public → fond → sources → forme), les
-  liens sont ouverts par l'utilisateur, pas de seconde relecture par IA.
-  ⚠️ Jamais de question d'âge légal ou de loi sans vérification sur Légifrance
-  (trois IA ont cité trois lois différentes). Conseiller 10 à 12 questions.
-  Import tenu par `tests/e2e.php` (« Import ») et `tests/navigateur.js`.
-  Gommettes : `column` obligatoire si l'intitulé cite une colonne (15/10/2026).
-  Texte pour l'IA : affirmation = « truefalse », jamais « yesno » (15/10/2026).
-  « Que des quiz » (case du formulaire) ne change que le texte pour l'IA :
-  l'import valide pareil côté serveur, aucune règle n'est imposée au contenu.
+  règles que le formulaire), tout ou rien ; bonnes réponses données par leur
+  texte ; gommettes reliées à leur source par sa position ; « \[ », « \] » et
+  espaces insécables retirés ; `.json` de 60 Ko au plus. Consignes (`genPrompt`)
+  tirées des essais du 14/10/2026 (ChatGPT, Gemini, Mistral, Claude) : mauvaises
+  réponses crédibles, une échelle en fin d'atelier, tutoiement des jeunes,
+  explication sourcée ou « pas de source sûre », QCM multiple si plusieurs réponses
+  vont ensemble, affirmation = « truefalse », `column` obligatoire pour des
+  gommettes qui citent une colonne. « Que des quiz » ne change que ce texte.
+  **L'IA qui écrit ne relit pas** (décision de l'utilisateur) : relecture par
+  une IA d'un autre éditeur, liens ouverts par l'utilisateur. ⚠️ Jamais de
+  question d'âge légal ou de loi sans Légifrance. Tenu par e2e et navigateur.
 - Export des questions en `.json` (14/10/2026, `wl_export_questions`) : même
   format que l'import, **sans aucune réponse de participant**, réglages compris
   (durée, correction, modification, direct). Réimporter un export redonne le
   même fichier : tenu par `tests/e2e.php` (« Export des questions »).
-- **Pilotage depuis la projection** (15/10/2026) : actif seulement si le
-  navigateur a le cookie animateur (`data-pilot`, sinon aucune session PHP
-  ouverte pour un visiteur), puis vérifié par `me` et `control` (session +
-  CSRF), comme `admin.php`. Aucune nouvelle page ni nouveau droit.
-  Barre allégée (16/10/2026, demande de l'utilisateur) : « Suivante » masquée quand
-  le bouton central est « Question suivante », décompte non répété (déjà projeté),
-  « Bilan » à la dernière question ou après la fin (touche B toujours active).
-  Téléphone (écran tactile étroit) : glisser ← → remplace Précédente / Suivante
-  (geste horizontal ≥ 60 px et deux fois plus large que haut ; tenu par
-  `tests/navigateur.js`). Boutons compacts sur écran étroit (cible 44 px).
+- **Pilotage depuis la projection** (15/10/2026) : seulement avec le cookie
+  animateur (`data-pilot`), vérifié par `me` et `control` (session + CSRF) ; aucun
+  nouveau droit. Barre allégée (16/10/2026) : « Suivante » masquée si le bouton
+  central l'est déjà, décompte non répété, « Bilan » en fin de session (touche B
+  toujours). Téléphone : glisser ← → remplace Précédente / Suivante (≥ 60 px,
+  deux fois plus large que haut ; tenu par navigateur), boutons 44 px.
 - Glissement des lignes réordonnées (`WL.playFlip`) : **mur et gommettes
   seulement**. Sur le nuage, les mots encore décalés faussaient `fitResults` :
   police divisée par 2 à chaque mise à jour (mesuré le 16/10/2026 sur la démo,
   écran 449 px : 74 → 32 px ; corrigé : 74 → 74). Non tenu par un test (le
   nuage à 2 mots du test navigateur ne reproduit pas). « Rouvrir le
   vote » (15/10/2026) : masque d'abord les résultats, sauf mur et post-it.
-- **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit les barres qui
-  débordent (7 longs choix + explication tiennent en 1280x720) ; nuage : ajuste la taille de
-  l'ensemble pour tenir dans l'écran (mesuré en local, Chromium, 3 à 60 mots,
-  1280x720 et 1920x1000 : aucun défilement). Mots horizontaux, jamais de
-  rotation (lisibilité de loin pour des seniors). Tailles relatives 35-100 %
-  selon la fréquence ; au-delà de 60 mots, seuls les 60 plus cités (lib.php).
-- Projection, résultats affichés (`.s-live`) : question à 0,95 em et barres plus
-  hautes (15/10/2026, demande de l'utilisateur : lisibilité des résultats).
+- **Résultats projetés** (15/10/2026) : `WL.fitResults()` réduit ce qui déborde
+  (7 longs choix + explication en 1280x720) ; nuage ajusté à l'écran (3 à 60 mots,
+  mesuré sans défilement), mots horizontaux, 60 plus cités au plus. `.s-live` :
+  question réduite, barres plus hautes. Sous 760 px : pas de marge pour le QR.
 - Ressources appelées par `wl_asset()` (`?v=` date du fichier) : sans lui, un
   navigateur garde l'ancien JS après un déploiement (hypothèse retenue le
   15/10/2026 : pilotage introuvable chez l'utilisateur, alors qu'il marchait
