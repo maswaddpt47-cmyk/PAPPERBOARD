@@ -565,6 +565,35 @@ expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body
 check($admin->get("api.php?action=export&format=questions&s=$cc")['body'] === $expc['body'], 'avant/après : réimport identique');
 expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => [1]]), 400, 'avant/après : import sans la question « avant » refusé');
 
+// --- Défi à étapes : étapes cochées, variantes par système ------------------------
+$df = $admin->post('session_create', ['title' => 'Défi'])['json']['code'] ?? '';
+$ds = fn(array $q) => $admin->post('question_save', ['s' => $df, 'question' => $q]);
+expect_status($ds(['type' => 'steps', 'text' => 'Une étape', 'options' => ['A']]), 400, 'défi : deux étapes au moins');
+$three = fn(string $os) => ["$os : ouvre", "$os : coupe", "$os : vérifie"];
+expect_status($ds(['type' => 'steps', 'text' => 'Inégal', 'options' => ['A', 'B'], 'variants' => [['name' => 'Windows', 'steps' => ['a', 'b']], ['name' => 'Mac', 'steps' => ['a']]]]), 400, 'défi : variantes de longueurs différentes refusées');
+expect_status($ds(['type' => 'steps', 'text' => 'Une variante', 'options' => ['A', 'B'], 'variants' => ['Windows' => ['a', 'b']]]), 400, 'défi : une seule variante refusée');
+$did = $ds(['type' => 'steps', 'text' => 'Coupe les notifications', 'options' => ['Ouvrir', 'Couper', 'Vérifier'],
+    'variants' => ['Windows' => $three('Windows'), 'Mac' => $three('Mac')]])['json']['id'] ?? '';
+$dc = [new Client($base), new Client($base)];
+foreach ($dc as $c) { $c->join($df); }
+$admin->post('control', ['s' => $df, 'op' => 'goto', 'qid' => $did]);
+expect_status($dc[0]->vote($df, $did, [0, 1]), 200, 'défi : deux étapes cochées');
+expect_status($dc[1]->vote($df, $did, [2, 1, 0]), 200, 'défi : trois étapes cochées');
+expect_status($dc[1]->vote($df, $did, [7]), 400, 'défi : étape inconnue refusée');
+expect_status($dc[1]->vote($df, $did, 1), 400, 'défi : réponse qui n\'est pas une liste refusée');
+$dr = fn() => $admin->get("api.php?action=admin_state&s=$df")['json']['questions'][0]['results'] ?? [];
+check(($dr()['counts'] ?? []) === [2, 2, 1] && ($dr()['finished'] ?? -1) === 1 && ($dr()['total'] ?? -1) === 2, 'défi : compteurs par étape et nombre de personnes ayant fini');
+check(($dc[0]->get("api.php?action=screen&s=$df")['json']['results']['counts'] ?? []) === [2, 2, 1], 'défi : progression visible sur la projection sans clic (direct)');
+check(count($dc[0]->get("api.php?action=state&s=$df")['json']['question']['variants'] ?? []) === 2, 'défi : variantes envoyées au téléphone');
+expect_status($dc[0]->vote($df, $did, []), 200, 'défi : tout décoché');
+check(($dr()['counts'] ?? []) === [1, 1, 1] && ($dr()['total'] ?? -1) === 1, 'défi : tout décoché = plus compté comme ayant commencé');
+$dx = $admin->get("api.php?action=export&format=questions&s=$df");
+check(array_keys(json_decode($dx['body'], true)[0]['variants'] ?? []) === ['Windows', 'Mac'], 'défi : variantes exportées par nom');
+$dcopy = $admin->post('session_create', ['title' => 'Défi copie'])['json']['code'] ?? '';
+expect_status($admin->post('questions_import', ['s' => $dcopy, 'raw' => $dx['body'], 'keep' => [0]]), 200, 'défi : réimport');
+check($admin->get("api.php?action=export&format=questions&s=$dcopy")['body'] === $dx['body'], 'défi : réimport identique');
+check(count($admin->get("api.php?action=admin_state&s=" . ($admin->post('session_duplicate', ['s' => $df])['json']['code'] ?? ''))['json']['questions'][0]['variants'] ?? []) === 2, 'défi : la copie de session garde les variantes');
+
 // --- Signaler une difficulté, Oser demander, pseudonymes et classement -----------
 $ws = $admin->post('session_create', ['title' => 'Atelier élèves'])['json']['code'] ?? '';
 $el = [new Client($base), new Client($base), new Client($base)];

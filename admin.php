@@ -114,6 +114,13 @@ header('Cache-Control: no-store');
           <option value="pas">👣 Le prochain pas que vous voulez essayer</option>
         </select>
         <button id="end-btn-add" class="btn" type="button" title="Ajoute la clôture à la fin de la session">Ajouter à la fin</button></p>
+      <p id="challenge-row" class="row wrap" hidden><label for="challenge-select" class="sr-only">Défi</label>
+        <select id="challenge-select" title="Un défi pratique à étapes prêt à l'emploi, modifiable ensuite (essai)">
+          <option value="">Défi à étapes (essai)…</option>
+          <option value="notifs">🔕 Couper les notifications inutiles (Windows, Mac, iPhone, Android)</option>
+          <option value="temps">⏱️ Regarder son temps d'écran (iPhone, Android)</option>
+        </select>
+        <button id="challenge-btn" class="btn" type="button" title="Ajoute le défi à la fin de la session">Ajouter à la fin</button></p>
     </div>
 
     <div class="card">
@@ -221,6 +228,7 @@ header('Cache-Control: no-store');
         <button id="end-btn" class="btn" type="button"></button></p>
       <p class="row wrap"><button id="ed-archive" class="btn" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)">Archiver la session</button>
         <button id="ed-delete" class="btn btn-danger" type="button" title="Efface la session et toutes ses réponses">Supprimer la session</button></p>
+      <label class="check" title="Montre le défi à étapes, encore en essai : il n'apparaît nulle part ailleurs"><input id="beta-steps" type="checkbox"> Afficher les fonctions en essai (défi à étapes)</label>
       <p id="cron-state" class="cron-state" role="status" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"></p>
     </div>
     </div>
@@ -244,6 +252,7 @@ header('Cache-Control: no-store');
             <input id="gen-count" type="number" min="3" max="20" value="10"></div>
         </div>
         <label class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
+        <label id="gen-defi-box" class="check" hidden><input id="gen-defi" type="checkbox"> Ajouter un défi pratique à étapes après les quiz (essai)</label>
         <p><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button">Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
@@ -288,9 +297,13 @@ header('Cache-Control: no-store');
           <option value="wall">Mur collaboratif</option>
           <option value="postit">Post-it collectif</option>
           <option value="dots">Vote par gommettes</option>
+          <option value="steps" id="qf-type-steps" hidden disabled>Défi à étapes (essai)</option>
         </select>
         <label for="qf-text">Intitulé</label>
         <textarea id="qf-text" rows="2" maxlength="200" required></textarea>
+        <div id="qf-variants-box" hidden><label for="qf-variants" title="Les mêmes étapes, détaillées pour chaque système : le participant choisit le sien une fois">Variantes par appareil (facultatif)</label>
+          <textarea id="qf-variants" rows="8" placeholder="[Windows]&#10;Ouvre les Paramètres.&#10;Va dans Système puis Notifications.&#10;&#10;[Mac]&#10;Ouvre Réglages Système.&#10;Va dans Notifications."></textarea>
+          <p class="meta">Une ligne « [Nom] » ouvre une variante (2 à 4 : Windows, Mac, iPhone, Android…), suivie d'une ligne par étape. Même nombre d'étapes que la liste des titres, 160 caractères au plus par étape.</p></div>
         <div id="qf-options-box">
           <label for="qf-options" id="qf-options-label">Choix (un par ligne, 2 à 10)</label>
           <textarea id="qf-options" rows="4"></textarea>

@@ -120,7 +120,7 @@ var WL = (function () {
   var TYPES = {
     yesno: 'Oui / Non', truefalse: 'Vrai / Faux', mcq: 'QCM', poll: 'Sondage',
     wordcloud: 'Nuage de mots', text: 'Réponse libre', scale: 'Échelle', points: 'Classement par points',
-    wall: 'Mur collaboratif', postit: 'Post-it collectif', dots: 'Vote par gommettes'
+    wall: 'Mur collaboratif', postit: 'Post-it collectif', dots: 'Vote par gommettes', steps: 'Défi à étapes'
   };
 
   function plural(n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); }
@@ -449,9 +449,10 @@ var WL = (function () {
     }
     var post = q.type === 'wall' || q.type === 'postit';
     // Projection : « 3 / 5 ont répondu » (opts.participants), ailleurs le total seul.
-    var foot = !post && opts.participants ? res.total + ' / ' + opts.participants + ' ont répondu'
+    var foot = !post && opts.participants ? res.total + ' / ' + opts.participants + (q.type === 'steps' ? ' ont commencé' : ' ont répondu')
       : plural(res.total, q.type === 'wall' ? 'message' : q.type === 'postit' ? 'post-it' : 'réponse');
     if (q.type === 'scale' && res.average !== null) foot += ' — moyenne ' + String(res.average).replace('.', ',') + ' / ' + q.scaleMax;
+    if (q.type === 'steps') foot += ' — ' + res.finished + (res.finished > 1 ? ' ont' : ' a') + ' terminé toutes les étapes';
     container.appendChild(el('p', { class: 'results-foot' }, foot));
     if (res.compare) container.appendChild(el('p', { class: 'results-compare' }, compareText(res.compare)));
     if (before && WL.playFlip) WL.playFlip(container, before);

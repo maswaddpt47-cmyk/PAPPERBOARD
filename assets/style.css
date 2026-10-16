@@ -252,6 +252,15 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .bars-scale .bar-fill { width: 100%; height: 0; border-radius: 8px; background: var(--wl-b3); }
 .s-results .bars-scale .bar-track { height: 40vh; }
 .results-foot { color: var(--wl-texte-doux); margin-top: .75rem; }
+.steps { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .75rem; }
+.step { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: .75rem 1rem;
+  background: var(--wl-carte); border: 2px solid var(--wl-bord, #D8C3A8); border-radius: .5rem; }
+.step.is-done { border-color: var(--wl-ok); }
+.step-text { flex: 1; }
+.step-detail { display: block; margin-top: .25rem; color: var(--wl-texte-doux); font-size: .95rem; }
+.btn-fait { min-width: 6.5rem; min-height: 3rem; }
+.device-line .btn { min-height: 2.5rem; margin-left: .5rem; }
+.btn-fait[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-ok); border-color: var(--wl-ok); }
 .results-compare { font-weight: bold; color: var(--wl-texte); margin-top: .5rem; }
 .s-results .results-compare { font-size: 1.3rem; text-align: center; }
 

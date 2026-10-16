@@ -17,7 +17,7 @@
   var store = storage(function () { return localStorage; });
   var pendingStore = storage(function () { return sessionStorage; });
   if (Date.now() - Number(store.get('since') || 0) > 86400000) {
-    ['code', 'token', 'csrf', 'since', 'pending'].forEach(store.del);
+    ['code', 'token', 'csrf', 'since', 'pending', 'variant'].forEach(store.del);
   }
 
   // Taille du texte (A− / A+) : 0 = normal, 1 et 2 = plus grand ; gardée sur le téléphone seulement.
@@ -227,7 +227,7 @@
     var locked = !open || (mine !== null && !q.allowChange);
     var builder = { yesno: choices, truefalse: choices, poll: choices, mcq: q.multi ? checkboxes : choices,
       wordcloud: freeText, text: freeText, scale: scale, points: points,
-      wall: composer, postit: composer, dots: dots }[q.type];
+      wall: composer, postit: composer, dots: dots, steps: steps }[q.type];
     builder(form, q, mine, locked);
     status(q, mine);
     renderMyResult(q, mine);
@@ -242,6 +242,44 @@
     else if (!isOpen(q)) s.textContent = mine !== null ? '✓ Votre réponse a été enregistrée. Le vote est fermé.' : 'Le vote est fermé.';
     else if (mine !== null) s.textContent = '✓ Réponse enregistrée.' + (q.allowChange ? ' Vous pouvez la modifier tant que le vote est ouvert.' : '');
     else s.textContent = '';
+  }
+
+  /** Défi à étapes : un bouton « Fait » par étape, qu'on peut décocher. L'appareil
+   *  (Windows, Mac, iPhone…) est choisi une fois et gardé sur l'appareil, jamais envoyé. */
+  function steps(form, q, mine, locked) {
+    var done = Array.isArray(mine) ? mine : [];
+    var variants = q.variants || [];
+    var name = store.get('variant');
+    var chosen = variants.filter(function (v) { return v.name === name; })[0] || null;
+    var redraw = function () { renderQuestion(q, state.mine === undefined ? null : state.mine); };
+    if (variants.length && !chosen) {
+      form.appendChild(el('p', { class: 'meta' }, 'Sur quel appareil fais-tu le défi ?'));
+      var picker = el('div', { class: 'choices' });
+      variants.forEach(function (v) {
+        picker.appendChild(el('button', { type: 'button', class: 'btn btn-choice',
+          onclick: function () { store.set('variant', v.name); redraw(); } }, v.name));
+      });
+      form.appendChild(picker);
+      return;
+    }
+    if (chosen) {
+      form.appendChild(el('p', { class: 'meta device-line' }, 'Appareil : ' + chosen.name + ' ',
+        el('button', { type: 'button', class: 'btn btn-small', onclick: function () { store.del('variant'); redraw(); } }, 'Changer')));
+    }
+    var list = el('ol', { class: 'steps' });
+    q.options.forEach(function (title, i) {
+      var on = done.indexOf(i) !== -1;
+      list.appendChild(el('li', { class: 'step' + (on ? ' is-done' : '') },
+        el('span', { class: 'step-text' }, el('strong', null, title),
+          chosen ? el('span', { class: 'step-detail' }, chosen.steps[i]) : null),
+        el('button', { type: 'button', class: 'btn btn-fait', 'aria-pressed': String(on), disabled: locked,
+          onclick: function () {
+            if (sending) return;
+            send(q, on ? done.filter(function (x) { return x !== i; }) : done.concat([i]));
+          } }, on ? 'Fait ✓' : 'Fait')));
+    });
+    form.appendChild(list);
+    if (!locked) form.appendChild(el('p', { class: 'meta' }, 'Touche « Fait » à chaque étape terminée. Tu peux décocher.'));
   }
 
   /** Un bouton par choix : un appui sélectionne, « Envoyer » vote (un appui
@@ -612,7 +650,7 @@
 
   $('leave-btn').addEventListener('click', function () {
     WL.api('leave', { body: {} }).then(function () {}, function () {}).then(function () {
-      ['code', 'token', 'csrf', 'since', 'size'].forEach(store.del);
+      ['code', 'token', 'csrf', 'since', 'size', 'variant'].forEach(store.del);
       pendingStore.del('pending');
       csrf = null;
       size = 0;

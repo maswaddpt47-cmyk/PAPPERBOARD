@@ -4,13 +4,13 @@
 
 declare(strict_types=1);
 
-const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots'];
+const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots', 'steps'];
 const WL_WRITTEN_TYPES = ['text', 'wall', 'postit']; // texte libre : relu avant d'être montré, jamais en affichage automatique
 const WL_COMPARE_TYPES = ['yesno', 'truefalse', 'mcq', 'scale']; // avant / après : une valeur chiffrée par passage
 const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
 // Résultats projetés en direct (sans « Afficher ») : ni correction à dévoiler,
 // ni texte libre à relire avant projection (choix de l'utilisateur, 14/10/2026).
-const WL_LIVE_TYPES = ['poll', 'wordcloud', 'scale', 'points'];
+const WL_LIVE_TYPES = ['poll', 'wordcloud', 'scale', 'points', 'steps'];
 const WL_MAX_COLUMNS = 6;
 const WL_CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // sans 0/O, 1/I/L
 const WL_MAX_OPTIONS = 10;
@@ -585,6 +585,10 @@ function wl_clean_question(array $in, ?array $old = null): array
         'posts' => $old['posts'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
+    $q['variants'] = $type === 'steps' ? wl_clean_variants($in['variants'] ?? [], count($q['options'])) : [];
+    if ($type === 'steps') {
+        [$q['allowChange'], $q['reveal']] = [true, 'manual']; // on coche et décoche tant que le défi est ouvert
+    }
     wl_check_reveal($q);
     if ($old && wl_structure_changed($old, $q)) {
         // Les réponses déjà reçues ne correspondent plus aux choix : on repart de
@@ -682,20 +686,62 @@ function wl_clean_options(string $type, mixed $options): array
     if ($type === 'postit') {
         return wl_clean_columns($options);
     }
-    if (!in_array($type, ['mcq', 'poll', 'points'], true)) {
+    if (!in_array($type, ['mcq', 'poll', 'points', 'steps'], true)) {
         return [];
     }
+    $word = $type === 'steps' ? 'étapes' : 'choix';
     $clean = [];
     foreach (is_array($options) ? $options : [] as $o) {
         $o = wl_clean_text($o);
         if ($o !== '') {
-            $clean[] = wl_strlen($o) <= 80 ? $o : throw new WlError('Un choix dépasse 80 caractères.');
+            $clean[] = wl_strlen($o) <= 80 ? $o : throw new WlError('Un titre d\'étape dépasse 80 caractères.', 400);
         }
     }
     if (count($clean) < 2 || count($clean) > WL_MAX_OPTIONS) {
-        throw new WlError('Il faut entre 2 et ' . WL_MAX_OPTIONS . ' choix.');
+        throw new WlError('Il faut entre 2 et ' . WL_MAX_OPTIONS . ' ' . $word . '.');
     }
     return $clean;
+}
+
+/** Défi à étapes : variantes facultatives (Windows, Mac, iPhone, Android…), chacune
+ *  avec le même nombre d'étapes que la liste des titres. Accepte une liste de
+ *  {name, steps} (formulaire) ou un objet nom → étapes (réponse d'une IA). */
+function wl_clean_variants(mixed $v, int $n): array
+{
+    if (!is_array($v) || !$v) {
+        return [];
+    }
+    $pairs = [];
+    foreach ($v as $k => $x) {
+        $pairs[] = is_array($x) && array_key_exists('steps', $x) ? [$x['name'] ?? '', $x['steps']] : [(string)$k, $x];
+    }
+    if (count($pairs) < 2 || count($pairs) > 4) {
+        throw new WlError('Il faut entre 2 et 4 variantes (par exemple Windows, Mac), ou aucune.');
+    }
+    $out = [];
+    $seen = [];
+    foreach ($pairs as [$name, $steps]) {
+        $name = wl_clean_text($name);
+        if ($name === '' || wl_strlen($name) > 20) {
+            throw new WlError('Le nom d\'une variante : 1 à 20 caractères.');
+        }
+        if (isset($seen[wl_fold($name)])) {
+            throw new WlError('Deux variantes portent le même nom.');
+        }
+        $seen[wl_fold($name)] = true;
+        $clean = [];
+        foreach (is_array($steps) ? $steps : [] as $t) {
+            $t = wl_clean_text($t);
+            if ($t !== '') {
+                $clean[] = wl_strlen($t) <= 160 ? $t : throw new WlError('Une étape dépasse 160 caractères.');
+            }
+        }
+        if (count($clean) !== $n) {
+            throw new WlError('La variante « ' . $name . ' » doit avoir ' . $n . ' étapes, comme la liste des titres.');
+        }
+        $out[] = ['name' => $name, 'steps' => $clean];
+    }
+    return $out;
 }
 
 /** Colonnes d'un post-it collectif (1 à 6) ; aucune saisie = une colonne « Idées ». */
@@ -846,6 +892,7 @@ function wl_import_input(array $in): array
         'scaleMax' => $in['scaleMax'] ?? 5,
         'budget' => $in['budget'] ?? null,
         // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
+        'variants' => $in['variants'] ?? [],
     ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live']));
 }
 
@@ -857,8 +904,11 @@ function wl_export_questions(array $s): array
     $conclusion = ($s['conclusion'] ?? '') !== '' ? [['type' => 'conclusion', 'text' => $s['conclusion']]] : [];
     return [...array_map(function ($q) use ($pos, $s) {
         $out = ['type' => $q['type'], 'text' => $q['text']];
-        if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit'], true)) {
+        if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit', 'steps'], true)) {
             $out['options'] = $q['options'];
+        }
+        if ($q['type'] === 'steps' && !empty($q['variants'])) {
+            $out['variants'] = array_column($q['variants'], 'steps', 'name');
         }
         if ($q['correct']) {
             $texts = array_map(fn($i) => $q['options'][$i], $q['correct']);
@@ -927,6 +977,10 @@ function wl_clean_answer(array $q, mixed $v): mixed
             return wl_index($v, $q['scaleMax'] + 1, 1);
         case 'points':
             return wl_clean_points($v, $n, $q['budget']);
+        case 'steps':
+            $list = is_array($v) ? array_values(array_unique(array_map(fn($i) => wl_index($i, $n), $v))) : throw new WlError('Réponse invalide.');
+            sort($list);
+            return $list; // étapes cochées ; liste vide = tout décoché
     }
     throw new WlError('Type de question inconnu.');
 }
@@ -990,7 +1044,11 @@ function wl_vote(array &$s, string $pkey, string $qid, mixed $value): mixed
     if ($prev !== null && $prev !== $clean && !$q['allowChange']) {
         throw new WlError('Vous avez déjà répondu à cette question.', 409);
     }
-    $q['answers'][$pkey] = ['v' => $clean, 't' => time()];
+    if ($q['type'] === 'steps' && !$clean) {
+        unset($q['answers'][$pkey]); // tout décoché : plus compté comme ayant commencé
+    } else {
+        $q['answers'][$pkey] = ['v' => $clean, 't' => time()];
+    }
     if ($q['showResults']) {
         $s['pversion']++; // résultats affichés : les téléphones doivent suivre
     }
@@ -1101,6 +1159,14 @@ function wl_results_base(array $q, bool $admin = false, ?array $s = null): array
             return $r + wl_scale_results($answers, $q['scaleMax']);
         case 'points':
             return $r + wl_points_results($answers, count($q['options']));
+        case 'steps':
+            $done = array_fill(0, count($q['options']), 0);
+            foreach ($answers as $a) {
+                foreach ($a as $i) {
+                    $done[$i]++;
+                }
+            }
+            return $r + ['counts' => $done, 'finished' => count(array_filter($answers, fn($a) => count($a) === count($q['options'])))];
     }
     $counts = array_fill(0, count($q['options']), 0);
     foreach ($answers as $a) {
@@ -1147,6 +1213,7 @@ function wl_recap(array $s, bool $anonymous = false): array
             $q['type'] === 'wordcloud' => 'Mots les plus cités : ' . implode(', ', array_column(array_slice($r['words'], 0, 3), 'text')),
             $q['type'] === 'scale' => 'Moyenne : ' . str_replace('.', ',', (string)$r['average']) . ' / ' . $q['scaleMax'],
             $q['type'] === 'points' => 'En tête : ' . $top($r['counts']),
+            $q['type'] === 'steps' => $r['finished'] . ' / ' . $r['total'] . ' ont terminé toutes les étapes',
             $q['type'] === 'dots' && $r['items'] => 'En tête : « ' . $r['items'][0]['text'] . ' » (' . wl_plural($r['items'][0]['n'], 'gommette') . ')',
             $q['type'] === 'wall' && wl_shown($q) && $r['posts']
                 => 'Idée la plus aimée : « ' . $r['posts'][0]['text'] . ' » (♥ ' . $r['posts'][0]['likes'] . ')',
@@ -1254,7 +1321,7 @@ function wl_public_question(array $q): array
 {
     $show = wl_shown($q);
     return [
-        'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'],
+        'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'], 'variants' => $q['variants'] ?? [],
         'multi' => $q['multi'], 'scaleMax' => $q['scaleMax'], 'budget' => $q['budget'],
         'duration' => $q['duration'], 'closesAt' => $q['closesAt'], 'state' => $q['state'],
         'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '', 'column' => $q['column'] ?? -1,

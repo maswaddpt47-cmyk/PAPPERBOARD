@@ -280,6 +280,7 @@
     } else if (withTexts && q.type === 'postit') {
       r.posts.filter(function (p) { return !p.hidden; }).forEach(function (p) { out.push('  - [' + (q.options[p.col] || '') + '] « ' + p.text + ' »'); });
     }
+    if (q.type === 'steps') out.push('  - Ont terminé toutes les étapes : ' + r.finished + ' / ' + r.total);
     if (r.compare) out.push('  - Évolution : ' + WL.compareText(r.compare));
     return out;
   }
@@ -562,7 +563,7 @@
   // --- Formulaire de question -----------------------------------------------------
 
   var FIXED = { yesno: ['Oui', 'Non'], truefalse: ['Vrai', 'Faux'] };
-  var LIVE = ['poll', 'wordcloud', 'scale', 'points']; // même liste que WL_LIVE_TYPES (lib.php)
+  var LIVE = ['poll', 'wordcloud', 'scale', 'points', 'steps']; // même liste que WL_LIVE_TYPES (lib.php)
 
   function optionLines() {
     var type = $('qf-type').value;
@@ -591,9 +592,10 @@
   /** Affiche les champs utiles au type choisi, et les cases « bonne réponse ». */
   function syncForm(correct) {
     var type = $('qf-type').value;
-    WL.show($('qf-options-box'), ['mcq', 'poll', 'points', 'postit'].indexOf(type) !== -1);
+    WL.show($('qf-options-box'), ['mcq', 'poll', 'points', 'postit', 'steps'].indexOf(type) !== -1);
     $('qf-options-label').textContent = type === 'postit' ? 'Colonnes (une par ligne, 6 au plus ; vide = une seule colonne « Idées »)'
-      : 'Choix (un par ligne, 2 à 10)';
+      : type === 'steps' ? 'Titres des étapes (un par ligne, 2 à 10 ; ils s\'affichent aussi sur la projection)' : 'Choix (un par ligne, 2 à 10)';
+    WL.show($('qf-variants-box'), type === 'steps');
     WL.show($('qf-source-box'), type === 'dots');
     $('qf-budget-label').textContent = type === 'dots' ? 'Gommettes par participant' : 'Points à répartir';
     WL.show($('qf-multi-box'), type === 'mcq');
@@ -618,10 +620,13 @@
 
   function openDialog(q) {
     editing = q || null;
+    applyBeta();
+    if (q && q.type === 'steps') { $('qf-type-steps').hidden = false; $('qf-type-steps').disabled = false; }
     $('qd-title').textContent = q ? 'Modifier la question' : 'Nouvelle question';
     $('qf-type').value = q ? q.type : 'yesno';
     $('qf-text').value = q ? q.text : '';
     $('qf-explain').value = q ? (q.explain || '') : '';
+    $('qf-variants').value = q ? variantsToText(q.variants) : '';
     $('qf-options').value = q && !FIXED[q.type] ? q.options.join('\n') : '';
     $('qf-multi').checked = !!(q && q.multi);
     $('qf-scale').value = q ? String(q.scaleMax) : '5';
@@ -663,6 +668,7 @@
       source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
       reveal: $('qf-reveal').value, live: $('qf-live').checked, compare: $('qf-compare').value,
+      variants: $('qf-type').value === 'steps' ? textToVariants($('qf-variants').value) : [],
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
     if (editing) {
@@ -702,6 +708,65 @@
     if (!tpl) { banner('Choisissez un brise-glace dans la liste.'); return; }
     act('question_save', { question: tpl, first: true });
     $('ice-select').value = '';
+  });
+
+  // --- Fonctions en essai : défi à étapes ----------------------------------------
+  // Réglage propre à cet ordinateur (jamais envoyé) ; le serveur accepte le type dans tous les cas.
+  var beta = false;
+  try { beta = localStorage.getItem('wl_beta') === '1'; } catch (e) { /* stockage indisponible */ }
+  function applyBeta() {
+    $('beta-steps').checked = beta;
+    $('qf-type-steps').hidden = !beta;
+    $('qf-type-steps').disabled = !beta;
+    WL.show($('challenge-row'), beta);
+    WL.show($('gen-defi-box'), beta);
+  }
+  $('beta-steps').addEventListener('change', function () {
+    beta = $('beta-steps').checked;
+    try { localStorage.setItem('wl_beta', beta ? '1' : '0'); } catch (e) { /* idem */ }
+    applyBeta();
+  });
+  applyBeta();
+
+  /** Variantes ↔ texte du formulaire : « [Windows] » puis une ligne par étape. */
+  function variantsToText(variants) {
+    return (variants || []).map(function (v) { return '[' + v.name + ']\n' + v.steps.join('\n'); }).join('\n\n');
+  }
+  function textToVariants(text) {
+    var out = [], cur = null;
+    text.split('\n').forEach(function (line) {
+      var l = line.trim(), m = /^\[(.+)\]$/.exec(l);
+      if (m) { cur = { name: m[1].trim(), steps: [] }; out.push(cur); }
+      else if (l && cur) cur.steps.push(l);
+    });
+    return out;
+  }
+
+  // Défis prêts à l'emploi. Les menus changent selon la marque et la version : à
+  // vérifier sur les appareils avant l'atelier (message affiché à l'ajout).
+  var CHALLENGES = {
+    notifs: { type: 'steps', text: 'Défi : coupe les notifications dont tu n\'as pas besoin',
+      options: ['Ouvrir les réglages des notifications', 'Couper les notifications d\'une application', 'Repérer le mode « ne pas déranger » ou sommeil'],
+      variants: [
+        { name: 'Windows', steps: ['Ouvre « Paramètres », puis « Système » et « Notifications ».', 'Désactive le bouton d\'une application dans la liste.', 'Repère « Ne pas déranger » (Windows 11) ou « Assistant de concentration » (Windows 10).'] },
+        { name: 'Mac', steps: ['Ouvre « Réglages Système », puis « Notifications ».', 'Choisis une application et désactive « Autoriser les notifications ».', 'Dans « Réglages Système », ouvre « Concentration » et regarde les modes proposés.'] },
+        { name: 'iPhone', steps: ['Ouvre « Réglages », puis « Notifications ».', 'Choisis une application et désactive « Autoriser les notifications ».', 'Dans « Réglages », ouvre « Concentration » puis « Sommeil ».'] },
+        { name: 'Android', steps: ['Ouvre « Paramètres », puis « Notifications ».', 'Choisis une application et désactive ses notifications.', 'Cherche « Bien-être numérique » (ou « Ne pas déranger ») et regarde le mode coucher.'] }
+      ] },
+    temps: { type: 'steps', text: 'Défi : regarde ton temps d\'écran d\'hier',
+      options: ['Ouvrir l\'outil de temps d\'écran', 'Repérer l\'application la plus utilisée', 'Regarder le nombre d\'heures de la journée'],
+      variants: [
+        { name: 'iPhone', steps: ['Ouvre « Réglages », puis « Temps d\'écran », et touche « Afficher toute l\'activité ».', 'Regarde l\'application en tête de la liste « Les plus utilisées ».', 'Regarde le total affiché pour la journée d\'hier.'] },
+        { name: 'Android', steps: ['Ouvre « Paramètres », puis « Bien-être numérique et contrôle parental ».', 'Regarde l\'application en tête de la liste, ou touche le graphique de la veille.', 'Regarde le total affiché pour la journée d\'hier.'] }
+      ] }
+  };
+  $('challenge-btn').addEventListener('click', function () {
+    var tpl = CHALLENGES[$('challenge-select').value];
+    if (!tpl) { banner('Choisissez un défi dans la liste.'); return; }
+    act('question_save', { question: tpl }).then(function () {
+      banner('Défi ajouté. Vérifiez les menus sur vos appareils : ils changent selon la marque et la version.');
+    });
+    $('challenge-select').value = '';
   });
 
   // Clôture : questions de fin d'atelier, ajoutées à la suite par l'import (validé côté serveur).
@@ -759,6 +824,12 @@
         + '"source" : son numéro dans la liste (1 = première question) ; "budget" : gommettes par personne (ex. 3) ; '
         + '"column" (facultatif) : le nom exact d\'une colonne du post-it source, pour ne voter que sur ses idées ; '
         + 'obligatoire dès que l\'intitulé cite une colonne, sinon toutes les idées sont proposées.',
+      $('gen-defi').checked && !$('gen-defi-box').hidden
+        ? '- Termine par UN élément "steps" (défi pratique à faire sur l\'appareil, après les quiz) : "options" = 3 à 6 titres courts d\'étapes (80 caractères au plus) ; '
+          + '"variants" (facultatif) = un objet nom d\'appareil → liste d\'étapes détaillées (160 caractères au plus), avec EXACTEMENT autant d\'étapes que "options", '
+          + 'pour 2 à 4 systèmes parmi "Windows", "Mac", "iPhone", "Android" ; sans "variants" si les étapes ne dépendent pas de l\'appareil. '
+          + 'Pour chaque chemin de menu, appuie-toi sur le support officiel du fabricant (Microsoft, Apple, Google) et écris « menu à vérifier » si tu n\'es pas sûr : les menus changent selon la version.'
+        : null,
       '- "compare" (facultatif, sur un quiz ou une "scale" posés une seconde fois en fin d\'atelier) : numéro d\'une question précédente '
         + 'de même type et mêmes choix, pour mesurer la progression (avant / après).',
       '',
@@ -773,7 +844,7 @@
       '  {"type": "dots", "text": "…", "source": 3, "budget": 3},',
       '  {"type": "conclusion", "text": "À retenir : …"}',
       ']'
-    ].join('\n');
+    ].filter(function (line) { return line !== null; }).join('\n');
   }
 
   var genItems = [];
@@ -797,6 +868,7 @@
     var opts = q.options.map(function (o, i) { return (q.correct.indexOf(i) !== -1 ? '✓ ' : '') + o; });
     if (q.type === 'points') opts.unshift(q.budget + ' points :');
     if (q.type === 'postit') opts.unshift('Colonnes :');
+    if (q.type === 'steps' && q.variants && q.variants.length) opts.push('— variantes : ' + q.variants.map(function (v) { return v.name; }).join(', '));
     return opts.join(' · ');
   }
 

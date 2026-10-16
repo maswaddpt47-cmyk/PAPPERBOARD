@@ -579,7 +579,7 @@ function api_questions_import(array $b): void
     $items = wl_import_parse((string)($b['raw'] ?? ''));
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare', 'variants']))
                 + (isset($it['warning']) ? ['warning' => $it['warning']] : [])
             : $it, $items)]);
     }
@@ -868,7 +868,7 @@ function api_type_label(string $type): string
     return ['yesno' => 'Oui / Non', 'truefalse' => 'Vrai / Faux', 'mcq' => 'QCM', 'poll' => 'Sondage',
         'wordcloud' => 'Nuage de mots', 'text' => 'Réponse libre', 'scale' => 'Échelle',
         'points' => 'Classement par points', 'wall' => 'Mur collaboratif', 'postit' => 'Post-it collectif',
-        'dots' => 'Vote par gommettes'][$type] ?? $type;
+        'dots' => 'Vote par gommettes', 'steps' => 'Défi à étapes'][$type] ?? $type;
 }
 
 /** Neutralise les formules dans Excel (cellule commençant par = + - @). */

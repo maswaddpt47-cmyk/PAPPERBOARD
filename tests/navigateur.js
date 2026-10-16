@@ -238,6 +238,37 @@ function check(cond, label) {
   check(/utile/.test(await admin.locator('#q-list .list-item').nth(5).textContent())
     && /prochain pas/.test(await admin.locator('#q-list .list-item').nth(7).textContent()), 'clôture : trois questions ajoutées à la fin');
 
+  // --- Défi à étapes, sur un ordinateur : l'appareil se choisit une fois, « Fait » coche et décoche.
+  const api = admin.context().request;
+  const csrf = (await (await api.get(BASE + 'api.php?action=me')).json()).csrf;
+  const post = async (action, data) => (await api.post(BASE + 'api.php?action=' + action, { headers: { 'X-WL': '1', 'X-CSRF-Token': csrf }, data })).json();
+  const ds = (await post('session_create', { title: 'Défi navigateur' })).code;
+  const dq = (await post('question_save', { s: ds, question: { type: 'steps', text: 'Coupe les notifications',
+    options: ['Ouvrir', 'Couper', 'Vérifier'], variants: { Windows: ['W1', 'W2', 'W3'], Mac: ['M1', 'M2', 'M3'] } } })).id;
+  await post('control', { s: ds, op: 'goto', qid: dq });
+  const dphone = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage();
+  watch(dphone, 'défi');
+  await dphone.goto(BASE);
+  await dphone.fill('#code', ds);
+  await dphone.click('#join-form button');
+  await dphone.waitForSelector('#answer-form .btn-choice');
+  check(await dphone.locator('#answer-form .btn-choice').count() === 2, 'défi : le participant choisit d\'abord son appareil');
+  await dphone.click('#answer-form .btn-choice >> text=Mac');
+  await dphone.waitForSelector('#answer-form .step');
+  check((await dphone.locator('#answer-form .step-detail').first().textContent()) === 'M1', 'défi : étapes détaillées de l\'appareil choisi');
+  await dphone.locator('#answer-form .btn-fait').first().click();
+  await dphone.waitForFunction(() => document.querySelector('#answer-form .btn-fait').getAttribute('aria-pressed') === 'true');
+  const dst = await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json();
+  check(JSON.stringify(dst.questions[0].results.counts) === '[1,0,0]', 'défi : l\'animateur voit une personne à l\'étape 1');
+  await dphone.reload();
+  await dphone.waitForSelector('#answer-form .step');
+  check(await dphone.locator('#answer-form .btn-choice').count() === 0, 'défi : l\'appareil choisi est gardé après rechargement');
+  await dphone.locator('#answer-form .btn-fait').first().click();
+  await dphone.waitForFunction(() => document.querySelector('#answer-form .btn-fait').getAttribute('aria-pressed') === 'false');
+  const dst2 = await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json();
+  check(JSON.stringify(dst2.questions[0].results.counts) === '[0,0,0]', 'défi : décocher retire l\'étape');
+  await dphone.context().close();
+
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();
   console.log('navigateur : ' + ok + ' vérifications OK, ' + ko + ' échec(s)');

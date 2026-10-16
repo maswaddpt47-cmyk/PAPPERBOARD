@@ -183,7 +183,7 @@
         Object.assign({ fontSize: 18, color: C.doux }, box));
     } else if (q.type === 'yesno' || q.type === 'truefalse') {
       donut(pptx, slide, q, r, box);
-    } else if (['poll', 'mcq', 'points'].indexOf(q.type) !== -1) {
+    } else if (['poll', 'mcq', 'points', 'steps'].indexOf(q.type) !== -1) {
       bars(pptx, slide, q.options, r.counts, q.type === 'points' ? [] : (q.correct || []), box);
     } else if (q.type === 'dots') {
       dots(pptx, slide, r.items, box);
