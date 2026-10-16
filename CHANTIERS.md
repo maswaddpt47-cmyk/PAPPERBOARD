@@ -9,14 +9,17 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
 ## Restant, par priorité — tout côté utilisateur
 
 1. **Tâche planifiée horaire** `php ~/www/purge.php` (créée le 15/10/2026) :
-   regarder l'onglet **Réglages** d'une session après le 16/10/2026, il affiche
-   son dernier passage (⚠️ si plus de 2 h ou jamais). Ne pas l'espacer.
+   regarder l'onglet **Réglages** d'une session après 21 h 10 le 16/10/2026 (mise
+   en ligne du témoin à 20 h 05) : ✓ dernier passage, ou ⚠️ si plus de 2 h ou aucun.
 2. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
    validé, 15/10/2026) : onglets de l'espace animateur, archive anonyme, synthèse
    enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
    podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
-   barres de points. Le plus simple : **Créer une session de démonstration**
-   (accueil de l'espace animateur). Puis un **atelier réel** à 10 participants ou plus.
+   barres de points ; ajouts du 16/10/2026 : « x actifs », bouton « ❓ Questions »,
+   barre de pilotage allégée et glisser ← → au téléphone, démos à 4 thèmes et
+   « Supprimer les démos ». Validé le 16/10/2026 : nuage lisible et fluide sur la
+   projection au téléphone. Le plus simple : **Créer une session de
+   démonstration**. Puis un **atelier réel** à 10 participants ou plus.
 3. **Fiche `docs/registre-traitement.md`** : mise à jour V0.4 par Claude le
    15/10/2026 (archive, pseudonymes, signaux, IA externe), **à relire et valider
    par l'utilisateur** (responsable de traitement).
@@ -67,10 +70,10 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   `FullscreenAllowed = false` imposée à ce Chrome). Le bouton affiche un
   message. Contournement : projeter avec Edge.
 
-- Décompte « 3 / 5 ont répondu » (15/10/2026) : le dénominateur est le nombre
-  de participants inscrits ; un téléphone éteint sans « Quitter » compte encore
-  (hypothèse non vérifiée sur le terrain). « Tout le monde a répondu » peut donc
-  ne jamais s'afficher : fermer le vote quand le compteur ne bouge plus.
+- Décompte « 3 / 5 ont répondu » (16/10/2026) : un téléphone éteint ou parti
+  sort du dénominateur après 3 minutes sans signe de vie, pas immédiatement.
+  Un téléphone en veille n'envoie plus de signe de vie (hypothèse non vérifiée
+  sur le terrain : un téléphone posé écran éteint peut sortir du décompte).
 
 - Identifiants de question tirés en hexadécimal : 1 fois sur 40 environ, tout en
   chiffres (« 24342264 »). Jamais comme clé de tableau PHP sans le remettre en
