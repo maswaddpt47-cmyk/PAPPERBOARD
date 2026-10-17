@@ -221,5 +221,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 aide « Bloqué » par étape (AG-003 et AG-004 ouverts dans `AGORA.md`).
 *Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
 défi à étapes (en essai).
-*Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
+*Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
+l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
+l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.
