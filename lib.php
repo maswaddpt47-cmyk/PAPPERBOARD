@@ -844,7 +844,8 @@ function wl_clean_correct(array $q, mixed $correct): array
 /** Lit la liste JSON collée et valide chaque question comme une saisie de
  *  l'animateur. Renvoie, dans l'ordre, ['q' => question] ou ['error' => texte].
  *  Une gommette pointe sa source par sa position dans la liste (« #0 »…). */
-function wl_import_parse(string $raw): array
+/** Liste de questions d'un texte collé, avec le repli pour une copie depuis l'application mobile d'une IA. */
+function wl_import_list(string $raw): ?array
 {
     $list = wl_import_json($raw);
     if (!is_array($list)) {
@@ -852,6 +853,12 @@ function wl_import_parse(string $raw): array
         // ajoutés par la mise en forme, espaces insécables. Jamais valides en JSON.
         $list = wl_import_json(str_replace("\u{00A0}", ' ', preg_replace('/(?<!\\\\)\\\\([\[\]_*#`>+\-.!()])/', '$1', $raw)));
     }
+    return $list;
+}
+
+function wl_import_parse(string $raw): array
+{
+    $list = wl_import_list($raw);
     if (!is_array($list) || !$list || !array_is_list($list)) {
         throw new WlError('Réponse illisible : collez toute la réponse de l\'IA, du « [ » au « ] ».');
     }

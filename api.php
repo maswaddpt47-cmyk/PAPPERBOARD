@@ -453,7 +453,7 @@ function api_seance_save(array $b): void
     if (!empty($b['s'])) {
         $list = wl_export_questions(wl_load_or_fail(api_code($b)));
     } else {
-        $list = wl_import_json((string)($b['raw'] ?? ''));
+        $list = wl_import_list((string)($b['raw'] ?? ''));
     }
     if (!is_array($list) || !$list || !array_is_list($list)) {
         throw new WlError('Questions illisibles : collez la liste complète, du « [ » au « ] ».');

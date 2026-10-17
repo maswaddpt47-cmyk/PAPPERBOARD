@@ -309,7 +309,7 @@ $first = $p[0]->poll($path);
 check($first['status'] === 200 && isset($first['headers']['etag']), 'premier rafraîchissement : 200 + ETag');
 $bodies = 0;
 $notModified = 0;
-for ($i = 0; $i < 30; $i++) {
+for ($i = 0; $i < 30; $i++) { // 2 thèmes déjà là : le 29e ajout est le dernier accepté
     $r = $p[0]->poll($path);
     $notModified += $r['status'] === 304 ? 1 : 0;
     $bodies += strlen($r['body']);
@@ -673,12 +673,13 @@ expect_status($t1, 200, 'thème : texte collé avec du texte autour accepté');
 $tid = $t1['json']['id'] ?? '';
 $tl = $admin->get('api.php?action=seances')['json']['themes'] ?? [];
 check(count($tl) === 1 && $tl[0]['title'] === 'Relu par une IA' && count($tl[0]['items']) === 2, 'thème : listé avec ses questions');
+expect_status($tp(['title' => 'Copié depuis une appli mobile', 'raw' => str_replace(['[', ']'], ['\\[', '\\]'], $raw)]), 200, 'thème : texte copié depuis l\'application mobile d\'une IA (\\[ \\]) accepté');
 $ts = $tp(['title' => 'Depuis une session', 's' => $cmp]);
 expect_status($ts, 200, 'thème : enregistré depuis une session');
-check(count($admin->get('api.php?action=seances')['json']['themes'] ?? []) === 2, 'thème : deux thèmes');
+check(count($admin->get('api.php?action=seances')['json']['themes'] ?? []) === 3, 'thème : trois thèmes');
 $admin->post('seance_delete', ['id' => $tid]);
 $tl = $admin->get('api.php?action=seances')['json']['themes'] ?? [];
-check(count($tl) === 1 && $tl[0]['title'] === 'Depuis une session', 'thème : supprimé');
+check(count($tl) === 2 && $tl[1]['title'] === 'Depuis une session', 'thème : supprimé');
 for ($i = 0; $i < 30; $i++) {
     $last = $tp(['title' => "Thème $i", 'raw' => $raw]);
 }
