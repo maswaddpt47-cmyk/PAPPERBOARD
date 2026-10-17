@@ -295,6 +295,17 @@ function check(cond, label) {
   check(await dphone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'aide par étape : rien ne dépasse à 390 px');
   await dphone.locator('#answer-form .btn-stuck').nth(1).click();
   await dphone.waitForFunction(() => document.querySelectorAll('#answer-form .btn-stuck')[1].getAttribute('aria-pressed') === 'false');
+  // L'animateur passe à une autre question pendant un « Bloqué » : un signal général ne ramène pas le défi à l'écran.
+  const dpoll = (await post('question_save', { s: ds, question: { type: 'poll', text: 'Question suivante ?', options: ['Oui', 'Non'] } })).id;
+  await dphone.locator('#answer-form .btn-stuck').nth(0).click();
+  await dphone.waitForFunction(() => document.querySelectorAll('#answer-form .btn-stuck')[0].getAttribute('aria-pressed') === 'true');
+  await post('control', { s: ds, op: 'goto', qid: dpoll });
+  await dphone.waitForFunction(() => document.getElementById('q-text').textContent === 'Question suivante ?');
+  await dphone.locator('.btn-signal[data-kind="help"]').click();
+  await dphone.waitForTimeout(600);
+  check(await dphone.textContent('#q-text') === 'Question suivante ?', 'aide par étape : un signal général après un changement de question ne ramène pas le défi');
+  await post('control', { s: ds, op: 'goto', qid: dq });
+  await dphone.waitForFunction(() => document.getElementById('q-text').textContent === 'Coupe les notifications');
   await dphone.context().close();
 
   // Projection d'une question avec lien : QR code et nom du site, sans dépasser l'écran.

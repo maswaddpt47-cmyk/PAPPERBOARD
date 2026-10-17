@@ -270,7 +270,10 @@
    *  (Windows, Mac, iPhone…) est choisi une fois et gardé sur l'appareil, jamais envoyé. */
   function steps(form, q, mine, locked) {
     var done = Array.isArray(mine) ? mine : [];
-    redrawSteps = function () { renderQuestion(q, state.mine === undefined ? null : state.mine); };
+    // Ne redessine que si ce défi est encore la question affichée (un minuteur ou un signal général peut arriver après un changement de question).
+    redrawSteps = function () {
+      if (state && state.question && state.question.id === q.id) renderQuestion(state.question, state.mine === undefined ? null : state.mine);
+    };
     var variants = q.variants || [];
     var name = store.get('variant');
     var chosen = variants.filter(function (v) { return v.name === name; })[0] || null;
