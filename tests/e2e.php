@@ -187,7 +187,7 @@ $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
 $admin->post('control', ['s' => $code, 'op' => 'reset']);
 $admin->post('control', ['s' => $code, 'op' => 'open']);
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
-check($st['question']['closesAt'] - $st['now'] === 30, 'compte à rebours de 30 s');
+check(abs($st['question']['closesAt'] - $st['now'] - 30) <= 1, 'compte à rebours de 30 s (à une seconde près : l\'horloge peut changer entre les deux lectures)');
 expect_status($p[0]->vote($code, $qid['poll'], 1), 200, 'vote dans le temps');
 $file = "$data/sessions/$code.json";
 $json = json_decode(file_get_contents($file), true);
@@ -331,7 +331,8 @@ $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
 $admin->post('control', ['s' => $code, 'op' => 'reset']);
 $admin->post('control', ['s' => $code, 'op' => 'open']);
 $codes = [];
-for ($i = 0; $i < 55; $i++) {
+// 110 votes : la fenêtre est d'une minute, un changement de minute en cours de route en coupe deux, dont une dépasse 50.
+for ($i = 0; $i < 110; $i++) {
     $codes[] = $p[2]->vote($code, $qid['poll'], $i % 3)['status'];
 }
 check(in_array(429, $codes, true), 'limite de votes par minute pour un participant');
@@ -692,7 +693,7 @@ check(($admin->get('api.php?action=seances')['json']['themes'] ?? [1]) === [], '
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);
-foreach (['http://exemple.org/exo', 'javascript:alert(1)', 'https://user:mdp@exemple.org/', 'https://exemple.org/un espace', 'https://192.168.0.1/exo',
+foreach (['http://exemple.org/exo', 'javascript:alert(1)', 'https://user:mdp@exemple.org/', 'https://exemple.org/un espace', 'https://192.168.0.1/exo', 'https://127.1/exo', 'https://10.1/exo',
     'https://localhost/exo', 'exemple.org', 'https://exemple.org/' . str_repeat('a', 300)] as $bad) {
     expect_status($ls($bad), 400, 'lien refusé : ' . substr($bad, 0, 40));
 }

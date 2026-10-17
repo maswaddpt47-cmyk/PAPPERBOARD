@@ -80,7 +80,7 @@
               post('session_duplicate', { s: s.code }).then(showSessions);
             } }, 'Dupliquer'),
             el('button', { type: 'button', class: 'btn', title: 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', onclick: function () {
-              if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés.')) {
+              if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
                 post('session_archive', { s: s.code }).then(showSessions);
               }
             } }, 'Archiver'),
@@ -137,7 +137,7 @@
 
   $('archive-back').addEventListener('click', showSessions);
   $('ed-archive').addEventListener('click', function () {
-    if (confirm('Archiver « ' + data.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés.')) {
+    if (confirm('Archiver « ' + data.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
       post('session_archive', { s: code }).then(showSessions);
     }
   });

@@ -180,13 +180,14 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   Réordonner les choix d'une question (mêmes choix, autre ordre) efface ses réponses, décidé
   le 17/10/2026 (`wl_options_reordered`, e2e), sauf les colonnes d'un post-it (les notes suivent leur colonne, par son nom) ;
   reformuler un choix garde les réponses.
-  **À décider** : (b) archives avec texte de l'animateur et petits effectifs,
-  sans échéance ; (c) quota IP sur `ping` (écarté : les wifi partagés) ; (d) déploiement SSH en
-  `accept-new` sans `ALWAYSDATA_KNOWN_HOSTS`, et redirection HTTP seulement avertie ;
-  (e) IPv4 abrégée `127.1` acceptée par `wl_clean_link` ; (f) PowerPoint : listes tronquées à 8
-  idées / 30 réponses sans mention.
+  Suites décidées le 17/10/2026 : rappel « aucun nom » à l'archivage (la conclusion et la synthèse sont
+  gardées sans limite, pas de durée) ; adresses du type `127.1` refusées (`wl_clean_link`, e2e) ;
+  PowerPoint : « … et N autres » au-delà de 8 idées / 30 réponses ; tests de durée et de limite
+  de votes tolérants au passage de la seconde ou de la minute. Écartés : quota IP sur `ping` (wifi
+  partagés) ; déploiement strict (`ALWAYSDATA_KNOWN_HOSTS`, redirection HTTPS) : laissé tel quel
+  par l'utilisateur, risque faible (interception de la première connexion).
 - AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 à AG-005 tranchés le 17/10/2026 par
-  l'utilisateur : le format `steps`/`variants`, `prefs.json`, l'aide « Bloqué » éphémère le seuil de 3 de l'avant/après et le stockage serveur des thèmes sont gardés tels quels (ne pas les
+  l'utilisateur : le format `steps`/`variants`, `prefs.json`, l'aide « Bloqué » éphémère, le seuil de 3 de l'avant/après et le stockage serveur des thèmes sont gardés tels quels (ne pas les
   défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.
 - Avant / après (17/10/2026) : calculé sur les personnes qui ont répondu aux deux questions
   si elles sont au moins 3 (`WL_COMPARE_MIN`), sinon sur tous les répondants, avec « mêmes N

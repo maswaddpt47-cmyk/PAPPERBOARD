@@ -162,11 +162,17 @@
       }
       text(slide, WL.plural(it.n, 'gommette'), { x: box.x + 10.2, y: y, w: 2.13, h: h, fontSize: 15, bold: true, fontFace: TITRE, valign: 'middle', align: 'right' });
     });
+    if (items.length > rows.length) {
+      text(slide, '… et ' + (items.length - rows.length) + ' autres idées, à voir dans l\'application.',
+        { x: box.x, y: box.y + box.h - 0.35, w: 8, h: 0.3, fontSize: 12, color: C.doux });
+    }
   }
 
   function bullets(slide, lines, box) {
     if (!lines.length) { text(slide, 'Aucune réponse.', Object.assign({ fontSize: 18, color: C.doux }, box)); return; }
-    text(slide, lines.slice(0, 30).map(function (l) { return { text: l, options: { bullet: true, breakLine: true } }; }),
+    var shown = lines.slice(0, 30);
+    if (lines.length > shown.length) shown.push('… et ' + (lines.length - shown.length) + ' autres réponses, à voir dans l\'application.');
+    text(slide, shown.map(function (l) { return { text: l, options: { bullet: true, breakLine: true } }; }),
       Object.assign({ fontSize: 16, fit: 'shrink', paraSpaceAfter: 4 }, box));
   }
 

@@ -574,7 +574,7 @@ function wl_clean_link(mixed $v): string
     $p = strlen($url) <= 300 && !preg_match('/[\x00-\x20\x7f"<>\\^`{|}]/', $url) ? parse_url($url) : false;
     $host = is_array($p) ? strtolower((string)($p['host'] ?? '')) : '';
     if (!$p || strtolower((string)($p['scheme'] ?? '')) !== 'https' || isset($p['user']) || isset($p['pass'])
-        || !preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/', $host) || filter_var($host, FILTER_VALIDATE_IP)) {
+        || !preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/', $host) || !preg_match('/\.[a-z][a-z0-9-]*$/', $host) || filter_var($host, FILTER_VALIDATE_IP)) {
         throw new WlError('Lien : une adresse https:// complète est attendue (300 caractères au plus, sans espace ni identifiant).');
     }
     return $url;
