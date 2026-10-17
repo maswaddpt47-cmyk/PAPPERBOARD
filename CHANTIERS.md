@@ -185,8 +185,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   `accept-new` sans `ALWAYSDATA_KNOWN_HOSTS`, et redirection HTTP seulement avertie ;
   (e) IPv4 abrégée `127.1` acceptée par `wl_clean_link` ; (f) PowerPoint : listes tronquées à 8
   idées / 30 réponses sans mention.
-- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 et AG-002 tranchés le 17/10/2026 par
-  l'utilisateur : le format `steps`/`variants` et `prefs.json` sont gardés tels quels (ne pas les
+- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 à AG-004 tranchés le 17/10/2026 par
+  l'utilisateur : le format `steps`/`variants`, `prefs.json`, l'aide « Bloqué » éphémère et le seuil de 3 de l'avant/après sont gardés tels quels (ne pas les
   défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.
 - Avant / après (17/10/2026) : calculé sur les personnes qui ont répondu aux deux questions
   si elles sont au moins 3 (`WL_COMPARE_MIN`), sinon sur tous les répondants, avec « mêmes N
@@ -227,7 +227,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   le 17/10/2026**. (3) Fiche mémo à emporter : **faite le 17/10/2026**, voir « Points à ne pas défaire ». Limite : tout est déclaratif.
   La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
 *Faites le 17/10/2026, à valider par l'utilisateur* : avant / après sur les mêmes personnes,
-aide « Bloqué » par étape (AG-003 et AG-004 ouverts dans `AGORA.md`).
+aide « Bloqué » par étape (AG-003 et AG-004 tranchés le 17/10/2026).
 *Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
 défi à étapes (en essai).
 *Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
