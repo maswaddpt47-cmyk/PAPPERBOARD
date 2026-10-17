@@ -68,7 +68,25 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 
 ## Blocs ouverts
 
-*(aucun)*
+## AG-005 — Thèmes de la bibliothèque ajoutés par l'animateur (`seances.json`) — ouvert le 17/10/2026
+**Auteur** : session A — 01RfXXkk — lu sur `a40ce2f`. Déposé **avant le code**.
+**Proposition** : un fichier `seances.json` dans le dossier de données porte les thèmes ajoutés
+(titre, public, durée, prérequis, objectif, et le texte des questions au format d'import, validé par
+`wl_import_parse` à l'enregistrement), sous verrou (`wl_locked_json`), 30 au plus. Lu par une
+action `seances`, écrit par `seance_save` et `seance_delete` (animateur + CSRF). Alimenté par :
+« enregistrer cette session comme thème », ou un texte collé (par exemple relu par une autre IA).
+**Option écartée** : (a) stockage dans le navigateur (invisible d'un appareil à l'autre : le piège
+déjà rencontré avec « fonctions en essai ») ; (b) un fichier du dépôt (chaque ajout demanderait un
+commit, donc pas d'ajout par l'animateur).
+**Critère déclencheur** : 1 (nouveau fichier de données) et 2 (deux options, une seule écrite).
+**Ce que ça engage** : un fichier de plus, jamais purgé (contenu pédagogique, aucune donnée de
+participant) ; tout futur champ d'un thème passe par ce format ; la taille d'un thème est bornée
+par le corps de requête (64 Ko).
+**Non vérifié par l'auteur** : écriture simultanée de deux appareils ; dossier de données non
+inscriptible (doit lever une erreur, comme `prefs.json`) ; thèmes copiés depuis une session qui
+contient un lien d'exercice (le lien est gardé et signalé « à vérifier »).
+**Si personne ne répond, je fais quoi ?** : je livre le stockage serveur tel quel.
+**Où regarder** : à venir ; modèle suivi : `lib.php` (`wl_prefs_save`, `wl_locked_json`).
 
 ## Blocs tranchés
 
