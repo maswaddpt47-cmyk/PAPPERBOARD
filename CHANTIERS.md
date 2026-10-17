@@ -188,6 +188,13 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 et AG-002 tranchés le 17/10/2026 par
   l'utilisateur : le format `steps`/`variants` et `prefs.json` sont gardés tels quels (ne pas les
   défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.
+- Avant / après (17/10/2026) : calculé sur les personnes qui ont répondu aux deux questions
+  si elles sont au moins 3 (`WL_COMPARE_MIN`), sinon sur tous les répondants, avec « mêmes N
+  personnes » ou « personnes différentes » dans le texte (e2e). Jamais une réponse isolée.
+- Aide « Bloqué » par étape (17/10/2026) : un signal « Besoin d'aide » qui porte l'étape
+  (`wl_signal`, 2 minutes, un signal par personne), compté par étape sans identité
+  (`wl_signal_steps`, `helpSteps`) ; rien de durable (e2e, nav à 390 px). Pas simulé dans la démo :
+  se rejoindre soi-même dans une autre fenêtre.
 - Lien d'exercice (`link`, 17/10/2026) : https seulement, avec un domaine (jamais une IP
   ni un identifiant dans l'adresse) : `wl_clean_link` (e2e). Le participant voit le site
   avant de partir (nouvel onglet, `noopener`) ; la projection montre un QR dessiné dans le
@@ -210,10 +217,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   le 16/10/2026, en essai** (voir « Points à ne pas défaire »). (2) Lien d'exercice avec QR code : **en ligne
   le 17/10/2026**. (3) Fiche mémo à emporter (Word/PDF) : à décider. Limite : tout est déclaratif.
   La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
-- 17/10/2026 — Avant / après sur les seules personnes ayant répondu aux deux questions
-  (effectif affiché, seuil minimal pour ne pas dévoiler une personne seule) ; aide « bloqué à
-  cette étape » dans le défi à étapes, comptée par étape. Idées d'un avis Codex, retenues par
-  Claude ; à décider avec l'utilisateur.
+*Faites le 17/10/2026, à valider par l'utilisateur* : avant / après sur les mêmes personnes,
+aide « Bloqué » par étape (AG-003 et AG-004 ouverts dans `AGORA.md`).
 *Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
 défi à étapes (en essai).
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur

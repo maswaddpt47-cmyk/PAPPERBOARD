@@ -196,6 +196,18 @@
 
   // Un signal à la fois ; le même bouton le retire ; il s'efface seul après 2 min.
   var signalTimer = null;
+  var stuck = null;          // {q, i} : étape où je me suis déclaré bloqué (un défi, anonyme, 2 min)
+  var redrawSteps = null;
+  function askHelp(q, i) {
+    WL.api('signal', { body: { s: code, kind: 'help', step: { q: q.id, i: i } }, headers: headers() }).then(function (r) {
+      if (r.status !== 200) { $('signal-status').textContent = r.data.error || 'Refusé.'; return; }
+      stuck = r.data.signal ? { q: q.id, i: i } : null;
+      showSignal(r.data.signal);
+      clearTimeout(signalTimer);
+      if (r.data.signal) signalTimer = setTimeout(function () { stuck = null; showSignal(null); if (redrawSteps) redrawSteps(); }, r.data.ttl * 1000);
+      if (redrawSteps) redrawSteps();
+    }, function () { $('signal-status').textContent = 'Pas de connexion : réessayez dans un instant.'; });
+  }
   function showSignal(kind) {
     document.querySelectorAll('.btn-signal').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.kind === kind)); });
     $('signal-status').textContent = kind
@@ -206,9 +218,12 @@
     b.addEventListener('click', function () {
       WL.api('signal', { body: { s: code, kind: b.dataset.kind }, headers: headers() }).then(function (r) {
         if (r.status !== 200) { $('signal-status').textContent = r.data.error || 'Refusé.'; return; }
+        var hadStep = !!stuck;
+        stuck = null;
         showSignal(r.data.signal);
         clearTimeout(signalTimer);
         if (r.data.signal) signalTimer = setTimeout(function () { showSignal(null); }, r.data.ttl * 1000);
+        if (hadStep && redrawSteps) redrawSteps();
       }, function () { $('signal-status').textContent = 'Pas de connexion : réessayez dans un instant.'; });
     });
   });
@@ -255,6 +270,7 @@
    *  (Windows, Mac, iPhone…) est choisi une fois et gardé sur l'appareil, jamais envoyé. */
   function steps(form, q, mine, locked) {
     var done = Array.isArray(mine) ? mine : [];
+    redrawSteps = function () { renderQuestion(q, state.mine === undefined ? null : state.mine); };
     var variants = q.variants || [];
     var name = store.get('variant');
     var chosen = variants.filter(function (v) { return v.name === name; })[0] || null;
@@ -279,11 +295,15 @@
       list.appendChild(el('li', { class: 'step' + (on ? ' is-done' : '') },
         el('span', { class: 'step-text' }, el('strong', null, title),
           chosen ? el('span', { class: 'step-detail' }, chosen.steps[i]) : null),
-        el('button', { type: 'button', class: 'btn btn-fait', 'aria-pressed': String(on), disabled: locked,
-          onclick: function () {
-            if (sending) return;
-            send(q, on ? done.filter(function (x) { return x !== i; }) : done.concat([i]));
-          } }, on ? 'Fait ✓' : 'Fait')));
+        el('span', { class: 'step-actions' },
+          el('button', { type: 'button', class: 'btn btn-fait', 'aria-pressed': String(on), disabled: locked,
+            onclick: function () {
+              if (sending) return;
+              send(q, on ? done.filter(function (x) { return x !== i; }) : done.concat([i]));
+            } }, on ? 'Fait ✓' : 'Fait'),
+          locked ? null : el('button', { type: 'button', class: 'btn btn-small btn-stuck', 'aria-pressed': String(!!stuck && stuck.q === q.id && stuck.i === i),
+            title: 'Signaler anonymement que tu es bloqué à cette étape : l\'animateur voit seulement combien de personnes et laquelle',
+            onclick: function () { askHelp(q, i); } }, '✋ Bloqué'))));
     });
     form.appendChild(list);
     if (!locked) form.appendChild(el('p', { class: 'meta' }, 'Touche « Fait » à chaque étape terminée. Tu peux décocher.'));

@@ -1154,10 +1154,15 @@ function wl_compare_shape(array $before, array $after): bool
     return $before['options'] === $after['options'] && $before['correct'] && $after['correct'];
 }
 
-/** Valeur chiffrée d'un passage : moyenne (échelle) ou part de bonnes réponses en %. */
-function wl_compare_value(array $q): ?array
+/** Moins de personnes ayant répondu aux deux questions : on ne les isole pas (le changement d'une
+ *  personne seule se lirait), la comparaison porte alors sur tous les répondants de chaque passage. */
+const WL_COMPARE_MIN = 3;
+
+/** Valeur chiffrée d'un passage : moyenne (échelle) ou part de bonnes réponses en %.
+ *  $only : clés des participants retenus (sinon tous les répondants). */
+function wl_compare_value(array $q, ?array $only = null): ?array
 {
-    $answers = array_column($q['answers'], 'v');
+    $answers = array_column($only === null ? $q['answers'] : array_intersect_key($q['answers'], array_flip($only)), 'v');
     if (!$answers) {
         return null;
     }
@@ -1184,10 +1189,16 @@ function wl_compare_results(array $q, array $s): ?array
         if ($e['id'] !== $q['compare']) {
             continue;
         }
-        $before = wl_compare_shape($e, $q) ? wl_compare_value($e) : null;
-        $after = $before ? wl_compare_value($q) : null;
+        if (!wl_compare_shape($e, $q)) {
+            return null;
+        }
+        $common = array_keys(array_intersect_key($e['answers'], $q['answers']));
+        $same = count($common) >= WL_COMPARE_MIN;
+        $before = wl_compare_value($e, $same ? $common : null);
+        $after = $before ? wl_compare_value($q, $same ? $common : null) : null;
         return $after ? ['kind' => $q['type'] === 'scale' ? 'average' : 'correct', 'max' => $q['scaleMax'],
-            'before' => $before['v'], 'after' => $after['v'], 'nBefore' => $before['n'], 'nAfter' => $after['n']] : null;
+            'before' => $before['v'], 'after' => $after['v'], 'nBefore' => $before['n'], 'nAfter' => $after['n'],
+            'same' => $same, 'nCommon' => $same ? count($common) : 0] : null;
     }
     return null;
 }
@@ -1199,7 +1210,8 @@ function wl_compare_text(array $c): string
     $unit = fn($v) => $c['kind'] === 'average' ? $fmt($v) . ' / ' . $c['max'] : $v . ' %' . ' de bonnes réponses';
     $d = round($c['after'] - $c['before'], 1);
     $delta = $d == 0 ? 'stable' : ($d > 0 ? '+' : '−') . $fmt(abs($d)) . ($c['kind'] === 'average' ? '' : ' points');
-    return 'Avant : ' . $unit($c['before']) . ' — Après : ' . $unit($c['after']) . ' (' . $delta . ')';
+    $who = !empty($c['same']) ? 'mêmes ' . $c['nCommon'] . ' personnes' : 'personnes différentes : ' . $c['nBefore'] . ' puis ' . $c['nAfter'] . ' réponses';
+    return 'Avant : ' . $unit($c['before']) . ' — Après : ' . $unit($c['after']) . ' (' . $delta . ' ; ' . $who . ')';
 }
 
 function wl_results_base(array $q, bool $admin = false, ?array $s = null): array
@@ -1810,22 +1822,50 @@ const WL_SIGNALS = ['fast' => 'Trop vite', 'again' => 'À réexpliquer', 'help' 
 const WL_SIGNAL_TTL = 120; // un signal reflète le moment présent, puis s'efface
 
 /** Un signal par participant ; le même signal renvoyé (ou vide) le retire.
+ *  « Besoin d'aide » peut viser une étape d'un défi : $step = ['q' => id de la question, 'i' => indice].
  *  Retourne le signal en cours, ou null. */
-function wl_signal(array &$s, string $pkey, mixed $kind): ?string
+function wl_signal(array &$s, string $pkey, mixed $kind, mixed $step = null): ?string
 {
     $kind = is_string($kind) ? $kind : '';
     if ($kind !== '' && !isset(WL_SIGNALS[$kind])) {
         throw new WlError('Signal inconnu.');
     }
+    $at = [];
+    if ($step !== null && $step !== []) {
+        $qid = is_array($step) ? (string)($step['q'] ?? '') : '';
+        $i = is_array($step) ? ($step['i'] ?? null) : null;
+        $q = array_values(array_filter($s['questions'], fn($x) => $x['id'] === $qid))[0] ?? null;
+        if ($kind !== 'help' || !$q || $q['type'] !== 'steps' || !is_int($i) || $i < 0 || $i >= count($q['options'])) {
+            throw new WlError('Étape inconnue.');
+        }
+        $at = ['q' => $qid, 'i' => $i];
+    }
     $now = time();
     // Ménage des signaux expirés à chaque écriture.
     $s['signals'] = array_filter($s['signals'] ?? [], fn($x) => $now - $x['t'] < WL_SIGNAL_TTL);
-    if ($kind === '' || ($s['signals'][$pkey]['k'] ?? '') === $kind) {
+    $cur = $s['signals'][$pkey] ?? null;
+    if ($kind === '' || ($cur && $cur['k'] === $kind && ($cur['q'] ?? null) === ($at['q'] ?? null) && ($cur['i'] ?? null) === ($at['i'] ?? null))) {
         unset($s['signals'][$pkey]);
         return null;
     }
-    $s['signals'][$pkey] = ['k' => $kind, 't' => $now];
+    $s['signals'][$pkey] = ['k' => $kind, 't' => $now] + $at;
     return $kind;
+}
+
+/** « Besoin d'aide » par étape : [['q' => id, 'i' => indice, 'n' => nombre], …], le plus demandé d'abord.
+ *  Jamais qui l'a envoyé. */
+function wl_signal_steps(array $s, ?int $now = null): array
+{
+    $now ??= time();
+    $by = [];
+    foreach ($s['signals'] ?? [] as $x) {
+        if ($now - $x['t'] < WL_SIGNAL_TTL && isset($x['q'])) {
+            $by[$x['q'] . '|' . $x['i']] = ['q' => $x['q'], 'i' => $x['i'], 'n' => ($by[$x['q'] . '|' . $x['i']]['n'] ?? 0) + 1];
+        }
+    }
+    $list = array_values($by);
+    usort($list, fn($a, $b) => $b['n'] <=> $a['n'] ?: $a['i'] <=> $b['i']);
+    return $list;
 }
 
 /** Nombre de signaux en cours, par sorte (jamais qui les a envoyés). */

@@ -416,6 +416,13 @@
       any = any || n > 0;
       sig.appendChild(el('span', { class: 'signal-count' + (n ? ' is-on' : '') }, SIGNALS[k] + ' : ' + n));
     });
+    // « Besoin d'aide » rattaché à une étape d'un défi : combien, et laquelle.
+    (d.helpSteps || []).forEach(function (h) {
+      var q = (d.questions || []).filter(function (x) { return x.id === h.q; })[0];
+      if (!q || !q.options[h.i]) return;
+      sig.appendChild(el('span', { class: 'signal-count is-on' }, '✋ ' + WL.plural(h.n, 'personne') + ' bloquée'
+        + (h.n > 1 ? 's' : '') + ' à l\'étape ' + (h.i + 1) + ' : ' + q.options[h.i]));
+    });
     sig.classList.toggle('is-on', any);
 
     $('asks-btn').textContent = d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »';

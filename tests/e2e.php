@@ -555,13 +555,28 @@ $cl[0]->vote($cmp, $sc2, 4);
 $cl[1]->vote($cmp, $sc2, 5);
 $cr = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'][3]['results']['compare'] ?? [];
 check(($cr['kind'] ?? '') === 'average' && ($cr['before'] ?? 0) == 3 && ($cr['after'] ?? 0) == 4.5, 'avant/après : moyennes 3 puis 4,5 sur une échelle');
+// Mêmes personnes : trois ont répondu aux deux questions, un arrivé en retard seulement à la seconde.
+$b2 = $sv($mcq + ['text' => 'Avant bis'])['json']['id'] ?? '';
+$a2 = $sv(array_merge($mcq, ['text' => 'Après bis', 'compare' => $b2]))['json']['id'] ?? '';
+$g = [new Client($base), new Client($base), new Client($base), new Client($base)];
+foreach ($g as $c) { $c->join($cmp); }
+$cmpGo($b2);
+$g[0]->vote($cmp, $b2, 1); $g[1]->vote($cmp, $b2, 1); $g[2]->vote($cmp, $b2, 0);
+$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$cmpGo($a2);
+$g[0]->vote($cmp, $a2, 0); $g[1]->vote($cmp, $a2, 0); $g[2]->vote($cmp, $a2, 0); $g[3]->vote($cmp, $a2, 1);
+$cr = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'][5]['results']['compare'] ?? [];
+check(($cr['same'] ?? false) === true && ($cr['nCommon'] ?? 0) === 3 && ($cr['before'] ?? -1) === 33 && ($cr['after'] ?? -1) === 100,
+    'avant/après : calculé sur les trois personnes qui ont répondu aux deux (33 % puis 100 %, pas 75 % avec le retardataire)');
+$cr = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'][1]['results']['compare'] ?? [];
+check(($cr['same'] ?? true) === false && ($cr['nCommon'] ?? -1) === 0, 'avant/après : deux personnes seulement en commun = comparaison de tous les répondants, jamais isolées');
 $dup = $admin->post('session_duplicate', ['s' => $cmp])['json']['code'] ?? '';
 $dq = $admin->get("api.php?action=admin_state&s=$dup")['json']['questions'] ?? [];
 check(($dq[1]['compare'] ?? '') === ($dq[0]['id'] ?? '-') && ($dq[3]['compare'] ?? '') === ($dq[2]['id'] ?? '-'), 'avant/après : la copie de session garde le lien, vers ses propres questions');
 $expc = $admin->get("api.php?action=export&format=questions&s=$cmp");
 check((json_decode($expc['body'], true)[1]['compare'] ?? 0) === 1, 'avant/après : exporté par position');
 $cc = $admin->post('session_create', ['title' => 'Progression copie'])['json']['code'] ?? '';
-expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => range(0, 3)]), 200, 'avant/après : réimport');
+expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => range(0, 5)]), 200, 'avant/après : réimport');
 check($admin->get("api.php?action=export&format=questions&s=$cc")['body'] === $expc['body'], 'avant/après : réimport identique');
 expect_status($admin->post('questions_import', ['s' => $cc, 'raw' => $expc['body'], 'keep' => [1]]), 400, 'avant/après : import sans la question « avant » refusé');
 
@@ -620,6 +635,21 @@ $pn = fn() => $admin->get("api.php?action=admin_state&s=$pi")['json']['questions
 check(($pn()[0]['col'] ?? -1) === 0, 'post-it : note déposée dans la colonne Pour');
 $pq(['Contre', 'Pour'], ['id' => $pid]);
 check(count($pn()) === 1 && ($pn()[0]['col'] ?? -1) === 1, 'post-it : colonnes réordonnées, la note suit sa colonne (Pour est passée en 2e)');
+
+// Aide par étape : le signal « besoin d'aide » vise une étape, jamais plus d'un signal par personne.
+$sg = fn(Client $c, array $step) => $c->post('signal', ['s' => $df, 'kind' => 'help', 'step' => $step]);
+expect_status($sg($dc[1], ['q' => $did, 'i' => 9]), 400, 'aide par étape : étape inconnue refusée');
+expect_status($sg($dc[1], ['q' => 'zzzzzzzz', 'i' => 0]), 400, 'aide par étape : question inconnue refusée');
+expect_status($dc[1]->post('signal', ['s' => $df, 'kind' => 'fast', 'step' => ['q' => $did, 'i' => 0]]), 400, 'aide par étape : seul « besoin d\'aide » vise une étape');
+expect_status($sg($dc[0], ['q' => $did, 'i' => 1]), 200, 'aide par étape : bloqué à l\'étape 2');
+expect_status($sg($dc[1], ['q' => $did, 'i' => 1]), 200, 'aide par étape : un deuxième bloqué à l\'étape 2');
+$hs = fn() => $admin->get("api.php?action=admin_state&s=$df")['json'];
+check(($hs()['helpSteps'] ?? []) === [['q' => $did, 'i' => 1, 'n' => 2]] && ($hs()['signals']['help'] ?? 0) === 2, 'aide par étape : deux personnes à l\'étape 2, comptées aussi dans « Besoin d\'aide »');
+$sg($dc[1], ['q' => $did, 'i' => 1]);
+check(($hs()['helpSteps'][0]['n'] ?? 0) === 1, 'aide par étape : le même appui retire le signal');
+$dc[1]->post('signal', ['s' => $df, 'kind' => 'help']);
+check(($hs()['signals']['help'] ?? 0) === 2 && ($hs()['helpSteps'][0]['n'] ?? 0) === 1, 'aide par étape : un signal général compte sans étape');
+check(!str_contains(json_encode($hs()['helpSteps'] ?? []), 'token'), 'aide par étape : aucune identité dans le résultat');
 
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';

@@ -263,6 +263,8 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .step-text { flex: 1; }
 .step-detail { display: block; margin-top: .25rem; color: var(--wl-texte-doux); font-size: .95rem; }
 .btn-fait { min-width: 6.5rem; min-height: 3rem; }
+.step-actions { display: flex; flex-direction: column; gap: .4rem; align-items: stretch; }
+.btn-stuck[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-texte); border-color: var(--wl-texte); }
 .device-line .btn { min-height: 2.5rem; margin-left: .5rem; }
 .btn-fait[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-ok); border-color: var(--wl-ok); }
 .results-compare { font-weight: bold; color: var(--wl-texte); margin-top: .5rem; }

@@ -286,6 +286,15 @@ function check(cond, label) {
   await dphone.waitForFunction(() => document.querySelector('#answer-form .btn-fait').getAttribute('aria-pressed') === 'false');
   const dst2 = await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json();
   check(JSON.stringify(dst2.questions[0].results.counts) === '[0,0,0]', 'défi : décocher retire l\'étape');
+  // « Bloqué » à une étape : l'animateur voit combien et laquelle, jamais qui ; 390 px sans débordement.
+  await dphone.setViewportSize({ width: 390, height: 800 });
+  await dphone.locator('#answer-form .btn-stuck').nth(1).click();
+  await dphone.waitForFunction(() => document.querySelectorAll('#answer-form .btn-stuck')[1].getAttribute('aria-pressed') === 'true');
+  const hst = await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json();
+  check(JSON.stringify(hst.helpSteps) === '[{"q":"' + dq + '","i":1,"n":1}]', 'aide par étape : une personne bloquée à l\'étape 2, sans identité');
+  check(await dphone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'aide par étape : rien ne dépasse à 390 px');
+  await dphone.locator('#answer-form .btn-stuck').nth(1).click();
+  await dphone.waitForFunction(() => document.querySelectorAll('#answer-form .btn-stuck')[1].getAttribute('aria-pressed') === 'false');
   await dphone.context().close();
 
   // Projection d'une question avec lien : QR code et nom du site, sans dépasser l'écran.

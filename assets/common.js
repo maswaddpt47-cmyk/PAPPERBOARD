@@ -474,7 +474,8 @@ var WL = (function () {
     var unit = function (v) { return c.kind === 'average' ? fmt(v) + ' / ' + c.max : v + ' % de bonnes réponses'; };
     var d = Math.round((c.after - c.before) * 10) / 10;
     var delta = d === 0 ? 'stable' : (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + (c.kind === 'average' ? '' : ' points');
-    return 'Avant : ' + unit(c.before) + ' — Après : ' + unit(c.after) + ' (' + delta + ')';
+    var who = c.same ? 'mêmes ' + c.nCommon + ' personnes' : 'personnes différentes : ' + c.nBefore + ' puis ' + c.nAfter + ' réponses';
+    return 'Avant : ' + unit(c.before) + ' — Après : ' + unit(c.after) + ' (' + delta + ' ; ' + who + ')';
   }
 
   /** Secondes restantes avant closesAt, corrigées du décalage d'horloge. */

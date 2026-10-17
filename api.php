@@ -275,7 +275,7 @@ function api_ping(array $b): void
  *  téléphones ne sont pas réveillés. */
 function api_signal(array $b): void
 {
-    $kind = api_participant_write($b, fn(array &$s, string $pkey) => wl_signal($s, $pkey, $b['kind'] ?? ''), false);
+    $kind = api_participant_write($b, fn(array &$s, string $pkey) => wl_signal($s, $pkey, $b['kind'] ?? '', $b['step'] ?? null), false);
     wl_json(['ok' => true, 'signal' => $kind, 'ttl' => WL_SIGNAL_TTL]);
 }
 
@@ -367,7 +367,7 @@ function api_admin_state(): void
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
             'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'demo' => !empty($s['demo']),
-            'signals' => wl_signal_counts($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
+            'signals' => wl_signal_counts($s), 'helpSteps' => wl_signal_steps($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
             'pseudo' => !empty($s['pseudo']), 'ranking' => !empty($s['pseudo']) ? wl_ranking($s) : [], 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
