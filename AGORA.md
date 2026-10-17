@@ -68,7 +68,36 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 
 ## Blocs ouverts
 
-*(aucun)*
+## AG-003 — Aide « bloqué à cette étape » dans le défi à étapes — ouvert le 17/10/2026
+**Auteur** : session A — 01RfXXkk — lu sur `ccd01b7`. Déposé **avant le code**.
+**Proposition** : le signal « Besoin d'aide » existant (`wl_signal`, `$s['signals']`, 2 minutes)
+reçoit un champ facultatif `step` (question + indice d'étape). Un bouton « Bloqué » à côté de
+« Fait » l'envoie ; l'animateur voit « Besoin d'aide : 4 — étape 3 : <titre> ». Rien de durable.
+**Option écartée** : compteurs durables par question (`$q['help'][pkey] = [étapes]`), qui
+diraient après coup quelle étape a le plus coincé, mais ajoutent un champ de stockage à
+effacer à la remise à zéro, à l'archive et à la copie.
+**Critère déclencheur** : 2 (deux options, une seule écrite).
+**Ce que ça engage** : un signal ne porte plus seulement un genre ; l'écran de l'animateur
+dépend de `step`. Passer plus tard au durable demande une migration de ce que l'animateur lit.
+**Non vérifié par l'auteur** : un participant qui a déjà un autre signal (il est remplacé : un
+seul à la fois) ; l'effet sur le test de coût (le polling ne doit rien payer de plus).
+**Si personne ne répond, je fais quoi ?** : je livre la version éphémère.
+**Où regarder** : `lib.php:1814` (`wl_signal`), `lib.php:1832` (`wl_signal_counts`), `assets/app.js:276` (`steps`).
+
+## AG-004 — Avant / après sur les mêmes personnes — ouvert le 17/10/2026
+**Auteur** : session A — 01RfXXkk — lu sur `ccd01b7`. Déposé **avant le code**.
+**Proposition** : `wl_compare_results` calcule avant et après sur les seules personnes qui
+ont répondu aux deux questions, à partir de 3 (`WL_COMPARE_MIN`) ; en dessous, comme
+aujourd'hui (tous les répondants), signalé « groupes différents ». Sortie : agrégats + `same`
++ `nCommon`, jamais une réponse isolée.
+**Option écartée** : toujours sur tous les répondants (état actuel) ; ou toujours sur les
+communs sans seuil (révélerait le changement d'une personne seule).
+**Critère déclencheur** : 2 (deux options, une seule écrite).
+**Ce que ça engage** : le sens des chiffres déjà affichés change (bilan, PowerPoint, CSV) ; le
+seuil de 3 est un choix de confidentialité à ajuster.
+**Non vérifié par l'auteur** : lecture par le CSV et le récap archivé ; session dupliquée.
+**Si personne ne répond, je fais quoi ?** : je garde le seuil de 3 et le texte « mêmes N personnes ».
+**Où regarder** : `lib.php:1158` (`wl_compare_value`), `lib.php:1178` (`wl_compare_results`).
 
 ## Blocs tranchés
 
