@@ -40,6 +40,15 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   finie = descriptif retiré, l'invariant remonte dans « Points à ne pas
   défaire ». `scripts/check-chantiers.sh` signale un fichier à nettoyer.
 - Réponses courtes et non techniques par défaut. Pas de compliment, un constat.
+- Avant de décrire un correctif, suivre la valeur sur **tout son chemin**
+  (`then`/`catch`, appelants, valeurs par défaut), pas la seule ligne à
+  changer : le 23/09/2026 un correctif annoncé comme suffisant était
+  inopérant, le `catch` écrasant la décision prise dans le `then`.
+- Un nombre annoncé se **compte par une commande**, pas à l'œil sur une liste ;
+  sinon le dire comme une estimation.
+- Fichier partagé entre sessions (`AGORA.md`, `CHANTIERS.md`, `CLAUDE.md`) :
+  refaire un `git fetch` et le relire **juste avant de rédiger**, pas seulement
+  à l'ouverture.
 - Pistes d'amélioration : au plus 3, en fin de fonctionnalité validée,
   consignées dans la section « Pistes » de `CHANTIERS.md`.
 
