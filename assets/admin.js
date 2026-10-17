@@ -683,6 +683,7 @@
       var relevant = { mcq: 'multi', scale: 'scaleMax', points: 'budget', dots: 'budget' }[question.type];
       var changed = question.type !== editing.type
         || (question.type !== 'postit' && question.options.length !== editing.options.length)
+        || (question.options.join('\n') !== editing.options.join('\n') && question.options.slice().sort().join('\n') === editing.options.slice().sort().join('\n'))
         || (relevant && question[relevant] !== editing[relevant])
         || (question.type === 'dots' && question.source !== editing.source);
       if (changed && editing.results.total && !confirm('Cette modification efface les '

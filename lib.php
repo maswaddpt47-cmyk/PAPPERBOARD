@@ -697,6 +697,14 @@ function wl_reset_question(array &$q): void
 /** Vrai si une modification rend les réponses existantes incohérentes.
  *  Post-it : ajouter ou retirer une colonne ne casse rien (une note d'une
  *  colonne disparue s'affiche dans la dernière). */
+/** Mêmes choix dans un autre ordre : les réponses, rangées par position, changeraient de sens. */
+function wl_options_reordered(array $old, array $new): bool
+{
+    sort($old);
+    sort($new);
+    return $old === $new;
+}
+
 function wl_structure_changed(array $old, array $new): bool
 {
     if ($old['type'] !== $new['type']) {
@@ -704,6 +712,7 @@ function wl_structure_changed(array $old, array $new): bool
     }
     $relevant = ['mcq' => 'multi', 'scale' => 'scaleMax', 'points' => 'budget', 'dots' => 'budget'][$new['type']] ?? null;
     return ($new['type'] !== 'postit' && count($old['options']) !== count($new['options']))
+        || ($old['options'] !== $new['options'] && wl_options_reordered($old['options'], $new['options']))
         || ($relevant && $old[$relevant] !== $new[$relevant])
         || ($new['type'] === 'dots' && (($old['source'] ?? '') !== $new['source'] || ($old['column'] ?? -1) !== $new['column']));
 }

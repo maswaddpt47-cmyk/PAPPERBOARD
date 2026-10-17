@@ -600,6 +600,14 @@ expect_status($dc[1]->vote($df, $did, [0, 1, 2]), 200, 'défi : réponse avant r
 expect_status($dq(['Ouvrir', 'Couper']), 200, 'défi : retrait d\'une étape accepté');
 check(($dr()['counts'] ?? null) === [0, 0] && ($dr()['total'] ?? -1) === 0, 'défi : étape retirée = réponses effacées, compteurs à la bonne taille');
 
+// Réordonner les choix sans changer leur nombre : les réponses (par position) changeraient de sens, on repart de zéro.
+expect_status($dc[1]->vote($df, $did, [0]), 200, 'défi : réponse avant réordonnancement');
+expect_status($dq(['Couper', 'Ouvrir']), 200, 'défi : réordonnancement accepté');
+check(($dr()['total'] ?? -1) === 0, 'choix réordonnés = réponses effacées');
+expect_status($dc[1]->vote($df, $did, [0]), 200, 'défi : réponse avant correction de texte');
+expect_status($dq(['Couper', 'Ouvrir le menu']), 200, 'défi : un texte corrigé est accepté');
+check(($dr()['total'] ?? -1) === 1, 'choix reformulé (pas réordonné) = réponses gardées');
+
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);
