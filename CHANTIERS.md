@@ -171,6 +171,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   « fonctions en essai » (réglage serveur `prefs.json`, commun à tous les appareils de
   l'animateur, e2e) ; le serveur accepte le type dans tous
   les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
+- Audit Codex à passer sur les ajouts du 15 au 17/10/2026 (lien d'exercice, `prefs_save`,
+  défi, avant / après, démo) : consigne prête `docs/consigne-audit-codex-17-10-2026.md`.
 - Lien d'exercice (`link`, 17/10/2026) : https seulement, avec un domaine (jamais une IP
   ni un identifiant dans l'adresse) : `wl_clean_link` (e2e). Le participant voit le site
   avant de partir (nouvel onglet, `noopener`) ; la projection montre un QR dessiné dans le
