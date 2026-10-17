@@ -173,10 +173,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
 - Audit Codex à passer sur les ajouts du 15 au 17/10/2026 (lien d'exercice, `prefs_save`,
   défi, avant / après, démo) : consigne prête `docs/consigne-audit-codex-17-10-2026.md`.
-- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 (format `steps`/variantes) et
-  AG-002 (`prefs.json`) ouverts après coup. L'utilisateur colle « pull, lis AGORA.md,
-  réponds à AG-00N, tu es la session B » dans une autre session, puis tranche. Chaque
-  « décision à trancher » ci-dessus est candidate à un bloc.
+- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 et AG-002 tranchés le 17/10/2026 par
+  l'utilisateur : le format `steps`/`variants` et `prefs.json` sont gardés tels quels (ne pas les
+  défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.
 - Lien d'exercice (`link`, 17/10/2026) : https seulement, avec un domaine (jamais une IP
   ni un identifiant dans l'adresse) : `wl_clean_link` (e2e). Le participant voit le site
   avant de partir (nouvel onglet, `noopener`) ; la projection montre un QR dessiné dans le
