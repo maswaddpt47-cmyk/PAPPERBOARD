@@ -199,8 +199,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   Bilan de la session ; réservée à l'animateur, aucune page publique. Ne contient que ce que
   l'animateur a écrit (conclusion, explications, bonnes réponses, exercices et étapes), jamais une
   réponse ni un chiffre (e2e). Aucun lien « ressources vérifiées » : seulement ceux de l'animateur.
-- Bibliothèque de séances (17/10/2026) : `assets/seances.js`, 4 **brouillons à relire** (arnaques,
-  démarches, pièces jointes, réglages), créés par l'import validé côté serveur ; rien n'est validé
+- Bibliothèque de séances (17/10/2026) : `assets/seances.js`, 5 **brouillons à relire** (arnaques,
+  démarches initiation, démarches niveau intermédiaire du même jour, pièces jointes, réglages), créés par l'import validé côté serveur ; rien n'est validé
   sur le terrain, aucun site inscrit, aucun menu d'appareil précis. Le test de navigateur
   importe chaque séance. Le 33700 (signalement SMS) et « .gouv.fr » sont à vérifier par
   l'utilisateur.

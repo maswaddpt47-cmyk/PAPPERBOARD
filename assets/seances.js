@@ -28,7 +28,7 @@ window.WL_SEANCES = [
     ]
   },
   {
-    id: 'demarches', title: 'Démarches en ligne : se connecter et protéger son compte',
+    id: 'demarches', title: 'Démarches en ligne, initiation : se connecter et protéger son compte',
     public: 'Adultes qui débutent les démarches en ligne', duree: '1 heure', prerequis: 'Une adresse mail et un appareil connecté',
     objectif: 'Comprendre identifiant, mot de passe et FranceConnect, et repérer un faux site.',
     items: [
@@ -49,6 +49,49 @@ window.WL_SEANCES = [
         options: ['Aller sur l\'adresse officielle du service', 'Repérer le bouton de connexion', 'Choisir comment se connecter (identifiant ou FranceConnect)'] },
       { type: 'scale', text: 'Maintenant, à l\'aise pour faire une démarche administrative en ligne ?', scaleMax: 5, compare: 1 },
       { type: 'conclusion', text: 'À retenir : j\'écris moi-même l\'adresse du service (.gouv.fr), je n\'utilise jamais un lien reçu par mail pour me connecter, et j\'ai un mot de passe différent par compte. FranceConnect évite d\'en créer un de plus.' }
+    ]
+  },
+  {
+    id: 'demarches-2', title: 'Démarches en ligne, niveau intermédiaire : justificatifs, preuves et vérifications',
+    public: 'Personnes qui ont déjà fait une démarche en ligne', duree: '1 h 15', prerequis: 'Un compte sur au moins un service public en ligne',
+    objectif: 'Préparer un dossier sans erreur, garder ses preuves, repérer les faux sites et ne jamais donner ses codes.',
+    items: [
+      { type: 'scale', text: 'À l\'aise pour mener une démarche en ligne jusqu\'au bout, seul(e) ?', scaleMax: 5 },
+      { type: 'poll', text: 'Qu\'est-ce qui vous bloque le plus dans une démarche en ligne ?',
+        options: ['Trouver le bon site', 'Créer ou retrouver mon compte', 'Scanner ou joindre un document', 'Comprendre ce qu\'on me demande', 'La peur de me tromper', 'Rien en particulier'] },
+      { type: 'mcq', text: 'Vous voulez faire une démarche (carte d\'identité, carte grise…). Par où commencer ?',
+        options: ['Le premier lien sponsorisé d\'un moteur de recherche', 'service-public.fr', 'Un site qui promet « votre dossier en 5 minutes » contre paiement', 'Un groupe sur les réseaux sociaux'],
+        correct: ['service-public.fr'],
+        explain: 'service-public.fr est le site officiel de l\'administration : il explique chaque démarche et renvoie vers le bon service. Les sites qui vendent le même service à votre place sont à éviter.' },
+      { type: 'truefalse', text: 'Un site qui vous fait payer pour « constituer votre dossier » est forcément le site officiel.', correct: 'Faux',
+        explain: 'Certains sites privés arrivent en tête des résultats et facturent un service que l\'administration propose sans frais de dossier. Les frais légaux (taxes, timbres) se paient sur le site officiel.' },
+      { type: 'mcq', text: 'On vous demande de joindre un justificatif de domicile. Quel fichier convient le mieux ?',
+        options: ['Une photo floue, prise de travers', 'Un PDF lisible, page entière', 'Une capture d\'écran coupée', 'Un document Word modifiable'],
+        correct: ['Un PDF lisible, page entière'],
+        explain: 'Un document lisible, entier, dans un format courant (PDF, JPG ou PNG selon le service) évite un rejet du dossier. Regardez la taille maximale annoncée avant d\'envoyer.' },
+      { type: 'steps', text: 'Défi : prépare un justificatif prêt à envoyer',
+        options: ['Prendre le document en photo ou le scanner', 'Vérifier qu\'il est lisible et entier', 'L\'enregistrer en PDF ou JPG avec un nom clair', 'Le retrouver dans un dossier de ton appareil'] },
+      { type: 'mcq', multi: true, text: 'Quels éléments faut-il garder après une démarche en ligne ? (plusieurs réponses)',
+        options: ['L\'accusé de réception ou le numéro de dossier', 'Le mail de confirmation', 'Une capture de la page de confirmation', 'Rien : l\'administration garde tout pour moi'],
+        correct: ['L\'accusé de réception ou le numéro de dossier', 'Le mail de confirmation', 'Une capture de la page de confirmation'],
+        explain: 'L\'accusé de réception, le numéro de dossier et la date prouvent que la démarche a été faite à temps. Rangez-les dans un dossier de votre appareil ou un coffre-fort numérique.' },
+      { type: 'mcq', text: 'Après votre mot de passe, le service envoie un code à 6 chiffres sur votre téléphone. À quoi sert-il ?',
+        options: ['À confirmer que c\'est bien vous qui vous connectez', 'À payer la démarche', 'À vous abonner à un service', 'À télécharger une application'],
+        correct: ['À confirmer que c\'est bien vous qui vous connectez'],
+        explain: 'C\'est une double vérification : même si quelqu\'un connaît votre mot de passe, il lui faut aussi votre téléphone. Ce code ne se communique à personne, même par téléphone.' },
+      { type: 'truefalse', text: 'FranceConnect+ demande une vérification plus forte que FranceConnect pour certains services sensibles.', correct: 'Vrai',
+        explain: 'Pour certains services sensibles, un identifiant et un mot de passe ne suffisent pas : il faut confirmer son identité d\'une façon renforcée, par exemple avec son téléphone.' },
+      { type: 'mcq', text: 'Un ami propose de faire votre démarche à votre place si vous lui donnez votre mot de passe. Que faites-vous ?',
+        options: ['Je le lui donne, c\'est un ami', 'Je fais la démarche moi-même, il m\'explique à côté', 'Je lui donne aussi le code reçu par SMS', 'Je change mon mot de passe pour un plus simple'],
+        correct: ['Je fais la démarche moi-même, il m\'explique à côté'],
+        explain: 'Mot de passe et codes ne se donnent à personne, même de confiance. Une personne peut vous guider pendant que vous saisissez vous-même, ou un aidant habilité vous accompagner dans un lieu d\'accueil.' },
+      { type: 'truefalse', text: 'Un mail annonce un remboursement et demande vos coordonnées bancaires via un lien : c\'est une arnaque probable.', correct: 'Vrai',
+        explain: 'Ne cliquez pas : tapez vous-même l\'adresse du site officiel et regardez si le message est aussi dans votre espace personnel.' },
+      { type: 'points', text: 'Répartissez 10 points : que voulez-vous travailler en priorité ?', budget: 10,
+        options: ['Retrouver mon compte et mon mot de passe', 'Joindre un document', 'Reconnaître un faux site ou un faux mail', 'Suivre l\'avancement de mon dossier', 'Utiliser FranceConnect'] },
+      { type: 'text', text: 'Quelle démarche allez-vous faire prochainement, et par quel site commencerez-vous ?' },
+      { type: 'scale', text: 'Maintenant, à l\'aise pour mener une démarche en ligne jusqu\'au bout, seul(e) ?', scaleMax: 5, compare: 1 },
+      { type: 'conclusion', text: 'À retenir : je commence par service-public.fr, je prépare mes justificatifs en fichiers lisibles, je garde l\'accusé de réception et le numéro de dossier, et je ne donne jamais mon mot de passe ni mes codes. En cas de doute sur un mail ou un site, je tape moi-même l\'adresse officielle.' }
     ]
   },
   {
