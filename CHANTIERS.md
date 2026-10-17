@@ -169,7 +169,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   d'étapes ; l'appareil choisi reste dans le navigateur, jamais envoyé ; décocher
   retire la réponse (tout décoché = plus compté). Visible seulement avec Réglages >
   « fonctions en essai » (réglage serveur `prefs.json`, commun à tous les appareils de
-  l'animateur, e2e) ; le serveur accepte le type dans tous
+  l'animateur, écrit sous verrou : une écriture qui échoue renvoie une erreur, e2e) ; le serveur accepte le type dans tous
   les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
 - Audit Codex à passer sur les ajouts du 15 au 17/10/2026 (lien d'exercice, `prefs_save`,
   défi, avant / après, démo) : consigne prête `docs/consigne-audit-codex-17-10-2026.md`.

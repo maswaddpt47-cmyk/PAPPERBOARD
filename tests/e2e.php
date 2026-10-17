@@ -594,6 +594,12 @@ expect_status($admin->post('questions_import', ['s' => $dcopy, 'raw' => $dx['bod
 check($admin->get("api.php?action=export&format=questions&s=$dcopy")['body'] === $dx['body'], 'défi : réimport identique');
 check(count($admin->get("api.php?action=admin_state&s=" . ($admin->post('session_duplicate', ['s' => $df])['json']['code'] ?? ''))['json']['questions'][0]['variants'] ?? []) === 2, 'défi : la copie de session garde les variantes');
 
+// Retirer une étape après des réponses : les réponses sont des indices, elles n'ont plus de sens.
+$dq = fn(array $o) => $ds(['id' => $did, 'type' => 'steps', 'text' => 'Coupe les notifications', 'options' => $o]);
+expect_status($dc[1]->vote($df, $did, [0, 1, 2]), 200, 'défi : réponse avant retrait d\'une étape');
+expect_status($dq(['Ouvrir', 'Couper']), 200, 'défi : retrait d\'une étape accepté');
+check(($dr()['counts'] ?? null) === [0, 0] && ($dr()['total'] ?? -1) === 0, 'défi : étape retirée = réponses effacées, compteurs à la bonne taille');
+
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);

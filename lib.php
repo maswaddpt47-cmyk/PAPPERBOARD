@@ -1996,9 +1996,10 @@ function wl_prefs(): array
 function wl_prefs_save(array $in): array
 {
     $prefs = ['beta' => !empty($in['beta'])];
-    $f = wl_data_dir() . '/prefs.json';
-    file_put_contents($f . '.tmp', json_encode($prefs));
-    rename($f . '.tmp', $f);
+    // Verrou + écriture atomique : deux appareils à la fois, ou un dossier non inscriptible, donnent une erreur et non un faux « enregistré ».
+    wl_locked_json(wl_data_dir() . '/prefs.json', function (array &$d) use ($prefs) {
+        $d = $prefs;
+    });
     return $prefs;
 }
 
