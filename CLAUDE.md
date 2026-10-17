@@ -82,3 +82,36 @@ Charte « Papier & Terre » (validée le 15/10/2026, `INTEGRATION.md`) : variabl
 PowerPoint du bilan (`assets/bilan-pptx.js`) reprend les couleurs du thème clair. Aucune couleur ni logo d'une institution (un
 outil personnel ne doit pas passer pour un outil officiel). Tout couple texte/fond
 vérifié AA (4,5:1), éléments graphiques 3:1.
+
+## 6. AGORA — faire contredire une décision par une autre session
+
+Créée le 17/10/2026. `AGORA.md` (racine) suffit pour répondre ; `MD-LIB/agora.md`
+n'est **pas requis**. Claude **soumet d'office** un bloc dès qu'un critère est
+rempli, sans demander, l'annonce en une ligne (« ⚖️ AGORA : critère N — … Bloc
+AG-00N commité. À coller dans l'autre session : « pull, lis AGORA.md, réponds à
+AG-00N, tu es la session B » ») et **ne bloque jamais** : le travail continue.
+L'utilisateur décide de coller la phrase ou non, et tranche. Le bloc se dépose
+**au moment du choix**, avant le code (après, la lecture est biaisée vers le
+statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, CI, avance rapide.
+
+**Les six critères** (vérifiables dans le diff) :
+1. La décision ferme une porte : schéma de données, format de stockage ou
+   d'export, nouvelle dépendance, contrat entre modules (une migration pour défaire).
+2. Deux options ont été envisagées, une seule écrite, sans arbitrage extérieur.
+3. Trois itérations sans résolution sur le même problème.
+4. Proposition de défaire un existant dont la raison d'être n'est pas retrouvée.
+5. La proposition contredit une note datée du dépôt (`CLAUDE.md`, `CHANTIERS.md`).
+6. Coût irréversible côté usager : suppression de données, migration.
+
+Toute entrée « décision à trancher » de `CHANTIERS.md` est candidate : dire à
+l'écriture pourquoi on ouvre un bloc ou non.
+
+**Ne vont pas à l'AGORA** : un changement de rendu pur, un correctif localisé
+appuyé sur une preuve (test rouge puis vert), tout ce qui se défait en un commit.
+**La sécurité, l'authentification et les données personnelles vont à Codex**
+(§4), pas à l'AGORA.
+
+**Répondre** : jamais à son propre bloc (comparer les `Claude-Session:` des
+commits, voir `AGORA.md`) ; « confirmé » est une réponse pleine ; aucune
+appréciation ; sans `fichier:ligne`, mesure ou log, la réponse ne compte pas.
+
