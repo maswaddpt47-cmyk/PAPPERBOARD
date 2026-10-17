@@ -308,6 +308,38 @@ function check(cond, label) {
   await dphone.waitForFunction(() => document.getElementById('q-text').textContent === 'Coupe les notifications');
   await dphone.context().close();
 
+  // Bibliothèque de séances : chacune s'importe sans erreur, avec sa conclusion et ses liens avant / après.
+  global.window = {};
+  require('../assets/seances.js');
+  for (const t of global.window.WL_SEANCES) {
+    const code = (await post('session_create', { title: t.title })).code;
+    const imp = await post('questions_import', { s: code, raw: JSON.stringify(t.items), keep: t.items.map((_, i) => i) });
+    const st = await (await api.get(BASE + 'api.php?action=admin_state&s=' + code)).json();
+    check(imp.ok === true && st.questions.length === t.items.length - 1 && st.conclusion.length > 20
+      && st.questions.filter((q) => q.compare).length === 1,
+      'séance « ' + t.title + ' » : ' + (t.items.length - 1) + ' questions, une conclusion, un avant / après');
+    check(t.items.every((it) => it.type !== 'conclusion' || it.text.length <= 600), 'séance « ' + t.id + ' » : conclusion de 600 caractères au plus');
+  }
+  delete global.window;
+  await admin.goto(BASE + 'admin.php');
+  await admin.waitForSelector('#seance-select option[value="arnaques"]', { state: 'attached' });
+  await admin.selectOption('#seance-select', 'arnaques');
+  check(/Public : .* Durée : 45 minutes/.test(await admin.textContent('#seance-info')), 'bibliothèque : public, durée, prérequis et objectif affichés');
+  await admin.click('#seance-btn');
+  await admin.waitForFunction(() => /Repérer une arnaque/.test(document.getElementById('ed-title').textContent));
+  check((await admin.getAttribute('#ed-memo', 'href')).includes('format=memo'), 'bibliothèque : la séance créée s\'ouvre, avec sa fiche mémo');
+
+  // Rendu mesuré à 390 px : bibliothèque (page des sessions) et fiche mémo, sans débordement horizontal.
+  const memoPage = await admin.context().newPage();
+  await memoPage.setViewportSize({ width: 390, height: 800 });
+  await memoPage.goto(BASE + 'api.php?action=export&format=memo&s=' + ds);
+  check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'fiche mémo : rien ne dépasse à 390 px');
+  await memoPage.goto(BASE + 'admin.php');
+  await memoPage.waitForSelector('#seance-select', { state: 'attached' });
+  await memoPage.waitForTimeout(500);
+  check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'bibliothèque : rien ne dépasse à 390 px');
+  await memoPage.close();
+
   // Projection d'une question avec lien : QR code et nom du site, sans dépasser l'écran.
   const lens = await admin.context().newPage(); // avec le cookie animateur : la barre de pilotage est là
   watch(lens, 'projection du lien');

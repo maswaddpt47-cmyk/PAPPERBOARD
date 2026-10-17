@@ -833,6 +833,9 @@ function api_export(): void
     if (($_GET['format'] ?? '') === 'print') {
         api_export_print($s, $all);
     }
+    if (($_GET['format'] ?? '') === 'memo') {
+        api_export_memo($s);
+    }
     if (($_GET['format'] ?? '') === 'questions') {
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Disposition: attachment; filename="wooclight-questions-' . $s['code'] . '-' . date('Y-m-d') . '.json"');
@@ -911,6 +914,59 @@ function api_export_csv(array $s, bool $all): never
     foreach ([$head, ...api_export_rows($s, $all)] as $row) {
         echo implode(';', array_map('api_csv_cell', $row)), "\r\n";
     }
+    exit;
+}
+
+/** Fiche mémo à emporter : ce que l'animateur a écrit (conclusion, explications, bonnes réponses,
+ *  exercices et leurs étapes), jamais une réponse ni un chiffre de participant. À imprimer ou
+ *  enregistrer en PDF, puis à remettre ou à envoyer. */
+function api_export_memo(array $s): never
+{
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store');
+    $title = wl_h($s['title']);
+    $when = !empty($s['created']) ? ' — atelier du ' . date('d/m/Y', (int)$s['created']) : '';
+    echo "<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\"><title>Fiche mémo — $title</title>"
+        . '<link rel="stylesheet" href="' . wl_asset('style.css') . '"></head><body class="print memo">'
+        . "<h1>$title</h1><p>Fiche mémo$when</p>";
+    if (trim((string)($s['conclusion'] ?? '')) !== '') {
+        echo '<section><h2>À retenir</h2><p>' . nl2br(wl_h($s['conclusion'])) . '</p></section>';
+    }
+    $seen = '';
+    $todo = '';
+    foreach ($s['questions'] as $q) {
+        $good = $q['correct'] ? implode(' ; ', array_map(fn($i) => $q['options'][$i], $q['correct'])) : '';
+        if ($good !== '' || trim((string)($q['explain'] ?? '')) !== '') {
+            $seen .= '<li><strong>' . wl_h($q['text']) . '</strong>'
+                . ($good !== '' ? '<br>Bonne réponse : ' . wl_h($good) : '')
+                . (trim((string)($q['explain'] ?? '')) !== '' ? '<br>' . wl_h($q['explain']) : '') . '</li>';
+        }
+        if ($q['type'] === 'steps' || ($q['link'] ?? '') !== '') {
+            $todo .= '<li><strong>' . wl_h($q['text']) . '</strong>';
+            if (($q['link'] ?? '') !== '') {
+                $todo .= '<br>Adresse : <a href="' . wl_h($q['link']) . '" rel="noopener noreferrer">' . wl_h($q['link']) . '</a>';
+            }
+            if ($q['type'] === 'steps') {
+                $todo .= '<ol>' . implode('', array_map(fn($o) => '<li>' . wl_h($o) . '</li>', $q['options'])) . '</ol>';
+                foreach ($q['variants'] ?? [] as $v) {
+                    $todo .= '<p><em>' . wl_h($v['name']) . '</em></p><ol>'
+                        . implode('', array_map(fn($t) => '<li>' . wl_h($t) . '</li>', $v['steps'])) . '</ol>';
+                }
+            }
+            $todo .= '</li>';
+        }
+    }
+    if ($seen !== '') {
+        echo "<section><h2>Ce qu'on a vu</h2><ul class=\"memo-list\">$seen</ul></section>";
+    }
+    if ($todo !== '') {
+        echo "<section><h2>À refaire chez soi</h2><ul class=\"memo-list\">$todo</ul></section>";
+    }
+    if ($seen === '' && $todo === '' && trim((string)($s['conclusion'] ?? '')) === '') {
+        echo '<p>Rien à reprendre pour l\'instant : ajoutez une conclusion, des explications ou un exercice à vos questions.</p>';
+    }
+    echo '<p class="no-print"><button type="button" id="print-btn" class="btn">Imprimer ou enregistrer en PDF</button></p>'
+        . '<script src="' . wl_asset('print.js') . '"></script></body></html>';
     exit;
 }
 

@@ -195,6 +195,15 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   (`wl_signal`, 2 minutes, un signal par personne), compté par étape sans identité
   (`wl_signal_steps`, `helpSteps`) ; rien de durable (e2e, nav à 390 px). Pas simulé dans la démo :
   se rejoindre soi-même dans une autre fenêtre.
+- Fiche mémo à emporter (17/10/2026) : `api.php?action=export&format=memo`, bouton dans l'onglet
+  Bilan de la session ; réservée à l'animateur, aucune page publique. Ne contient que ce que
+  l'animateur a écrit (conclusion, explications, bonnes réponses, exercices et étapes), jamais une
+  réponse ni un chiffre (e2e). Aucun lien « ressources vérifiées » : seulement ceux de l'animateur.
+- Bibliothèque de séances (17/10/2026) : `assets/seances.js`, 4 **brouillons à relire** (arnaques,
+  démarches, pièces jointes, réglages), créés par l'import validé côté serveur ; rien n'est validé
+  sur le terrain, aucun site inscrit, aucun menu d'appareil précis. Le test de navigateur
+  importe chaque séance. Le 33700 (signalement SMS) et « .gouv.fr » sont à vérifier par
+  l'utilisateur.
 - Lien d'exercice (`link`, 17/10/2026) : https seulement, avec un domaine (jamais une IP
   ni un identifiant dans l'adresse) : `wl_clean_link` (e2e). Le participant voit le site
   avant de partir (nouvel onglet, `noopener`) ; la projection montre un QR dessiné dans le
@@ -215,7 +224,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 *Proposées, en attente :*
 - 16/10/2026 — Exercices pratiques après un quiz. (1) Défi à étapes : **en ligne
   le 16/10/2026, en essai** (voir « Points à ne pas défaire »). (2) Lien d'exercice avec QR code : **en ligne
-  le 17/10/2026**. (3) Fiche mémo à emporter (Word/PDF) : à décider. Limite : tout est déclaratif.
+  le 17/10/2026**. (3) Fiche mémo à emporter : **faite le 17/10/2026**, voir « Points à ne pas défaire ». Limite : tout est déclaratif.
   La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
 *Faites le 17/10/2026, à valider par l'utilisateur* : avant / après sur les mêmes personnes,
 aide « Bloqué » par étape (AG-003 et AG-004 ouverts dans `AGORA.md`).

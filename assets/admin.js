@@ -167,6 +167,25 @@
     if (confirm('Supprimer toutes les sessions de démonstration ? Vos vraies sessions ne sont pas touchées.')) post('demo_delete', {}).then(showSessions);
   });
 
+  // Bibliothèque de séances (assets/seances.js) : une session créée avec ses questions, par l'import validé côté serveur.
+  (window.WL_SEANCES || []).forEach(function (t) {
+    $('seance-select').appendChild(el('option', { value: t.id }, t.title));
+  });
+  function seanceOf(id) { return (window.WL_SEANCES || []).filter(function (t) { return t.id === id; })[0]; }
+  $('seance-select').addEventListener('change', function () {
+    var t = seanceOf($('seance-select').value);
+    $('seance-info').textContent = t ? 'Public : ' + t.public + ' — Durée : ' + t.duree + ' — Prérequis : ' + t.prerequis
+      + ' — Objectif : ' + t.objectif + ' (' + (t.items.length - 1) + ' questions et une conclusion)' : '';
+  });
+  $('seance-btn').addEventListener('click', function () {
+    var t = seanceOf($('seance-select').value);
+    if (!t) { banner('Choisissez une séance dans la liste.'); return; }
+    post('session_create', { title: t.title }).then(function (d) {
+      post('questions_import', { s: d.code, raw: JSON.stringify(t.items), keep: t.items.map(function (_, i) { return i; }) })
+        .then(function () { $('seance-select').value = ''; $('seance-info').textContent = ''; openSession(d.code); });
+    });
+  });
+
   $('demo-btn').addEventListener('click', function () {
     post('session_demo', {}).then(function (d) {
       // Fonctions en essai activées : le défi à étapes ferme la démo (la salle fictive y a déjà coché des étapes).
@@ -373,6 +392,7 @@
     $('ed-csv').href = 'api.php?action=export&s=' + d.code;
     $('ed-csv-public').href = 'api.php?action=export&public=1&s=' + d.code;
     $('ed-print').href = 'api.php?action=export&format=print&s=' + d.code;
+    $('ed-memo').href = 'api.php?action=export&format=memo&s=' + d.code;
     $('ed-questions').href = 'api.php?action=export&format=questions&s=' + d.code;
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' — ' + d.active + ' actif' + (d.active > 1 ? 's' : '');

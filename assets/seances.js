@@ -1,0 +1,97 @@
+// Séances prêtes à animer : brouillons à relire et à ajuster avant l'atelier (rien n'a encore été
+// validé sur le terrain). Chaque séance est une liste de questions au format d'import de
+// WoocLight (même texte que « Questions (.json) »), avec une conclusion en dernier élément.
+// Aucune adresse de site n'est inscrite : les liens d'exercice se posent séance par séance.
+window.WL_SEANCES = [
+  {
+    id: 'arnaques', title: 'Repérer une arnaque par message',
+    public: 'Tout public, dont les seniors', duree: '45 minutes', prerequis: 'Aucun',
+    objectif: 'Reconnaître trois signes d\'un message frauduleux et savoir quoi faire.',
+    items: [
+      { type: 'scale', text: 'Vous sentez-vous capable de reconnaître un faux message ?', scaleMax: 5 },
+      { type: 'poll', text: 'Avez-vous déjà reçu un message qui vous a semblé suspect ?',
+        options: ['Oui, plusieurs fois', 'Oui, une fois', 'Non', 'Je ne sais pas'] },
+      { type: 'mcq', text: 'Un SMS annonce qu\'un colis est bloqué et demande de payer 1,99 € sur un lien. Que faites-vous ?',
+        options: ['Je clique vite pour payer', 'Je n\'ouvre pas le lien et je vérifie sur le site du transporteur', 'Je réponds au SMS pour avoir des détails', 'Je transfère le message à mes contacts'],
+        correct: ['Je n\'ouvre pas le lien et je vérifie sur le site du transporteur'],
+        explain: 'Un lien reçu par SMS ne s\'ouvre pas si vous n\'attendez pas de colis. Allez vous-même sur le site ou l\'application du transporteur, en tapant son adresse.' },
+      { type: 'truefalse', text: 'Une banque peut vous demander, par message, le code de confirmation reçu par SMS.', correct: 'Faux',
+        explain: 'Jamais. Ce code sert à valider une opération : le donner revient à donner son accord à celui qui le demande.' },
+      { type: 'mcq', multi: true, text: 'Quels signes doivent vous alerter ? (plusieurs réponses)',
+        options: ['Un ton pressant : « agissez aujourd\'hui »', 'Un message d\'un proche, que vous attendiez', 'Une demande de coordonnées bancaires ou de codes', 'Un lien raccourci ou une adresse étrange'],
+        correct: ['Un ton pressant : « agissez aujourd\'hui »', 'Une demande de coordonnées bancaires ou de codes', 'Un lien raccourci ou une adresse étrange'],
+        explain: 'L\'urgence, l\'argent, les codes et les liens étranges vont ensemble. En cas de doute, on ne répond pas et on ne clique pas ; le 33700 permet de signaler un SMS suspect.' },
+      { type: 'wordcloud', text: 'Un mot pour ce que vous ferez en cas de doute ?' },
+      { type: 'text', text: 'Qui pourriez-vous appeler en cas de doute avant de cliquer ?' },
+      { type: 'scale', text: 'Maintenant, vous sentez-vous capable de reconnaître un faux message ?', scaleMax: 5, compare: 1 },
+      { type: 'conclusion', text: 'À retenir : un message qui presse, qui demande de l\'argent, un code ou des coordonnées bancaires est suspect. Je n\'ouvre pas le lien, je ne réponds pas, et je vérifie en passant par le site ou l\'application que je connais. En cas de doute, j\'en parle à quelqu\'un avant d\'agir.' }
+    ]
+  },
+  {
+    id: 'demarches', title: 'Démarches en ligne : se connecter et protéger son compte',
+    public: 'Adultes qui débutent les démarches en ligne', duree: '1 heure', prerequis: 'Une adresse mail et un appareil connecté',
+    objectif: 'Comprendre identifiant, mot de passe et FranceConnect, et repérer un faux site.',
+    items: [
+      { type: 'scale', text: 'À l\'aise pour faire une démarche administrative en ligne ?', scaleMax: 5 },
+      { type: 'poll', text: 'Quelle démarche avez-vous déjà faite en ligne ?',
+        options: ['Impôts', 'Santé ou assurance maladie', 'Allocations ou emploi', 'Aucune pour l\'instant'] },
+      { type: 'mcq', text: 'Quelle adresse est la plus sûre pour accéder aux impôts ?',
+        options: ['impots.gouv.fr', 'impots-gouv-remboursement.com', 'mes-impots-rembours.net', 'N\'importe quel lien reçu par mail'],
+        correct: ['impots.gouv.fr'],
+        explain: 'Les sites de l\'administration française finissent par .gouv.fr. Un mail qui promet un remboursement avec un lien est suspect : tapez vous-même l\'adresse.' },
+      { type: 'truefalse', text: 'FranceConnect permet d\'entrer dans plusieurs services publics avec un compte que l\'on a déjà.', correct: 'Vrai',
+        explain: 'Vous choisissez un compte existant (impots.gouv.fr, Ameli…) pour entrer dans un autre service, sans créer un nouveau mot de passe.' },
+      { type: 'truefalse', text: 'Utiliser le même mot de passe partout est une bonne idée pour ne pas l\'oublier.', correct: 'Faux',
+        explain: 'Si un site est piraté, tous vos comptes le sont. Mieux : un mot de passe long, différent pour chaque compte, noté dans un endroit sûr chez soi.' },
+      { type: 'poll', text: 'Où rangez-vous vos mots de passe aujourd\'hui ?',
+        options: ['Dans ma tête', 'Sur un papier ou un carnet', 'Dans le navigateur ou le téléphone', 'Dans un gestionnaire de mots de passe', 'Je réutilise le même'] },
+      { type: 'steps', text: 'Défi : ouvre ton espace personnel sur un service public',
+        options: ['Aller sur l\'adresse officielle du service', 'Repérer le bouton de connexion', 'Choisir comment se connecter (identifiant ou FranceConnect)'] },
+      { type: 'scale', text: 'Maintenant, à l\'aise pour faire une démarche administrative en ligne ?', scaleMax: 5, compare: 1 },
+      { type: 'conclusion', text: 'À retenir : j\'écris moi-même l\'adresse du service (.gouv.fr), je n\'utilise jamais un lien reçu par mail pour me connecter, et j\'ai un mot de passe différent par compte. FranceConnect évite d\'en créer un de plus.' }
+    ]
+  },
+  {
+    id: 'pieces-jointes', title: 'Pièces jointes : recevoir, ouvrir, envoyer',
+    public: 'Tout public', duree: '45 minutes', prerequis: 'Une boîte mail ouverte',
+    objectif: 'Ouvrir une pièce jointe sans danger, la retrouver, et en envoyer une.',
+    items: [
+      { type: 'scale', text: 'À l\'aise pour envoyer un document par mail ?', scaleMax: 5 },
+      { type: 'mcq', text: 'Vous recevez une facture en pièce jointe d\'une entreprise que vous ne connaissez pas. Que faites-vous ?',
+        options: ['Je l\'ouvre pour voir', 'Je la supprime sans l\'ouvrir', 'Je réponds pour demander qui c\'est', 'Je la transfère à un ami'],
+        correct: ['Je la supprime sans l\'ouvrir'],
+        explain: 'Une pièce jointe inattendue peut cacher un virus ou mener vers un faux site. Sans commande ni facture attendue, on ne l\'ouvre pas.' },
+      { type: 'mcq', text: 'Quel type de fichier est le plus risqué à ouvrir reçu par mail ?',
+        options: ['.pdf', '.jpg', '.exe', '.txt'], correct: ['.exe'],
+        explain: 'Un fichier .exe lance un programme sur l\'ordinateur. Méfiez-vous aussi des doubles extensions, comme facture.pdf.exe.' },
+      { type: 'poll', text: 'Quel est votre plus grand blocage avec une pièce jointe ?',
+        options: ['Trouver le fichier à joindre', 'Savoir où il s\'enregistre quand je le télécharge', 'Le fichier est trop lourd', 'Je n\'ose pas l\'ouvrir', 'Aucun'] },
+      { type: 'steps', text: 'Défi : envoie-toi une pièce jointe',
+        options: ['Écrire un nouveau message à ta propre adresse', 'Joindre un fichier (trombone ou « Joindre »)', 'Envoyer, puis ouvrir le message reçu'] },
+      { type: 'wordcloud', text: 'Un mot pour ce que vous retenez ?' },
+      { type: 'scale', text: 'Maintenant, à l\'aise pour envoyer un document par mail ?', scaleMax: 5, compare: 1 },
+      { type: 'conclusion', text: 'À retenir : une pièce jointe que je n\'attendais pas, je ne l\'ouvre pas. Pour en envoyer une : un nouveau message, « Joindre », puis j\'ouvre le message reçu pour vérifier que le fichier est bien là.' }
+    ]
+  },
+  {
+    id: 'reglages', title: 'Réglages du téléphone : texte, notifications, mises à jour',
+    public: 'Tout public', duree: '45 minutes', prerequis: 'Un smartphone',
+    objectif: 'Trouver les réglages utiles et en changer un soi-même.',
+    items: [
+      { type: 'scale', text: 'À l\'aise pour trouver un réglage sur votre téléphone ?', scaleMax: 5 },
+      { type: 'poll', text: 'Quel réglage voulez-vous apprendre à trouver en priorité ?',
+        options: ['Les notifications', 'La taille du texte', 'Le volume et les sonneries', 'Les mises à jour', 'L\'économie de batterie'] },
+      { type: 'mcq', text: 'Où trouve-t-on les réglages du téléphone ?',
+        options: ['Dans l\'application « Réglages » ou « Paramètres »', 'Dans l\'application Photos', 'Dans le navigateur', 'Dans les messages'],
+        correct: ['Dans l\'application « Réglages » ou « Paramètres »'],
+        explain: 'Le nom change selon la marque : « Réglages » sur iPhone, « Paramètres » sur Android. L\'icône ressemble souvent à une roue dentée.' },
+      { type: 'truefalse', text: 'Les mises à jour du téléphone servent aussi à corriger des failles de sécurité.', correct: 'Vrai',
+        explain: 'Oui. Une mise à jour corrige des défauts et des failles : la remettre à plus tard laisse le téléphone moins protégé.' },
+      { type: 'steps', text: 'Défi : rends le texte plus lisible',
+        options: ['Ouvrir les réglages', 'Chercher « taille du texte » ou « affichage »', 'Agrandir le texte et vérifier le résultat'] },
+      { type: 'text', text: 'Quel réglage allez-vous essayer chez vous ?' },
+      { type: 'scale', text: 'Maintenant, à l\'aise pour trouver un réglage sur votre téléphone ?', scaleMax: 5, compare: 1 },
+      { type: 'conclusion', text: 'À retenir : tous les réglages sont dans l\'application « Réglages » ou « Paramètres ». Une barre de recherche s\'y trouve souvent : tapez ce que vous cherchez. Je peux toujours revenir en arrière.' }
+    ]
+  }
+];

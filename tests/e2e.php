@@ -651,6 +651,16 @@ $dc[1]->post('signal', ['s' => $df, 'kind' => 'help']);
 check(($hs()['signals']['help'] ?? 0) === 2 && ($hs()['helpSteps'][0]['n'] ?? 0) === 1, 'aide par étape : un signal général compte sans étape');
 check(!str_contains(json_encode($hs()['helpSteps'] ?? []), 'token'), 'aide par étape : aucune identité dans le résultat');
 
+// Fiche mémo : ce que l'animateur a écrit, jamais un chiffre ni une réponse ; réservée à l'animateur.
+$ds(['type' => 'steps', 'text' => 'Exercice mémo', 'options' => ['Ouvrir', 'Couper', 'Vérifier'], 'link' => 'https://exemple.org/exo',
+    'variants' => ['Windows' => $three('Windows'), 'Mac' => $three('Mac')]]);
+$memo = $admin->get("api.php?action=export&format=memo&s=$df")['body'];
+check(str_contains($memo, 'À refaire chez soi') && str_contains($memo, 'Exercice mémo') && str_contains($memo, 'https://exemple.org/exo') && str_contains($memo, 'Windows : ouvre'),
+    'fiche mémo : le défi, ses étapes et ses variantes');
+check(!str_contains($memo, 'participant') && !str_contains($memo, 'réponse(s)'), 'fiche mémo : aucun chiffre ni réponse de participant');
+check(str_contains($admin->get("api.php?action=export&format=memo&s=$cmp")['body'], 'Bonne réponse : Urgence'), 'fiche mémo : les bonnes réponses des quiz');
+expect_status((new Client($base))->get("api.php?action=export&format=memo&s=$df"), 401, 'fiche mémo : réservée à l\'animateur');
+
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);

@@ -46,6 +46,15 @@ header('Cache-Control: no-store');
     </form>
     <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button>
       <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
+    <div class="card">
+      <h2>Bibliothèque de séances</h2>
+      <p class="meta">Des séances prêtes à animer, créées d'un clic (questions, avant / après, défi, conclusion). Ce sont des
+        <strong>brouillons à relire</strong> : rien n'a encore été validé sur le terrain, ajustez-les avant l'atelier.</p>
+      <p class="row wrap"><label for="seance-select" class="sr-only">Séance à créer</label>
+        <select id="seance-select"><option value="">Choisir une séance…</option></select>
+        <button id="seance-btn" class="btn" type="button">Créer cette séance</button></p>
+      <p id="seance-info" class="meta" aria-live="polite"></p>
+    </div>
     <ul id="session-list" class="list"></ul>
     </div>
     <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>
@@ -216,6 +225,7 @@ header('Cache-Control: no-store');
           <a id="ed-csv" class="btn" title="Toutes les réponses, réponses masquées comprises, pour Excel (bilan interne)">Exporter en CSV (tout)</a>
           <a id="ed-csv-public" class="btn" title="Réponses pour Excel, sans celles que vous avez masquées (à partager)">CSV à diffuser (sans réponses masquées)</a>
           <a id="ed-print" class="btn" title="Page des résultats à imprimer ou enregistrer en PDF" target="_blank" rel="noopener">Version imprimable</a>
+          <a id="ed-memo" class="btn" title="Page à remettre aux participants : conclusion, explications, bonnes réponses et exercices, sans aucune réponse ni chiffre" target="_blank" rel="noopener">Fiche mémo à emporter</a>
           <a id="ed-questions" class="btn" title="Enregistre les questions (sans aucune réponse) pour les réutiliser dans une autre session">Questions (.json, sans les réponses)</a>
         </p>
     </div>
@@ -349,6 +359,7 @@ header('Cache-Control: no-store');
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
+<script src="<?= wl_asset('seances.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 </body>
 </html>
