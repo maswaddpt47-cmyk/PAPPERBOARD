@@ -631,6 +631,7 @@
     $('qf-type').value = q ? q.type : 'yesno';
     $('qf-text').value = q ? q.text : '';
     $('qf-explain').value = q ? (q.explain || '') : '';
+    $('qf-link').value = q ? (q.link || '') : '';
     $('qf-variants').value = q ? variantsToText(q.variants) : '';
     $('qf-options').value = q && !FIXED[q.type] ? q.options.join('\n') : '';
     $('qf-multi').checked = !!(q && q.multi);
@@ -672,7 +673,7 @@
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
-      reveal: $('qf-reveal').value, live: $('qf-live').checked, compare: $('qf-compare').value,
+      reveal: $('qf-reveal').value, live: $('qf-live').checked, compare: $('qf-compare').value, link: $('qf-link').value.trim(),
       variants: $('qf-type').value === 'steps' ? textToVariants($('qf-variants').value) : [],
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };

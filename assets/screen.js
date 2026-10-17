@@ -38,10 +38,12 @@
     }, 800);
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
-  window.addEventListener('resize', function () {
+  // Retaille les résultats selon la place libre (au-dessus de la barre de pilotage).
+  function refit() {
     if (!$('s-ended').hidden) fitRecap();
     else if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
-  });
+  }
+  window.addEventListener('resize', refit);
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
   });
@@ -97,6 +99,7 @@
     $('s-meta').textContent = 'Question ' + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
     $('s-text').style.fontSize = '';
+    linkFor(q);
     timerFor(q);
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.present });
@@ -116,6 +119,20 @@
       WL.counter($('s-results'), q.id, answeredText(d, unit), done, d.present, all, all ? 'Tout le monde a répondu.' : msg);
       fitQuestion();
     }
+  }
+
+  /** Exercice sur un site extérieur : QR code à scanner et nom du site. Dessiné
+   *  une seule fois par lien (le rafraîchissement ne le redessine pas). */
+  function linkFor(q) {
+    var box = $('s-link'), host = q.link ? WL.linkHost(q.link) : null;
+    WL.show(box, !!host);
+    if (!host || box.getAttribute('data-link') === q.link) return;
+    box.setAttribute('data-link', q.link);
+    var holder = el('div', { class: 's-link-qr' });
+    WL.qr(holder, q.link, 5, 'QR code de l\'exercice : ' + host);
+    WL.clear(box).appendChild(holder);
+    box.appendChild(el('p', { class: 's-link-text' }, el('strong', null, 'Exercice : ' + host), el('br'),
+      'Scannez le QR code ou ouvrez le lien depuis votre appareil.'));
   }
 
   /** Questions des participants (les plus votées d'abord) ou podium. */
@@ -167,6 +184,7 @@
       WL.clear($('s-results'));
       return;
     }
+    WL.show($('s-link'), false); // pas de QR d'exercice dans le bilan
     $('s-meta').textContent = 'Bilan — ' + d.board.position + ' / ' + d.board.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
     if (!d.results) {
@@ -394,6 +412,7 @@
     csrf = r.data.csrf;
     WL.show($('s-pilot'), true);
     pilotLabel();
+    refit(); // la barre vient d'apparaître : elle prend de la place en bas
     var onBoard = function () { return !!(last && last.board); };
     var ended = function () { return !onBoard() && !(last && last.show) && !!(last && last.ended); };
     var prev = function () { if (!ended()) control(onBoard() ? 'board_prev' : 'prev'); };

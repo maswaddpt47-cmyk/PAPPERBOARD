@@ -228,6 +228,13 @@
     var builder = { yesno: choices, truefalse: choices, poll: choices, mcq: q.multi ? checkboxes : choices,
       wordcloud: freeText, text: freeText, scale: scale, points: points,
       wall: composer, postit: composer, dots: dots, steps: steps }[q.type];
+    var host = q.link ? WL.linkHost(q.link) : null;
+    if (host) {
+      // Exercice sur un site extérieur : le participant voit où il va avant de partir.
+      form.appendChild(el('p', { class: 'exo-link' },
+        el('a', { class: 'btn btn-primary', href: q.link, target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir l\'exercice'),
+        el('span', { class: 'meta' }, ' S\'ouvre dans un nouvel onglet (' + host + '). Reviens ensuite sur cette page.')));
+    }
     builder(form, q, mine, locked);
     status(q, mine);
     renderMyResult(q, mine);

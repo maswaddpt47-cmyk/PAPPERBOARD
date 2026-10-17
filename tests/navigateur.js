@@ -259,7 +259,8 @@ function check(cond, label) {
   // --- Défi à étapes, sur un ordinateur : l'appareil se choisit une fois, « Fait » coche et décoche.
   const ds = (await post('session_create', { title: 'Défi navigateur' })).code;
   const dq = (await post('question_save', { s: ds, question: { type: 'steps', text: 'Coupe les notifications',
-    options: ['Ouvrir', 'Couper', 'Vérifier'], variants: { Windows: ['W1', 'W2', 'W3'], Mac: ['M1', 'M2', 'M3'] } } })).id;
+    options: ['Ouvrir', 'Couper', 'Vérifier'], variants: { Windows: ['W1', 'W2', 'W3'], Mac: ['M1', 'M2', 'M3'] },
+    link: 'https://exemple.org/exercice' } })).id;
   await post('control', { s: ds, op: 'goto', qid: dq });
   const dphone = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage();
   watch(dphone, 'défi');
@@ -268,6 +269,9 @@ function check(cond, label) {
   await dphone.click('#join-form button');
   await dphone.waitForSelector('#answer-form .btn-choice');
   check(await dphone.locator('#answer-form .btn-choice').count() === 2, 'défi : le participant choisit d\'abord son appareil');
+  const exo = dphone.locator('#answer-form a.btn[href="https://exemple.org/exercice"]');
+  check(await exo.count() === 1 && await exo.getAttribute('target') === '_blank' && /noopener/.test(await exo.getAttribute('rel')),
+    'exercice : bouton vers le lien, dans un nouvel onglet, sans lien avec cette page');
   await dphone.click('#answer-form .btn-choice >> text=Mac');
   await dphone.waitForSelector('#answer-form .step');
   check((await dphone.locator('#answer-form .step-detail').first().textContent()) === 'M1', 'défi : étapes détaillées de l\'appareil choisi');
@@ -283,6 +287,19 @@ function check(cond, label) {
   const dst2 = await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json();
   check(JSON.stringify(dst2.questions[0].results.counts) === '[0,0,0]', 'défi : décocher retire l\'étape');
   await dphone.context().close();
+
+  // Projection d'une question avec lien : QR code et nom du site, sans dépasser l'écran.
+  const lens = await admin.context().newPage(); // avec le cookie animateur : la barre de pilotage est là
+  watch(lens, 'projection du lien');
+  await lens.setViewportSize({ width: 1280, height: 720 });
+  await lens.goto(BASE + 'screen.php?s=' + ds);
+  await lens.waitForSelector('#s-link img');
+  await lens.waitForSelector('#s-pilot:not([hidden])');
+  await lens.waitForTimeout(500);
+  check(/Exercice : exemple\.org/.test(await lens.textContent('#s-link')), 'exercice : la projection affiche le QR code et le nom du site');
+  check(await lens.evaluate(() => document.getElementById('s-results').getBoundingClientRect().bottom <= document.getElementById('s-pilot').getBoundingClientRect().top),
+    'exercice : les résultats finissent au-dessus de la barre de pilotage, même avec le QR code');
+  await lens.close();
 
   // Projection des gommettes sur un écran étroit (téléphone) : jamais plus large que l'écran.
   const wideDemo = (await post('session_demo', {})).code;

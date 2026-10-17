@@ -34,6 +34,7 @@ wl_security_headers();
     <p id="s-meta" class="s-meta"></p>
     <h2 id="s-text" class="s-text"></h2>
     <p id="s-timer" class="s-timer" hidden></p>
+    <div id="s-link" class="s-link" hidden></div>
     <div id="s-results" class="s-results" aria-live="polite"></div>
   </section>
   <section id="s-show" class="s-show" hidden>

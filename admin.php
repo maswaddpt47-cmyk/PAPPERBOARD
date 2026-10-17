@@ -323,6 +323,8 @@ header('Cache-Control: no-store');
           <select id="qf-compare"></select></div>
         <label for="qf-explain" title="Encadré affiché sous les résultats, sur la projection et les téléphones, jamais avant">Explication affichée avec les résultats (facultatif, 400 caractères)</label>
         <textarea id="qf-explain" rows="3" maxlength="400" placeholder="Ex. : Vrai — la lumière bleue freine la mélatonine. Source : …"></textarea>
+        <label for="qf-link" title="Les participants ouvrent le lien depuis la question ; la projection affiche un QR code pour le scanner. Vérifie l'adresse avant l'atelier.">Lien d'un exercice (facultatif, https://…)</label>
+        <input id="qf-link" type="text" inputmode="url" maxlength="300" autocomplete="off" placeholder="https://…">
         <label for="qf-duration" title="Compte à rebours du vote ; 0 = pas de limite">Durée en secondes (0 = sans limite)</label>
         <input id="qf-duration" type="number" min="0" max="3600" step="5" value="0">
         <label for="qf-reveal" title="Quand la bonne réponse et les résultats s'affichent">Correction et résultats</label>

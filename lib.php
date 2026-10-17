@@ -548,6 +548,23 @@ function wl_has_banned(string $text): bool
 // Questions : validation de la saisie animateur
 // ---------------------------------------------------------------------------
 
+/** Lien d'un exercice : une adresse https:// complète, sans identifiant, sans espace
+ *  ni caractère de contrôle, avec un nom de domaine (jamais une adresse IP). Vide = aucun. */
+function wl_clean_link(mixed $v): string
+{
+    $url = is_string($v) ? trim($v) : '';
+    if ($url === '') {
+        return '';
+    }
+    $p = strlen($url) <= 300 && !preg_match('/[\x00-\x20\x7f"<>\\^`{|}]/', $url) ? parse_url($url) : false;
+    $host = is_array($p) ? strtolower((string)($p['host'] ?? '')) : '';
+    if (!$p || strtolower((string)($p['scheme'] ?? '')) !== 'https' || isset($p['user']) || isset($p['pass'])
+        || !preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/', $host) || filter_var($host, FILTER_VALIDATE_IP)) {
+        throw new WlError('Lien : une adresse https:// complète est attendue (300 caractères au plus, sans espace ni identifiant).');
+    }
+    return $url;
+}
+
 /** Valide une question envoyée par l'animateur et renvoie sa forme stockée. */
 function wl_clean_question(array $in, ?array $old = null): array
 {
@@ -572,6 +589,7 @@ function wl_clean_question(array $in, ?array $old = null): array
         'column' => $type === 'dots' && is_numeric($in['column'] ?? null) ? max(-1, (int)$in['column']) : -1,
         'duration' => wl_clean_duration($in['duration'] ?? 0),
         'explain' => wl_clean_explain($in['explain'] ?? ''),
+        'link' => wl_clean_link($in['link'] ?? ''),
         'allowChange' => !array_key_exists('allowChange', $in) || !empty($in['allowChange']),
         'reveal' => in_array($in['reveal'] ?? '', ['manual', 'end', 'instant'], true) ? $in['reveal'] : 'manual',
         'anonymous' => true,
@@ -857,6 +875,13 @@ function wl_import_parse(string $raw): array
                 : ['q' => ['column' => $col] + $items[$i]['q']];
         }
     }
+    foreach ($items as $i => $it) {
+        // Un lien venu d'un texte collé (IA ou fichier) : montré à l'animateur, à vérifier avant l'atelier.
+        if (($it['q']['link'] ?? '') !== '') {
+            $note = 'le lien « ' . parse_url($it['q']['link'], PHP_URL_HOST) . ' » est à vérifier avant l\'atelier.';
+            $items[$i]['warning'] = isset($it['warning']) ? $it['warning'] . ' Et ' . $note : $note;
+        }
+    }
     return array_map(fn($it) => array_diff_key($it, ['column' => 1]), $items);
 }
 
@@ -893,7 +918,7 @@ function wl_import_input(array $in): array
         'budget' => $in['budget'] ?? null,
         // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
         'variants' => $in['variants'] ?? [],
-    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live']));
+    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live', 'link']));
 }
 
 /** Questions d'une session au format de l'import (wl_import_parse) : réponses
@@ -935,6 +960,9 @@ function wl_export_questions(array $s): array
         }
         if (($q['explain'] ?? '') !== '') {
             $out['explain'] = $q['explain'];
+        }
+        if (($q['link'] ?? '') !== '') {
+            $out['link'] = $q['link'];
         }
         return $out + ['duration' => $q['duration'], 'reveal' => $q['reveal'] ?? 'manual',
             'allowChange' => $q['allowChange'], 'live' => $q['live'] ?? true];
@@ -1329,6 +1357,7 @@ function wl_public_question(array $q): array
         'graded' => !empty($q['correct']), // quiz : le téléphone garde « Envoyer » (pas la bonne réponse)
         'correct' => $show ? $q['correct'] : [],
         'explain' => $show ? ($q['explain'] ?? '') : '', // jamais avant la correction
+        'link' => $q['link'] ?? '',
     ];
 }
 

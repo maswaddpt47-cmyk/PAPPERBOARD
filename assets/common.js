@@ -108,13 +108,21 @@ var WL = (function () {
   };
 
   /** QR code en image (data:), sans dépendance externe. */
-  function qr(container, text, cell) {
+  function qr(container, text, cell, alt) {
     var q = qrcode(0, 'M');
     q.addData(text);
     q.make();
     clear(container).appendChild(el('img', {
-      src: q.createDataURL(cell || 6, 2), alt: 'QR code pour rejoindre : ' + text, class: 'qr-img'
+      src: q.createDataURL(cell || 6, 2), alt: alt || 'QR code pour rejoindre : ' + text, class: 'qr-img'
     }));
+  }
+
+  /** Nom de domaine d'un lien https, ou null (lien refusé : rien n'est affiché). */
+  function linkHost(url) {
+    try {
+      var u = new URL(url);
+      return u.protocol === 'https:' ? u.hostname : null;
+    } catch (e) { return null; }
   }
 
   var TYPES = {
@@ -479,7 +487,7 @@ var WL = (function () {
 
   return {
     el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
-    TYPES: TYPES, plural: plural, renderResults: renderResults, compareText: compareText,
+    TYPES: TYPES, plural: plural, renderResults: renderResults, compareText: compareText, linkHost: linkHost,
     remaining: remaining, formatTime: formatTime
   };
 }());

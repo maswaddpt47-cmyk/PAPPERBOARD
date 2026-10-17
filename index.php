@@ -102,9 +102,12 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     effacés avec la session ; un identifiant au hasard enregistré sur cet appareil (téléphone, tablette ou ordinateur)
     pour une journée, qui évite les votes en double et permet de compter les appareils encore présents ; votre adresse IP, gardée seulement sous forme
     codée, 2 heures au plus, pour limiter les abus. Ces données ne disent pas qui vous êtes, mais elles
-    ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées.</p>
+    ne sont pas « anonymes » au sens de la loi : elles sont pseudonymisées. Des réglages de confort (taille du texte,
+    appareil choisi pour un défi) restent sur cet appareil, sans être envoyés au serveur.</p>
     <p><strong>Qui les voit</strong> : l'animateur ; les réponses qu'il publie sont projetées et
     visibles des participants ; il peut exporter les résultats pour le bilan de l'atelier.
+    <strong>Liens</strong> : certaines questions proposent un lien vers un site extérieur choisi par l'animateur ; en l'ouvrant,
+    vous quittez WoocLight et ce site applique ses propres règles.
     <strong>Hébergement</strong> : Alwaysdata, en France.
     <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, puis suppression de vos
     réponses et de l'identifiant de l'appareil ; seuls des résultats regroupés et anonymes sont archivés.</p>

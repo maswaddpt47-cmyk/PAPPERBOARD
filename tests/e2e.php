@@ -594,6 +594,30 @@ expect_status($admin->post('questions_import', ['s' => $dcopy, 'raw' => $dx['bod
 check($admin->get("api.php?action=export&format=questions&s=$dcopy")['body'] === $dx['body'], 'défi : réimport identique');
 check(count($admin->get("api.php?action=admin_state&s=" . ($admin->post('session_duplicate', ['s' => $df])['json']['code'] ?? ''))['json']['questions'][0]['variants'] ?? []) === 2, 'défi : la copie de session garde les variantes');
 
+// --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
+$lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
+$ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);
+foreach (['http://exemple.org/exo', 'javascript:alert(1)', 'https://user:mdp@exemple.org/', 'https://exemple.org/un espace', 'https://192.168.0.1/exo',
+    'https://localhost/exo', 'exemple.org', 'https://exemple.org/' . str_repeat('a', 300)] as $bad) {
+    expect_status($ls($bad), 400, 'lien refusé : ' . substr($bad, 0, 40));
+}
+$url = 'https://exemple.org/exercice?a=1&b=2';
+$lok = $ls($url);
+expect_status($lok, 200, 'lien https accepté');
+$lc = new Client($base);
+$lc->join($lk);
+$admin->post('control', ['s' => $lk, 'op' => 'goto', 'qid' => $lok['json']['id'] ?? '']);
+check(($lc->get("api.php?action=state&s=$lk")['json']['question']['link'] ?? '') === $url, 'lien : envoyé au participant');
+check(($lc->get("api.php?action=screen&s=$lk")['json']['question']['link'] ?? '') === $url, 'lien : envoyé à la projection');
+$lx = $admin->get("api.php?action=export&format=questions&s=$lk");
+check((json_decode($lx['body'], true)[0]['link'] ?? '') === $url, 'lien : exporté');
+$lw = $admin->post('questions_import', ['s' => $lk, 'raw' => $lx['body'], 'preview' => true])['json']['items'][0] ?? [];
+check(str_contains($lw['warning'] ?? '', 'exemple.org') && ($lw['link'] ?? '') === $url, 'lien : signalé « à vérifier » à l\'import');
+$lcopy = $admin->post('session_create', ['title' => 'Liens copie'])['json']['code'] ?? '';
+expect_status($admin->post('questions_import', ['s' => $lcopy, 'raw' => $lx['body'], 'keep' => [0]]), 200, 'lien : réimport');
+check($admin->get("api.php?action=export&format=questions&s=$lcopy")['body'] === $lx['body'], 'lien : réimport identique');
+check(($admin->get("api.php?action=admin_state&s=" . ($admin->post('session_duplicate', ['s' => $lk])['json']['code'] ?? ''))['json']['questions'][0]['link'] ?? '') === $url, 'lien : gardé par la copie de session');
+
 // --- Fonctions en essai : un réglage commun à tous les appareils de l'animateur ---------
 check(($admin->get('api.php?action=me')['json']['prefs']['beta'] ?? null) === false, 'essai : éteint par défaut');
 expect_status($admin->post('prefs_save', ['beta' => true], false), 403, 'essai : réglage sans CSRF refusé');
