@@ -634,6 +634,15 @@ function wl_clean_question(array $in, ?array $old = null): array
             $q['closesAt'] = $q['duration'] ? time() + $q['duration'] : null;
         }
     }
+    if ($old && $q['type'] === 'postit' && $old['options'] !== $q['options'] && count(array_unique($q['options'])) === count($q['options'])
+        && wl_options_reordered($old['options'], $q['options'])) {
+        // Colonnes réordonnées : chaque note suit sa colonne (retrouvée par son nom), pas sa position.
+        $to = array_flip($q['options']);
+        foreach ($q['posts'] as &$p) {
+            $p['col'] = $to[$old['options'][$p['col'] ?? 0] ?? ''] ?? ($p['col'] ?? 0);
+        }
+        unset($p);
+    }
     return $q;
 }
 
@@ -698,7 +707,7 @@ function wl_reset_question(array &$q): void
  *  Post-it : ajouter ou retirer une colonne ne casse rien (une note d'une
  *  colonne disparue s'affiche dans la dernière). */
 /** Mêmes choix dans un autre ordre : les réponses, rangées par position, changeraient de sens.
- *  Pas pour les post-it : réordonner les colonnes ne doit pas effacer les notes (décidé le 17/10/2026). */
+ *  Pas pour les post-it : les notes suivent leur colonne (wl_clean_question), décidé le 17/10/2026. */
 function wl_options_reordered(array $old, array $new): bool
 {
     sort($old);

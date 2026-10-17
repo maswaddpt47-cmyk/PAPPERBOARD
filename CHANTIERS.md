@@ -178,7 +178,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   bilan IA (nuage, gommettes) soumis à la case ; QR d'une adresse non ASCII ; pourcentages
   PowerPoint (QCM multiple, étapes) ; « Quitter » hors ligne ne promet plus l'effacement.
   Réordonner les choix d'une question (mêmes choix, autre ordre) efface ses réponses, décidé
-  le 17/10/2026 (`wl_options_reordered`, e2e), sauf les colonnes d'un post-it (notes gardées) ;
+  le 17/10/2026 (`wl_options_reordered`, e2e), sauf les colonnes d'un post-it (les notes suivent leur colonne, par son nom) ;
   reformuler un choix garde les réponses.
   **À décider** : (b) archives avec texte de l'animateur et petits effectifs,
   sans échéance ; (c) quota IP sur `ping` (écarté : les wifi partagés) ; (d) déploiement SSH en
@@ -210,6 +210,10 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   le 16/10/2026, en essai** (voir « Points à ne pas défaire »). (2) Lien d'exercice avec QR code : **en ligne
   le 17/10/2026**. (3) Fiche mémo à emporter (Word/PDF) : à décider. Limite : tout est déclaratif.
   La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
+- 17/10/2026 — Avant / après sur les seules personnes ayant répondu aux deux questions
+  (effectif affiché, seuil minimal pour ne pas dévoiler une personne seule) ; aide « bloqué à
+  cette étape » dans le défi à étapes, comptée par étape. Idées d'un avis Codex, retenues par
+  Claude ; à décider avec l'utilisateur.
 *Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
 défi à étapes (en essai).
 *Écartées :* 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur

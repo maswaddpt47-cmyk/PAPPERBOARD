@@ -616,9 +616,10 @@ $admin->post('control', ['s' => $pi, 'op' => 'goto', 'qid' => $pid]);
 $pc = new Client($base);
 $pc->join($pi);
 expect_status($pc->post('post', ['s' => $pi, 'qid' => $pid, 'text' => 'Une note', 'col' => 0]), 200, 'post-it : note déposée');
-$pn = fn() => count($admin->get("api.php?action=admin_state&s=$pi")['json']['questions'][0]['results']['posts'] ?? []);
+$pn = fn() => $admin->get("api.php?action=admin_state&s=$pi")['json']['questions'][0]['results']['posts'] ?? [];
+check(($pn()[0]['col'] ?? -1) === 0, 'post-it : note déposée dans la colonne Pour');
 $pq(['Contre', 'Pour'], ['id' => $pid]);
-check($pn() === 1, 'post-it : colonnes réordonnées, note gardée');
+check(count($pn()) === 1 && ($pn()[0]['col'] ?? -1) === 1, 'post-it : colonnes réordonnées, la note suit sa colonne (Pour est passée en 2e)');
 
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
