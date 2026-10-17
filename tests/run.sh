@@ -35,6 +35,8 @@ rm -rf "$WL_DATA"
 php tests/charge.php || fail=1
 echo "=== Configuration guidée ==="
 php tests/configurer.php || fail=1
+echo "=== Archivage ==="
+php tests/archivage.php || fail=1
 echo "=== Données dans la racine web ==="
 php tests/protect.php || fail=1
 

@@ -431,9 +431,13 @@ function api_session_duplicate(array $b): void
 /** Archiver tout de suite (anonymiser) une session, sans attendre la purge. */
 function api_session_archive(array $b): void
 {
-    $s = wl_load_or_fail(api_code($b));
-    $id = wl_archive_session($s);
-    wl_delete_session($s['code']);
+    $code = wl_load_or_fail(api_code($b))['code'];
+    $id = '';
+    if (!wl_delete_session($code, null, function (array $s) use (&$id) {
+        $id = wl_archive_session($s);
+    })) {
+        throw new WlError('Session introuvable ou expirée.', 404);
+    }
     wl_json(['ok' => true, 'id' => $id]);
 }
 

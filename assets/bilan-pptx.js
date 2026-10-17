@@ -45,8 +45,9 @@
   /** Barres horizontales dessinées comme sur la projection : libellé, piste
    *  claire, barre arrondie proportionnelle au plus grand, valeur à droite.
    *  Bonne réponse : barre verte, coche et cadre (pas la couleur seule). */
-  function bars(pptx, slide, labels, values, correct, box) {
-    var total = values.reduce(function (a, b) { return a + b; }, 0), max = Math.max(1, Math.max.apply(null, values));
+  function bars(pptx, slide, labels, values, correct, box, base) {
+    // base : nombre de répondants quand une personne peut cocher plusieurs lignes (sinon la somme des lignes).
+    var total = base || values.reduce(function (a, b) { return a + b; }, 0), max = Math.max(1, Math.max.apply(null, values));
     var n = labels.length, row = Math.min(0.75, box.h / n), bh = row * 0.62;
     var lw = 4.4, vw = 1.9, tx = box.x + lw + 0.2, tw = box.w - lw - vw - 0.4;
     labels.forEach(function (l, i) {
@@ -184,7 +185,8 @@
     } else if (q.type === 'yesno' || q.type === 'truefalse') {
       donut(pptx, slide, q, r, box);
     } else if (['poll', 'mcq', 'points', 'steps'].indexOf(q.type) !== -1) {
-      bars(pptx, slide, q.options, r.counts, q.type === 'points' ? [] : (q.correct || []), box);
+      bars(pptx, slide, q.options, r.counts, q.type === 'points' ? [] : (q.correct || []), box,
+        q.type === 'steps' || (q.type === 'mcq' && q.multi) ? r.total : 0);
     } else if (q.type === 'dots') {
       dots(pptx, slide, r.items, box);
     } else if (q.type === 'scale') {

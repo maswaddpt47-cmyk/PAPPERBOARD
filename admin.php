@@ -193,9 +193,9 @@ header('Cache-Control: no-store');
     <div class="card">
       <h2>Bilan de l'atelier</h2>
       <p class="meta">Tableau de bord de toutes les questions, et texte à coller dans une IA pour obtenir une synthèse,
-        une conclusion et des recommandations. Seuls des résultats regroupés partent, jamais l'identité d'un participant.</p>
-      <label class="check" title="Réponses libres, mur et post-it : relisez-les et masquez tout nom avant de les envoyer à une IA">
-        <input id="bilan-texts" type="checkbox"> Inclure les réponses écrites (réponses libres, mur, post-it ; réponses masquées exclues)</label>
+        une conclusion et des recommandations. Sans la case ci-dessous, seuls des résultats regroupés partent : aucun texte écrit par un participant.</p>
+      <label class="check" title="Textes des participants : relisez-les et masquez tout nom avant de les envoyer à une IA">
+        <input id="bilan-texts" type="checkbox"> Inclure les textes des participants (réponses libres, mur, post-it, nuage de mots, idées des gommettes ; réponses masquées exclues)</label>
       <p class="row wrap"><button id="bilan-copy" class="btn btn-primary" type="button" title="Copie le bilan chiffré et la consigne de synthèse, à coller dans une IA">Copier le bilan pour une IA</button>
         <button id="bilan-pptx" class="btn btn-primary" type="button" data-src="<?= wl_asset('pptxgen.bundle.js') ?>" title="Une diapositive par question (graphiques modifiables), le récap et la conclusion : à présenter ou imprimer">Exporter en PowerPoint</button>
         <button id="bilan-show" class="btn" type="button" title="Affiche les résultats de toutes les questions">Voir le tableau de bord</button>

@@ -725,6 +725,8 @@ $pinger->poll($pingPath);
 expect_status($pinger->post('ping', ['s' => $demo]), 200, 'signe de vie');
 check($pinger->poll($pingPath)['status'] === 304, 'un signe de vie ne réveille aucun téléphone');
 check(($admin->get("api.php?action=admin_state&s=$demo")['json']['active'] ?? 0) === 11, 'le nouveau téléphone compte parmi les actifs');
+expect_status($pinger->post('ping', ['s' => 'ZZZZZ']), 404, 'signe de vie sur un code inexistant : 404');
+check(!file_exists("$data/sessions/ZZZZZ.json.lock"), 'un code inventé ne laisse aucun fichier de verrou');
 shell_exec('php ' . escapeshellarg(dirname(__DIR__) . '/purge.php'));
 $cron = $admin->get("api.php?action=admin_state&s=$demo")['json']['lastCron'] ?? 0;
 check($cron >= time() - 30, 'purge horaire : passage noté pour l\'onglet Réglages');

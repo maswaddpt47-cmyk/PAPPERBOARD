@@ -35,9 +35,14 @@ check((fileperms("$home/www/config.php") & 0777) === 0600, 'config.php en 600');
 
 // Relance sans changer le mot de passe : hash et secret conservés.
 $secret = $cfg['secret'];
+$custom = str_replace(["'purge_days' => 30,", "'banned_words' => [],", "'rate_join' => 60,"],
+    ["'purge_days' => 7,", "'banned_words' => ['zut', 'flûte'],", "'rate_join' => 5,"], file_get_contents("$home/www/config.php"));
+file_put_contents("$home/www/config.php", str_replace("'base_url' => 'https://wooclight.alwaysdata.net',", "'base_url' => 'https://exemple.org/wl',", $custom));
 [$rc] = $run("n\n\n\n\n");
 $cfg2 = require "$home/www/config.php";
 check($rc === 0 && $cfg2['admin_hash'] === $cfg['admin_hash'] && $cfg2['secret'] === $secret && $cfg2['responsable'] === 'Asso Test', 'relance : rien de perdu');
+check($cfg2['purge_days'] === 7 && $cfg2['rate_join'] === 5 && $cfg2['banned_words'] === ['zut', 'flûte'] && $cfg2['base_url'] === 'https://exemple.org/wl',
+    'relance : durée de purge, quotas, mots interdits et adresse personnalisés conservés');
 
 exec('rm -rf ' . escapeshellarg(dirname($home)));
 finish('configurer');

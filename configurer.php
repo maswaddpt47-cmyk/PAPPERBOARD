@@ -51,6 +51,7 @@ if ($hash === '' || strtolower(ask("Un mot de passe existe déjà. Le changer ? 
     $hash = password_hash($p1, PASSWORD_DEFAULT);
     unset($p1, $p2);
 }
+$defaultUrl = (string)($old['base_url'] ?? '') !== '' ? (string)$old['base_url'] : $defaultUrl;
 $url = ask("Adresse publique [Entrée = $defaultUrl] : ") ?: $defaultUrl;
 $resp = ask('Responsable affiché aux participants [Entrée = ' . (($old['responsable'] ?? '') ?: 'formule générique') . '] : ')
     ?: (string)($old['responsable'] ?? '');
@@ -66,6 +67,12 @@ $values = [
     'responsable' => $resp,
     'contact' => $contact,
 ];
+// Les autres réglages déjà personnalisés (durée de purge, quotas, mots interdits…) survivent à la relance.
+foreach (array_diff_key($old, $values) as $key => $value) {
+    if (is_scalar($value) || is_array($value)) {
+        $values[$key] = $value;
+    }
+}
 if (!is_dir($values['data_dir'])) {
     mkdir($values['data_dir'], 0700, true);
 }

@@ -110,6 +110,8 @@ var WL = (function () {
   /** QR code en image (data:), sans dépendance externe. */
   function qr(container, text, cell, alt) {
     var q = qrcode(0, 'M');
+    // L'encodeur ne garde que 8 bits par caractère : une adresse avec « 中 » deviendrait « - ». URL().href la réduit à de l'ASCII.
+    try { text = new URL(text).href; } catch (e) { /* pas une URL : texte brut */ }
     q.addData(text);
     q.make();
     clear(container).appendChild(el('img', {

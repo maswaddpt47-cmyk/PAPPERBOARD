@@ -656,7 +656,8 @@
   // --- Quitter : effacer ce que le téléphone garde -------------------------------
 
   $('leave-btn').addEventListener('click', function () {
-    WL.api('leave', { body: {} }).then(function () {}, function () {}).then(function () {
+    var cleared = true;
+    WL.api('leave', { body: {} }).then(function () {}, function () { cleared = false; }).then(function () {
       ['code', 'token', 'csrf', 'since', 'size', 'variant'].forEach(store.del);
       pendingStore.del('pending');
       csrf = null;
@@ -664,7 +665,9 @@
       applySize();
       $('session-title').textContent = '';
       if (history.replaceState) history.replaceState(null, '', location.pathname);
-      showJoin('✓ Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.', true);
+      showJoin(cleared
+        ? '✓ Vous avez quitté l\'atelier. Cet appareil ne garde plus rien de WoocLight.'
+        : 'Vous avez quitté l\'atelier, mais la déconnexion n\'a pas pu être confirmée (pas de réseau ?). Sur un appareil partagé, effacez les cookies du site.', true);
     });
   });
 

@@ -221,6 +221,10 @@ function wl_rate(string $bucket, int $limit): void
  *  renvoie $fn. Une exception dans $fn annule l'écriture. */
 function wl_locked_json(string $file, callable $fn, bool $mustExist = false, ?string $lockFile = null): mixed
 {
+    if ($mustExist && !is_file($file)) {
+        // Avant d'ouvrir le verrou : fopen('c') créerait un fichier par code inventé.
+        throw new WlError('Session introuvable ou expirée.', 404);
+    }
     $lock = fopen($lockFile ?? $file . '.lock', 'c');
     if ($lock === false || !flock($lock, LOCK_EX)) {
         throw new WlError('Stockage indisponible.', 500);
@@ -370,7 +374,7 @@ function wl_list_sessions(): array
 /** Suppression sous le même verrou que les écritures : une écriture en
  *  cours ne peut pas recréer la session après coup (elle trouve le fichier
  *  absent et s'arrête). Le verrou reste ; la purge retire les verrous orphelins. */
-function wl_delete_session(string $code, ?int $expiredBefore = null): bool
+function wl_delete_session(string $code, ?int $expiredBefore = null, ?callable $archive = null): bool
 {
     $file = wl_session_file($code);
     if (!is_file($file)) {
@@ -381,12 +385,13 @@ function wl_delete_session(string $code, ?int $expiredBefore = null): bool
         throw new WlError('Stockage indisponible.', 500);
     }
     try {
-        if ($expiredBefore !== null) {
-            // Purge : relire sous verrou, l'animateur a pu agir entre-temps.
-            $s = json_decode((string)@file_get_contents($file), true);
-            if (is_array($s) && wl_retention_start($s) >= $expiredBefore) {
-                return false;
-            }
+        // Relire sous verrou : l'animateur ou un participant a pu agir depuis la lecture de l'appelant.
+        $s = json_decode((string)@file_get_contents($file), true);
+        if ($expiredBefore !== null && is_array($s) && wl_retention_start($s) >= $expiredBefore) {
+            return false;
+        }
+        if ($archive !== null && is_array($s)) {
+            $archive($s); // lève une erreur : la session est alors conservée
         }
         return @unlink($file);
     } finally {
@@ -438,8 +443,12 @@ function wl_archive_session(array $s): string
     ];
     $file = wl_data_dir() . '/archives/' . $id . '.json';
     $tmp = $file . '.tmp';
-    file_put_contents($tmp, json_encode($archive, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-    rename($tmp, $file);
+    // L'appelant supprime la session ensuite : une archive absente, tronquée ou vide doit tout arrêter.
+    $json = json_encode($archive, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if ($json === false || @file_put_contents($tmp, $json) !== strlen($json) || !@rename($tmp, $file)) {
+        @unlink($tmp);
+        throw new WlError('Archivage impossible : la session est conservée.', 500);
+    }
     return $id;
 }
 
@@ -474,13 +483,19 @@ function wl_purge(): int
     foreach (glob(wl_data_dir() . '/sessions/*.json') ?: [] as $file) {
         $s = json_decode((string)file_get_contents($file), true);
         if (!is_array($s) || wl_retention_start($s) < $limit) {
-            // Archive anonyme d'abord (résultats regroupés), puis suppression du détail.
+            // Archive anonyme d'abord (résultats regroupés), puis suppression du détail, sous le même verrou.
             // Une démo (participants fictifs) n'est jamais archivée : elle fausserait les bilans.
-            if (is_array($s) && !empty($s['questions']) && empty($s['demo'])) {
-                wl_archive_session($s);
-            }
-            if (wl_delete_session(basename($file, '.json'), $limit)) {
-                $count++;
+            try {
+                $archive = function (array $s) {
+                    if (!empty($s['questions']) && empty($s['demo'])) {
+                        wl_archive_session($s);
+                    }
+                };
+                if (wl_delete_session(basename($file, '.json'), $limit, $archive)) {
+                    $count++;
+                }
+            } catch (WlError) {
+                // Archive impossible : la session reste, nouvel essai à la prochaine purge.
             }
         }
     }

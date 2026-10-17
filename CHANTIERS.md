@@ -171,8 +171,18 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   « fonctions en essai » (réglage serveur `prefs.json`, commun à tous les appareils de
   l'animateur, écrit sous verrou : une écriture qui échoue renvoie une erreur, e2e) ; le serveur accepte le type dans tous
   les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
-- Audit Codex à passer sur les ajouts du 15 au 17/10/2026 (lien d'exercice, `prefs_save`,
-  défi, avant / après, démo) : consigne prête `docs/consigne-audit-codex-17-10-2026.md`.
+- Audit Codex du 17/10/2026 rendu (rapport hors dépôt public, lu sur `8f0eda2`). Vérifiés dans le
+  code puis corrigés (e2e, `tests/archivage.php`, `tests/configurer.php`) : archivage vérifié
+  avant suppression et sous le même verrou ; `prefs.json` sous verrou ; `ping` sans fichier de
+  verrou pour un code inventé ; relance de `configurer.php` qui garde les réglages ; texte du
+  bilan IA (nuage, gommettes) soumis à la case ; QR d'une adresse non ASCII ; pourcentages
+  PowerPoint (QCM multiple, étapes) ; « Quitter » hors ligne ne promet plus l'effacement.
+  **À décider** : (a) réordonner des options sans changer leur nombre garde les votes par
+  indice (`wl_structure_changed`) ; (b) archives avec texte de l'animateur et petits effectifs,
+  sans échéance ; (c) quota IP sur `ping` (écarté : les wifi partagés) ; (d) déploiement SSH en
+  `accept-new` sans `ALWAYSDATA_KNOWN_HOSTS`, et redirection HTTP seulement avertie ;
+  (e) IPv4 abrégée `127.1` acceptée par `wl_clean_link` ; (f) PowerPoint : listes tronquées à 8
+  idées / 30 réponses sans mention.
 - AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 et AG-002 tranchés le 17/10/2026 par
   l'utilisateur : le format `steps`/`variants` et `prefs.json` sont gardés tels quels (ne pas les
   défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.

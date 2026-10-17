@@ -275,9 +275,9 @@
     } else if (q.type === 'points') {
       q.options.forEach(function (o, i) { out.push('  - ' + o + ' : ' + r.counts[i] + ' points'); });
     } else if (q.type === 'wordcloud') {
-      out.push('  - Mots : ' + r.words.slice(0, 15).map(function (w) { return w.text + ' (' + w.n + ')'; }).join(', '));
+      if (withTexts) out.push('  - Mots : ' + r.words.slice(0, 15).map(function (w) { return w.text + ' (' + w.n + ')'; }).join(', '));
     } else if (q.type === 'dots') {
-      r.items.forEach(function (it) { out.push('  - ' + it.text + ' : ' + WL.plural(it.n, 'gommette')); });
+      if (withTexts) r.items.forEach(function (it) { out.push('  - ' + it.text + ' : ' + WL.plural(it.n, 'gommette')); });
     } else if (withTexts && q.type === 'text') {
       r.texts.filter(function (t) { return !t.hidden; }).forEach(function (t) { out.push('  - « ' + t.text + ' »'); });
     } else if (withTexts && q.type === 'wall') {
