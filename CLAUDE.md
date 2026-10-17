@@ -4,7 +4,7 @@
 à ne pas défaire. Cahier des charges de référence : `docs/prompt-wooclight.md`.
 
 Application de participation en direct (type Wooclap léger) pour des ateliers
-de médiation numérique. **Projet personnel** (14/10/2026) : le CD47 n'est pas
+de médiation numérique, surtout sur ordinateur : dire « appareil », pas « téléphone ». **Projet personnel** (14/10/2026) : le CD47 n'est pas
 concerné, l'utilisateur est responsable de traitement. PHP 8 sans framework, JSON dans `DATA_DIR`,
 JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 (`maswaddpt47-cmyk/MD-LIB`) et adaptées le 09/10/2026 ; MD-LIB reste la source.
@@ -30,6 +30,9 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Ne rien déclarer « testé », « réparé » ou « en ligne » sans l'avoir exécuté.
   Sinon : « hypothèse non vérifiée ». Toute affirmation technique écrite dans
   un `.md` porte une date (JJ/MM/AAAA) et son statut (mesuré / supposé).
+  « Validé » = seulement ce que l'utilisateur a nommé (« c'est bon » ne couvre pas le reste).
+- Toute fonction nouvelle se montre là où l'utilisateur teste (démo comprise) ; la
+  réponse dit **où cliquer** en premier, jamais une fonction cachée sans le dire.
 - Signaler une déviation du cahier des charges ou une décision prise seul
   **au moment où elle est prise**. Question seulement si le choix bloque.
 - Dates explicites, jamais « hier » / « demain ».
@@ -47,8 +50,8 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   fois avant le commit, pas à chaque étape. La CI la relance à chaque push.
 - Le test de coût (`tests/e2e.php`, section « coût ») tient le polling : 304
   sans corps quand rien ne change. Ne pas le retirer.
-- Rendu (CSS, libellés, mise en page) : pas de test ni de capture par défaut,
-  dire à l'utilisateur quoi regarder sur son téléphone et sur la projection.
+- Rendu (CSS, libellés, mise en page) : pas de test ni de capture par défaut, mais
+  mesuré à 390 px (son Android) et à 1280x720 avant de livrer ; lui dire quoi regarder.
 
 ## 4. RGPD et sécurité
 
