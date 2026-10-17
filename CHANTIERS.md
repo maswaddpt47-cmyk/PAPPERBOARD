@@ -185,8 +185,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   `accept-new` sans `ALWAYSDATA_KNOWN_HOSTS`, et redirection HTTP seulement avertie ;
   (e) IPv4 abrégée `127.1` acceptée par `wl_clean_link` ; (f) PowerPoint : listes tronquées à 8
   idées / 30 réponses sans mention.
-- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 à AG-004 tranchés le 17/10/2026 par
-  l'utilisateur : le format `steps`/`variants`, `prefs.json`, l'aide « Bloqué » éphémère et le seuil de 3 de l'avant/après sont gardés tels quels (ne pas les
+- AGORA (`AGORA.md`, `CLAUDE.md` §6, 17/10/2026) : AG-001 à AG-005 tranchés le 17/10/2026 par
+  l'utilisateur : le format `steps`/`variants`, `prefs.json`, l'aide « Bloqué » éphémère le seuil de 3 de l'avant/après et le stockage serveur des thèmes sont gardés tels quels (ne pas les
   défaire sans nouveau bloc). Chaque « décision à trancher » est candidate à un bloc.
 - Avant / après (17/10/2026) : calculé sur les personnes qui ont répondu aux deux questions
   si elles sont au moins 3 (`WL_COMPARE_MIN`), sinon sur tous les répondants, avec « mêmes N
@@ -205,7 +205,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   importe chaque séance. Le 33700 (signalement SMS) et « .gouv.fr » sont à vérifier par
   l'utilisateur.
   Thèmes ajoutés par l'animateur (`seances.json`, 30 au plus, sous verrou, validés par l'import à
-  l'enregistrement ; AG-005 ouvert) : « Copier la consigne de relecture » (même méthode que la
+  l'enregistrement ; AG-005 tranché le 17/10/2026) : « Copier la consigne de relecture » (même méthode que la
   relecture des questions générées, avec la version corrigée en dernier), puis la réponse collée
   dans « Ajouter un thème » ; ou « Enregistrer comme thème » dans le bilan d'une session. Contenu
   pédagogique seulement, jamais purgé (e2e, nav).
