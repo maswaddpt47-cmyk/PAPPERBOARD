@@ -178,7 +178,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   bilan IA (nuage, gommettes) soumis à la case ; QR d'une adresse non ASCII ; pourcentages
   PowerPoint (QCM multiple, étapes) ; « Quitter » hors ligne ne promet plus l'effacement.
   Réordonner les choix d'une question (mêmes choix, autre ordre) efface ses réponses, décidé
-  le 17/10/2026 (`wl_options_reordered`, e2e) ; reformuler un choix les garde.
+  le 17/10/2026 (`wl_options_reordered`, e2e), sauf les colonnes d'un post-it (notes gardées) ;
+  reformuler un choix garde les réponses.
   **À décider** : (b) archives avec texte de l'animateur et petits effectifs,
   sans échéance ; (c) quota IP sur `ping` (écarté : les wifi partagés) ; (d) déploiement SSH en
   `accept-new` sans `ALWAYSDATA_KNOWN_HOSTS`, et redirection HTTP seulement avertie ;

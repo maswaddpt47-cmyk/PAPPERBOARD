@@ -608,6 +608,18 @@ expect_status($dc[1]->vote($df, $did, [0]), 200, 'défi : réponse avant correct
 expect_status($dq(['Couper', 'Ouvrir le menu']), 200, 'défi : un texte corrigé est accepté');
 check(($dr()['total'] ?? -1) === 1, 'choix reformulé (pas réordonné) = réponses gardées');
 
+// Post-it : réordonner les colonnes garde les notes.
+$pi = $admin->post('session_create', ['title' => 'Post-it'])['json']['code'] ?? '';
+$pq = fn(array $o, array $extra = []) => $admin->post('question_save', ['s' => $pi, 'question' => $extra + ['type' => 'postit', 'text' => 'Idées', 'options' => $o]]);
+$pid = $pq(['Pour', 'Contre'])['json']['id'] ?? '';
+$admin->post('control', ['s' => $pi, 'op' => 'goto', 'qid' => $pid]);
+$pc = new Client($base);
+$pc->join($pi);
+expect_status($pc->post('post', ['s' => $pi, 'qid' => $pid, 'text' => 'Une note', 'col' => 0]), 200, 'post-it : note déposée');
+$pn = fn() => count($admin->get("api.php?action=admin_state&s=$pi")['json']['questions'][0]['results']['posts'] ?? []);
+$pq(['Contre', 'Pour'], ['id' => $pid]);
+check($pn() === 1, 'post-it : colonnes réordonnées, note gardée');
+
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);
