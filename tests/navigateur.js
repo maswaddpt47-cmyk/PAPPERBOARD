@@ -17,10 +17,11 @@ function check(cond, label) {
   const errors = [];
   const watch = (page, name) => {
     page.on('pageerror', e => errors.push(name + ' : ' + e.message));
-    // Erreurs attendues : la coupure réseau provoquée plus bas, et le refus
-    // (409) de rejoindre une session terminée quand la page est rouverte.
+    // Erreurs attendues : la coupure réseau provoquée plus bas, le refus
+    // (409) de rejoindre une session terminée quand la page est rouverte, et le
+    // refus (400) d'un thème illisible dans la bibliothèque.
     page.on('console', m => {
-      if (m.type() === 'error' && !/ERR_INTERNET_DISCONNECTED|status of 409/.test(m.text())) errors.push(name + ' : ' + m.text());
+      if (m.type() === 'error' && !/ERR_INTERNET_DISCONNECTED|status of 409|status of 400/.test(m.text())) errors.push(name + ' : ' + m.text());
     });
   };
 
@@ -325,6 +326,30 @@ function check(cond, label) {
   await admin.waitForSelector('#seance-select option[value="arnaques"]', { state: 'attached' });
   await admin.selectOption('#seance-select', 'arnaques');
   check(/Public : .* Durée : 45 minutes/.test(await admin.textContent('#seance-info')), 'bibliothèque : public, durée, prérequis et objectif affichés');
+  // Relecture par une autre IA : consigne + séance copiées ; la réponse collée devient un thème « Mes thèmes ».
+  await admin.click('#seance-review');
+  const consigne = await admin.inputValue('#seance-prompt');
+  check(/VERSION CORRIGÉE/.test(consigne) && /Public : Tout public/.test(consigne) && consigne.includes('"type": "scale"'), 'relecture : consigne avec la séance et la version corrigée attendue');
+  await admin.click('#seance-add summary');
+  await admin.fill('#seance-new-title', 'Arnaques relues');
+  await admin.fill('#seance-new-duree', '30 minutes');
+  await admin.fill('#seance-new-raw', 'Remarques : rien de grave.\nVERSION CORRIGÉE\n' + JSON.stringify([
+    { type: 'poll', text: 'Un message vous presse : que faites-vous ?', options: ['Je clique', 'Je vérifie'] },
+    { type: 'conclusion', text: 'À retenir : je vérifie avant de cliquer.' }]));
+  await admin.click('#seance-new-save');
+  await admin.waitForSelector('#seance-select optgroup[label="Mes thèmes"] option', { state: 'attached' });
+  check(/Thème enregistré/.test(await admin.textContent('#seance-new-msg')), 'relecture : la version collée est enregistrée comme thème');
+  await admin.selectOption('#seance-select', { label: 'Arnaques relues' });
+  check(await admin.isVisible('#seance-del') && /Durée : 30 minutes/.test(await admin.textContent('#seance-info')), 'thème perso : durée affichée et suppression proposée');
+  await admin.fill('#seance-new-raw', 'pas une liste');
+  await admin.fill('#seance-new-title', 'Cassé');
+  await admin.click('#seance-new-save');
+  await admin.waitForFunction(() => document.getElementById('banner') && document.getElementById('banner').textContent.length > 0);
+  check(await admin.locator('#seance-select option', { hasText: 'Cassé' }).count() === 0, 'thème perso : un texte illisible n\'est pas enregistré');
+  admin.once('dialog', (d) => d.accept());
+  await admin.click('#seance-del');
+  await admin.waitForFunction(() => !document.querySelector('#seance-select optgroup'));
+  await admin.selectOption('#seance-select', 'arnaques');
   await admin.click('#seance-btn');
   await admin.waitForFunction(() => /Repérer une arnaque/.test(document.getElementById('ed-title').textContent));
   check((await admin.getAttribute('#ed-memo', 'href')).includes('format=memo'), 'bibliothèque : la séance créée s\'ouvre, avec sa fiche mémo');
@@ -336,8 +361,9 @@ function check(cond, label) {
   check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'fiche mémo : rien ne dépasse à 390 px');
   await memoPage.goto(BASE + 'admin.php');
   await memoPage.waitForSelector('#seance-select', { state: 'attached' });
+  await memoPage.click('#seance-add summary');
   await memoPage.waitForTimeout(500);
-  check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'bibliothèque : rien ne dépasse à 390 px');
+  check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'bibliothèque (ajout de thème ouvert) : rien ne dépasse à 390 px');
   await memoPage.close();
 
   // Projection d'une question avec lien : QR code et nom du site, sans dépasser l'écran.

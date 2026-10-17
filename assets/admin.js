@@ -60,6 +60,7 @@
     code = null;
     view('sessions');
     showArchives();
+    loadThemes();
     WL.api('sessions').then(function (r) {
       if (r.status === 401) return showLogin('');
       var list = WL.clear($('session-list'));
@@ -167,23 +168,72 @@
     if (confirm('Supprimer toutes les sessions de démonstration ? Vos vraies sessions ne sont pas touchées.')) post('demo_delete', {}).then(showSessions);
   });
 
-  // Bibliothèque de séances (assets/seances.js) : une session créée avec ses questions, par l'import validé côté serveur.
-  (window.WL_SEANCES || []).forEach(function (t) {
-    $('seance-select').appendChild(el('option', { value: t.id }, t.title));
-  });
-  function seanceOf(id) { return (window.WL_SEANCES || []).filter(function (t) { return t.id === id; })[0]; }
-  $('seance-select').addEventListener('change', function () {
+  // Bibliothèque de séances : celles livrées (assets/seances.js) et les thèmes ajoutés (seances.json, serveur).
+  // Une séance devient une session par l'import validé côté serveur.
+  var customThemes = [];
+  function allThemes() { return (window.WL_SEANCES || []).concat(customThemes); }
+  function seanceOf(id) { return allThemes().filter(function (t) { return t.id === id; })[0]; }
+  function isCustom(id) { return customThemes.some(function (t) { return t.id === id; }); }
+  function renderSeances() {
+    var keep = $('seance-select').value, sel = WL.clear($('seance-select'));
+    sel.appendChild(el('option', { value: '' }, 'Choisir une séance…'));
+    (window.WL_SEANCES || []).forEach(function (t) { sel.appendChild(el('option', { value: t.id }, t.title)); });
+    if (customThemes.length) {
+      var group = el('optgroup', { label: 'Mes thèmes' });
+      customThemes.forEach(function (t) { group.appendChild(el('option', { value: t.id }, t.title)); });
+      sel.appendChild(group);
+    }
+    sel.value = seanceOf(keep) ? keep : '';
+    showSeance();
+  }
+  function showSeance() {
     var t = seanceOf($('seance-select').value);
-    $('seance-info').textContent = t ? 'Public : ' + t.public + ' — Durée : ' + t.duree + ' — Prérequis : ' + t.prerequis
-      + ' — Objectif : ' + t.objectif + ' (' + (t.items.length - 1) + ' questions et une conclusion)' : '';
-  });
+    $('seance-info').textContent = t ? 'Public : ' + (t.public || 'non précisé') + ' — Durée : ' + (t.duree || 'non précisée') + ' — Prérequis : ' + (t.prerequis || 'aucun')
+      + ' — Objectif : ' + (t.objectif || 'non précisé') + ' (' + t.items.filter(function (it) { return it.type !== 'conclusion'; }).length + ' questions)' : '';
+    WL.show($('seance-del'), !!t && isCustom(t.id));
+  }
+  function loadThemes() {
+    WL.api('seances').then(function (r) {
+      if (r.status === 200) { customThemes = r.data.themes || []; renderSeances(); }
+    });
+  }
+  renderSeances();
+  $('seance-select').addEventListener('change', function () { $('seance-copied').textContent = ''; showSeance(); });
   $('seance-btn').addEventListener('click', function () {
     var t = seanceOf($('seance-select').value);
     if (!t) { banner('Choisissez une séance dans la liste.'); return; }
     post('session_create', { title: t.title }).then(function (d) {
       post('questions_import', { s: d.code, raw: JSON.stringify(t.items), keep: t.items.map(function (_, i) { return i; }) })
-        .then(function () { $('seance-select').value = ''; $('seance-info').textContent = ''; openSession(d.code); });
+        .then(function () { $('seance-select').value = ''; showSeance(); openSession(d.code); });
     });
+  });
+  $('seance-del').addEventListener('click', function () {
+    var t = seanceOf($('seance-select').value);
+    if (t && isCustom(t.id) && confirm('Supprimer le thème « ' + t.title + ' » de la bibliothèque ? Les sessions déjà créées ne sont pas touchées.')) {
+      post('seance_delete', { id: t.id }).then(loadThemes);
+    }
+  });
+  $('seance-review').addEventListener('click', function () {
+    var t = seanceOf($('seance-select').value), box = $('seance-prompt'), note = $('seance-copied');
+    if (!t) { banner('Choisissez une séance dans la liste.'); return; }
+    var text = reviewText(t.title + ' — objectif : ' + (t.objectif || 'non précisé') + ' ; durée : ' + (t.duree || 'non précisée') + ' ; prérequis : ' + (t.prerequis || 'aucun'),
+      t.public || 'non précisé', JSON.stringify(t.items, null, 1), true);
+    box.value = text;
+    WL.show(box, true);
+    var done = function () { note.textContent = 'Copié : collez-le dans une autre IA que celle qui a écrit la séance, puis collez sa réponse dans « Ajouter un thème ».'; };
+    var manual = function () { box.select(); note.textContent = 'Texte sélectionné : copiez-le (Ctrl+C).'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, manual);
+    else manual();
+  });
+  $('seance-new-save').addEventListener('click', function () {
+    var msg = $('seance-new-msg');
+    msg.textContent = '';
+    post('seance_save', { title: $('seance-new-title').value, public: $('seance-new-public').value, duree: $('seance-new-duree').value,
+      prerequis: $('seance-new-prerequis').value, objectif: $('seance-new-objectif').value, raw: $('seance-new-raw').value }).then(function () {
+      ['title', 'public', 'duree', 'prerequis', 'objectif', 'raw'].forEach(function (k) { $('seance-new-' + k).value = ''; });
+      msg.textContent = 'Thème enregistré : il est dans la liste, sous « Mes thèmes ».';
+      loadThemes();
+    }).catch(function () { /* message déjà affiché dans la bannière */ });
   });
 
   $('demo-btn').addEventListener('click', function () {
@@ -960,12 +1010,11 @@
   /** Consigne pour faire relire les questions par une autre IA. Ordre imposé
    *  (public, fond, sources, forme) et sources exigées sans invention : retenu
    *  après l'évaluation croisée de quatre IA du 14/10/2026 (CHANTIERS.md). */
-  function reviewPrompt() {
-    var theme = $('gen-theme').value.trim() || 'à déduire des questions';
+  function reviewText(theme, publicLabel, questions, withReply) {
     return [
       'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
       'Thème : ' + theme,
-      'Public : ' + $('gen-public').value,
+      'Public : ' + publicLabel,
       '',
       'Méthode, dans cet ordre :',
       '1. Public : chaque question s\'adresse-t-elle vraiment à ce public (ton, vocabulaire, situations de son quotidien) ? Cite les numéros qui ne vont pas.',
@@ -977,13 +1026,28 @@
         + 'Si tu n\'as pas de source sûre, écris « pas de source sûre » : n\'invente jamais une loi, une étude, un chiffre ou un lien.',
       '4. Forme : affirmation posée en Oui/Non au lieu de Vrai/Faux, sondage alors que plusieurs réponses sont vraies, '
         + 'mauvaise réponse absurde ou trop facile, faute de français, gommettes ("dots") dont la "source" n\'est pas un mur ou un post-it placé avant.',
-      '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
-        + 'Si une catégorie n\'a aucun défaut, dis-le en une ligne.',
+      withReply
+        ? '5. Termine par la liste des corrections à faire, question par question (n\'écris aucun crochet carré dans les points 1 à 5), '
+          + 'puis, tout à la fin, la VERSION CORRIGÉE : la liste complète, du « [ » au « ] », au même format que ci-dessous, mêmes types et même ordre, '
+          + 'sans adresse de site inventée. Pas de note, pas de compliment. Si une catégorie n\'a aucun défaut, dis-le en une ligne.'
+        : '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
+          + 'Si une catégorie n\'a aucun défaut, dis-le en une ligne.',
       '',
       'Questions (numérotées à partir de 1, dans l\'ordre de la liste) :',
-      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim()
+      questions
     ].join('\n');
   }
+
+  function reviewPrompt() {
+    return reviewText($('gen-theme').value.trim() || 'à déduire des questions', $('gen-public').value, $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), false);
+  }
+
+  // Garder les questions de la session comme thème de la bibliothèque (sans aucune réponse).
+  $('ed-theme').addEventListener('click', function () {
+    var title = window.prompt('Titre du thème dans la bibliothèque :', data.title);
+    if (!title) return;
+    post('seance_save', { s: code, title: title }).then(function () { banner('Thème enregistré : il est dans la bibliothèque, page Sessions, sous « Mes thèmes ».'); });
+  });
 
   $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied'), 'une autre IA que celle qui a généré les questions'); });
 

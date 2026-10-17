@@ -10,9 +10,9 @@ wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
-const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive'];
+const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive', 'seances'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete'];
 
 try {
     wl_maybe_purge();
@@ -439,6 +439,43 @@ function api_session_archive(array $b): void
         throw new WlError('Session introuvable ou expirée.', 404);
     }
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** Thèmes ajoutés par l'animateur (la bibliothèque livrée avec l'application est côté navigateur). */
+function api_seances(): void
+{
+    wl_json(['ok' => true, 'themes' => wl_themes()]);
+}
+
+/** Enregistrer un thème : questions d'une session (« s »), ou texte collé (« raw », par exemple relu par une autre IA). */
+function api_seance_save(array $b): void
+{
+    if (!empty($b['s'])) {
+        $list = wl_export_questions(wl_load_or_fail(api_code($b)));
+    } else {
+        $list = wl_import_json((string)($b['raw'] ?? ''));
+    }
+    if (!is_array($list) || !$list || !array_is_list($list)) {
+        throw new WlError('Questions illisibles : collez la liste complète, du « [ » au « ] ».');
+    }
+    $theme = wl_theme_clean($b, $list);
+    wl_locked_json(wl_themes_file(), function (array &$d) use ($theme) {
+        $themes = is_array($d['themes'] ?? null) ? $d['themes'] : [];
+        if (count($themes) >= WL_MAX_THEMES) {
+            throw new WlError(WL_MAX_THEMES . ' thèmes au plus : supprimez-en un.');
+        }
+        $d['themes'] = [...$themes, $theme];
+    });
+    wl_json(['ok' => true, 'id' => $theme['id']]);
+}
+
+function api_seance_delete(array $b): void
+{
+    $id = preg_replace('/[^0-9a-f]/', '', (string)($b['id'] ?? ''));
+    wl_locked_json(wl_themes_file(), function (array &$d) use ($id) {
+        $d['themes'] = array_values(array_filter(is_array($d['themes'] ?? null) ? $d['themes'] : [], fn($t) => ($t['id'] ?? '') !== $id));
+    });
+    wl_json(['ok' => true]);
 }
 
 function api_archives(): void

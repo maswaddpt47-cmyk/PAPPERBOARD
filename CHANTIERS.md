@@ -204,6 +204,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   sur le terrain, aucun site inscrit, aucun menu d'appareil précis. Le test de navigateur
   importe chaque séance. Le 33700 (signalement SMS) et « .gouv.fr » sont à vérifier par
   l'utilisateur.
+  Thèmes ajoutés par l'animateur (`seances.json`, 30 au plus, sous verrou, validés par l'import à
+  l'enregistrement ; AG-005 ouvert) : « Copier la consigne de relecture » (même méthode que la
+  relecture des questions générées, avec la version corrigée en dernier), puis la réponse collée
+  dans « Ajouter un thème » ; ou « Enregistrer comme thème » dans le bilan d'une session. Contenu
+  pédagogique seulement, jamais purgé (e2e, nav).
 - Lien d'exercice (`link`, 17/10/2026) : https seulement, avec un domaine (jamais une IP
   ni un identifiant dans l'adresse) : `wl_clean_link` (e2e). Le participant voit le site
   avant de partir (nouvel onglet, `noopener`) ; la projection montre un QR dessiné dans le

@@ -52,8 +52,28 @@ header('Cache-Control: no-store');
         <strong>brouillons à relire</strong> : rien n'a encore été validé sur le terrain, ajustez-les avant l'atelier.</p>
       <p class="row wrap"><label for="seance-select" class="sr-only">Séance à créer</label>
         <select id="seance-select"><option value="">Choisir une séance…</option></select>
-        <button id="seance-btn" class="btn" type="button">Créer cette séance</button></p>
+        <button id="seance-btn" class="btn" type="button">Créer cette séance</button>
+        <button id="seance-review" class="btn" type="button" title="Copie une consigne et la séance, à coller dans une autre IA qui la relit et renvoie une version corrigée">Copier la consigne de relecture</button>
+        <button id="seance-del" class="btn btn-danger" type="button" hidden>Supprimer ce thème</button></p>
       <p id="seance-info" class="meta" aria-live="polite"></p>
+      <p id="seance-copied" class="meta" aria-live="polite"></p>
+      <textarea id="seance-prompt" rows="6" readonly hidden aria-label="Consigne de relecture"></textarea>
+      <details id="seance-add">
+        <summary>Ajouter un thème (version relue par une IA, ou le vôtre)</summary>
+        <p class="meta">Collez la réponse de l'IA : seule la liste de questions, du « [ » au « ] », est lue ; le thème est vérifié avant d'être gardé.
+          Pour garder une session que vous avez construite, utilisez « Enregistrer comme thème » dans son bilan.</p>
+        <div class="form-grid">
+          <label for="seance-new-title">Titre</label><input id="seance-new-title" maxlength="120">
+          <label for="seance-new-public">Public</label><input id="seance-new-public" maxlength="160">
+          <label for="seance-new-duree">Durée</label><input id="seance-new-duree" maxlength="60">
+          <label for="seance-new-prerequis">Prérequis</label><input id="seance-new-prerequis" maxlength="160">
+          <label for="seance-new-objectif">Objectif</label><input id="seance-new-objectif" maxlength="200">
+        </div>
+        <label for="seance-new-raw" class="sr-only">Questions du thème</label>
+        <textarea id="seance-new-raw" rows="6" placeholder="Collez ici la réponse de l'IA (la liste commençant par « [ »)"></textarea>
+        <p class="row wrap"><button id="seance-new-save" class="btn btn-primary" type="button">Enregistrer le thème</button>
+          <span id="seance-new-msg" class="meta" aria-live="polite"></span></p>
+      </details>
     </div>
     <ul id="session-list" class="list"></ul>
     </div>
@@ -226,6 +246,7 @@ header('Cache-Control: no-store');
           <a id="ed-csv-public" class="btn" title="Réponses pour Excel, sans celles que vous avez masquées (à partager)">CSV à diffuser (sans réponses masquées)</a>
           <a id="ed-print" class="btn" title="Page des résultats à imprimer ou enregistrer en PDF" target="_blank" rel="noopener">Version imprimable</a>
           <a id="ed-memo" class="btn" title="Page à remettre aux participants : conclusion, explications, bonnes réponses et exercices, sans aucune réponse ni chiffre" target="_blank" rel="noopener">Fiche mémo à emporter</a>
+          <button id="ed-theme" class="btn" type="button" title="Garde les questions de cette session comme thème de la bibliothèque (sans aucune réponse)">Enregistrer comme thème</button>
           <a id="ed-questions" class="btn" title="Enregistre les questions (sans aucune réponse) pour les réutiliser dans une autre session">Questions (.json, sans les réponses)</a>
         </p>
     </div>

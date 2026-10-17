@@ -661,6 +661,33 @@ check(!str_contains($memo, 'participant') && !str_contains($memo, 'réponse(s)')
 check(str_contains($admin->get("api.php?action=export&format=memo&s=$cmp")['body'], 'Bonne réponse : Urgence'), 'fiche mémo : les bonnes réponses des quiz');
 expect_status((new Client($base))->get("api.php?action=export&format=memo&s=$df"), 401, 'fiche mémo : réservée à l\'animateur');
 
+// Thèmes de la bibliothèque ajoutés par l'animateur.
+$raw = json_encode([['type' => 'poll', 'text' => 'Votre météo ?', 'options' => ['Soleil', 'Pluie']], ['type' => 'conclusion', 'text' => 'À retenir : un point.']]);
+$tp = fn(array $x) => $admin->post('seance_save', $x);
+expect_status($tp(['title' => '', 'raw' => $raw]), 400, 'thème : titre obligatoire');
+expect_status($tp(['title' => 'Cassé', 'raw' => json_encode([['type' => 'mcq', 'text' => 'Sans choix']])]), 400, 'thème : une question invalide refuse le thème');
+expect_status($tp(['title' => 'Vide', 'raw' => 'rien du tout']), 400, 'thème : texte illisible refusé');
+expect_status((new Client($base))->post('seance_save', ['title' => 'X', 'raw' => $raw]), 401, 'thème : réservé à l\'animateur');
+$t1 = $tp(['title' => 'Relu par une IA', 'public' => 'Seniors', 'duree' => '30 min', 'raw' => 'Voici ma version corrigée : ' . $raw . ' Fin.']);
+expect_status($t1, 200, 'thème : texte collé avec du texte autour accepté');
+$tid = $t1['json']['id'] ?? '';
+$tl = $admin->get('api.php?action=seances')['json']['themes'] ?? [];
+check(count($tl) === 1 && $tl[0]['title'] === 'Relu par une IA' && count($tl[0]['items']) === 2, 'thème : listé avec ses questions');
+$ts = $tp(['title' => 'Depuis une session', 's' => $cmp]);
+expect_status($ts, 200, 'thème : enregistré depuis une session');
+check(count($admin->get('api.php?action=seances')['json']['themes'] ?? []) === 2, 'thème : deux thèmes');
+$admin->post('seance_delete', ['id' => $tid]);
+$tl = $admin->get('api.php?action=seances')['json']['themes'] ?? [];
+check(count($tl) === 1 && $tl[0]['title'] === 'Depuis une session', 'thème : supprimé');
+for ($i = 0; $i < 30; $i++) {
+    $last = $tp(['title' => "Thème $i", 'raw' => $raw]);
+}
+expect_status($last, 400, 'thème : 30 au plus');
+foreach ($admin->get('api.php?action=seances')['json']['themes'] ?? [] as $t) {
+    $admin->post('seance_delete', ['id' => $t['id']]);
+}
+check(($admin->get('api.php?action=seances')['json']['themes'] ?? [1]) === [], 'thème : bibliothèque vidée');
+
 // --- Lien d'un exercice : https seulement, validé côté serveur -------------------------
 $lk = $admin->post('session_create', ['title' => 'Liens'])['json']['code'] ?? '';
 $ls = fn(string $link) => $admin->post('question_save', ['s' => $lk, 'question' => ['type' => 'poll', 'text' => 'Exercice', 'options' => ['Réussi', 'Bloqué'], 'link' => $link]]);

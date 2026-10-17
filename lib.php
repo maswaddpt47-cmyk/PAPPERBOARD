@@ -919,6 +919,43 @@ function wl_import_parse(string $raw): array
     return array_map(fn($it) => array_diff_key($it, ['column' => 1]), $items);
 }
 
+// ---------------------------------------------------------------------------
+// Thèmes de la bibliothèque ajoutés par l'animateur (seances.json, contenu pédagogique seulement)
+// ---------------------------------------------------------------------------
+
+const WL_MAX_THEMES = 30;
+
+function wl_themes_file(): string
+{
+    return wl_data_dir() . '/seances.json';
+}
+
+function wl_themes(): array
+{
+    $d = is_file(wl_themes_file()) ? json_decode((string)file_get_contents(wl_themes_file()), true) : null;
+    return is_array($d) && is_array($d['themes'] ?? null) ? array_values($d['themes']) : [];
+}
+
+/** Un thème prêt à stocker : métadonnées nettoyées, questions vérifiées par l'import (une erreur refuse le thème). */
+function wl_theme_clean(array $in, array $list): array
+{
+    $field = function (string $key, int $max, bool $required = false) use ($in): string {
+        $v = wl_clean_text($in[$key] ?? '');
+        if (($required && $v === '') || wl_strlen($v) > $max) {
+            throw new WlError('Thème : « ' . $key . ' » ' . ($v === '' ? 'est obligatoire.' : 'dépasse ' . $max . ' caractères.'));
+        }
+        return $v;
+    };
+    $theme = ['id' => bin2hex(random_bytes(4)), 'title' => $field('title', 120, true), 'public' => $field('public', 160),
+        'duree' => $field('duree', 60), 'prerequis' => $field('prerequis', 160), 'objectif' => $field('objectif', 200)];
+    foreach (wl_import_parse(json_encode($list, JSON_UNESCAPED_UNICODE)) as $i => $it) {
+        if (isset($it['error'])) {
+            throw new WlError('Question ' . ($i + 1) . ' : ' . $it['error']);
+        }
+    }
+    return $theme + ['items' => $list];
+}
+
 /** Liste JSON comprise entre le premier « [ » et le dernier « ] », ou null. */
 function wl_import_json(string $raw): ?array
 {

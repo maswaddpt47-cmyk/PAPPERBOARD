@@ -607,3 +607,9 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .no-print, .topbar, .footer { display: none !important; }
   .print { padding: 0; }
 }
+
+/* Formulaire d'ajout d'un thème : étiquette et champ sur une ligne, l'un sous l'autre sur écran étroit. */
+.form-grid { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1rem; align-items: center; margin: .5rem 0; }
+.form-grid input { width: 100%; min-width: 0; box-sizing: border-box; }
+#seance-new-raw, #seance-prompt { width: 100%; box-sizing: border-box; }
+@media (max-width: 760px) { .form-grid { grid-template-columns: 1fr; } }
