@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="theme-color" content="#17675f">
+  <title>WoocLight — L’atelier, en toute simplicité</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="refinements.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Aller à l’atelier</a>
+  <button class="nav-overlay" id="nav-overlay" aria-label="Fermer la navigation" tabindex="-1" hidden></button>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+      <a class="brand" href="#" aria-label="WoocLight, accueil"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">Wooc<span>Light</span><small>LE LIEN FAIT L’ATELIER</small></span></a>
+      <p class="nav-label">MON ESPACE</p>
+      <nav class="main-nav">
+        <button class="nav-item" data-nav="overview" title="Vue d’ensemble"><span data-icon="grid"></span><span class="nav-copy">Vue d’ensemble</span></button>
+        <button class="nav-item active" data-nav="workshop" title="Mon atelier" aria-current="page"><span data-icon="list"></span><span class="nav-copy">Mon atelier</span><span class="nav-dot" aria-hidden="true"></span></button>
+        <button class="nav-item" data-nav="library" title="Bibliothèque"><span data-icon="book"></span><span class="nav-copy">Bibliothèque</span></button>
+        <button class="nav-item" data-nav="history" title="Historique"><span data-icon="clock"></span><span class="nav-copy">Historique</span></button>
+      </nav>
+      <div class="sidebar-session"><span class="sidebar-session-label"><span class="status-dot"></span> VOTRE ATELIER</span><strong id="header-session">Repérer les arnaques en ligne</strong><span class="sidebar-session-meta">Un moment pour apprendre ensemble.</span></div>
+      <div class="sidebar-bottom"><div class="sidebar-tip"><span data-icon="sparkles"></span><strong>À vous de jouer.</strong><p>Explorez, testez, recommencez. Cette démo est votre espace d’essai.</p><button class="btn secondary small" id="help-demo">Comment tester ? <span data-icon="arrow-right"></span></button></div><div class="profile"><span class="avatar">A</span><span class="profile-copy"><strong>Espace animateur</strong><small>Démo personnelle</small></span><span data-icon="chevron-down"></span></div></div>
+    </aside>
+    <main class="main-shell">
+      <header class="topbar"><div class="breadcrumb"><button class="btn ghost icon-btn mobile-menu" id="menu-toggle" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button><span class="breadcrumb-root">Mon espace</span><span class="breadcrumb-chevron" data-icon="chevron-right"></span><strong>Atelier numérique</strong></div><div class="topbar-actions"><span class="sandbox-badge"><span></span>Bac à sable</span><button id="reset-demo" class="btn ghost small" title="Réinitialiser toutes les données de démonstration"><span data-icon="refresh"></span><span class="reset-label">Recommencer</span></button></div></header>
+      <div id="workspace" class="workspace" tabindex="-1"></div>
+      <footer class="app-footer"><span>WoocLight · Un espace pour apprendre ensemble</span><span>Données fictives · Aucune connexion à votre application</span></footer>
+    </main>
+  </div>
+  <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
+  <script src="icons.js"></script>
+  <script src="preparation-tools.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.querySelectorAll('[data-icon]').forEach(function(el){el.innerHTML=window.icon(el.dataset.icon);});
+    (function(){var toggle=document.getElementById('menu-toggle'),side=document.getElementById('sidebar'),overlay=document.getElementById('nav-overlay');function close(){var wasOpen=side.classList.contains('is-open');side.classList.remove('is-open');overlay.hidden=true;toggle.setAttribute('aria-expanded','false');if(wasOpen)toggle.focus();}toggle.addEventListener('click',function(){var open=!side.classList.contains('is-open');side.classList.toggle('is-open',open);overlay.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(open)side.querySelector('[data-nav="workshop"]').focus();});overlay.addEventListener('click',close);side.addEventListener('click',function(e){if(e.target.closest('[data-nav]'))close();});document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});document.querySelector('.brand').addEventListener('click',function(e){e.preventDefault();document.querySelector('[data-nav="overview"]').click();close();});})();
+  </script>
+</body>
+</html>

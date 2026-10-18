@@ -1,0 +1,37 @@
+[
+  {
+    "type": "mcq",
+    "text": "Un message vous presse de confirmer vos coordonnées. Que faire ?",
+    "options": ["Répondre sans attendre", "Vérifier par un moyen de contact connu", "Transmettre son mot de passe"],
+    "correct": "Vérifier par un moyen de contact connu",
+    "multi": false,
+    "explain": "Prenez le temps de joindre l’organisme par un moyen que vous connaissez déjà. Le message reçu ne suffit pas à prouver son origine."
+  },
+  {
+    "type": "truefalse",
+    "text": "Un logo connu suffit à prouver l’origine d’un message.",
+    "correct": "Faux",
+    "explain": "Un logo peut être copié. Vérifiez l’origine du message par un autre moyen."
+  },
+  {
+    "type": "mcq",
+    "text": "Quels réflexes renforcent un mot de passe ?",
+    "options": ["Utiliser une phrase longue", "Réutiliser le même mot partout", "Choisir des mots sans lien entre eux", "Ajouter sa date de naissance"],
+    "correct": ["Utiliser une phrase longue", "Choisir des mots sans lien entre eux"],
+    "multi": true,
+    "explain": "Plusieurs choix peuvent être corrects : privilégiez une phrase longue et des mots difficiles à deviner."
+  },
+  {
+    "type": "steps",
+    "text": "Agrandir le texte de son appareil",
+    "options": ["Ouvrir les réglages", "Repérer la taille du texte", "Choisir une taille confortable"],
+    "variants": {
+      "iPhone": ["Ouvrez Réglages.", "Dans Luminosité et affichage, repérez Taille du texte.", "Ajustez le curseur puis vérifiez que la lecture est confortable."],
+      "Android": ["Ouvrez Paramètres. Les noms varient selon le téléphone.", "Cherchez Taille de police, Texte ou Affichage.", "Choisissez une taille puis vérifiez que la lecture est confortable."]
+    }
+  },
+  {
+    "type": "conclusion",
+    "text": "À retenir : je prends le temps de vérifier les messages et j’adapte les réglages de mon appareil à mes besoins."
+  }
+]
