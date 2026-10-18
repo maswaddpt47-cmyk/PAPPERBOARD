@@ -40,10 +40,15 @@ php tests/archivage.php || fail=1
 echo "=== Données dans la racine web ==="
 php tests/protect.php || fail=1
 
+echo "=== Charte graphique (statique) ==="
+php tests/charte.php || fail=1
+
 echo "=== Navigateur ==="
 export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
 if node -e "require('playwright')" 2>/dev/null; then
   node tests/navigateur.js || fail=1
+  echo "=== Galerie des résultats ==="
+  node tests/galerie.js || fail=1
 else
   echo "⏭  Playwright absent : parcours navigateur non lancé"
 fi
