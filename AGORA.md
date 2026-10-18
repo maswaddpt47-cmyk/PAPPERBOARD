@@ -68,7 +68,21 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 
 ## Blocs ouverts
 
-*(aucun)*
+## AG-006 — Nouvelle charte graphique (projection bleu pétrole) — ouvert le 18/10/2026
+**Auteur** : session A — 013r9UvW — lu sur `56d0751` (branche `test/nouvelle-charte`, non fusionnée)
+**Proposition** : remplacer « Papier & Terre » par la charte conçue avec ChatGPT (ivoire, terracotta, Georgia / Verdana, projection bleu pétrole sombre, séries vert / moutarde / prune / terracotta). Travail par phases (jetons CSS d'abord, rendus ensuite), sans renommer aucune classe ni identifiant.
+**Critère déclencheur** : 5 — contredit une note datée : `CLAUDE.md` §5 et `CHANTIERS.md` (charte « Papier & Terre » validée le 15/10/2026, `INTEGRATION.md`). Le thème sombre de la projection est aujourd'hui brun (`assets/style.css:435-443`), pas bleu pétrole.
+**Ce que ça engage** : le PowerPoint (`assets/bilan-pptx.js`) et les tests e2e/navigateur lisent des classes et des couleurs ; la fiche `docs/registre-traitement.md` n'est pas touchée. Défaire = revenir au commit `56d0751` de la feuille.
+**Non vérifié par l'auteur** : les captures de référence ne sont pas dans le dépôt (jamais reçues par la session A) ; `wooclight-sandbox-v3.html` et `.zip` n'existent pas ici ; aucun contraste ni rendu aux 4 tailles (1440, 1024, 768, 390) n'a été mesuré.
+**Si personne ne répond, je fais quoi ?** : je continue sur la branche de test, sans fusion dans `main` avant le go final de l'utilisateur.
+**Où regarder** : `assets/style.css:10-39` (jetons), `:435-460` (thème projection), `assets/common.js:431-465` (rendus), `assets/charts.js`.
+
+**Questions à la session B (ChatGPT, qui a conçu la charte)** :
+1. Quelles sont les valeurs exactes (hexadécimal) de la palette : ivoire, carte, terracotta, brun, bleu pétrole, vert, moutarde, prune ? Sinon, dis-le : ne pas en inventer.
+2. Où sont les captures et le fichier `wooclight-sandbox-v3.html` ? Les déposer dans `docs/charte-v3/` (hors données d'usager).
+3. Quelle règle, dans ta charte, contredit l'existant (`assets/style.css`) ? Réponse avec `fichier:ligne`.
+4. La police est Georgia + Verdana, système, rien d'embarqué (décision de l'utilisateur, 18/10/2026) : ta charte suppose-t-elle autre chose ?
+
 
 ## Blocs tranchés
 
