@@ -161,7 +161,8 @@ li.meta { list-style: none; margin: 0; padding: var(--wl-esp-4); text-align: cen
 .footer { max-width: 34rem; margin: 1rem auto 2rem; padding: 0 1rem; font-size: .85rem; color: var(--wl-texte-doux); }
 /* Aligné sur le texte des cartes : marge de main + marge intérieure de .card. */
 .participant .footer { padding: 0 2.25rem; }
-.footer summary { cursor: pointer; min-height: var(--wl-cible); display: flex; align-items: center; }
+summary { cursor: pointer; min-height: var(--wl-cible); display: flex; align-items: center; } /* cible tactile de 48 px pour tous les « détails » */
+#ed-url { display: inline-flex; align-items: center; min-height: var(--wl-cible); }
 
 /* --- Formulaires et boutons ------------------------------------------------ */
 
@@ -601,10 +602,14 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 /* Pilotage (animateur connecté) : barre en bas à gauche, hors du QR code. */
 .s-pilot { position: fixed; left: 1.5rem; bottom: 1rem; display: flex; gap: var(--wl-esp-2); align-items: center; flex-wrap: wrap; font-size: 1rem; }
 .s-keys { font-size: .85rem; color: var(--wl-texte-doux); }
+/* La barre de pilotage s'arrête avant le QR code (elle passait dessous, mesuré le 18/10/2026 à 768 et 1440 px). */
+.s-pilot { max-width: calc(100% - clamp(10rem, 18vw, 18rem) - 3.5rem); }
+.s-live .s-pilot { max-width: calc(100% - clamp(6rem, 9vw, 9rem) - 3.5rem); }
+.s-noqr:not(.s-qr-big) .s-pilot { max-width: none; }
 .screen-main { padding-bottom: 5rem; }
 /* Résultats affichés : en-tête, question et QR réduits. */
 .s-live .screen-head { padding: .6rem 2rem .9rem; }
-.s-live .s-meta { font-size: .7em; margin-top: .6em; }
+.s-live .s-meta { font-size: max(.7em, .85rem); margin-top: .6em; } /* jamais sous 15 px */
 .s-live .s-text { font-size: .95em; margin: .1em 0 .9em; }
 .s-live .s-results .bar-track { height: 1.5em; }
 /* Projection : colonne des choix plus large (moins de retours à la ligne). */
@@ -612,7 +617,7 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .s-live .s-timer { font-size: 1.2em; }
 .s-live .screen-main { margin-right: clamp(7rem, 11vw, 11rem); padding: .3rem 2rem 0; }
 .s-live .qr-corner { width: clamp(6rem, 9vw, 9rem); padding: .4rem; }
-.s-live .qr-code { font-size: clamp(.7rem, 1vw, 1rem); }
+.s-live .qr-code { font-size: clamp(.85rem, 1vw, 1rem); }
 /* Touche Q : QR code en grand au centre. */
 .s-qr-big .qr-corner { right: 50%; bottom: 50%; transform: translate(50%, 50%); width: min(70vh, 60vw); padding: 1rem; }
 .s-qr-big .qr-code { font-size: clamp(1.2rem, 3vw, 3rem); }
