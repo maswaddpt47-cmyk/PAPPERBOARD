@@ -18,6 +18,7 @@ wl_security_headers();
 <body class="screen"<?= isset($_COOKIE['WLADMIN']) ? ' data-pilot="1"' : '' ?>>
 <div id="screen-error" class="banner" role="alert" hidden></div>
 <header class="screen-head">
+  <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
   <h1 id="s-title" class="s-title"></h1>
   <div class="screen-tools">
     <span id="s-count" class="s-count" aria-live="polite"></span>

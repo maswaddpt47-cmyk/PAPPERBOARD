@@ -222,6 +222,9 @@ legend { font-weight: bold; padding: 0 .25rem; }
 .btn-choice.is-correct { flex-wrap: wrap; }
 .check-big.is-correct { border-radius: var(--wl-rayon); padding: 0 .5rem; flex-wrap: wrap; }
 .check-big.is-correct::after { content: "✓ Bonne réponse"; color: var(--wl-ok); font-weight: bold; }
+/* Une case bien corrigée garde son texte à côté d'elle (le retour à la ligne automatique le glissait dessous quand il était long). */
+.check-big.is-correct { display: grid; grid-template-columns: auto 1fr; align-items: center; }
+.check-big.is-correct::after { grid-column: 1 / -1; }
 .check-big:has(input:checked) { font-weight: bold; }
 .scale-legend { display: flex; justify-content: space-between; color: var(--wl-texte-doux); }
 .checks { padding: .25rem .75rem; }
@@ -746,6 +749,53 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .main-shell { margin-left: 0; }
   .mobile-menu { display: inline-flex; }
   .shell-topbar { padding-left: var(--wl-esp-3); padding-right: var(--wl-esp-3); }
+}
+
+
+/* --- Écran participant : en-tête clair, question en cartes, choix en lignes avec lettre ---- */
+/* Le choix sélectionné reste brun neutre avec « ✓ » (ni rouge ni vert, voir plus haut). */
+
+.participant .topbar { background: var(--wl-carte); color: var(--wl-texte); border-bottom: 3px solid var(--wl-b3); }
+.participant .brand { display: inline-flex; align-items: center; gap: var(--wl-esp-2); font-family: var(--wl-police-titre); }
+.participant .brand-mark { width: 1.9rem; height: 1.9rem; padding: 0 .45rem; }
+.participant .topbar .btn-ghost { color: var(--wl-primaire); border-color: var(--wl-primaire); }
+.participant .topbar .btn-ghost:hover { background: var(--wl-primaire-pale); color: var(--wl-primaire); }
+.participant #q-meta { margin: 0 0 var(--wl-esp-2); font-size: .8rem; font-weight: bold; letter-spacing: .1em; text-transform: uppercase; }
+.participant .q-text { margin-top: 0; }
+.participant .choices:not(.choices-2):not(.choices-scale) { counter-reset: opt; }
+.participant .choices:not(.choices-2):not(.choices-scale) .btn-choice { justify-content: flex-start; text-align: left; gap: var(--wl-esp-3); }
+.participant .choices:not(.choices-2):not(.choices-scale) .btn-choice:not([aria-pressed="true"]) { color: var(--wl-texte); background: var(--wl-carte); border-color: var(--wl-champ); }
+.participant .choices:not(.choices-2):not(.choices-scale) .btn-choice::before {
+  counter-increment: opt; content: counter(opt, upper-alpha); display: inline-flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; flex: none; border-radius: var(--wl-rayon-pilule); background: var(--wl-primaire-pale); color: var(--wl-primaire);
+  font-family: var(--wl-police-titre); font-weight: bold; font-size: 1rem;
+}
+.participant .choices:not(.choices-2):not(.choices-scale) .btn-choice[aria-pressed="true"]::before { content: "✓"; background: var(--wl-fond); color: var(--wl-texte); }
+.participant .choices:not(.choices-2):not(.choices-scale) .btn-choice.is-correct::before { background: var(--wl-ok-fond); color: var(--wl-ok); }
+
+/* --- Projection : question, puis chaque réponse dans une carte (lettre, texte, décompte, barre fine) ---- */
+
+.screen-head .brand-mark { width: 2rem; height: 2rem; padding: 0 .5rem; }
+.s-results .bars:not(.bars-scale) { counter-reset: opt; gap: var(--wl-esp-3); }
+.s-results .bars:not(.bars-scale) > .bar {
+  counter-increment: opt; grid-template-columns: 1fr auto; align-items: center; row-gap: .4em;
+  padding: .5em .8em; border: var(--wl-bord-fin); border-radius: var(--wl-rayon); background: var(--wl-carte);
+}
+.s-results .bars:not(.bars-scale) > .bar .bar-label { display: flex; align-items: center; gap: .6em; }
+.s-results .bars:not(.bars-scale) > .bar .bar-label::before {
+  content: counter(opt, upper-alpha); display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 1.6em; height: 1.6em; border-radius: var(--wl-rayon-pilule); background: var(--wl-piste); color: var(--wl-texte);
+  font-family: var(--wl-police-titre); font-weight: bold; font-size: .85em;
+}
+.s-results .bars:not(.bars-scale) > .bar .bar-label { grid-column: 1; grid-row: 1; }
+.s-results .bars:not(.bars-scale) > .bar .bar-value { grid-column: 2; grid-row: 1; }
+.s-results .bars:not(.bars-scale) > .bar .bar-track { grid-column: 1 / -1; grid-row: 2; height: .7em; }
+.s-results .bars:not(.bars-scale) > .bar.bar-good { background: var(--wl-ok-fond); }
+/* Sur téléphone, l'ajustement à l'écran ne descend jamais sous 15 px (la page défile plutôt que d'écraser le texte). */
+@media (max-width: 760px) {
+  .s-results .bars:not(.bars-scale) > .bar .bar-label, .s-results .bars:not(.bars-scale) > .bar .bar-value, .s-results .results-foot { font-size: max(1em, .8rem); }
+  .s-results .bars:not(.bars-scale) > .bar { padding: .3em .6em; row-gap: .25em; }
+  .s-results .bars:not(.bars-scale) { gap: var(--wl-esp-2); }
 }
 
 /* --- Impression ---------------------------------------------------------------- */
