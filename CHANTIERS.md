@@ -6,9 +6,9 @@
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
-## Chantier charte graphique (branche `test/nouvelle-charte`, non fusionnée)
+## Chantier charte graphique (branche `test/nouvelle-charte`, phase 1 en ligne)
 
-Ouvert le 18/10/2026, AG-006 en cours (réponse de Codex lue, décision de l'utilisateur à noter ici une fois tranché). Palette de base validée le 18/10/2026 (ivoire `#F7F0E4`, terracotta `#B74322`, pétrole `#10383C`, vert, moutarde, prune) et variantes validées avec leurs contrastes. **Phase 1 faite le 18/10/2026 : `assets/style.css` seulement** (jetons en trois niveaux, thème clair, projection sombre pétrole, projection claire). Aucune classe ni logique modifiée ; `bash tests/run.sh` vert. **Reste** : phase 2 (structure, composants), 3 (rendus, projection), 4 (responsive, accessibilité), 5 (validation) ; `assets/bilan-pptx.js` et l'impression gardent l'ancienne palette jusqu'à la phase 3 ; aucun déploiement, aucune fusion sans « go final ». Ressources de Codex : `docs/charte-v3/`.
+Ouvert le 18/10/2026, AG-006 en cours (réponse de Codex lue, décision de l'utilisateur à noter ici une fois tranché). Palette de base validée le 18/10/2026 (ivoire `#F7F0E4`, terracotta `#B74322`, pétrole `#10383C`, vert, moutarde, prune) et variantes validées avec leurs contrastes. **Phase 1 faite le 18/10/2026 : `assets/style.css` seulement** (jetons en trois niveaux, thème clair, projection sombre pétrole, projection claire). Aucune classe ni logique modifiée ; `bash tests/run.sh` vert. **Reste** : phase 2 (structure, composants), 3 (rendus, projection), 4 (responsive, accessibilité), 5 (validation) ; `assets/bilan-pptx.js` et l'impression gardent l'ancienne palette jusqu'à la phase 3 ; **phase 1 fusionnée dans `main` et en ligne le 18/10/2026 (`ad7c430`, déploiement vert) à la demande de l'utilisateur, pour la voir sur téléphone** ; les phases suivantes se travaillent sur la branche, à fusionner sur sa demande. Ressources de Codex : `docs/charte-v3/`.
 Écarts connus (mesurés le 18/10/2026) : moutarde `#B18400` à 3,00:1 sur l'ivoire, sans marge ; moutarde sur la piste claire 2,7:1 (étiquette toujours écrite) ; prune et terracotta proches (ΔE 35), jamais la couleur seule.
 
 ## Restant, par priorité — tout côté utilisateur
