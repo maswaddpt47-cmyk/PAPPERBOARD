@@ -1,9 +1,9 @@
 # CHANTIERS — WoocLight
 
-État au **16/10/2026** — commit de référence : voir `git log -1 main`.
+État au **18/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
-`config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, protect).
+`config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
 ## Restant, par priorité — tout côté utilisateur
@@ -18,6 +18,11 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    16/10/2026 sur téléphone : nuage lisible et fluide, session de démonstration ;
    le reste à tester sur ordinateur. Le plus simple : **Créer une session de
    démonstration**. Puis un **atelier réel** à 10 participants ou plus.
+   Ajouts des 16 au 18/10/2026, à voir sur PC : lien d'exercice et QR ; défi à étapes et
+   « ✋ Bloqué » (Réglages > fonctions en essai) ; avant / après sur les mêmes personnes ;
+   fiche mémo (Bilan > Exports) ; bibliothèque de séances et thèmes ajoutés (page Sessions) ;
+   rappel à l'archivage ; réordonner des choix efface les réponses ; PowerPoint avec « … et
+   N autres ».
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -26,7 +31,9 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    pour Claude) : coller le bloc de `docs/routine-audit-trimestriel.md` dans ses
    instructions et lui attacher le dépôt. Ancienne routine
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (à supprimer).
-5. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
+5. **Relire** les 5 séances de la bibliothèque (brouillons : le 33700 et « .gouv.fr » à
+   vérifier) et la fiche `docs/registre-traitement.md` (deux lignes ajoutées le 17/10/2026).
+6. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
@@ -51,7 +58,7 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   n'est testé que sur le vrai serveur, par l'étape « Vérifier la mise en
   ligne » de `ci-deploy.yml` (verte le 14/10/2026).
 - Parcours navigateur (`tests/navigateur.js`) lancé seulement si Playwright
-  est installé : en local oui, en CI non.
+  est installé : en local oui, en CI non (supposé, non revérifié le 18/10/2026).
 - Toutes les écritures d'une session passent par un verrou de fichier :
   150 arrivées + 150 votes simultanés en 340-450 ms (mesuré en local avec
   8 processus PHP, 09/10/2026). Non mesuré sur l'hébergement mutualisé.
