@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WoocLight — Galerie des résultats</title>
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="galerie.css">
+</head>
+<body class="screen" id="g-body">
+<div class="g-bar" id="g-bar">
+  <label>Forme <select id="g-type"></select></label>
+  <label>État <select id="g-state"></select></label>
+  <label>Mode <select id="g-mode">
+    <option value="screen-dark">Projection sombre</option>
+    <option value="screen-light">Projection claire</option>
+    <option value="participant">Participant</option>
+    <option value="admin">Animateur</option>
+  </select></label>
+  <span class="g-note">Données fictives. Les rendus sont ceux de l'application (assets/common.js, assets/charts.js).</span>
+</div>
+<main class="screen-main" id="g-main">
+  <p class="s-meta" id="g-meta"></p>
+  <h1 class="s-text" id="g-text"></h1>
+  <div id="g-out"></div>
+</main>
+<script src="../../assets/common.js"></script>
+<script src="../../assets/charts.js"></script>
+<script src="galerie.js"></script>
+</body>
+</html>

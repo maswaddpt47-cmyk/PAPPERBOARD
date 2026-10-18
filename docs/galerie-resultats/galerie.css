@@ -1,0 +1,11 @@
+/* Barre de commandes de la galerie seulement ; les rendus utilisent assets/style.css. */
+.g-bar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; padding: .6rem 1rem; background: var(--wl-carte); border-bottom: var(--wl-bord-fin); color: var(--wl-texte); font-size: 1rem; }
+.g-bar label { display: flex; align-items: center; gap: .4rem; margin: 0; font-size: .9rem; }
+.g-bar select { width: auto; min-height: 2.75rem; }
+.g-note { font-size: .8rem; color: var(--wl-texte-doux); }
+#g-body.mode-participant, #g-body.mode-admin { font-size: 1rem; }
+#g-body.mode-participant #g-main, #g-body.mode-admin #g-main { max-width: 34rem; margin: 0 auto; padding: 1rem; }
+#g-body.mode-admin #g-main { max-width: 64rem; }
+#g-body.mode-participant #g-main, #g-body.mode-admin #g-main { margin-right: auto; }
+#g-body.mode-participant #g-text, #g-body.mode-admin #g-text { font-size: 1.45rem; }
+@media (max-width: 760px) { .g-bar label { display: block; flex: 1 1 100%; min-width: 0; } .g-bar select { display: block; width: 100%; max-width: 100%; margin-top: .25rem; } }

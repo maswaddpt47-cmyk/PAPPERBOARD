@@ -89,7 +89,8 @@
     var avg = res.average;
     var pct = avg === null || avg === undefined ? 0 : Math.max(0, Math.min(100, 100 * avg / q.scaleMax));
     var fill = view.querySelector('.gauge-fill');
-    later(fresh, function () { fill.style.strokeDasharray = pct.toFixed(1) + ' 100'; });
+    // Un tiret de longueur zéro à bouts arrondis dessine un point : à 0 on masque le remplissage (point orange en début et en fin de jauge, vu le 18/10/2026).
+    later(fresh, function () { fill.style.strokeDasharray = pct.toFixed(1) + ' 200'; fill.style.opacity = pct > 0 ? '' : '0'; });
     var value = view.querySelector('.gauge-value');
     value.firstChild.textContent = avg === null || avg === undefined ? '–' : String(avg).replace('.', ',');
     value.lastChild.textContent = ' / ' + q.scaleMax;

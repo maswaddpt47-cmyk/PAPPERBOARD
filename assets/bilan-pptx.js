@@ -5,9 +5,10 @@
 'use strict';
 
 (function () {
-  // Charte « Papier & Terre », thème clair (mêmes valeurs que --wl-* de style.css).
-  var C = { texte: '2E2118', doux: '6B5442', primaire: 'A83A1A', ok: '2F6B1F', fond: 'FBF4E8', carte: 'FFFDF8',
-    accent: '1F6F6B', bord: 'E4D3BA', entete: 'F6E7CF', postit: 'FFF1A8' };
+  // Charte « Papier & Terre » v2, thème clair (mêmes valeurs que --wl-* de style.css, sans le #).
+  var C = { texte: '28221E', doux: '7A6A5C', primaire: 'B74322', ok: '3C7B3C', fond: 'F7F0E4', carte: 'FFFDF8',
+    accent: '1F6F6B', bord: 'E4D3BA', entete: 'FBEBE1', postit: 'FFF1A8' };
+  var PISTE = 'EADBC2'; // fond des barres, jauge, anneau : visible sur le fond ivoire de la diapositive
   var FONT = 'Verdana', TITRE = 'Georgia';
   var W = 13.33; // LAYOUT_WIDE : 13,33 x 7,5 pouces
 
@@ -28,9 +29,9 @@
   }
 
   // Une couleur par réponse (--wl-b1 à b7), la bonne réponse en vert : comme la projection.
-  var PAL = ['A83A1A', '1F6F6B', 'B07A00', '7A2E5E', '55702A', '2F5E9E', '8A6A4A'];
+  var PAL = ['B74322', '3D7D3D', 'B18400', '943D78', '1F6F6B', '2F5E9E', '8A7A6A'];
   var NOTES = ['FFF1A8', 'D6EEF6', 'EEF3C9', 'F9DCC8', 'F3DDEB', 'E4EEDB']; // .note.board-c0 à c5
-  var CLOUD = [C.primaire, C.accent, C.texte, '7A2E5E'];                   // .cloud-c0 à c3
+  var CLOUD = [C.primaire, PAL[1], C.texte, PAL[3]];                   // .cloud-c0 à c3
   var PASTILLE = 'E0A22B', PASTILLE_BORD = '7A4F00';
 
   /** Même calcul que WL.noteColor / colorOf : couleur stable d'après un texte. */
@@ -55,7 +56,7 @@
       if (ok) slide.addShape(pptx.ShapeType.roundRect, { x: box.x - 0.1, y: y + 0.02, w: box.w + 0.2, h: row - 0.04, rectRadius: 0.12,
         fill: { color: C.fond }, line: { color: C.ok, width: 2.5 } });
       text(slide, (ok ? '✓ ' : '') + l, { x: box.x, y: y, w: lw, h: row, fontSize: 18, bold: ok, valign: 'middle', fit: 'shrink' });
-      slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: by, w: tw, h: bh, rectRadius: bh / 2, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: by, w: tw, h: bh, rectRadius: bh / 2, fill: { color: PISTE }, line: { color: PISTE, width: 0 } });
       if (values[i]) {
         var c = ok ? C.ok : PAL[i % PAL.length];
         slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: by, w: Math.max(bh, tw * values[i] / max), h: bh, rectRadius: bh / 2, fill: { color: c }, line: { color: c, width: 0 } });
@@ -67,7 +68,7 @@
   /** Oui / Non, Vrai / Faux : anneau avec le total au centre, légende à droite. */
   function donut(pptx, slide, q, r, box) {
     var size = Math.min(box.h, 4.2), x = box.x + 0.3, y = box.y + (box.h - size) / 2;
-    var colors = q.options.map(function (_, i) { return good(q.correct, i) ? C.ok : [C.accent, C.primaire][i % 2]; });
+    var colors = q.options.map(function (_, i) { return good(q.correct, i) ? C.ok : PAL[i % 2]; });
     slide.addChart(pptx.ChartType.doughnut, [{ name: 'Réponses', labels: q.options, values: r.counts }], {
       x: x, y: y, w: size, h: size, holeSize: 62, chartColors: colors, showLegend: false, showValue: false,
       showPercent: false, showLabel: false, dataBorder: { pt: 2, color: C.fond }
@@ -90,7 +91,7 @@
     var size = Math.min(4.2, box.h * 1.3), x = box.x, y = box.y + 0.1, avg = r.average || 0;
     // Anneau dont la moitié basse prend la couleur du fond : il reste un demi-cercle.
     slide.addChart(pptx.ChartType.doughnut, [{ name: 'Moyenne', labels: ['m', 'r', 'b'], values: [avg, q.scaleMax - avg, q.scaleMax] }], {
-      x: x, y: y, w: size, h: size, holeSize: 66, firstSliceAng: 270, chartColors: [PASTILLE, 'EADBC2', C.fond],
+      x: x, y: y, w: size, h: size, holeSize: 66, firstSliceAng: 270, chartColors: [PASTILLE, PISTE, C.fond],
       showLegend: false, showValue: false, showPercent: false, showLabel: false, dataBorder: { pt: 0, color: C.fond }
     });
     text(slide, [{ text: r.average === null ? '–' : String(r.average).replace('.', ','), options: { fontSize: 40, bold: true, fontFace: TITRE } },
@@ -102,7 +103,7 @@
     r.counts.forEach(function (v, k) {
       var px = cx + k * (w + gap), fh = ch * v / max;
       text(slide, String(v), { x: px, y: box.y, w: w, h: 0.4, fontSize: 18, bold: true, fontFace: TITRE, align: 'center', valign: 'bottom' });
-      slide.addShape(pptx.ShapeType.roundRect, { x: px, y: top, w: w, h: ch, rectRadius: 0.08, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      slide.addShape(pptx.ShapeType.roundRect, { x: px, y: top, w: w, h: ch, rectRadius: 0.08, fill: { color: PISTE }, line: { color: PISTE, width: 0 } });
       if (v) slide.addShape(pptx.ShapeType.roundRect, { x: px, y: top + ch - fh, w: w, h: fh, rectRadius: 0.08, fill: { color: PASTILLE }, line: { color: PASTILLE, width: 0 } });
       text(slide, String(k + 1), { x: px, y: top + ch + 0.05, w: w, h: 0.4, fontSize: 18, align: 'center' });
     });
@@ -137,7 +138,7 @@
     var n = q.options.length, gap = 0.2, w = (box.w - gap * (n - 1)) / n;
     q.options.forEach(function (name, c) {
       var x = box.x + c * (w + gap);
-      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: box.y, w: w, h: box.h, rectRadius: 0.1, fill: { color: 'EADBC2' }, line: { color: 'EADBC2', width: 0 } });
+      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: box.y, w: w, h: box.h, rectRadius: 0.1, fill: { color: PISTE }, line: { color: PISTE, width: 0 } });
       text(slide, name, { x: x + 0.15, y: box.y + 0.1, w: w - 0.3, h: 0.45, fontSize: 16, bold: true, fontFace: TITRE });
       var notes = posts.filter(function (p) { return p.col === c && !p.parent; });
       var h = Math.min(0.6, (box.h - 0.7) / Math.max(1, notes.length) - 0.1);

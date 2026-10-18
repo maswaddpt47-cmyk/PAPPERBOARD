@@ -431,7 +431,7 @@ var WL = (function () {
     var before = WL.measure && (q.type === 'wall' || q.type === 'dots') ? WL.measure(container) : null;
     var onScreen = container.classList.contains('s-results');
     var node;
-    var none = function (text) { return el('p', { class: 'meta' }, text); };
+    var none = function (text) { return el('p', { class: 'meta results-none' }, text); };
     if (q.type === 'wall') {
       node = res.posts.length ? wallCards(container, q, res.posts, opts) : none('Aucun message pour le moment.');
     } else if (q.type === 'postit') {
@@ -439,9 +439,9 @@ var WL = (function () {
     } else if (q.type === 'dots') {
       node = res.items.length ? dotsRanking(container, q, res.items) : none('Aucune idée à départager : publiez d\'abord le post-it (ou le mur) source.');
     } else if (q.type === 'wordcloud') {
-      node = res.words.length ? cloud(container, q, res.words) : el('p', { class: 'meta' }, 'Aucun mot pour le moment.');
+      node = res.words.length ? cloud(container, q, res.words) : none('Aucun mot pour le moment.');
     } else if (q.type === 'text') {
-      node = res.texts.length ? wall(container, q, res.texts, onHide) : el('p', { class: 'meta' }, 'Aucune réponse pour le moment.');
+      node = res.texts.length ? wall(container, q, res.texts, onHide) : none('Aucune réponse pour le moment.');
     } else if (onScreen && WL.donut && (q.type === 'yesno' || q.type === 'truefalse')) {
       node = WL.donut(container, q, res);
     } else if (onScreen && WL.scaleView && q.type === 'scale') {
