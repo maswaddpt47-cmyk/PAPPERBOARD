@@ -16,9 +16,48 @@ header('Cache-Control: no-store');
 <title>WoocLight — Animateur</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 </head>
-<body class="admin">
-<header class="topbar"><span class="brand">WoocLight</span><span class="topbar-title">Animateur</span>
-  <button id="logout-btn" class="btn btn-ghost" type="button" hidden>Se déconnecter</button></header>
+<body class="admin is-login">
+<a class="skip-link" href="#main">Aller au contenu</a>
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2zm0 0A2 2 0 0 0 6 21h14"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 6h9M16 6h5M3 12h3M10 12h11M3 18h13M20 18h1"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-screen" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+</svg>
+<button class="nav-overlay" id="nav-overlay" type="button" aria-label="Fermer la navigation" tabindex="-1" hidden></button>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+  <p class="sidebar-brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">WoocLight</span></p>
+  <p class="nav-label">Mon espace</p>
+  <nav class="main-nav" aria-label="Espace animateur">
+    <button type="button" class="nav-item" data-nav="overview" title="Mes sessions"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Vue d'ensemble</span></button>
+    <button type="button" class="nav-item" data-nav="workshop" title="La session ouverte" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span></button>
+    <button type="button" class="nav-item" data-nav="library" title="Séances prêtes à animer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque</span></button>
+    <button type="button" class="nav-item" data-nav="history" title="Archives anonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Historique</span></button>
+  </nav>
+  <div class="sidebar-session" id="sidebar-session" hidden>
+    <span class="sidebar-session-label">Votre atelier</span>
+    <strong id="sidebar-session-title"></strong>
+  </div>
+  <div class="sidebar-bottom">
+    <span class="profile-avatar" aria-hidden="true">A</span>
+    <span class="profile-copy"><strong>Espace animateur</strong></span>
+    <button id="logout-btn" class="btn btn-ghost btn-small" type="button" aria-label="Se déconnecter" title="Se déconnecter" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-logout"/></svg><span class="nav-copy">Se déconnecter</span></button>
+  </div>
+</aside>
+<div class="main-shell">
+<header class="shell-topbar">
+  <button class="btn btn-ghost mobile-menu" id="menu-toggle" type="button" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="sidebar"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg></button>
+  <span class="brand shell-brand">WoocLight</span>
+  <nav class="breadcrumb" aria-label="Fil d'Ariane"><span>Mon espace</span><span aria-hidden="true">›</span><strong id="crumb-current">Animateur</strong></nav>
+</header>
 <main id="main" tabindex="-1">
   <div id="banner" class="banner" role="status" aria-live="polite" hidden></div>
 
@@ -46,7 +85,7 @@ header('Cache-Control: no-store');
     </form>
     <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button>
       <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
-    <div class="card">
+    <div class="card" id="library-card">
       <h2>Bibliothèque de séances</h2>
       <p class="meta">Des séances prêtes à animer, créées d'un clic (questions, avant / après, défi, conclusion). Ce sont des
         <strong>brouillons à relire</strong> : rien n'a encore été validé sur le terrain, ajustez-les avant l'atelier.</p>
@@ -105,12 +144,16 @@ header('Cache-Control: no-store');
       <h1 id="ed-title" class="grow"></h1>
       <span id="ed-participants" class="meta"></span>
     </div>
+    <p class="ed-actions">
+      <a id="ed-preview" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
+      <a id="ed-open-screen" class="btn btn-primary" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection</a>
+    </p>
 
     <div class="tabs" role="tablist" aria-label="Session">
-      <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, génération par IA, conclusion">Préparer</button>
-      <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Inviter les participants, piloter le vote">Animer</button>
-      <button class="tab" role="tab" type="button" id="t-bilan" aria-controls="tab-bilan" data-tab="bilan" title="Tableau de bord, synthèse par une IA, PowerPoint, exports">Bilan</button>
-      <button class="tab" role="tab" type="button" id="t-settings" aria-controls="tab-settings" data-tab="settings" title="Renommer, terminer, archiver, supprimer">Réglages</button>
+      <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, génération par IA, conclusion"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Préparer</button>
+      <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Inviter les participants, piloter le vote"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Animer</button>
+      <button class="tab" role="tab" type="button" id="t-bilan" aria-controls="tab-bilan" data-tab="bilan" title="Tableau de bord, synthèse par une IA, PowerPoint, exports"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg>Bilan</button>
+      <button class="tab" role="tab" type="button" id="t-settings" aria-controls="tab-settings" data-tab="settings" title="Renommer, terminer, archiver, supprimer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Réglages</button>
     </div>
 
     <div id="tab-prep" class="tab-panel" role="tabpanel" aria-labelledby="t-prep">
@@ -376,11 +419,14 @@ header('Cache-Control: no-store');
     </dialog>
   </section>
 </main>
+</div>
+</div>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('seances.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
+<script src="<?= wl_asset('shell.js') ?>"></script>
 </body>
 </html>

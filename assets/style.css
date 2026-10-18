@@ -63,6 +63,7 @@
   --wl-esp-1: .25rem; --wl-esp-2: .5rem; --wl-esp-3: .75rem; --wl-esp-4: 1rem; --wl-esp-5: 1.5rem; --wl-esp-6: 2rem;
   --wl-rayon-xs: 4px; --wl-rayon-s: 8px; --wl-rayon: 14px; --wl-rayon-pilule: 999px;
   --wl-cible: 3rem; /* 48 px minimum pour toute cible tactile */
+  --wl-sidebar: 15rem; --wl-sidebar-ico: 5rem; /* menu latéral : complet, puis icônes seules */
   --wl-bord-fin: 1px solid var(--wl-bord);
   --wl-ombre-couleur: rgba(80, 40, 10, .12);
   --wl-ombre: 0 2px 0 var(--wl-bord), 0 8px 18px var(--wl-ombre-couleur);
@@ -105,7 +106,6 @@ a:hover { color: var(--wl-primaire-fonce); }
   padding: .6rem var(--wl-esp-4); background: var(--wl-primaire); color: var(--wl-sur-primaire);
   border-bottom: 3px solid var(--wl-primaire-fonce);
 }
-.admin .topbar { border-bottom-color: var(--wl-c-petrole); }
 .participant .topbar { border-bottom-color: var(--wl-b3); }
 .brand { font-weight: bold; font-size: 1.25rem; letter-spacing: .01em; }
 .topbar-title { flex: 1; min-width: 8rem; font-size: .95rem; overflow-wrap: anywhere; }
@@ -579,7 +579,7 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   font: inherit; font-weight: bold; color: var(--wl-texte-doux); background: none; border: 0; cursor: pointer;
   padding: .7rem 1.1rem; min-height: var(--wl-cible); border-bottom: 3px solid transparent; margin-bottom: -2px;
 }
-.tab { border-radius: var(--wl-rayon-s) var(--wl-rayon-s) 0 0; }
+.tab { display: inline-flex; align-items: center; gap: var(--wl-esp-2); border-radius: var(--wl-rayon-s) var(--wl-rayon-s) 0 0; }
 .tab:hover { color: var(--wl-primaire); background: var(--wl-primaire-pale); }
 .tab[aria-selected="true"] { color: var(--wl-primaire); border-bottom-color: var(--wl-primaire); background: var(--wl-carte); }
 .tab:focus-visible { outline: 3px solid var(--wl-focus); outline-offset: 2px; }
@@ -677,6 +677,76 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .s-step-names { font-family: var(--wl-police-titre); font-weight: bold; font-size: 1.1em; margin: 0 0 .2em; }
 .s-step-score { margin: 0; color: var(--wl-texte-doux); }
 .s-step-rank { font-family: var(--wl-police-titre); font-size: 2em; font-weight: bold; color: var(--wl-pastille); margin: .2em 0; }
+
+
+/* --- Coque de l'espace animateur : menu latéral, fil d'Ariane, tiroir ---------------- */
+/* Structure et comportement : assets/shell.js. Trois largeurs : menu complet (1200 px et plus),
+   icônes seules (640 à 1199 px), tiroir avec voile (moins de 640 px). */
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.icon { width: 1.35rem; height: 1.35rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.skip-link { position: absolute; left: -999px; top: 0; z-index: 100; padding: var(--wl-esp-3) var(--wl-esp-4); background: var(--wl-texte); color: var(--wl-fond); border-radius: 0 0 var(--wl-rayon-s) 0; }
+.skip-link:focus { left: 0; }
+
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 50; width: var(--wl-sidebar); display: flex; flex-direction: column;
+  padding: var(--wl-esp-5) var(--wl-esp-3) var(--wl-esp-3); overflow-y: auto; background: var(--wl-carte); border-right: var(--wl-bord-fin); }
+.sidebar-brand { display: flex; align-items: center; gap: var(--wl-esp-3); margin: 0 var(--wl-esp-2) var(--wl-esp-5); }
+.brand-mark { display: grid; align-content: center; gap: 3px; width: 2.25rem; height: 2.25rem; padding: 0 .55rem; flex: none;
+  border-radius: var(--wl-rayon-s); background: var(--wl-primaire); }
+.brand-mark span { display: block; height: 3px; border-radius: var(--wl-rayon-pilule); background: var(--wl-sur-primaire); }
+.brand-mark span:nth-child(2) { margin-left: 3px; }
+.brand-word { font-family: var(--wl-police-titre); font-weight: bold; font-size: 1.3rem; }
+.nav-label { margin: 0 var(--wl-esp-2) var(--wl-esp-2); font-size: .75rem; font-weight: bold; letter-spacing: .12em; text-transform: uppercase; color: var(--wl-texte-doux); }
+.main-nav { display: grid; gap: var(--wl-esp-1); }
+.nav-item { display: flex; align-items: center; gap: var(--wl-esp-3); width: 100%; min-height: var(--wl-cible); padding: var(--wl-esp-2) var(--wl-esp-3);
+  border: 0; border-radius: var(--wl-rayon-s); background: none; color: var(--wl-texte-doux); font: inherit; font-weight: bold; text-align: left; cursor: pointer; }
+.nav-item:hover { background: var(--wl-primaire-pale); color: var(--wl-primaire); }
+.nav-item[aria-current="page"] { background: var(--wl-primaire-pale); color: var(--wl-primaire); box-shadow: inset 3px 0 0 var(--wl-primaire); }
+.nav-item[aria-disabled="true"] { opacity: .65; cursor: not-allowed; }
+.nav-item[aria-disabled="true"]:hover { background: none; color: var(--wl-texte-doux); }
+.sidebar-session { display: grid; gap: var(--wl-esp-1); margin: var(--wl-esp-5) var(--wl-esp-1) 0; padding: var(--wl-esp-3); border: var(--wl-bord-fin); border-radius: var(--wl-rayon); background: var(--wl-fond); }
+.sidebar-session-label { font-size: .75rem; font-weight: bold; letter-spacing: .12em; text-transform: uppercase; color: var(--wl-texte-doux); }
+.sidebar-session strong { font-family: var(--wl-police-titre); overflow-wrap: anywhere; }
+.sidebar-bottom { display: flex; align-items: center; gap: var(--wl-esp-2); flex-wrap: wrap; margin-top: auto; padding-top: var(--wl-esp-3); border-top: var(--wl-bord-fin); }
+.profile-avatar { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; flex: none;
+  border-radius: 50%; background: var(--wl-primaire-pale); color: var(--wl-primaire); font-weight: bold; }
+.profile-copy { flex: 1; min-width: 0; font-size: .9rem; }
+
+.main-shell { margin-left: var(--wl-sidebar); min-height: 100vh; }
+.shell-topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--wl-esp-3); min-height: 3.5rem;
+  padding: var(--wl-esp-2) var(--wl-esp-5); background: var(--wl-carte); border-bottom: var(--wl-bord-fin); }
+.breadcrumb { display: flex; align-items: center; gap: var(--wl-esp-2); min-width: 0; color: var(--wl-texte-doux); }
+.breadcrumb strong { color: var(--wl-texte); overflow-wrap: anywhere; }
+.mobile-menu, .shell-brand { display: none; }
+.nav-overlay { position: fixed; inset: 0; z-index: 40; border: 0; background: var(--wl-voile); }
+.ed-actions { display: flex; flex-wrap: wrap; gap: var(--wl-esp-2); margin: var(--wl-esp-2) 0 var(--wl-esp-4); }
+.admin main { padding-top: var(--wl-esp-5); }
+
+/* Avant la connexion : pas de menu, le nom de l'appli dans l'en-tête. */
+.is-login .sidebar, .is-login .mobile-menu, .is-login .breadcrumb { display: none; }
+.is-login .main-shell { margin-left: 0; }
+.is-login .shell-brand { display: inline; font-family: var(--wl-police-titre); font-weight: bold; font-size: 1.25rem; }
+
+@media (max-width: 1199px) {
+  .sidebar { width: var(--wl-sidebar-ico); padding-left: var(--wl-esp-2); padding-right: var(--wl-esp-2); align-items: center; }
+  .sidebar .brand-word, .sidebar .nav-label, .sidebar .nav-copy, .sidebar .sidebar-session, .sidebar .profile-copy { display: none; }
+  .main-nav, .sidebar-bottom { width: 100%; }
+  .sidebar-brand { margin-left: 0; margin-right: 0; }
+  .nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
+  .sidebar-bottom { flex-direction: column; border-top: 0; }
+  .main-shell { margin-left: var(--wl-sidebar-ico); }
+}
+@media (max-width: 639px) {
+  .sidebar { width: 17rem; padding-left: var(--wl-esp-3); padding-right: var(--wl-esp-3); align-items: stretch; transform: translateX(-100%); transition: transform .2s ease-out; }
+  .sidebar.is-open { transform: none; }
+  .sidebar.is-open .brand-word, .sidebar.is-open .nav-label, .sidebar.is-open .nav-copy, .sidebar.is-open .profile-copy { display: revert; }
+  .sidebar.is-open .sidebar-session { display: grid; }
+  .sidebar.is-open .nav-item { justify-content: flex-start; padding-left: var(--wl-esp-3); }
+  .sidebar.is-open .sidebar-bottom { flex-direction: row; }
+  .main-shell { margin-left: 0; }
+  .mobile-menu { display: inline-flex; }
+  .shell-topbar { padding-left: var(--wl-esp-3); padding-right: var(--wl-esp-3); }
+}
 
 /* --- Impression ---------------------------------------------------------------- */
 

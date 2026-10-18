@@ -392,6 +392,35 @@ function check(cond, label) {
     'gommettes sur 390 px : la page ne dépasse pas la largeur de l\'écran (pas de défilement horizontal)');
   await narrow.context().close();
 
+  // Coque de l'espace animateur (assets/shell.js) : menu latéral, fil d'Ariane, tiroir sur téléphone.
+  const shell = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, storageState: await admin.context().storageState() })).newPage();
+  watch(shell, 'coque');
+  await shell.goto(BASE + 'admin.php');
+  await shell.waitForSelector('#sessions:not([hidden])');
+  check(await shell.locator('#sidebar').isVisible(), 'coque : menu latéral visible sur 1440 px');
+  check((await shell.getAttribute('[data-nav=overview]', 'aria-current')) === 'page', 'coque : « Vue d\'ensemble » actif sur la liste des sessions');
+  check((await shell.getAttribute('[data-nav=workshop]', 'aria-disabled')) === 'true', 'coque : « Mon atelier » désactivé sans session ouverte');
+  await shell.click('[data-nav=history]');
+  await shell.waitForFunction(() => document.querySelector('[data-nav=history]').getAttribute('aria-current') === 'page'); // le menu suit la vue au tour d'animation suivant
+  check((await shell.getAttribute('#t-archives', 'aria-selected')) === 'true' && (await shell.getAttribute('[data-nav=history]', 'aria-current')) === 'page', 'coque : « Historique » ouvre les archives');
+  await shell.click('[data-nav=library]');
+  check((await shell.evaluate(() => document.activeElement.id)) === 'seance-select', 'coque : « Bibliothèque » amène à la liste des séances');
+  await shell.click('#demo-btn');
+  await shell.waitForSelector('#editor:not([hidden])');
+  await shell.waitForFunction(() => document.getElementById('sidebar-session') && !document.getElementById('sidebar-session').hidden);
+  check((await shell.getAttribute('[data-nav=workshop]', 'aria-current')) === 'page', 'coque : « Mon atelier » actif avec une session ouverte');
+  const shellCode = (await shell.textContent('#ed-code')).trim();
+  check((await shell.getAttribute('#ed-open-screen', 'href')) === 'screen.php?s=' + shellCode && (await shell.getAttribute('#ed-preview', 'href')) === 'index.php?s=' + shellCode, 'coque : liens projection et aperçu participant vers le code de la session');
+  await shell.setViewportSize({ width: 390, height: 844 });
+  await shell.waitForTimeout(500); // transition du tiroir
+  check(await shell.evaluate(() => document.getElementById('sidebar').getBoundingClientRect().right <= 0), 'coque : sur 390 px le menu est replié hors écran');
+  await shell.click('#menu-toggle');
+  check((await shell.getAttribute('#menu-toggle', 'aria-expanded')) === 'true', 'coque : le bouton ouvre le tiroir (aria-expanded)');
+  await shell.keyboard.press('Escape');
+  check((await shell.getAttribute('#menu-toggle', 'aria-expanded')) === 'false' && (await shell.evaluate(() => document.activeElement.id)) === 'menu-toggle', 'coque : Échap ferme le tiroir et rend le focus au bouton');
+  check(await shell.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'coque : pas de défilement horizontal sur 390 px');
+  await shell.context().close();
+
   check(errors.length === 0, 'aucune erreur JS ni blocage CSP :\n  ' + errors.join('\n  '));
   await browser.close();
   console.log('navigateur : ' + ok + ' vérifications OK, ' + ko + ' échec(s)');
