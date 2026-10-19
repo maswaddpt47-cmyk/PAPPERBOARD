@@ -34,10 +34,27 @@ Branche de travail : `claude/eloquent-faraday-768r87`, partie de
   marque masquée et la hauteur de l’en-tête mobile (265 contrôles, rouge sur
   l’ancien code).
 
-**Écarts restants, assumés (19/10/2026)** : contenus propres au PHP (boutons
-« Mes ateliers », durée de vote, signaux, classement, réglages réels, liste des
-ateliers au lieu du tableau de bord fictif de la simulation) ; couleurs de
-badge de la charte de production ; pas de comparaison pixel par pixel.
+**Second passage le 19/10/2026, sur la demande de l’utilisateur (« tout à l’identique »)** :
+« Mon espace » refait comme la simulation : Vue d’ensemble (atelier modifié en
+dernier, « Votre progression », deux idées de séance), Bibliothèque de modèles
+(cartes de séance, puis les outils de relecture et d’ajout de thème), Mes
+ateliers (ateliers en cours, ateliers archivés, démos) ; menu « Vue d’ensemble /
+Mon atelier / Bibliothèque de modèles / Mes ateliers ». Pilotage et Réglages
+réordonnés comme la référence. L’API gagne un seul champ, `explored` dans la
+liste des sessions. `tests/interface.js` compare aussi les trois vues (312 contrôles).
+
+**Décisions à trancher par l’utilisateur (posées le 19/10/2026, sans réponse)** —
+appliqué en attendant, réversible en un commit, pas de bloc AGORA (rendu) :
+1. Textes de la simulation faux dans la vraie application (« 18 participants
+   fictifs », « dans ce navigateur », « Données fictives »…) : remplacés par
+   un équivalent vrai, même place, même style.
+2. Lignes d’atelier archivé : bouton « Voir le bilan » seul (les archives
+   anonymes ne se renomment ni ne se restaurent).
+3. Fonctions réelles sans équivalent dans la simulation (durée de vote,
+   classement, signaux réels, carte « Cette session » de Réglages) : gardées,
+   selon la consigne « préserve les fonctionnalités réelles ».
+Ne restent volontairement absents : bandeau « Simulation interactive » et
+badge « Bac à sable » (proposé et accepté le 19/10/2026).
 
 ### Code sauvegardé et points à ne pas défaire
 
