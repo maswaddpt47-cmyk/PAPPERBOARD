@@ -163,6 +163,23 @@ function check(value, message) { checks++; assert(value, message); }
       }
     }
     check(spaceDifferences.length===0,'Écarts de Mon espace :\n'+spaceDifferences.join('\n'));
+    // Ligne d'atelier archivé : Voir le bilan, Réutiliser les questions, Supprimer (décision du 19/10/2026).
+    const created = await post('session_create',{title:'Archive de contrôle'});
+    await post('question_save',{s:created.code,question:{type:'poll',text:'Question archivée ?',options:['Oui','Non']}});
+    await post('session_archive',{s:created.code});
+    await admin.setViewportSize({width:1280,height:720});
+    await admin.reload(); await admin.locator('#sessions:not([hidden])').waitFor();
+    await admin.locator('.nav-item[data-nav="history"]').click();
+    const archived = admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'});
+    await archived.waitFor();
+    for (const name of ['Voir le bilan','Réutiliser les questions','Supprimer']) check(await archived.getByRole('button',{name,exact:true}).isVisible(), 'Archive : bouton « '+name+' » absent');
+    await archived.getByRole('button',{name:'Réutiliser les questions',exact:true}).click();
+    await admin.locator('#editor:not([hidden])').waitFor();
+    check((await admin.locator('#ed-title').textContent()).includes('Archive de contrôle'), 'Archive : réutilisation sans nouvel atelier');
+    await admin.locator('#back-btn').click();
+    admin.once('dialog', dialog => dialog.accept());
+    await admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'}).getByRole('button',{name:'Supprimer',exact:true}).click();
+    await admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'}).waitFor({state:'detached'});
     check(errors.length === 0, 'Erreurs JS : '+errors.join(' ; '));
     console.log('Interface PHP : '+checks+' contrôles réussis, comparaison avec la référence et actions réelles.');
   } finally { await browser.close(); }

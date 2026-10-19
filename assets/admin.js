@@ -175,7 +175,14 @@
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, a.title),
             el('p', { class: 'muted' }, WL.plural(a.questions, 'question') + ' · Archivé')),
-          el('div', { class: 'workshop-row-actions' }, rowButton('Voir le bilan', 'chart', '', null, function () { openArchive(a.id); }))));
+          el('div', { class: 'workshop-row-actions' },
+            rowButton('Voir le bilan', 'chart', '', null, function () { openArchive(a.id); }),
+            rowButton('Réutiliser les questions', 'copy', '', 'Nouvelle session avec les mêmes questions et la même conclusion, sans résultats', function () {
+              post('archive_reuse', { id: a.id }).then(function (d) { openSession(d.code); });
+            }),
+            rowButton('Supprimer', 'trash', 'btn-danger', null, function () {
+              if (confirm('Supprimer définitivement l\'archive « ' + a.title + ' » ?')) post('archive_delete', { id: a.id }).then(showSessions);
+            }))));
       });
     });
   }
