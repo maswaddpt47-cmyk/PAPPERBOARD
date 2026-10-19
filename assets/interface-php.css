@@ -14,7 +14,7 @@ html { font-size: 16px; }
 .admin .current-panel, .admin .question-rail { padding: 0; margin: 0; }
 .admin .current-panel .live-results { margin: 0; padding: 0 26px 24px; }
 .admin .current-panel .live-state { margin: 0; font-size: 11px; color: var(--muted); padding: 0 26px 22px; }
-.admin .current-panel .live-toolbar { position: static; margin: 0; padding: 18px 22px; display: flex; }
+.admin .current-panel .live-toolbar { position: static; margin: 0; display: flex; }
 .admin .current-panel .live-toolbar .btn { flex: 1; }
 .admin .current-panel .bars:not(.bars-scale) { counter-reset: answer; display: grid; gap: 12px; }
 .admin .current-panel .bars:not(.bars-scale) > .bar { counter-increment: answer; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 14px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
@@ -43,10 +43,17 @@ html { font-size: 16px; }
 .admin .pseudo-section { margin-top: 26px; }
 .admin .pilotage-questions { margin-top: 22px; }
 .admin .meta { color: var(--muted); }
-.admin dialog.modal { padding: 26px; max-width: calc(100vw - 28px); }
+.admin dialog.modal { padding: 0; max-width: calc(100vw - 28px); }
+.admin dialog.modal[open] { display: flex; flex-direction: column; overflow: hidden; }
+.admin dialog.modal > form { display: flex; flex-direction: column; min-height: 0; width: 100%; margin: 0; }
+.admin dialog.modal .modal-head, .admin dialog.modal .modal-actions { flex: none; margin: 0; }
+.admin dialog.modal .modal-body { min-height: 0; overflow-y: auto; }
+.admin dialog.modal .modal-actions .primary { order: 2; }
+.admin dialog.modal .modal-body > label { display: block; margin: 14px 0 7px; }
+.admin #rename-dialog .modal-body > .error:empty { margin: 0; }
 .admin #gen-dialog { width: min(1180px,calc(100% - 28px)); }
-.admin #gen-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
-.admin #gen-form > :not(.gen-step) { grid-column: 1/-1; }
+.admin #gen-form .generator-body { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.admin #gen-form .generator-body > :not(.gen-step) { grid-column: 1/-1; }
 .admin .gen-step { padding: 26px; margin: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--card); }
 .admin .gen-step h3 { display: flex; align-items: center; gap: 12px; }
 .admin .gen-step input:not([type="checkbox"]):not([type="radio"]), .admin .gen-step select, .admin .gen-step textarea { margin-bottom: 16px; }
@@ -57,7 +64,10 @@ html { font-size: 16px; }
 @media(min-width:1280px) and (max-width:1500px) { .admin main.workspace { padding: 28px; } }
 @media(max-width:1279px) { .admin main.workspace { padding: 26px; } .admin .page-heading h1 { font-size: 25px; } }
 @media(max-width:1199px) { .admin .shell-topbar { padding: 12px 26px; } .admin .current-panel .live-results { padding-inline: 22px; } .admin .sidebar-bottom .profile-copy { display: none; } }
-@media(max-width:959px) { .admin .workshop-actions { flex-basis: 100%; justify-content: flex-start; } .admin .question-rail .rail-list { display: flex; overflow-x: auto; gap: 8px; } .admin .rail-list > li { flex: 0 0 172px; } .admin #gen-form { grid-template-columns: 1fr; } }
-@media(max-width:639px) { .admin main.workspace { padding: 22px 14px 24px; } .admin .shell-topbar { min-height: 64px; padding: 10px 14px; } .admin .sidebar { width: 240px; align-items: stretch; } .admin .session-controls { grid-template-columns: 1fr; } .admin .current-panel .live-results { padding-inline: 18px; } .admin .current-panel .live-state { padding-inline: 18px; font-size: 12px; } .admin .current-panel .live-toolbar { padding: 13px 14px; } .admin .workshop-item { padding: 15px 12px; } .admin dialog.modal { padding: 18px; } .admin .gen-step { padding: 18px; } .admin .page-heading h1 { font-size: 25px; } }
+@media(max-width:959px) { .admin .workshop-actions { flex-basis: 100%; justify-content: flex-start; } .admin .question-rail .rail-list { display: flex; overflow-x: auto; gap: 8px; } .admin .rail-list > li { flex: 0 0 172px; } .admin #gen-form .generator-body { grid-template-columns: 1fr; } }
+@media(max-width:639px) { .admin main.workspace { padding: 22px 14px 24px; } .admin .shell-topbar { min-height: 64px; padding: 10px 14px; } .admin .sidebar { width: 240px; align-items: stretch; } .admin .session-controls { grid-template-columns: 1fr; } .admin .current-panel .live-results { padding-inline: 18px; } .admin .current-panel .live-state { padding-inline: 18px; font-size: 12px; }  .admin .workshop-item { padding: 15px 12px; } .admin dialog.modal { padding: 0; } .admin .gen-step { padding: 18px; } .admin .page-heading h1 { font-size: 25px; } }
 
-.admin #gen-form > #gen-preview { grid-column: 1/-1; }
+.admin #gen-form #gen-preview { grid-column: 1/-1; }
+
+.admin #qr-dialog.modal, .admin #help-dialog.modal { padding: 26px; overflow-y: auto; }
+.admin .rail-item .number-bubble { border-radius: 7px; width: 27px; height: 27px; flex: none; font-size: 11px; }

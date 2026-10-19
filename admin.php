@@ -356,10 +356,10 @@ header('Cache-Control: no-store');
           <h2 id="live-text" class="live-text question-title"></h2>
           <p id="live-state" class="live-state result-explainer" aria-live="polite"></p>
           <div id="live-results" class="live-results"></div>
-          <div class="live-toolbar">
+          <div class="live-toolbar"><div class="toolbar-main">
             <button class="btn btn-primary" id="open-btn" type="button"></button>
             <button class="btn" id="show-btn" type="button"></button>
-          </div>
+          </div></div>
 
         </section>
         <aside class="insights">
@@ -428,7 +428,8 @@ header('Cache-Control: no-store');
 
   <dialog id="create-dialog" aria-labelledby="create-title">
     <form id="create-form" method="dialog" novalidate>
-      <h2 id="create-title">Créer un atelier</h2>
+<header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="create-title">Créer un atelier</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="create-cancel" aria-label="Fermer la fenêtre">×</button></header>
+<div class="modal-body">
       <p class="meta">Donnez un nom à votre atelier et choisissez comment le préparer.</p>
       <label for="new-title">Nom de l'atelier</label>
       <input id="new-title" maxlength="120" required placeholder="ex. Repérer les arnaques en ligne">
@@ -440,24 +441,27 @@ header('Cache-Control: no-store');
           <span><strong>Générer ou importer un JSON</strong><span class="meta">Consigne pour une IA, réponse collée ou fichier ; rien n'est créé avant votre validation.</span></span></label>
       </fieldset>
       <p id="create-error" class="error" role="alert"></p>
-      <div class="row wrap modal-actions">
+      </div>
+<div class="row wrap modal-actions">
         <button class="btn btn-primary" id="create-ok" type="submit">Créer l'atelier</button>
         <button class="btn" id="create-cancel" type="button">Annuler</button>
       </div>
-    </form>
-  </dialog>
+</form>
+</dialog>
 
   <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Pilotage, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer, pilotez le vote et la visibilité des graphes et réponses.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, créez une session de démonstration dans Mes ateliers.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
   <dialog id="rename-dialog" aria-labelledby="rename-title">
     <form id="rename-form" novalidate>
-      <p class="eyebrow">Votre atelier</p><h2 id="rename-title">Renommer un atelier</h2>
+<header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="rename-title">Renommer un atelier</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="rename-cancel" aria-label="Fermer la fenêtre">×</button></header>
+<div class="modal-body">
       <p>Le nom sera actualisé sur les écrans de cet atelier. Les questions et les réponses sont conservées.</p>
       <label for="rename-title-input">Nom de l'atelier</label>
       <input id="rename-title-input" maxlength="120" required>
       <p id="rename-error" class="error" role="alert"></p>
-      <div class="modal-actions"><button id="rename-cancel" class="btn" type="button">Annuler</button><button id="rename-save" class="btn btn-primary" type="submit">Enregistrer le nom</button></div>
-    </form>
-  </dialog>
+      </div>
+<div class="modal-actions"><button id="rename-cancel" class="btn" type="button">Annuler</button><button id="rename-save" class="btn btn-primary" type="submit">Enregistrer le nom</button></div>
+</form>
+</dialog>
 
   <dialog id="qr-dialog" class="qr-dialog" aria-labelledby="qr-dialog-title">
     <h2 id="qr-dialog-title">Rejoindre l'atelier</h2>
@@ -469,7 +473,8 @@ header('Cache-Control: no-store');
 
   <dialog id="gen-dialog" class="gen-dialog" aria-labelledby="gen-title">
     <form id="gen-form" method="dialog" novalidate>
-      <h2 id="gen-title">Générer ou importer des questions</h2>
+<header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="gen-title">Générer ou importer des questions</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="gen-cancel" aria-label="Fermer la fenêtre">×</button></header>
+<div class="modal-body generator-body">
       <p id="gen-for" class="meta"></p>
       <section class="gen-step">
         <h3><span class="number-bubble">1</span>Préparer une consigne pour une IA</h3>
@@ -541,16 +546,18 @@ header('Cache-Control: no-store');
         </div>
       </section>
       <p id="gen-error" class="error" role="alert"></p>
-      <div class="row wrap modal-actions">
+      </div>
+<div class="row wrap modal-actions">
         <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
         <button class="btn" id="gen-cancel" type="button">Fermer</button>
       </div>
-    </form>
-  </dialog>
+</form>
+</dialog>
 
     <dialog id="q-dialog" aria-labelledby="qd-title">
       <form id="q-form" method="dialog" novalidate>
-        <h2 id="qd-title">Question</h2>
+<header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="qd-title">Question</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="qf-cancel" aria-label="Fermer la fenêtre">×</button></header>
+<div class="modal-body">
         <label for="qf-type">Type</label>
         <select id="qf-type">
           <option value="yesno">Oui / Non</option>
@@ -604,12 +611,13 @@ header('Cache-Control: no-store');
         <label class="check" title="Le participant peut changer son vote avant la fermeture ; ignoré si la correction est immédiate"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
         <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>
-        <div class="row">
+        </div>
+<div class="row modal-actions">
           <button class="btn btn-primary" id="qf-save" title="Enregistrer la question dans la session" value="save" type="submit">Enregistrer</button>
           <button class="btn" id="qf-cancel" title="Fermer sans enregistrer" value="cancel" type="button">Annuler</button>
         </div>
-      </form>
-    </dialog>
+</form>
+</dialog>
 </main>
 <footer class="app-footer"><span>WoocLight · Un espace pour apprendre ensemble</span><span>Votre espace animateur</span></footer>
 </div>

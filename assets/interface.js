@@ -19,10 +19,22 @@
     document.querySelectorAll('dialog').forEach(function (node) { if (!node.classList.contains('modal')) node.classList.add('modal'); });
     document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]),select').forEach(function (node) { if (!node.classList.contains('input')) node.classList.add('input'); });
     document.querySelectorAll('textarea').forEach(function (node) { if (!node.classList.contains('textarea')) node.classList.add('textarea'); });
+    document.querySelectorAll('dialog label:not(.check):not(.choice-card),dialog legend').forEach(function (node) { if (!node.classList.contains('field-label')) node.classList.add('field-label'); });
+    [['open-btn', 'play'], ['show-btn', 'eye']].forEach(function (item) {
+      var button = document.getElementById(item[0]);
+      if (!button || button.querySelector('svg')) return;
+      var icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.setAttribute('class', 'icon'); icon.setAttribute('aria-hidden', 'true');
+      var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+      use.setAttribute('href', '#i-' + item[1]); icon.appendChild(use); button.prepend(icon);
+    });
   }
   function schedule() { if (!queued) { queued = true; requestAnimationFrame(decorate); } }
   new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
   decorate();
+  document.querySelectorAll('[data-dialog-cancel]').forEach(function (button) {
+    button.addEventListener('click', function () { document.getElementById(button.dataset.dialogCancel).click(); });
+  });
   document.getElementById('help-open').addEventListener('click', function () { document.getElementById('help-dialog').showModal(); });
   document.getElementById('help-close').addEventListener('click', function () { document.getElementById('help-dialog').close(); });
   document.getElementById('ed-preview').addEventListener('click', function (event) {
