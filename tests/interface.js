@@ -104,7 +104,7 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#create-btn').click();
     await reference.setViewportSize({width:1280,height:720});
     await reference.locator('[data-nav="overview"]').click();
-    await reference.locator('[data-action="create-workshop"]').first().click();
+    await reference.locator('#workspace [data-action="create-workshop"]').first().click();
     const modalDifferences = [];
     for (const [width,height] of [[1280,720],[390,844]]) {
       await admin.setViewportSize({width,height}); await reference.setViewportSize({width,height});
