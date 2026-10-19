@@ -6,19 +6,6 @@
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
-## Intervention Codex — 19/10/2026
-
-Mesuré localement : menu « Atelier en cours » après « Mes ateliers », nom et
-statut réels regroupés dans ce lien, sans carte redondante. Aucun débordement
-à 390 et 1280 px sur la démo. Audit : `docs/audit-charte-2026-10-19.md`.
-PHP 8.4 préparé hors dépôt ; tests API, charge et navigateur verts ;
-319 contrôles de fidélité réussis. Galerie native bloquée par la politique
-Chromium interdisant file:// ; équivalent HTTP : 768 cas, aucun échec.
-Branche `codex/atelier-en-cours`, publication Alwaysdata non effectuée :
-API GitHub Actions refusée par le proxy, CI distante non vérifiable.
-Décision utilisateur du 19/10/2026 : la création de démo passe dans « Créer un atelier »
-(3ᵉ choix « Démonstration ») ; « Supprimer les démos » reste dans Mes ateliers.
-
 ## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
 
 **En ligne le 19/10/2026** : `main` = `8c512da`, run Actions 39267984825 vert
@@ -250,6 +237,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Session animateur : 2 h sans écriture, 12 h au plus ; blocage par appareil.
 - Fermer ou afficher un vote sans réponse : confirmation (nav).
 - Session : écran d'accueil d'abord (`current = -1`).
+- Menu « Atelier en cours » après « Mes ateliers » (Codex, en ligne le 19/10/2026). Démo créée
+  depuis « Créer un atelier » (3ᵉ choix), « Supprimer les démos » dans Mes ateliers : validé
+  par l'utilisateur le 19/10/2026 sur téléphone (nav).
 - Explication et synthèse : jamais envoyées avant les résultats / jamais aux
   téléphones (e2e). Export `.json` des questions sans aucune réponse (e2e).
 - Gommettes : sur les post-its principaux publiés, une colonne possible (e2e).
