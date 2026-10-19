@@ -14,7 +14,7 @@
     });
     document.querySelectorAll('.card').forEach(function (node) {
       if (!node.classList.contains('panel')) node.classList.add('panel');
-      if (!node.matches('.current-panel,.question-rail,.metric-card,.help-card,.inbox-card') && !node.classList.contains('content-card')) node.classList.add('content-card');
+      if (!node.matches('.current-panel,.question-rail,.metric-card,.help-card,.inbox-card,.preparation-panel,.conclusion-card') && !node.classList.contains('content-card')) node.classList.add('content-card');
     });
     document.querySelectorAll('dialog').forEach(function (node) { if (!node.classList.contains('modal')) node.classList.add('modal'); });
     document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]),select').forEach(function (node) { if (!node.classList.contains('input')) node.classList.add('input'); });

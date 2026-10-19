@@ -16,15 +16,14 @@ html { font-size: 16px; }
 .admin .current-panel .live-state { margin: 0; font-size: 11px; color: var(--muted); padding: 0 26px 22px; }
 .admin .current-panel .live-toolbar { position: static; margin: 0; display: flex; }
 .admin .current-panel .live-toolbar .btn { flex: 1; }
-.admin .current-panel .bars:not(.bars-scale) { counter-reset: answer; display: grid; gap: 12px; }
-.admin .current-panel .bars:not(.bars-scale) > .bar { counter-increment: answer; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 14px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
-.admin .current-panel .bars:not(.bars-scale) .bar-label { grid-row: 1; grid-column: 1; display: flex; gap: 10px; align-items: center; font-size: 14px; min-width: 0; }
-.admin .current-panel .bars:not(.bars-scale) .bar-label::before { content: counter(answer, upper-alpha); display: inline-grid; place-items: center; flex: none; width: 27px; height: 27px; border-radius: 7px; background: var(--bg); color: var(--muted); font: bold 11px var(--wl-police); }
-.admin .current-panel .bars:not(.bars-scale) .bar-value { grid-row: 1; grid-column: 2; font: bold 13px var(--wl-police); }
-.admin .current-panel .bars:not(.bars-scale) .bar-track { grid-row: 2; grid-column: 1/-1; height: 6px; box-shadow: none; background: var(--wl-trace); }
-.admin .current-panel .bar-good { outline: 0; border-color: var(--wl-ok); background: var(--wl-ok-fond); }
-.admin .question-rail .panel-head { padding: 22px 19px 16px; margin: 0; }
-.admin .question-rail .rail-list { padding: 0 12px 12px; }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) { counter-reset: answer; display: grid; gap: 12px; }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) > .bar { counter-increment: answer; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 14px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-label { grid-row: 1; grid-column: 1; display: flex; gap: 10px; align-items: center; font-size: 14px; min-width: 0; }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-label::before { content: counter(answer, upper-alpha); display: inline-grid; place-items: center; flex: none; width: 27px; height: 27px; border-radius: 7px; background: var(--bg); color: var(--muted); font: bold 11px var(--wl-police); }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-value { grid-row: 1; grid-column: 2; font: bold 13px var(--wl-police); }
+.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-track { grid-row: 2; grid-column: 1/-1; height: 6px; box-shadow: none; background: var(--wl-trace); }
+.admin :is(.current-panel,.result-group) .bar-good { outline: 0; border-color: var(--wl-ok); background: var(--wl-ok-fond); }
+.admin .question-rail .panel-head { margin: 0; }
 .admin .question-rail .rail-footer { margin: 0; padding: 12px; border-top: 1px solid var(--border); }
 .admin .question-nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 16px 20px; background: var(--bg); border-bottom: 1px solid var(--border); }
 .admin .question-topline { margin: 0; }
@@ -43,7 +42,7 @@ html { font-size: 16px; }
 .admin .pseudo-section { margin-top: 26px; }
 .admin .pilotage-questions { margin-top: 22px; }
 .admin .meta { color: var(--muted); }
-.admin dialog.modal { padding: 0; max-width: calc(100vw - 28px); }
+.admin dialog.modal { padding: 0; }
 .admin dialog.modal[open] { display: flex; flex-direction: column; overflow: hidden; }
 .admin dialog.modal > form { display: flex; flex-direction: column; min-height: 0; width: 100%; margin: 0; }
 .admin dialog.modal .modal-head, .admin dialog.modal .modal-actions { flex: none; margin: 0; }
@@ -62,7 +61,7 @@ html { font-size: 16px; }
 .admin .choice-card > span { display: grid; gap: 6px; }
 .admin .choice-card:has(input:checked) { background: var(--teal-light); border-color: var(--teal); }
 @media(min-width:1280px) and (max-width:1500px) { .admin main.workspace { padding: 28px; } }
-@media(max-width:1279px) { .admin main.workspace { padding: 26px; } .admin .page-heading h1 { font-size: 25px; } }
+@media(max-width:1279px) { .admin main.workspace { padding: 26px; } }
 @media(max-width:1199px) { .admin .shell-topbar { padding: 12px 26px; } .admin .current-panel .live-results { padding-inline: 22px; } .admin .sidebar-bottom .profile-copy { display: none; } }
 @media(max-width:959px) { .admin .workshop-actions { flex-basis: 100%; justify-content: flex-start; } .admin .question-rail .rail-list { display: flex; overflow-x: auto; gap: 8px; } .admin .rail-list > li { flex: 0 0 172px; } .admin #gen-form .generator-body { grid-template-columns: 1fr; } }
 @media(max-width:639px) { .admin main.workspace { padding: 22px 14px 24px; } .admin .shell-topbar { min-height: 64px; padding: 10px 14px; } .admin .sidebar { width: 240px; align-items: stretch; } .admin .session-controls { grid-template-columns: 1fr; } .admin .current-panel .live-results { padding-inline: 18px; } .admin .current-panel .live-state { padding-inline: 18px; font-size: 12px; }  .admin .workshop-item { padding: 15px 12px; } .admin dialog.modal { padding: 0; } .admin .gen-step { padding: 18px; } .admin .page-heading h1 { font-size: 25px; } }
@@ -71,3 +70,68 @@ html { font-size: 16px; }
 
 .admin #qr-dialog.modal, .admin #help-dialog.modal { padding: 26px; overflow-y: auto; }
 .admin .rail-item .number-bubble { border-radius: 7px; width: 27px; height: 27px; flex: none; font-size: 11px; }
+
+/* Barre du haut : la marque n'apparaît qu'à la connexion ; le fil d'Ariane reste à gauche. */
+body.admin .shell-topbar { justify-content: flex-start; color: var(--text); }
+body.admin .shell-topbar .shell-brand { display: none; }
+body.admin.is-login .shell-topbar .shell-brand { display: inline; margin: 0; }
+body.admin .breadcrumb { color: var(--text); }
+body.admin .breadcrumb .icon { width: 13px; height: 13px; display: block; }
+/* Carte « Votre atelier » du menu : filet supérieur seul, comme la référence. */
+body.admin .sidebar-session { padding: 23px 0 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
+body.admin .sidebar-session strong { font-family: inherit; }
+body.admin .sidebar-brand { font: 400 16px/1.5 var(--wl-police); }
+/* Animer : bandeau d'état, liste des questions et participation. */
+body.admin .live-session-summary { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .8rem 1rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+body.admin .live-session-summary > .live-summary-text { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; flex: 1; margin: 0; color: var(--muted); font-size: .75rem; line-height: 1.5; }
+body.admin .live-session-summary span { display: inline-flex; align-items: center; gap: .4rem; }
+body.admin .question-rail .rail-list { margin: 0; }
+body.admin .panel-head .meta { font-size: 10px; margin: 0; line-height: 1.5; }
+body.admin .rail-item .question-number { width: 25px; height: 25px; min-width: 25px; padding: 0; font: 650 11px var(--wl-police); }
+body.admin .insights .card { margin: 0; }
+body.admin .metric-caption { font-size: 11px; line-height: 1.5; margin: 6px 0 16px; }
+body.admin .question-rail .rail-list { max-height: none; overflow: visible; }
+body.admin .metric-card .progress-track { margin: 0; height: 7px; }
+body.admin .rail-item .question-number { line-height: 1.5; }
+body.admin #metric-wait { font-size: 11px; line-height: 1.8; margin: 12px 0 0; }
+@media(min-width:1200px) { body.admin .sidebar-session { display: block; } }
+@media(max-width:639px) { body.admin .sidebar.is-open .sidebar-session { display: block; } body.admin #metric-wait { font-size: 10px; line-height: 1.8; } }
+body.admin .sidebar-session[hidden] { display: none; }
+body.admin .heading-copy { flex: 0 1 auto; }
+body.admin .metric-number > #metric-answered { font: inherit; letter-spacing: inherit; }
+body.admin :is(.current-panel,.result-group) .results-foot { font-size: 12px; line-height: 1.5; color: var(--muted); margin: 0; padding: 7px 0 0; }
+body.admin .question-nav { padding: 1rem 1.25rem; gap: .5rem; }
+body.admin .question-nav .btn { min-height: 44px; }
+body.admin #live-pos { font-size: 10px; line-height: 1.5; margin: 0; }
+body.admin .metric-number > #metric-answered { color: inherit; }
+/* Lignes de réponse : marges de .answer-row de la référence, selon la largeur. */
+body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-label { font-weight: 550; }
+body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-value { line-height: 1.5; }
+body.admin .current-panel .live-state { font-weight: 400; font-size: 10px; line-height: 1.7; padding-bottom: 15px; }
+@media(min-width:1700px) { body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) > .bar { padding: 17px; } }
+@media(min-width:1280px) and (max-width:1500px) { body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) > .bar { padding: 13px; } }
+@media(max-width:639px) { body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) > .bar { padding: 13px 12px; } body.admin .current-panel .live-state { font-size: 10px; padding-bottom: 18px; } }
+@media(min-width:1280px) and (max-width:1500px) { body.admin :is(.current-panel,.result-group) .bars:not(.bars-scale) .bar-label { font-size: 13px; } }
+/* Préparer : carte, liste et conclusion comme .preparation-panel et .conclusion-card de la référence. */
+body.admin .preparation-panel { margin: 0; }
+body.admin .preparation-panel .section-heading .meta, body.admin .conclusion-card .section-heading .meta { font-size: 12px; line-height: 1.5; }
+body.admin .preparation-panel #q-list { padding-left: 40px; }
+body.admin #q-list > .prep-item { margin: 0; }
+body.admin #q-list .number-bubble { padding: 0; font-family: var(--wl-police); }
+body.admin .conclusion-card { margin: 22px 0 0; }
+body.admin .conclusion-card .conclusion-actions { margin-bottom: 0; }
+@media(max-width:639px) { body.admin .preparation-panel .section-heading .row { width: 100%; } }
+/* Pilotage : classement et questions du groupe au corps de texte de la référence (13 px). */
+body.admin #ranking { font-size: 13px; line-height: 1.8; }
+body.admin .ask-list .ask-text { font-size: 13px; font-weight: 550; }
+/* Bilan : cartes de résultats de la référence (.recap-grid, .result-group). */
+body.admin .recap-heading { margin-top: 0; }
+body.admin .recap-heading .meta { font-size: 12px; line-height: 1.5; }
+body.admin .recap-grid { margin-bottom: 22px; }
+body.admin .result-group h3 { font-size: 16px; line-height: 1.5; margin: 0 0 14px; }
+body.admin .result-group > .muted, body.admin .recap-results > .muted { font-size: 12px; }
+body.admin .recap-metrics .metric-card { margin: 0; }
+@media(max-width:959px) { body.admin .recap-grid { grid-template-columns: 1fr; } }
+body.admin .nav-item[aria-current="page"] { box-shadow: none; }
+body.admin #tab-settings .check { font-size: 13px; }
+@media(min-width:640px) and (max-width:1199px) { body.admin #tab-live .workbench { grid-template-rows: auto 1fr; } }

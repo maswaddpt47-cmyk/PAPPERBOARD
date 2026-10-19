@@ -35,6 +35,7 @@ header('Cache-Control: no-store');
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
   <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></symbol>
   <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
   <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -83,7 +84,7 @@ header('Cache-Control: no-store');
 <header class="shell-topbar topbar">
   <button class="btn btn-ghost mobile-menu" id="menu-toggle" type="button" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="sidebar"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg></button>
   <span class="brand shell-brand">WoocLight</span>
-  <nav class="breadcrumb" aria-label="Fil d'Ariane"><span>Mon espace</span><span aria-hidden="true">›</span><strong id="crumb-current">Animateur</strong></nav>
+  <nav class="breadcrumb" aria-label="Fil d'Ariane"><span class="breadcrumb-root">Mon espace</span><span class="breadcrumb-chevron" aria-hidden="true"><svg class="icon" focusable="false"><use href="#i-chevron-right"/></svg></span><strong id="crumb-current">Animateur</strong></nav>
 </header>
 <main id="main" class="workspace" tabindex="-1">
   <div id="banner" class="banner" role="status" aria-live="polite" hidden></div>
@@ -183,9 +184,9 @@ header('Cache-Control: no-store');
         <p class="page-subtitle"><span id="ed-badge" class="badge"></span> <span id="ed-participants" class="meta"></span></p>
       </div>
       <div class="heading-actions">
-        <button id="back-btn" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button>
-        <a id="ed-preview" class="btn btn-small" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
-        <a id="ed-open-screen" class="btn btn-primary btn-small" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
+        <button id="back-btn" class="btn btn-ghost" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button>
+        <a id="ed-preview" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
+        <a id="ed-open-screen" class="btn btn-primary" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
       </div>
     </div>
 
@@ -198,7 +199,7 @@ header('Cache-Control: no-store');
     </div>
 
     <div id="tab-prep" class="tab-panel" role="tabpanel" aria-labelledby="t-prep">
-    <section class="card prep-panel">
+    <section class="card prep-panel preparation-panel">
       <div class="section-heading">
         <div><h2>Le déroulé de votre atelier</h2>
           <p class="meta">Préparez vos questions ici. Le vote se lance depuis Animer.</p></div>
@@ -264,13 +265,14 @@ header('Cache-Control: no-store');
       </section>
     </div>
 
-    <section class="card">
-      <p class="eyebrow">Le message à emporter</p>
+    <section class="card conclusion-card">
+      <div class="section-heading"><div><p class="eyebrow">Le message à emporter</p>
       <h2>Conclusion de l'atelier</h2>
-      <p class="meta">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et appareils des participants). Également reprise dans la fiche mémo.</p>
-      <label for="conclusion">À retenir</label>
-      <textarea id="conclusion" rows="3" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
-      <p class="row wrap"><button id="conclusion-btn" class="btn btn-primary" type="button" title="Enregistrer la conclusion de cette session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Enregistrer la conclusion</button>
+      <p class="meta muted">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et appareils des participants). Également reprise dans la fiche mémo.</p></div>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg></div>
+      <label for="conclusion" class="field-label">À retenir</label>
+      <textarea id="conclusion" rows="4" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
+      <p class="conclusion-actions"><button id="conclusion-btn" class="btn btn-primary" type="button" title="Enregistrer la conclusion de cette session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Enregistrer la conclusion</button>
         <span class="meta">600 caractères au plus</span>
         <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
     </section>
@@ -336,14 +338,14 @@ header('Cache-Control: no-store');
     </div>
 
     <div id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="t-live" hidden>
-      <section class="live-summary" aria-label="État de la session">
-        <p id="live-summary" class="live-summary-text"></p>
+      <section class="live-summary live-session-summary" aria-label="État de la session">
+        <div id="live-summary" class="live-summary-text"></div>
         <button id="go-control" class="btn btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Ouvrir Pilotage</button>
       </section>
       <div class="workbench">
         <aside class="card question-rail" aria-label="Questions de l'atelier">
-          <div class="panel-head"><h2>Les questions</h2><span id="rail-count" class="meta"></span></div>
-          <ol id="rail-list" class="rail-list"></ol>
+          <div class="panel-head"><h2 class="panel-title">Les questions</h2><span id="rail-count" class="meta"></span></div>
+          <ol id="rail-list" class="rail-list question-list"></ol>
           <p class="rail-footer"><button id="go-prep" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Gérer les questions</button></p>
         </aside>
         <section class="card current-panel" id="live">
@@ -364,9 +366,9 @@ header('Cache-Control: no-store');
         </section>
         <aside class="insights">
           <section class="card metric-card">
-            <div class="panel-head"><h2>Participation</h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></div>
+            <div class="panel-head"><h2 class="panel-title">Participation</h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></div>
             <p class="metric-number"><span id="metric-answered">0</span><span id="metric-total" class="metric-of"></span></p>
-            <p id="metric-caption" class="meta"></p>
+            <p id="metric-caption" class="meta metric-caption"></p>
             <div class="progress-track" aria-hidden="true"><span id="metric-fill" class="progress-fill"></span></div>
             <p id="metric-wait" class="meta"></p>
           </section>
@@ -381,6 +383,20 @@ header('Cache-Control: no-store');
     </div>
 
     <div id="tab-bilan" class="tab-panel" role="tabpanel" aria-labelledby="t-bilan" hidden>
+    <div class="section-heading recap-heading">
+      <div><h2>Ce que l’atelier nous apprend</h2>
+        <p class="meta muted">Les résultats de chaque question, tels que reçus. Synthèse et exports plus bas.</p></div>
+      <div class="row wrap">
+        <a id="recap-csv" class="btn" title="Toutes les réponses, réponses masquées comprises, pour Excel (bilan interne)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Exporter les résultats</a>
+        <a id="recap-memo" class="btn btn-primary" target="_blank" rel="noopener" title="Page à remettre aux participants : conclusion, explications, bonnes réponses et exercices, sans aucune réponse ni chiffre"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Fiche mémo</a>
+      </div>
+    </div>
+    <div class="card-grid recap-metrics">
+      <section class="card metric-card"><p id="recap-participants" class="metric-number">0</p><p class="metric-caption">participants inscrits</p></section>
+      <section class="card metric-card"><p id="recap-questions" class="metric-number">0</p><p class="metric-caption">questions préparées</p></section>
+      <section class="card metric-card"><p id="recap-total" class="metric-number">0</p><p class="metric-caption">réponses au total</p></section>
+    </div>
+    <div id="recap-board" class="recap-grid"></div>
     <div class="card">
       <h2>Bilan de l'atelier</h2>
       <p class="meta">Tableau de bord de toutes les questions, et texte à coller dans une IA pour obtenir une synthèse,
@@ -389,11 +405,9 @@ header('Cache-Control: no-store');
         <input id="bilan-texts" type="checkbox"> Inclure les textes des participants (réponses libres, mur, post-it, nuage de mots, idées des gommettes ; réponses masquées exclues)</label>
       <p class="row wrap"><button id="bilan-copy" class="btn btn-primary" type="button" title="Copie le bilan chiffré et la consigne de synthèse, à coller dans une IA">Copier le bilan pour une IA</button>
         <button id="bilan-pptx" class="btn btn-primary" type="button" data-src="<?= wl_asset('pptxgen.bundle.js') ?>" title="Une diapositive par question (graphiques modifiables), le récap et la conclusion : à présenter ou imprimer">Exporter en PowerPoint</button>
-        <button id="bilan-show" class="btn" type="button" title="Affiche les résultats de toutes les questions">Voir le tableau de bord</button>
         <button id="bilan-screen" class="btn" type="button" title="Sur la projection, une question par diapositive avec ses résultats tels qu'ils ont été montrés ; flèches pour avancer"></button>
         <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
       <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
-      <div id="bilan-board" class="bilan-board" hidden></div>
       <label for="synthesis">Synthèse et recommandations de l'IA (relues ; visibles de vous seul et dans l'export PowerPoint)</label>
       <textarea id="synthesis" rows="8" maxlength="6000" placeholder="Collez ici la réponse de l'IA, après relecture."></textarea>
       <p class="row wrap"><button id="synthesis-btn" class="btn" type="button" title="Enregistrer la synthèse avec la session (effacée avec elle par la purge)">Enregistrer la synthèse</button>

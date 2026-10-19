@@ -456,20 +456,30 @@
     }).then(function () { btn.disabled = false; });
   });
 
-  $('bilan-show').addEventListener('click', function () {
-    var board = $('bilan-board');
-    if (!board.hidden) { WL.show(board, false); $('bilan-show').textContent = 'Voir le tableau de bord'; return; }
-    WL.clear(board);
-    data.questions.forEach(function (q, i) {
-      var res = el('div');
-      board.appendChild(el('section', { class: 'bilan-q' },
-        el('h3', null, (i + 1) + '. ' + q.text),
-        el('p', { class: 'meta' }, WL.typeLabel(q)), res));
-      WL.renderResults(res, Object.assign({}, q, { showResults: true }), q.results);
+  /** Bilan : chiffres clés et une carte de résultats par question, comme le récap de la simulation. */
+  function renderRecap(d) {
+    var total = 0, board = $('recap-board');
+    d.questions.forEach(function (q) { total += q.results.total; });
+    $('recap-participants').textContent = String(d.participants);
+    $('recap-questions').textContent = String(d.questions.length);
+    $('recap-total').textContent = String(total);
+    while (board.children.length > d.questions.length) board.removeChild(board.lastChild);
+    d.questions.forEach(function (q, i) {
+      var card = board.children[i], post = q.type === 'wall' || q.type === 'postit';
+      if (!card) {
+        card = board.appendChild(el('section', { class: 'result-group' },
+          el('div', { class: 'question-topline' }, el('span', { class: 'badge neutral' }), el('span', { class: 'muted' })),
+          el('h3'), el('div', { class: 'recap-results' })));
+      }
+      card.querySelector('.badge').textContent = 'Question ' + (i + 1);
+      card.querySelector('.muted').textContent = WL.plural(q.results.total, post ? 'contribution' : 'réponse');
+      card.querySelector('h3').textContent = q.text;
+      var res = card.querySelector('.recap-results');
+      if (!q.results.total) { WL.clear(res).appendChild(el('p', { class: 'muted' }, 'Cette question n’a pas encore reçu de réponse.')); return; }
+      if (res.firstChild && res.firstChild.classList && res.firstChild.classList.contains('muted')) WL.clear(res);
+      WL.renderResults(res, Object.assign({}, q, { showResults: true }), q.results, { participants: post ? 0 : d.active });
     });
-    WL.show(board, true);
-    $('bilan-show').textContent = 'Masquer le tableau de bord';
-  });
+  }
 
   $('bilan-screen').addEventListener('click', function () { control(data.board ? 'board_off' : 'board'); });
 
@@ -497,6 +507,8 @@
     $('ed-csv-public').href = 'api.php?action=export&public=1&s=' + d.code;
     $('ed-print').href = 'api.php?action=export&format=print&s=' + d.code;
     $('ed-memo').href = 'api.php?action=export&format=memo&s=' + d.code;
+    $('recap-csv').href = $('ed-csv').href;
+    $('recap-memo').href = $('ed-memo').href;
     $('ed-questions').href = 'api.php?action=export&format=questions&s=' + d.code;
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' — ' + d.active + ' actif' + (d.active > 1 ? 's' : '');
@@ -522,6 +534,7 @@
     renderRail(d);
     renderExtras(d);
     renderSummary(d);
+    renderRecap(d);
     tips();
   }
 
@@ -546,9 +559,12 @@
     var sig = 0;
     Object.keys(d.signals || {}).forEach(function (k) { sig += d.signals[k] || 0; });
     var pending = d.asks.filter(function (a) { return !a.published; }).length;
-    $('live-summary').textContent = WL.plural(d.participants, 'inscrit') + ' · ' + d.active + ' actif' + (d.active > 1 ? 's' : '')
-      + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes') + ' · ' + sig + (sig > 1 ? ' signaux' : ' signal')
-      + ' · Oser demander : ' + (d.asksOpen ? 'ouvert' : 'fermé') + (pending ? ', ' + pending + ' à relire' : '');
+    var box = WL.clear($('live-summary'));
+    [el('span', null, ico('users'), WL.plural(d.participants, 'inscrit') + ' · ' + d.active + ' actif' + (d.active > 1 ? 's' : '')),
+      el('span', null, 'Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes')),
+      el('span', null, sig + (sig > 1 ? ' signaux' : ' signal')),
+      el('span', null, 'Oser demander : ' + (d.asksOpen ? 'ouvert' : 'fermé') + (pending ? ' · ' + pending + ' à relire' : ''))
+    ].forEach(function (part) { box.appendChild(part); });
     $('live-summary').parentNode.classList.toggle('is-alert', sig > 0 || pending > 0);
   }
 
@@ -563,9 +579,10 @@
         type: 'button', class: 'rail-item question-item' + (cur ? ' is-current active' : ''), 'aria-current': cur ? 'step' : null, disabled: d.ended,
         title: d.ended ? 'Session terminée : rouvrez-la pour projeter une question' : cur ? 'Question projetée' : 'Projeter cette question (ouvre son vote si elle ne l\'a jamais été)',
         onclick: function () { if (!cur) control('goto', { qid: q.id }); }
-      }, el('span', { class: 'number-bubble' }, q.state === 'closed' ? '✓' : String(i + 1)),
-        el('span', { class: 'rail-copy question-copy' }, el('span', { class: 'rail-name question-name' }, q.text), el('span', { class: 'meta' }, WL.typeLabel(q) + ' · ' + state)),
-        el('span', { class: 'rail-state question-state' + (q.state === 'open' ? ' is-live' : ''), 'aria-hidden': 'true' }))));
+      }, el('span', { class: 'number-bubble question-number' }, q.state === 'closed' ? '✓' : String(i + 1)),
+        el('span', { class: 'rail-copy question-copy' }, el('span', { class: 'rail-name question-name' }, q.text),
+          el('span', { class: 'question-meta' }, WL.typeLabel(q), el('span', { class: 'sr-only' }, ' · ' + state))),
+        el('span', { class: 'rail-state question-state' + (q.state === 'open' ? ' is-live' : ''), title: state, 'aria-hidden': 'true' }))));
     });
   }
 
@@ -713,6 +730,7 @@
     // Modération (masquer) pour les textes libres ; outils post-it en plus.
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
     WL.renderResults($('live-results'), q, q.results, {
+      participants: d.active,
       onHide: moderated ? function (aid, hidden) { act('answer_hide', { qid: q.id, aid: aid, hidden: hidden }); } : null,
       onAdmin: q.type === 'postit' ? function (pid, op, arg) { act('post_admin', { qid: q.id, pid: pid, op: op, arg: arg }); } : null
     });
@@ -787,16 +805,16 @@
       var n = i + 1;
       list.appendChild(el('li', { class: 'list-item prep-item' + (i === d.current ? ' is-current' : '') },
         el('span', { class: 'number-bubble' }, String(n)),
-        el('div', { class: 'grow' }, el('strong', null, q.text),
-          el('p', { class: 'meta' }, WL.typeLabel(q) + ' · ' + WL.plural(q.results.total, 'réponse')
+        el('div', { class: 'grow' }, el('h3', null, q.text),
+          el('p', { class: 'meta muted' }, WL.typeLabel(q) + ' · ' + WL.plural(q.results.total, 'réponse')
             + (q.duration ? ' · ' + q.duration + ' s' : '') + (i === d.current ? ' · projetée' : ''))),
         el('div', { class: 'prep-actions' },
-          el('button', { type: 'button', class: 'btn btn-ghost btn-icon', 'aria-label': 'Monter la question ' + n, title: 'Monter d\'un rang', disabled: i === 0,
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon icon-btn', 'aria-label': 'Monter la question ' + n, title: 'Monter d\'un rang', disabled: i === 0,
             onclick: function () { act('question_move', { qid: q.id, dir: -1 }); } }, ico('arrow-up')),
-          el('button', { type: 'button', class: 'btn btn-ghost btn-icon', 'aria-label': 'Descendre la question ' + n, title: 'Descendre d\'un rang', disabled: i === d.questions.length - 1,
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon icon-btn', 'aria-label': 'Descendre la question ' + n, title: 'Descendre d\'un rang', disabled: i === d.questions.length - 1,
             onclick: function () { act('question_move', { qid: q.id, dir: 1 }); } }, ico('arrow-down')),
           el('button', { type: 'button', class: 'btn btn-small', title: 'Changer l\'intitulé, les choix, la durée… (efface les réponses si le type ou les choix changent)', onclick: function () { openDialog(q); } }, ico('edit'), 'Modifier'),
-          el('button', { type: 'button', class: 'btn btn-ghost btn-icon btn-danger', 'aria-label': 'Supprimer la question ' + n, title: 'Supprimer la question et ses réponses', onclick: function () {
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon icon-btn', 'aria-label': 'Supprimer la question ' + n, title: 'Supprimer la question et ses réponses', onclick: function () {
             if (confirm('Supprimer cette question et ses réponses ?')) act('question_delete', { qid: q.id });
           } }, ico('trash')))));
     });
