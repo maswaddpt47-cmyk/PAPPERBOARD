@@ -291,7 +291,9 @@ var WL = (function () {
    *  quand elle est affichée (sa hauteur dépend de la feuille de style). */
   function screenLimit() {
     var pilot = document.getElementById('s-pilot');
-    return pilot && !pilot.hidden ? pilot.getBoundingClientRect().top - 12 : window.innerHeight - 40;
+    // Barre de pilotage en haut (projection) : la place va jusqu'au bas de l'écran ; en bas, jusqu'à elle.
+    var top = pilot && !pilot.hidden ? pilot.getBoundingClientRect().top : -1;
+    return top > window.innerHeight / 2 ? top - 12 : window.innerHeight - 40;
   }
 
   function fitResults(container) {

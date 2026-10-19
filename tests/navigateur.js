@@ -437,8 +437,28 @@ function check(cond, label) {
   await lens.waitForSelector('#s-pilot:not([hidden])');
   await lens.waitForTimeout(500);
   check(/Exercice : exemple\.org/.test(await lens.textContent('#s-link')), 'exercice : la projection affiche le QR code et le nom du site');
-  check(await lens.evaluate(() => document.getElementById('s-results').getBoundingClientRect().bottom <= document.getElementById('s-pilot').getBoundingClientRect().top),
-    'exercice : les résultats finissent au-dessus de la barre de pilotage, même avec le QR code');
+  check(await lens.evaluate(() => document.getElementById('s-pilot').getBoundingClientRect().bottom <= document.getElementById('s-question').getBoundingClientRect().top
+    && document.getElementById('s-results').getBoundingClientRect().bottom <= window.innerHeight),
+    'exercice : commandes en haut, résultats visibles jusqu\'en bas de l\'écran, même avec le QR code');
+  // QR agrandi : clic, Échap, focus rendu ; clic à côté.
+  await lens.click('#qr-zoom');
+  check(await lens.evaluate(() => document.body.classList.contains('s-qr-big') && document.activeElement.id === 'qr-close'), 'projection : QR agrandi au clic, focus sur « Fermer »');
+  await lens.keyboard.press('Escape');
+  check(await lens.evaluate(() => !document.body.classList.contains('s-qr-big') && document.activeElement.id === 'qr-zoom'), 'projection : Échap ferme le QR agrandi et rend le focus');
+  await lens.click('#qr-zoom');
+  await lens.mouse.click(20, 400);
+  check(await lens.evaluate(() => !document.body.classList.contains('s-qr-big')), 'projection : un clic à côté ferme le QR agrandi');
+  // Afficher puis masquer les graphes et réponses, même sans réponse reçue : une seule commande visible à la fois.
+  const lq = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
+  await post('control', { s: ds, op: 'show' });
+  await lens.waitForFunction(() => !document.getElementById('p-hide').hidden);
+  check((await lens.textContent('#p-hide')) === 'Masquer les graphes et réponses' && !/Afficher/.test(await lens.textContent('#p-step')),
+    'projection : résultats affichés, « Masquer les graphes et réponses » seul présent');
+  await lens.click('#p-hide');
+  await lens.waitForFunction(() => document.getElementById('p-hide').hidden);
+  const lq2 = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
+  check(lq2.questions[lq2.current].showResults === false && lq.questions[lq.current].results.total === lq2.questions[lq2.current].results.total,
+    'projection : masquer retire les graphes, les réponses restent');
   await lens.close();
 
   // Projection des gommettes sur un écran étroit (téléphone) : jamais plus large que l'écran.

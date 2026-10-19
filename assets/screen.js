@@ -67,6 +67,8 @@
     last = d;
     pilotLabel();
     var board = !!d.board; // tableau de bord projeté, une question par diapositive
+    // QR masqué depuis l'espace animateur : un QR agrandi se ferme (la touche Q peut ensuite le montrer quand même).
+    if (d.qrHidden && !document.body.classList.contains('s-noqr') && document.body.classList.contains('s-qr-big')) qrBig(false);
     document.body.classList.toggle('s-noqr', !!d.qrHidden); // touche Q : le montre quand même en grand
     // Résultats à l'écran : question et QR réduits, la place va aux résultats.
     var show = d.show || ''; // « Oser demander » ou podium, à la demande de l'animateur
@@ -220,7 +222,7 @@
     box.style.fontSize = '';
     // Place de la barre de pilotage réservée dès le départ (cookie animateur) :
     // sinon son apparition, en pleine montée, changerait la taille du texte.
-    var limit = $('s-pilot').hidden && document.body.dataset.pilot ? window.innerHeight - 110 : WL.screenLimit();
+    var limit = WL.screenLimit();
     // Position finale, montée en cours ou non (décalage de l'animation retiré).
     var bottom = function () {
       var m = getComputedStyle(box).transform.match(/matrix\(([^)]+)\)/);
@@ -361,6 +363,7 @@
     ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
     WL.show($('p-board'), !board);
     WL.show($('p-reopen'), false);
+    WL.show($('p-hide'), false);
     // « Oser demander » ouvert : bouton pour projeter (ou quitter) les questions.
     WL.show($('p-asks'), !!(last && (last.asksOpen || last.show === 'asks')));
     $('p-asks').textContent = last && last.show === 'asks' ? 'Quitter les questions' : '❓ Questions (' + ((last && last.asksCount) || 0) + ')';
@@ -382,7 +385,7 @@
     var q = last && last.question, op = stepOp();
     var post = q && (q.type === 'wall' || q.type === 'postit');
     $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
-      : op === 'show' ? (post ? 'Publier' : 'Afficher les résultats') : op === 'end' ? 'Récap et conclusion'
+      : op === 'show' ? (post ? 'Publier' : 'Afficher les graphes et réponses') : op === 'end' ? 'Récap et conclusion'
       : q ? 'Question suivante' : 'Commencer';
     if (Date.now() < warnUntil) $('p-step').textContent = 'Aucune réponse : confirmer ?';
     // À l'étape « Question suivante », le glisser fait pareil : le bouton se cache sur téléphone.
@@ -399,6 +402,9 @@
     $('p-next').disabled = !!last && last.position >= last.count;
     var voting = !!q && q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
     WL.show($('p-reopen'), !!q && !ended && q.state !== 'draft' && !voting);
+    // Une seule commande d'affichage à la fois : le bouton central affiche, celui-ci masque (même sans réponse reçue).
+    WL.show($('p-hide'), !!q && q.showResults);
+    $('p-hide').textContent = post ? 'Masquer aux participants' : 'Masquer les graphes et réponses';
     // Moins de boutons (demande du 16/10/2026) : « Suivante » seulement quand le
     // bouton central fait autre chose ; décompte déjà projeté en grand ; « Bilan »
     // à la dernière question (touche B toujours active).
@@ -406,6 +412,24 @@
     WL.show($('p-count'), false);
     WL.show($('p-board'), ended || (!!last && last.count > 0 && last.position >= last.count));
   }
+
+  /** QR agrandi au centre : clic sur le QR ou touche Q ; fermé par « Fermer », Échap ou un clic à côté. */
+  function qrBig(on) {
+    var was = document.body.classList.contains('s-qr-big');
+    document.body.classList.toggle('s-qr-big', on);
+    $('qr-zoom').setAttribute('aria-expanded', String(on));
+    if (on && !was) $('qr-close').focus();
+    if (!on && was) $('qr-zoom').focus();
+    refit();
+  }
+  $('qr-zoom').addEventListener('click', function () { qrBig(!document.body.classList.contains('s-qr-big')); });
+  $('qr-close').addEventListener('click', function () { qrBig(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.body.classList.contains('s-qr-big')) qrBig(false);
+  });
+  document.addEventListener('click', function (e) {
+    if (document.body.classList.contains('s-qr-big') && !e.target.closest('.qr-corner')) qrBig(false);
+  });
 
   if (document.body.dataset.pilot) WL.api('me').then(function (r) {
     if (!r.data || !r.data.admin) return;
@@ -421,6 +445,7 @@
     $('p-next').addEventListener('click', next);
     $('p-step').addEventListener('click', step);
     $('p-reopen').addEventListener('click', reopen);
+    $('p-hide').addEventListener('click', function () { control('hide'); });
     $('p-board').addEventListener('click', function () { control('board'); });
     $('p-asks').addEventListener('click', function () { control(last && last.show === 'asks' ? 'show_off' : 'show_asks'); });
     // Téléphone : glisser vers la gauche = suivante, vers la droite = précédente
@@ -444,7 +469,7 @@
       else if (k === 'ArrowLeft' || k === 'PageUp') prev();
       else if (k === ' ' || k === 'Enter') { if (!ended()) step(); }
       else if (k === 'b' || k === 'B') control(onBoard() ? 'board_off' : 'board');
-      else if (k === 'q' || k === 'Q') document.body.classList.toggle('s-qr-big');
+      else if (k === 'q' || k === 'Q') qrBig(!document.body.classList.contains('s-qr-big'));
       else if (k === 'f' || k === 'F') toggleFullscreen();
       else return;
       e.preventDefault();

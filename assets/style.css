@@ -983,3 +983,21 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .admin .btn-small { font-size: .85rem; min-height: 2.75rem; padding: .3rem .75rem; }
 .admin .btn-small .icon { width: 1.15rem; height: 1.15rem; }
 #live-pos { white-space: nowrap; }
+
+/* --- Projection : commandes en haut, QR cliquable (19/10/2026) ----------------------------- */
+.s-pilot { position: static; left: auto; bottom: auto; max-width: none; padding: 0 2rem var(--wl-esp-3); }
+.s-live .s-pilot, .s-noqr:not(.s-qr-big) .s-pilot { max-width: none; }
+.screen-main { padding-bottom: 2rem; }
+.qr-zoom-btn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; line-height: 0; }
+.qr-close { display: none; margin-top: var(--wl-esp-2); color: var(--wl-postit-texte); border-color: var(--wl-postit-texte); font-size: 1rem; }
+.s-qr-big .qr-close { display: inline-flex; }
+.s-qr-big .qr-zoom-btn { cursor: zoom-out; }
+.s-qr-big .qr-corner { z-index: 60; box-shadow: 0 0 0 100vmax var(--wl-voile); }
+/* Écran étroit (téléphone de l'animateur) : barre gardée en bas, à côté du QR, comme avant ; en haut,
+   repliée sur plusieurs lignes, elle repoussait les gommettes hors de l'écran (mesuré le 19/10/2026 à 390 px). */
+@media (max-width: 760px) {
+  .s-pilot, .s-live .s-pilot, .s-noqr:not(.s-qr-big) .s-pilot { position: fixed; left: 1rem; bottom: .75rem; max-width: calc(100% - 8rem); padding: 0; }
+  .s-noqr:not(.s-qr-big) .s-pilot { max-width: calc(100% - 2rem); }
+  .screen-main { padding-bottom: 8rem; } /* le QR code, fixé en bas à droite, ne cache plus la dernière ligne */
+}
+.screen .qr-corner .btn.qr-close { color: var(--wl-postit-texte); border-color: var(--wl-postit-texte); background: var(--wl-qr-fond); }

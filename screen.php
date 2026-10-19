@@ -26,6 +26,19 @@ wl_security_headers();
     <button id="full-btn" class="btn btn-ghost" type="button">Plein écran</button>
   </div>
 </header>
+<!-- Commandes en haut (consigne du 19/10/2026) : la place libre pour les résultats se mesure jusqu'au bas de l'écran. -->
+<nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
+  <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
+  <button id="p-step" class="btn btn-primary" type="button"></button>
+  <button id="p-hide" class="btn" type="button" title="Retire les graphes et réponses de la projection et des appareils ; les réponses reçues sont gardées" hidden>Masquer les graphes et réponses</button>
+  <button id="p-reopen" class="btn" type="button" title="Rouvre le vote de cette question (les résultats sont masqués avant, sauf pour un mur ou un post-it)" hidden>Rouvrir le vote</button>
+  <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
+  <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
+  <button id="p-asks" class="btn" type="button" title="Projette les questions « Oser demander » publiées, les plus votées d'abord" hidden></button>
+  <button id="p-board" class="btn" type="button" title="Projette le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Bilan</button>
+  <span class="s-swipe">Glissez ← → pour changer de question</span>
+  <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
+</nav>
 <main class="screen-main">
   <section id="s-welcome" class="s-welcome" hidden>
     <p class="s-join-line">Rejoignez sur <strong id="s-url"></strong></p>
@@ -44,20 +57,10 @@ wl_security_headers();
   </section>
   <section id="s-ended" hidden><p class="s-join-line s-thanks">Session terminée. Merci !</p><div id="s-recap"></div></section>
 </main>
-<nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
-  <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
-  <button id="p-step" class="btn btn-primary" type="button"></button>
-  <button id="p-reopen" class="btn" type="button" title="Rouvre le vote de cette question (les résultats sont masqués avant, sauf pour un mur ou un post-it)" hidden>Rouvrir le vote</button>
-  <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
-  <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
-  <button id="p-asks" class="btn" type="button" title="Projette les questions « Oser demander » publiées, les plus votées d'abord" hidden></button>
-  <button id="p-board" class="btn" type="button" title="Projette le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Bilan</button>
-  <span class="s-swipe">Glissez ← → pour changer de question</span>
-  <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
-</nav>
 <aside class="qr-corner" aria-label="Rejoindre la session">
-  <div id="qr" class="qr"></div>
+  <button id="qr-zoom" class="qr-zoom-btn" type="button" title="Agrandir le QR code (Q)" aria-label="Agrandir le QR code" aria-expanded="false"><span id="qr" class="qr"></span></button>
   <p class="qr-code">Code <strong id="s-code"></strong></p>
+  <button id="qr-close" class="btn qr-close" type="button">Fermer</button>
 </aside>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
