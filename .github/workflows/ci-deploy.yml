@@ -43,8 +43,13 @@ jobs:
         run: bash tests/run.sh
         env:
           WL_UI_ARTIFACTS: ${{ runner.temp }}/interface-captures
+      # Captures pour relecture seulement : un envoi bloqué côté GitHub (19/10/2026,
+      # étape figée 20 min après « successfully finalized ») ne doit pas retenir
+      # le contrôle `tests` exigé par la protection de main.
       - name: Conserver la comparaison visuelle
         if: always()
+        timeout-minutes: 3
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: comparaison-interface
