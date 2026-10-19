@@ -19,14 +19,16 @@ Ouvert le 18/10/2026. **AG-006 tranché le 18/10/2026 par l'utilisateur** : évo
 
 Ouvert le 18/10/2026 : le prototype v3 (`docs/charte-v3/`) est une refonte de la navigation de l\'espace animateur, pas une charte de couleurs ; l\'utilisateur a choisi la **palette A** (ivoire / terracotta, projection bleu pétrole) et les **titres en Georgia**, sur les **trois écrans**. Les points non tranchés reprennent mes propositions du 18/10/2026 : Réglages en 4ᵉ onglet, Vue d\'ensemble = Mes sessions, Bibliothèque = séances prêtes à animer, Historique = archives. **Étape 1 faite sur la branche, pas en ligne : espace animateur** (`admin.php`, `assets/shell.js` nouveau, `assets/style.css`) : menu latéral (complet dès 1200 px, icônes seules de 640 à 1199 px, tiroir avec voile sous 640 px), fil d\'Ariane, carte « Votre atelier », onglets à icônes, actions « Aperçu participant » et « Ouvrir la projection ». Aucun identifiant ni logique de `admin.js` modifié ; les entrées du menu relaient les boutons existants. **Étape 1 fusionnée dans `main` et en ligne le 18/10/2026 (`2a4472a`).** **Étapes 2 et 3 faites et fusionnées dans `main` le 18/10/2026 (`bfa0c93`, déploiement vert)** : participant (`index.php`, `style.css`) en-tête clair avec marque et liseré moutarde, type de question en petites capitales, choix en lignes avec lettre A, B, C… (le choix sélectionné reste brun neutre avec « ✓ », voir « Points à ne pas défaire ») ; case d'une bonne réponse qui garde son texte à côté (défaut ancien corrigé) ; projection (`screen.php`, `style.css`) : chaque réponse dans une carte (lettre, texte, décompte, barre fine), carte teintée pour la bonne réponse, plancher de 14 px sur téléphone. Aucun fichier JavaScript modifié, aucun identifiant renommé. Non repris du v3 : badge « Vote ouvert » sur la projection (contenu nouveau, à décider). Non repris du v3 : badge « Bac à sable », « Galerie des résultats » (hors ligne, `docs/`), carte « À vous de jouer », accroche « Le lien fait l\'atelier ».
 
-## Chantier interface de la simulation (branche `claude/tender-babbage-yxn4s5`, pas en ligne)
+## Chantier interface de la simulation (en ligne le 19/10/2026, `1ab7778`)
 
 Ouvert le 19/10/2026 (consigne `PAPPERBOARD-CHATGPT/docs/CONSIGNE-CLAUDE-UI-PHP.md`). Audit,
 décisions et suivi : `docs/integration-ui-simulation.md`. Mise en ligne seulement sur le feu vert
 de l'utilisateur. AG-007 (moutarde `#8A6500`) refusé par l'utilisateur le 19/10/2026 : `#B18400` gardé.
 **Fait sur la branche le 19/10/2026** (tests verts en local) : espace animateur, création vide / JSON
 (niveau, durée, public « Autres »), projection (commandes en haut, masquage dédié, QR cliquable).
-**Reste** : essai par l'utilisateur, puis feu vert pour avancer `main`.
+**En ligne le 19/10/2026** sur le feu vert de l'utilisateur (`main` = `1ab7778`, déploiement vert,
+vérifié par `attendre-deploiement.sh`). **Reste** : essai par l'utilisateur sur PC (création JSON, Pilotage,
+Animer, projection).
 
 ## Restant, par priorité — tout côté utilisateur
 
