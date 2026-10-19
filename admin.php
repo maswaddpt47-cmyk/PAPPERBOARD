@@ -63,17 +63,17 @@ header('Cache-Control: no-store');
   <p class="sidebar-brand brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">Wooc<span>Light</span><small>LE LIEN FAIT L’ATELIER</small></span></p>
   <p class="nav-label">Mon espace</p>
   <nav class="main-nav" aria-label="Espace animateur">
-    <button type="button" class="nav-item" data-nav="overview" title="Ateliers en cours"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Mes ateliers</span></button>
-    <button type="button" class="nav-item" data-nav="workshop" title="L'atelier ouvert" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span></button>
-    <button type="button" class="nav-item" data-nav="library" title="Séances prêtes à animer et thèmes enregistrés"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque</span></button>
-    <button type="button" class="nav-item" data-nav="history" title="Archives anonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Archives</span></button>
+    <button type="button" class="nav-item" data-nav="overview" title="Vue d’ensemble"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Vue d’ensemble</span></button>
+    <button type="button" class="nav-item" data-nav="workshop" title="L'atelier ouvert" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span><span class="nav-dot" aria-hidden="true" hidden></span></button>
+    <button type="button" class="nav-item" data-nav="library" title="Bibliothèque de modèles"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque de modèles</span></button>
+    <button type="button" class="nav-item" data-nav="history" title="Mes ateliers"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Mes ateliers</span></button>
   </nav>
   <div class="sidebar-session" id="sidebar-session" hidden>
     <span class="sidebar-session-label"><span class="status-dot" aria-hidden="true"></span>Votre atelier</span>
     <strong id="sidebar-session-title"></strong><span class="sidebar-session-meta">Un moment pour apprendre ensemble.</span>
   </div>
   <div class="sidebar-bottom">
-    <div class="sidebar-tip"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><strong>À vous de jouer.</strong><p>Préparez, invitez et animez. Un espace pour apprendre ensemble.</p><button id="help-open" class="btn btn-small" type="button" title="Consulter le parcours d’animation">Comment animer ?</button></div>
+    <div class="sidebar-tip"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><strong>À vous de jouer.</strong><p>Préparez, invitez et animez. Un espace pour apprendre ensemble.</p><button id="help-open" class="btn btn-small" type="button" title="Consulter le parcours d’animation">Comment animer ? <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button></div>
 
     <span class="profile-avatar avatar" aria-hidden="true">A</span>
     <span class="profile-copy"><strong>Espace animateur</strong></span>
@@ -100,32 +100,59 @@ header('Cache-Control: no-store');
   </section>
 
   <section id="sessions" hidden>
-    <div class="page-heading">
-      <div class="heading-copy">
-        <p class="eyebrow">Mon espace</p>
-        <h1 class="page-title">Mes ateliers</h1>
-        <p class="page-subtitle">Créez un atelier vide, générez ou importez ses questions en JSON, ou partez d'une séance de la bibliothèque.</p>
+    <div id="space-overview" class="space-view">
+      <div class="page-heading">
+        <div class="heading-copy">
+          <p class="eyebrow">Votre espace</p>
+          <h1 class="page-title" id="ov-title">Un atelier, des échanges.</h1>
+          <p class="page-subtitle" id="ov-subtitle">Préparez simplement. Gardez le contact avec votre groupe.</p>
+        </div>
+        <div class="heading-actions">
+          <button id="create-btn" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
+          <button id="ov-resume" class="btn" type="button" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg>Reprendre l’atelier</button>
+        </div>
       </div>
-      <div class="heading-actions">
-        <button id="create-btn" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
+      <div id="ov-current" class="card-grid" hidden>
+        <section class="card content-card session-summary">
+          <div class="question-topline"><span id="ov-state" class="badge"></span><span id="ov-demo" class="badge neutral" hidden>Démonstration</span></div>
+          <h2 id="ov-name"></h2>
+          <p id="ov-meta" class="muted"></p>
+          <div class="library-meta"><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg><span id="ov-participants"></span></span><span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span id="ov-questions"></span></span></div>
+          <button id="ov-open" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Revenir à l’animation</button>
+        </section>
+        <section class="card content-card">
+          <p class="eyebrow">Votre progression</p>
+          <div class="metric-number"><span id="ov-explored">0</span><span id="ov-total"> / 0</span></div>
+          <h2>questions explorées</h2>
+          <p class="muted">Lancez les votes, regardez l’écran participant et retrouvez les résultats dans le bilan.</p>
+          <button id="ov-help" class="btn btn-ghost" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-help"/></svg>Comment animer ?</button>
+        </section>
       </div>
-    </div>
-    <div class="tabs view-tabs" role="tablist" aria-label="Mon espace">
-      <button class="tab" role="tab" type="button" id="t-sessions" aria-controls="tab-sessions" data-tab="sessions"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg>Ateliers en cours</button>
-      <button class="tab" role="tab" type="button" id="t-library" aria-controls="tab-library" data-tab="library"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Bibliothèque</button>
-      <button class="tab" role="tab" type="button" id="t-archives" aria-controls="tab-archives" data-tab="archives"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>Archives</button>
-    </div>
-    <div id="tab-sessions" class="tab-panel" role="tabpanel" aria-labelledby="t-sessions">
-      <ul id="session-list" class="list workshop-list"></ul>
-      <div class="info-note">
-        <p>Pour vérifier tous les écrans seul : un atelier rempli de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux).</p>
-        <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg>Créer une session de démonstration</button>
-          <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
+      <section id="ov-empty" class="card empty-state" hidden>
+        <h2>À vous de préparer le prochain atelier</h2>
+        <p>Vos futurs ateliers et leurs archives apparaîtront dans « Mes ateliers ».</p>
+        <button class="btn" type="button" data-space="library"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Voir les modèles</button>
+      </section>
+      <div class="section-heading">
+        <div><h2 class="panel-title">Une idée pour le prochain atelier ?</h2><p class="muted">Des séances prêtes à personnaliser.</p></div>
+        <button class="btn btn-ghost" type="button" data-space="library"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg>Explorer la bibliothèque</button>
       </div>
+      <div id="ov-ideas" class="card-grid"></div>
     </div>
-    <div id="tab-library" class="tab-panel" role="tabpanel" aria-labelledby="t-library" hidden>
+
+    <div id="space-library" class="space-view" hidden>
+      <div class="page-heading">
+        <div class="heading-copy">
+          <p class="eyebrow">Pour vous inspirer</p>
+          <h1 class="page-title">Bibliothèque de modèles</h1>
+          <p class="page-subtitle">Des modèles pour démarrer un nouvel atelier. Vos créations et leurs archives restent dans Mes ateliers.</p>
+        </div>
+        <div class="heading-actions"></div>
+      </div>
+      <div id="library-grid" class="card-grid library-grid"></div>
+      <p class="info-note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg><span>Toutes les séances sont des brouillons à relire : rien n’a encore été validé sur le terrain. Relisez et adaptez les contenus avant un véritable atelier.</span></p>
     <div class="card" id="library-card">
-      <h2>Bibliothèque de séances</h2>
+      <h2>Gérer les séances</h2>
       <p class="meta">Des séances prêtes à animer, créées d'un clic (questions, avant / après, défi, conclusion). Ce sont des
         <strong>brouillons à relire</strong> : rien n'a encore été validé sur le terrain, ajustez-les avant l'atelier.</p>
       <p class="row wrap"><label for="seance-select" class="sr-only">Séance à créer</label>
@@ -154,16 +181,41 @@ header('Cache-Control: no-store');
       </details>
     </div>
     </div>
-    <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>
-    <p class="meta">Après 30 jours sans activité (ou sur « Archiver »), une session devient une archive anonyme :
-      questions, résultats chiffrés, récap, conclusion et synthèse sont gardés ; les réponses une à une, les textes
-      écrits par les participants et les jetons des appareils sont effacés. Les archives se gardent sans limite.</p>
-    <ul id="archive-list" class="list workshop-list"></ul>
+
+    <div id="space-history" class="space-view" hidden>
+      <div class="page-heading">
+        <div class="heading-copy">
+          <p class="eyebrow">Vos ateliers</p>
+          <h1 class="page-title">Mes ateliers</h1>
+          <p class="page-subtitle">Vos créations, leurs résultats et leurs archives.</p>
+        </div>
+        <div class="heading-actions">
+          <button id="create-btn-history" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
+        </div>
+      </div>
+      <section class="card panel workshop-group">
+        <div class="panel-head"><h2 class="panel-title">Ateliers en cours</h2><span id="session-count" class="muted"></span></div>
+        <div id="session-list" class="history-list"></div>
+      </section>
+      <section class="card panel workshop-group">
+        <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2><span id="archive-count" class="muted"></span></div>
+        <div id="archive-list" class="history-list"></div>
+      </section>
+      <section class="card content-card demo-controls">
+        <h2>Tester avec des participants fictifs</h2>
+        <p>Créez une démonstration avec 12 participants fictifs, des réponses, des signaux et une question anonyme. Les démos sont repérées par le badge « Démo ».</p>
+        <div class="session-actions">
+          <button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg>Créer une session de démonstration</button>
+          <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>Supprimer toutes les démos</button>
+        </div>
+        <p class="muted">La suppression groupée concerne uniquement les ateliers marqués « Démo ». Vos créations, imports et copies sont conservés.</p>
+      </section>
+      <p class="info-note">Archiver conserve les questions et les résultats chiffrés ; les réponses une à une, les textes des participants et les jetons des appareils sont effacés. Une session devient aussi une archive après 30 jours sans activité. Les archives se gardent sans limite.</p>
     </div>
   </section>
 
   <section id="archive-view" hidden>
-    <p><button id="archive-back" class="btn btn-ghost" type="button">← Mes sessions</button></p>
+    <p><button id="archive-back" class="btn btn-ghost" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button></p>
     <h1 id="ar-title"></h1>
     <p id="ar-meta" class="meta"></p>
     <p class="row wrap">
@@ -281,7 +333,6 @@ header('Cache-Control: no-store');
     <div id="tab-control" class="tab-panel" role="tabpanel" aria-labelledby="t-control" hidden>
       <div class="pilotage-toolbar">
         <p class="meta">Gérez l'accueil, les inscriptions et les échanges du groupe. Les questions et les votes se pilotent depuis Animer.</p>
-        <button id="end-control-btn" class="btn btn-danger btn-small" type="button" title="Terminer après confirmation, ou rouvrir la session pour reprendre les votes">Terminer la session</button>
         <button id="go-live" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Aller aux questions</button>
       </div>
       <div class="grid2 session-controls">
@@ -298,7 +349,7 @@ header('Cache-Control: no-store');
         <p class="row wrap session-actions">
           <button id="ed-url-copy" class="btn btn-small" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier l'invitation</button>
           <button id="ed-url-share" class="btn btn-small" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage de l'appareil)" type="button" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg>Partager</button>
-          <a id="ed-screen" class="btn btn-small" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection</a>
+          <a id="ed-screen" class="btn btn-primary btn-small" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
           <button id="lock-btn" class="btn btn-small" type="button"></button>
           <button id="qr-btn" class="btn btn-small" type="button"></button></p>
         <p id="ed-url-copied" class="meta" aria-live="polite"></p>
@@ -308,17 +359,18 @@ header('Cache-Control: no-store');
         <h2>Pilotage en direct</h2>
         <p class="row wrap session-actions">
           <button id="welcome-btn" class="btn btn-small" type="button" title="La projection revient à l'accueil : adresse, code et QR code"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Afficher l'accueil</button>
-          <button id="asks-chip" class="btn btn-small" type="button" title="Aller à la carte « Oser demander », plus bas dans cet onglet"></button></p>
+          <button id="asks-chip" class="btn btn-small" type="button" title="Les participants peuvent, ou non, poser une question anonyme depuis leur appareil"></button>
+          <button id="end-control-btn" class="btn btn-danger btn-small" type="button" title="Terminer après confirmation, ou rouvrir la session pour reprendre les votes">Terminer la session</button></p>
         <p class="meta">Retours anonymes envoyés depuis les appareils ; chacun s'efface seul après 2 minutes.</p>
         <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les appareils ; chacun s'efface après 2 minutes"></p>
         <p><button id="signals-clear" class="btn btn-ghost btn-small" type="button" title="Vous avez pris en compte les signaux : ils sont effacés tout de suite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Effacer les signaux</button></p>
       <div class="pseudo-section" id="pseudo-card">
         <h3>Pseudonymes et classement</h3>
-        <p class="meta">Option de cette session : chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
+        <p class="row wrap session-actions"><button id="pseudo-btn" class="btn btn-small" type="button"></button>
+          <button id="podium-btn" class="btn btn-small" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
+        <p class="meta muted">Chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
           les quiz corrigés comptent un point par bonne réponse. Seul le podium (rangs 1 à 3) est projeté.
           Les pseudonymes sont effacés si vous désactivez l'option, et jamais archivés.</p>
-        <p class="row wrap"><button id="pseudo-btn" class="btn btn-small" type="button"></button>
-          <button id="podium-btn" class="btn btn-small" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
         <ol id="ranking" class="ranking"></ol>
       </div>
       </section>
@@ -327,8 +379,8 @@ header('Cache-Control: no-store');
       <div class="pilotage-questions">
       <section class="card" id="asks-card">
         <h2>Oser demander</h2>
-        <p class="meta">Questions anonymes des participants, à tout moment. Vous les lisez avant de les publier (un nom peut s'y glisser).</p>
-        <p class="row wrap"><button id="asks-btn" class="btn btn-small" type="button"></button>
+        <p class="meta muted">Questions anonymes : relisez-les avant de les publier.</p>
+        <p class="row wrap session-actions"><button id="asks-btn" class="btn btn-small" type="button"></button>
           <button id="asks-screen" class="btn btn-small" type="button" title="Projette les questions publiées, les plus votées d'abord"></button></p>
         <ul id="asks-admin" class="ask-list"></ul>
       </section>
@@ -428,15 +480,21 @@ header('Cache-Control: no-store');
     </div>
     </div>
     <div id="tab-settings" class="tab-panel" role="tabpanel" aria-labelledby="t-settings" hidden>
-    <div class="card">
-      <h2>Réglages de la session</h2>
-      <p class="row wrap"><button id="rename-btn" class="btn" title="Changer le titre de la session (affiché sur la projection)" type="button">Renommer</button>
-        <button id="end-btn" class="btn" type="button"></button></p>
-      <p class="row wrap"><button id="ed-archive" class="btn" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)">Archiver la session</button>
-        <button id="ed-delete" class="btn btn-danger" type="button" title="Efface la session et toutes ses réponses">Supprimer la session</button></p>
-      <label class="check" title="Montre le défi à étapes, encore en essai : le réglage vaut pour tous tes appareils, il n'apparaît nulle part ailleurs"><input id="beta-steps" type="checkbox"> Afficher les fonctions en essai (défi à étapes), sur tous mes appareils</label>
-      <p id="cron-state" class="cron-state" role="status" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"></p>
-    </div>
+    <section class="card content-card settings-card">
+      <h2>Entretien et conservation</h2>
+      <p class="info-note" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span><strong>Dernier passage de la purge horaire :</strong> <span id="cron-state" class="cron-state" role="status"></span></span></p>
+      <p>Chaque heure, la purge archive puis efface les sessions restées sans activité au-delà de la durée de conservation (les démos sont effacées sans archive), et les traces d’adresse IP de plus de 2 heures.</p>
+      <p class="muted">Cet indicateur affiche le passage réel de la tâche planifiée sur Alwaysdata.</p>
+      <button class="btn" type="button" data-space="history"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Gérer mes ateliers et mes démos</button>
+    </section>
+    <section class="card content-card settings-card">
+      <h2>Cette session</h2>
+      <div class="session-actions"><button id="rename-btn" class="btn btn-small" title="Changer le titre de la session (affiché sur la projection)" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Renommer</button>
+        <button id="end-btn" class="btn btn-small" type="button"></button>
+        <button id="ed-archive" class="btn btn-small" type="button" title="Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Archiver la session</button>
+        <button id="ed-delete" class="btn btn-danger btn-small" type="button" title="Efface la session et toutes ses réponses"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>Supprimer la session</button></div>
+      <label class="check-line" title="Montre le défi à étapes, encore en essai : le réglage vaut pour tous tes appareils, il n'apparaît nulle part ailleurs"><input id="beta-steps" type="checkbox"> Afficher les fonctions en essai (défi à étapes), sur tous mes appareils</label>
+    </section>
     </div>
   </section>
 

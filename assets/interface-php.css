@@ -135,3 +135,32 @@ body.admin .recap-metrics .metric-card { margin: 0; }
 body.admin .nav-item[aria-current="page"] { box-shadow: none; }
 body.admin #tab-settings .check { font-size: 13px; }
 @media(min-width:640px) and (max-width:1199px) { body.admin #tab-live .workbench { grid-template-rows: auto 1fr; } }
+/* Mon espace : Vue d'ensemble, Bibliothèque de modèles, Mes ateliers (vues de la simulation). */
+body.admin #ov-explored { font: inherit; color: inherit; letter-spacing: inherit; }
+body.admin .workshop-group, body.admin .demo-controls { margin: 0 0 1.25rem; }
+body.admin .space-view .card-grid { margin-bottom: 0; }
+body.admin .space-view .card-grid > .card { margin: 0; }
+body.admin .workshop-group { padding: 0; }
+body.admin .workshop-group .panel-head { margin: 0; }
+body.admin .workshop-row .number-bubble { padding: 0; }
+body.admin .workshop-row-actions .btn:not(.danger) { background: var(--wl-ref-116); }
+body.admin .sidebar-tip .btn { white-space: nowrap; }
+body.admin .space-view > .info-note { margin-bottom: 11px; }
+/* Pilotage : signaux à la forme des boutons de la référence, questions anonymes en articles. */
+body.admin #signals { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0; }
+body.admin #signals .signal-count { display: inline-flex; align-items: center; min-height: 36px; padding: 7px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--wl-ref-116); color: var(--teal); font-size: 11px; font-weight: 650; line-height: 1.4; }
+body.admin #signals .signal-count.is-on { border-color: var(--wl-alerte-bord); background: var(--wl-alerte-fond); color: var(--wl-alerte-texte); }
+body.admin #asks-admin { list-style: none; margin: 0; padding: 0; display: block; }
+body.admin #asks-admin .anonymous-ask { padding: 1rem 0; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+body.admin #asks-admin .anonymous-ask > p { margin: 0 0 .25rem; }
+body.admin #asks-admin .ask-text { font-size: 13px; font-weight: 400; }
+body.admin #asks-admin .anonymous-ask.is-answered { opacity: .75; }
+body.admin .session-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0; }
+body.admin .session-actions .btn { min-height: 44px; }
+/* Réglages : « Entretien et conservation » de la référence, puis les commandes de la session. */
+body.admin .settings-card .cron-state { display: inline; padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+body.admin .settings-card + .settings-card { margin-top: 20px; }
+body.admin .settings-card .cron-state.is-ko { color: var(--wl-alerte-texte); font-weight: 650; }
+body.admin #asks-admin, body.admin #ranking, body.admin #signals { width: 100%; align-self: stretch; }
+body.admin .settings-card .check-line { font-size: 13px; font-weight: 400; }
+body.admin .badge { border: 0; }

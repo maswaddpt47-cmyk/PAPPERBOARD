@@ -1,7 +1,6 @@
 /* Coque de l'espace animateur (admin.php) : menu latéral, fil d'Ariane, tiroir sur téléphone.
  * Ne gère aucune donnée : elle observe les sections que admin.js affiche ou masque
- * (login, sessions, editor, archive-view) et relaie les clics du menu vers les boutons existants
- * (#back-btn, #archive-back, #t-sessions, #t-library, #t-archives). */
+ * (login, sessions et ses trois vues, editor, archive-view) ; le menu appelle WL.spaceView (admin.js). */
 'use strict';
 
 (function () {
@@ -18,10 +17,10 @@
   /** Met le menu, le fil d'Ariane et les liens de l'éditeur d'accord avec la vue affichée. */
   function sync() {
     var login = shown('login'), editor = shown('editor'), sessions = shown('sessions'), archive = shown('archive-view');
-    var history = archive || (sessions && selected('t-archives'));
-    var library = sessions && selected('t-library');
+    var history = archive || (sessions && shown('space-history'));
+    var library = sessions && shown('space-library');
     body.classList.toggle('is-login', login);
-    var current = { overview: sessions && !history && !library, workshop: editor, history: history, library: library };
+    var current = { overview: sessions && shown('space-overview'), workshop: editor, history: history, library: library };
     items.forEach(function (b) {
       var on = !!current[b.getAttribute('data-nav')];
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -32,7 +31,9 @@
     var title = ($('ed-title') && $('ed-title').textContent.trim()) || '';
     $('sidebar-session').hidden = !(editor && title);
     $('sidebar-session-title').textContent = title;
-    $('crumb-current').textContent = login ? 'Connexion' : editor ? (title || 'Atelier') : history ? 'Archives' : library ? 'Bibliothèque' : 'Mes ateliers';
+    $('crumb-current').textContent = login ? 'Connexion' : editor ? (title || 'Atelier') : history ? 'Mes ateliers' : library ? 'Bibliothèque de modèles' : 'Vue d’ensemble';
+    var dot = byNav.workshop.querySelector('.nav-dot');
+    if (dot) dot.hidden = !editor;
     var code = ($('ed-code') && $('ed-code').textContent.trim()) || '';
     if (code) {
       $('ed-preview').href = 'index.php?s=' + encodeURIComponent(code);
@@ -65,33 +66,15 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNav(true); });
   window.addEventListener('resize', function () { if (window.innerWidth >= 640) closeNav(false); });
 
-  // --- Navigation : relaie vers les boutons existants -------------------------------
-  function backToSessions() {
-    if (shown('editor')) $('back-btn').click();
-    else if (shown('archive-view')) $('archive-back').click();
-  }
-  function goSessions(tab, then) {
-    var wasOnSessions = shown('sessions');
-    function arrive() {
-      var t = $(tab);
-      if (t && !t.hidden) t.click();
-      if (then) then();
-    }
-    if (wasOnSessions) { arrive(); return; }
-    backToSessions(); // admin.js réaffiche la liste : on attend le tour suivant pour choisir l'onglet
-    window.setTimeout(arrive, 60);
-  }
+  // --- Navigation : Mon espace (admin.js) ou l'atelier ouvert -----------------------
   side.addEventListener('click', function (e) {
     var b = e.target.closest('.nav-item');
     if (!b) return;
     var nav = b.getAttribute('data-nav');
-    if (nav === 'overview') goSessions('t-sessions');
-    else if (nav === 'history') goSessions('t-archives');
-    else if (nav === 'library') goSessions('t-library');
-    else if (nav === 'workshop') {
+    if (nav === 'workshop') {
       if (!shown('editor')) return;
       $('main').focus();
-    }
+    } else if (window.WL && WL.spaceView) WL.spaceView(nav);
     closeNav(false);
   });
   sync();

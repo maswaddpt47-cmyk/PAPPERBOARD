@@ -6,6 +6,13 @@
   var el = WL.el, $ = WL.$;
   var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null, synthesisFor = null;
 
+  /** Libellé d'un bouton précédé de son icône, comme dans la simulation. */
+  function label(id, icon, text) {
+    var b = WL.clear($(id));
+    b.appendChild(ico(icon));
+    b.appendChild(document.createTextNode(text));
+  }
+
   /** Icône du sprite d'admin.php (décorative : le libellé reste écrit). */
   function ico(name) {
     var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), use = document.createElementNS(ns, 'use');
@@ -66,47 +73,92 @@
 
   // --- Sessions -----------------------------------------------------------------
 
-  function showSessions() {
+  /** Mon espace : trois vues comme la simulation (Vue d'ensemble, Bibliothèque de modèles, Mes ateliers). */
+  var space = 'overview', sessionsList = [];
+  function spaceView(name) {
+    space = name;
+    ['overview', 'library', 'history'].forEach(function (v) { WL.show($('space-' + v), v === name); });
+  }
+  WL.spaceView = function (name) {
+    if ($('sessions').hidden) showSessions(name); else spaceView(name);
+    $('main').focus({ preventScroll: true });
+  };
+  [].forEach.call(document.querySelectorAll('[data-space]'), function (b) {
+    b.addEventListener('click', function () { WL.spaceView(b.dataset.space); });
+  });
+
+  function rowButton(label, icon, cls, title, onclick) {
+    return el('button', { type: 'button', class: 'btn btn-small' + (cls ? ' ' + cls : ''), title: title || null, onclick: onclick }, ico(icon), label);
+  }
+
+  function showSessions(name) {
     if (poller) poller.stop();
     code = null;
     view('sessions');
+    spaceView(typeof name === 'string' ? name : space);
     showArchives();
     loadThemes();
     WL.api('sessions').then(function (r) {
       if (r.status === 401) return showLogin('');
+      sessionsList = r.data.sessions;
+      renderOverview();
       var list = WL.clear($('session-list'));
-      if (!r.data.sessions.length) list.appendChild(el('li', { class: 'meta' }, 'Aucun atelier en cours. Cliquez « Créer un atelier » ou partez d\'une séance de la bibliothèque.'));
-      var demos = r.data.sessions.filter(function (s) { return s.demo; }).length;
+      $('session-count').textContent = String(sessionsList.length);
+      if (!sessionsList.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier dans cette section.'));
+      var demos = sessionsList.filter(function (s) { return s.demo; }).length;
       WL.show($('demo-delete'), demos > 0);
-      $('demo-delete').textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
-      r.data.sessions.forEach(function (s) {
-        list.appendChild(el('li', { class: 'list-item workshop-item' },
-          el('span', { class: 'workshop-icon', 'aria-hidden': 'true' }, ico(s.demo ? 'sparkles' : 'list')),
-          el('div', { class: 'grow' }, el('strong', { class: 'workshop-title' }, s.title),
-            el('p', { class: 'meta' }, 'Code ' + s.code + ' · ' + WL.plural(s.questions, 'question') + ' · '
-              + WL.plural(s.participants, 'participant') + ' · modifié le ' + new Date(s.updated * 1000).toLocaleString('fr-FR')
-              + (s.ended ? ' · terminé' : ''))),
-          el('div', { class: 'row wrap workshop-actions' },
-            el('button', { type: 'button', class: 'btn btn-primary btn-small', onclick: function () { openSession(s.code); } }, 'Ouvrir'),
-            el('button', { type: 'button', class: 'btn btn-small', title: 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', onclick: function () {
+      $('demo-delete').lastChild.textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
+      sessionsList.forEach(function (s) {
+        list.appendChild(el('div', { class: 'prep-item workshop-row' },
+          el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
+          el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, 'Démo') : null,
+            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + (s.ended ? 'Terminé' : 'En cours'))),
+          el('div', { class: 'workshop-row-actions' },
+            rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
+            rowButton('Renommer', 'edit', '', 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', function () {
               openRename(s.code, s.title, true);
-            } }, ico('edit'), 'Renommer'),
-            el('button', { type: 'button', class: 'btn btn-small', title: 'Nouvel atelier avec les mêmes questions et la même conclusion, sans participants ni réponses', onclick: function () {
+            }),
+            rowButton('Dupliquer', 'copy', '', 'Nouvel atelier avec les mêmes questions et la même conclusion, sans participants ni réponses', function () {
               post('session_duplicate', { s: s.code }).then(showSessions);
-            } }, ico('copy'), 'Dupliquer'),
-            el('button', { type: 'button', class: 'btn btn-small', title: 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', onclick: function () {
+            }),
+            rowButton('Archiver', 'book', '', 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', function () {
               if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
                 post('session_archive', { s: s.code }).then(showSessions);
               }
-            } }, ico('clock'), 'Archiver'),
-            el('button', { type: 'button', class: 'btn btn-danger btn-small', onclick: function () {
+            }),
+            rowButton('Supprimer', 'trash', 'btn-danger', null, function () {
               if (confirm('Supprimer définitivement « ' + s.title + ' » et toutes ses réponses ?')) {
                 post('session_delete', { s: s.code }).then(showSessions);
               }
-            } }, ico('trash'), 'Supprimer'))));
+            }))));
       });
     });
   }
+
+  /** Vue d'ensemble : l'atelier modifié en dernier, sa progression et deux séances de la bibliothèque. */
+  function renderOverview() {
+    var s = sessionsList[0];
+    WL.show($('ov-current'), !!s);
+    WL.show($('ov-empty'), !s);
+    WL.show($('ov-resume'), !!s);
+    $('ov-title').textContent = s ? 'Un atelier, des échanges.' : 'Aucun atelier pour le moment';
+    $('ov-subtitle').textContent = s ? 'Préparez simplement. Gardez le contact avec votre groupe.'
+      : 'Créez un atelier vide, générez ou importez un JSON, ou partez d’un modèle.';
+    if (!s) return;
+    $('ov-state').textContent = s.ended ? 'Terminé' : 'En cours';
+    $('ov-state').className = 'badge ' + (s.ended ? 'neutral' : 'green');
+    WL.show($('ov-demo'), !!s.demo);
+    $('ov-name').textContent = s.title;
+    $('ov-meta').textContent = 'Code ' + s.code + ' · modifié le ' + new Date(s.updated * 1000).toLocaleString('fr-FR');
+    $('ov-participants').textContent = ' ' + WL.plural(s.participants, 'participant');
+    $('ov-questions').textContent = ' ' + WL.plural(s.questions, 'question');
+    $('ov-explored').textContent = String(s.explored || 0);
+    $('ov-total').textContent = ' / ' + s.questions;
+  }
+  $('ov-open').addEventListener('click', function () { if (sessionsList[0]) openSession(sessionsList[0].code); });
+  $('ov-resume').addEventListener('click', function () { if (sessionsList[0]) openSession(sessionsList[0].code); });
+  $('ov-help').addEventListener('click', function () { $('help-open').click(); });
+  $('create-btn-history').addEventListener('click', function () { $('create-btn').click(); });
 
   // --- Archives (anonymes) ------------------------------------------------------
 
@@ -116,14 +168,14 @@
     WL.api('archives').then(function (r) {
       var list = WL.clear($('archive-list'));
       if (r.status !== 200) return;
-      if (!r.data.archives.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune archive pour le moment.'));
+      $('archive-count').textContent = String(r.data.archives.length);
+      if (!r.data.archives.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier dans cette section.'));
       r.data.archives.forEach(function (a) {
-        list.appendChild(el('li', { class: 'list-item workshop-item' },
-          el('span', { class: 'workshop-icon', 'aria-hidden': 'true' }, ico('clock')),
-          el('div', { class: 'grow' }, el('strong', { class: 'workshop-title' }, a.title),
-            el('p', { class: 'meta' }, WL.plural(a.questions, 'question') + ' · ' + WL.plural(a.participants, 'participant')
-              + ' · archivé le ' + new Date(a.archived * 1000).toLocaleDateString('fr-FR'))),
-          el('button', { type: 'button', class: 'btn btn-small', onclick: function () { openArchive(a.id); } }, ico('chart'), 'Ouvrir')));
+        list.appendChild(el('div', { class: 'prep-item workshop-row' },
+          el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
+          el('div', { class: 'grow' }, el('h3', null, a.title),
+            el('p', { class: 'muted' }, WL.plural(a.questions, 'question') + ' · Archivé')),
+          el('div', { class: 'workshop-row-actions' }, rowButton('Voir le bilan', 'chart', '', null, function () { openArchive(a.id); }))));
       });
     });
   }
@@ -151,7 +203,7 @@
     });
   }
 
-  $('archive-back').addEventListener('click', showSessions);
+  $('archive-back').addEventListener('click', function () { showSessions('history'); });
   $('ed-archive').addEventListener('click', function () {
     if (confirm('Archiver « ' + data.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
       post('session_archive', { s: code }).then(showSessions);
@@ -228,6 +280,27 @@
     }
     sel.value = seanceOf(keep) ? keep : '';
     showSeance();
+    renderLibraryCards();
+  }
+  /** Cartes de séance (Bibliothèque de modèles, et deux idées dans la Vue d'ensemble). */
+  function libraryCard(t) {
+    var n = t.items.filter(function (it) { return it.type !== 'conclusion'; }).length;
+    return el('article', { class: 'card content-card' },
+      el('div', { class: 'question-topline' }, el('span', { class: 'badge ' + (isCustom(t.id) ? 'green' : 'blue') }, isCustom(t.id) ? 'Mon thème' : 'Brouillon à relire')),
+      el('h2', null, t.title), el('p', { class: 'muted' }, t.objectif || t.public || ''),
+      el('div', { class: 'library-meta' }, el('span', null, ico('clock'), ' ' + (t.duree || 'Durée libre')), el('span', null, ico('list'), ' ' + WL.plural(n, 'question'))),
+      el('button', { type: 'button', class: 'btn', onclick: function () { createFromSeance(t); } }, ico('plus'), 'Essayer cette séance'));
+  }
+  function renderLibraryCards() {
+    var grid = WL.clear($('library-grid')), ideas = WL.clear($('ov-ideas'));
+    allThemes().forEach(function (t) { grid.appendChild(libraryCard(t)); });
+    (window.WL_SEANCES || []).slice(0, 2).forEach(function (t) { ideas.appendChild(libraryCard(t)); });
+  }
+  function createFromSeance(t) {
+    post('session_create', { title: t.title }).then(function (d) {
+      post('questions_import', { s: d.code, raw: JSON.stringify(t.items), keep: t.items.map(function (_, i) { return i; }) })
+        .then(function () { $('seance-select').value = ''; showSeance(); openSession(d.code); });
+    });
   }
   function showSeance() {
     var t = seanceOf($('seance-select').value);
@@ -245,10 +318,7 @@
   $('seance-btn').addEventListener('click', function () {
     var t = seanceOf($('seance-select').value);
     if (!t) { banner('Choisissez une séance dans la liste.'); return; }
-    post('session_create', { title: t.title }).then(function (d) {
-      post('questions_import', { s: d.code, raw: JSON.stringify(t.items), keep: t.items.map(function (_, i) { return i; }) })
-        .then(function () { $('seance-select').value = ''; showSeance(); openSession(d.code); });
-    });
+    createFromSeance(t);
   });
   $('seance-del').addEventListener('click', function () {
     var t = seanceOf($('seance-select').value);
@@ -337,7 +407,7 @@
     poller.now();
   }
 
-  $('back-btn').addEventListener('click', showSessions);
+  $('back-btn').addEventListener('click', function () { showSessions('history'); });
 
   /** Raccourcis entre onglets (Pilotage ↔ Animer, Animer → Préparer) : l'état de la session ne bouge pas. */
   function goTab(name) {
@@ -518,12 +588,13 @@
     $('ed-join-state').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');
     renderCron(d.lastCron, d.now);
-    $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
-    $('end-control-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
+    label('end-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir la session' : 'Terminer la session');
+    label('end-control-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir la session' : 'Terminer la session');
+    $('end-control-btn').classList.toggle('btn-danger', !d.ended);
     $('end-live-label').textContent = d.ended ? 'Rouvrir l\'atelier' : 'Terminer l\'atelier';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
-    $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
-    $('qr-btn').textContent = d.qrHidden ? 'Afficher le QR code sur la projection' : 'Masquer le QR code sur la projection';
+    label('lock-btn', 'users', d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions');
+    label('qr-btn', 'screen', d.qrHidden ? 'Afficher le QR code sur la projection' : 'Masquer le QR code sur la projection');
     if (qrFor !== d.joinUrl) {
       WL.qr($('ed-qr'), d.joinUrl, 4);
       if ($('qr-dialog').open) qrBig();
@@ -591,10 +662,11 @@
     var box = $('cron-state'), min = t ? Math.round((now - t) / 60) : null;
     var ok = min !== null && min <= 120;
     box.className = 'cron-state ' + (ok ? 'is-ok' : 'is-ko');
+    // Suit le libellé « Dernier passage de la purge horaire : » écrit dans la carte de Réglages.
     box.textContent = min === null
-      ? '⚠️ Aucun passage de la purge horaire noté pour l\'instant. Normal dans l\'heure qui suit une mise à jour ; au-delà, '
+      ? '⚠️ aucun noté pour l\'instant. Normal dans l\'heure qui suit une mise à jour ; au-delà, '
         + 'vérifiez la tâche planifiée chez Alwaysdata (php ~/www/purge.php, chaque heure).'
-      : (ok ? '✓ ' : '⚠️ ') + 'Dernier passage de la purge horaire : il y a '
+      : (ok ? '✓ ' : '⚠️ ') + 'il y a '
         + (min < 60 ? WL.plural(min, 'minute') : WL.plural(Math.round(min / 60), 'heure'))
         + (ok ? '.' : ' : la tâche planifiée ne tourne plus, vérifiez-la chez Alwaysdata.');
   }
@@ -633,27 +705,24 @@
     $('signals-clear').disabled = !any && !(d.helpSteps || []).length;
     $('welcome-btn').disabled = d.current < 0 && !d.show && !d.board;
 
-    $('asks-btn').textContent = d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »';
-    var pending = d.asks.filter(function (a) { return !a.published; }).length;
-    $('asks-chip').textContent = !d.asksOpen ? '❓ Oser demander : fermé (l\'ouvrir)'
-      : '❓ Oser demander : ' + WL.plural(d.asks.length, 'question') + (pending ? ' dont ' + pending + ' à relire' : '');
-    $('asks-chip').classList.toggle('btn-primary', pending > 0);
-    $('asks-screen').textContent = d.show === 'asks' ? 'Arrêter la projection des questions' : 'Projeter les questions';
+    label('asks-btn', 'help', d.asksOpen ? 'Fermer les questions' : 'Ouvrir les questions');
+    label('asks-chip', 'help', d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »');
+    label('asks-screen', 'screen', d.show === 'asks' ? 'Arrêter la projection des questions' : 'Projeter les questions publiées');
     var list = WL.clear($('asks-admin'));
     if (!d.asks.length) list.appendChild(el('li', { class: 'meta' }, d.asksOpen ? 'Aucune question pour le moment.' : 'Fermé : les téléphones ne proposent pas de poser une question.'));
     d.asks.forEach(function (a) {
       var op = function (o) { return function () { if (o !== 'delete' || confirm('Supprimer cette question ?')) act('ask_admin', { aid: a.id, op: o }); }; };
-      list.appendChild(el('li', { class: 'ask-item' + (a.answered ? ' is-answered' : '') + (a.published ? '' : ' is-pending') },
-        el('span', { class: 'ask-text' }, a.text),
-        el('span', { class: 'meta' }, (a.published ? 'Publiée' : 'À relire') + ' · ' + WL.plural(a.votes, 'vote') + (a.answered ? ' · répondue' : '')),
-        el('span', { class: 'row wrap' },
-          el('button', { type: 'button', class: 'btn btn-small' + (a.published ? '' : ' btn-primary'), onclick: op(a.published ? 'unpublish' : 'publish') }, a.published ? 'Masquer' : 'Publier'),
-          el('button', { type: 'button', class: 'btn btn-small', onclick: op(a.answered ? 'unanswered' : 'answered') }, a.answered ? 'Pas encore répondue' : 'Répondue'),
-          el('button', { type: 'button', class: 'btn btn-small btn-danger', onclick: op('delete') }, 'Supprimer'))));
+      list.appendChild(el('li', { class: 'anonymous-ask' + (a.answered ? ' is-answered' : '') + (a.published ? '' : ' is-pending') },
+        el('p', { class: 'ask-text' }, a.text),
+        el('p', { class: 'muted' }, (a.published ? 'Publiée' : 'À relire') + ' · ' + WL.plural(a.votes, 'vote') + (a.answered ? ' · répondue' : '')),
+        el('div', { class: 'session-actions' },
+          el('button', { type: 'button', class: 'btn btn-small', onclick: op(a.published ? 'unpublish' : 'publish') }, ico('eye'), a.published ? 'Retirer de la projection' : 'Publier'),
+          el('button', { type: 'button', class: 'btn btn-small', onclick: op(a.answered ? 'unanswered' : 'answered') }, ico('check'), a.answered ? 'Pas encore répondue' : 'Répondue'),
+          el('button', { type: 'button', class: 'btn btn-small btn-danger', onclick: op('delete') }, ico('trash'), 'Supprimer'))));
     });
 
-    $('pseudo-btn').textContent = d.pseudo ? 'Désactiver les pseudonymes' : 'Activer les pseudonymes';
-    $('podium-btn').textContent = d.show === 'podium' ? 'Arrêter la projection du podium' : 'Projeter le podium';
+    label('pseudo-btn', 'users', d.pseudo ? 'Désactiver les pseudonymes' : 'Activer les pseudonymes');
+    label('podium-btn', 'chart', d.show === 'podium' ? 'Arrêter la projection du podium' : 'Projeter le podium');
     $('podium-btn').disabled = !d.pseudo;
     var rank = WL.clear($('ranking'));
     WL.show(rank, d.pseudo);
@@ -662,7 +731,7 @@
     });
   }
 
-  $('asks-chip').addEventListener('click', function () { $('asks-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  $('asks-chip').addEventListener('click', function () { $('asks-btn').click(); });
   $('asks-btn').addEventListener('click', function () { control(data.asksOpen ? 'asks_close' : 'asks_open'); });
   $('asks-screen').addEventListener('click', function () { control(data.show === 'asks' ? 'show_off' : 'show_asks'); });
   $('pseudo-btn').addEventListener('click', function () {

@@ -364,6 +364,8 @@ function wl_list_sessions(): array
                 'code' => $s['code'], 'title' => $s['title'], 'updated' => $s['updated'],
                 'questions' => count($s['questions']), 'participants' => count($s['participants']),
                 'ended' => $s['ended'], 'demo' => !empty($s['demo']),
+                // Questions ayant reçu au moins une réponse ou contribution (« Votre progression »).
+                'explored' => count(array_filter($s['questions'], fn($q) => !empty($q['answers']) || !empty($q['posts']))),
             ];
         }
     }
