@@ -43,16 +43,13 @@ Mon atelier / Bibliothèque de modèles / Mes ateliers ». Pilotage et Réglages
 réordonnés comme la référence. L’API gagne un seul champ, `explored` dans la
 liste des sessions. `tests/interface.js` compare aussi les trois vues (312 contrôles).
 
-**Décisions à trancher par l’utilisateur (posées le 19/10/2026, sans réponse)** —
-appliqué en attendant, réversible en un commit, pas de bloc AGORA (rendu) :
-1. Textes de la simulation faux dans la vraie application (« 18 participants
-   fictifs », « dans ce navigateur », « Données fictives »…) : remplacés par
-   un équivalent vrai, même place, même style.
-2. Lignes d’atelier archivé : bouton « Voir le bilan » seul (les archives
-   anonymes ne se renomment ni ne se restaurent).
+**Tranché par l’utilisateur le 19/10/2026** (ne pas reproposer) :
+1. Textes de la simulation faux dans la vraie application : équivalent vrai,
+   même place, même style.
+2. Ligne d’atelier archivé : « Voir le bilan », « Réutiliser les questions »,
+   « Supprimer » (testé dans `tests/interface.js`).
 3. Fonctions réelles sans équivalent dans la simulation (durée de vote,
-   classement, signaux réels, carte « Cette session » de Réglages) : gardées,
-   selon la consigne « préserve les fonctionnalités réelles ».
+   classement, signaux réels, carte « Cette session » de Réglages) : gardées.
 Ne restent volontairement absents : bandeau « Simulation interactive » et
 badge « Bac à sable » (proposé et accepté le 19/10/2026).
 
