@@ -164,3 +164,8 @@ body.admin .settings-card .cron-state.is-ko { color: var(--wl-alerte-texte); fon
 body.admin #asks-admin, body.admin #ranking, body.admin #signals { width: 100%; align-self: stretch; }
 body.admin .settings-card .check-line { font-size: 13px; font-weight: 400; }
 body.admin .badge { border: 0; }
+
+/* L’atelier ouvert appartient au dernier lien du menu. */
+body.admin .nav-item .sidebar-session { margin: 7px 0 0; padding: 0; border: 0; }
+body.admin .nav-item .sidebar-session strong { white-space: normal; overflow-wrap: anywhere; }
+body.admin .nav-item .sidebar-session-meta { margin-top: 3px; }

@@ -64,14 +64,10 @@ header('Cache-Control: no-store');
   <p class="nav-label">Mon espace</p>
   <nav class="main-nav" aria-label="Espace animateur">
     <button type="button" class="nav-item" data-nav="overview" title="Vue d’ensemble"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Vue d’ensemble</span></button>
-    <button type="button" class="nav-item" data-nav="workshop" title="L'atelier ouvert" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span><span class="nav-dot" aria-hidden="true" hidden></span></button>
     <button type="button" class="nav-item" data-nav="library" title="Bibliothèque de modèles"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque de modèles</span></button>
     <button type="button" class="nav-item" data-nav="history" title="Mes ateliers"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Mes ateliers</span></button>
+    <button type="button" class="nav-item" data-nav="workshop" title="L'atelier ouvert" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Atelier en cours<span class="sidebar-session" id="sidebar-session" hidden><strong id="sidebar-session-title"></strong><span class="sidebar-session-meta" id="sidebar-session-status"></span></span></span><span class="nav-dot" aria-hidden="true" hidden></span></button>
   </nav>
-  <div class="sidebar-session" id="sidebar-session" hidden>
-    <span class="sidebar-session-label"><span class="status-dot" aria-hidden="true"></span>Votre atelier</span>
-    <strong id="sidebar-session-title"></strong><span class="sidebar-session-meta">Un moment pour apprendre ensemble.</span>
-  </div>
   <div class="sidebar-bottom">
     <div class="sidebar-tip"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><strong>À vous de jouer.</strong><p>Préparez, invitez et animez. Un espace pour apprendre ensemble.</p><button id="help-open" class="btn btn-small" type="button" title="Consulter le parcours d’animation">Comment animer ? <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button></div>
 

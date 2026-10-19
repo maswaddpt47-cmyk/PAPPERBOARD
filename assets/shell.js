@@ -31,6 +31,7 @@
     var title = ($('ed-title') && $('ed-title').textContent.trim()) || '';
     $('sidebar-session').hidden = !(editor && title);
     $('sidebar-session-title').textContent = title;
+    $('sidebar-session-status').textContent = editor ? $('ed-badge').textContent : '';
     $('crumb-current').textContent = login ? 'Connexion' : editor ? (title || 'Atelier') : history ? 'Mes ateliers' : library ? 'Bibliothèque de modèles' : 'Vue d’ensemble';
     var dot = byNav.workshop.querySelector('.nav-dot');
     if (dot) dot.hidden = !editor;
