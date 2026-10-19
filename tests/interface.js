@@ -50,7 +50,7 @@ function check(value, message) { checks++; assert(value, message); }
     const sessionCode = await admin.locator('#ed-code').textContent();
     const state = await (await context.request.get(base+'api.php?action=admin_state&s='+sessionCode)).json();
     const post = async (action,body) => {
-      const response = await context.request.post(base+'api.php?action='+action,{data:{...body,csrf:me.csrf}});
+      const response = await context.request.post(base+'api.php?action='+action,{headers:{'X-WL':'1','X-CSRF-Token':me.csrf},data:body});
       check(response.ok(), 'Écriture de vérification refusée : '+action); return response.json();
     };
     const projection = await context.newPage();

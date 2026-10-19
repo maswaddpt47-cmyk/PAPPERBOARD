@@ -85,7 +85,7 @@ function check(cond, label) {
   await admin.waitForSelector('#sessions:not([hidden])');
   await admin.click('#create-btn');
   await admin.fill('#new-title', 'Atelier navigateur');
-  await admin.click('#create-form button');
+  await admin.click('#create-ok');
   await admin.waitForSelector('#editor:not([hidden])');
   const code = (await admin.textContent('#ed-code')).trim();
   check(/^[A-Z2-9]{5}$/.test(code), 'code affiché dans l\'éditeur');
