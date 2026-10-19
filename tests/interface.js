@@ -15,6 +15,7 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#password').fill(process.env.WL_PASSWORD);
     await admin.locator('#login-form button').click();
     await admin.locator('#sessions:not([hidden])').waitFor();
+    await admin.locator('[data-nav="history"]').click();
     await admin.locator('#demo-btn').click();
     await admin.locator('#editor:not([hidden])').waitFor();
     await admin.locator('#ed-title').filter({hasText: 'Démo'}).waitFor();
@@ -107,12 +108,13 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#t-settings').click();
     check((await admin.locator('#cron-state').textContent()).length > 0, 'Indicateur réel de purge perdu');
     await admin.locator('#back-btn').click();
-    const row = admin.locator('#session-list .workshop-item').filter({hasText:'Démo'}).first();
+    const row = admin.locator('#session-list .workshop-row').filter({hasText:'Démo'}).first();
     await row.getByRole('button',{name:'Renommer',exact:true}).click();
     await admin.locator('#rename-title-input').fill('  Atelier renommé  ');
     await admin.locator('#rename-save').click();
-    await admin.locator('#session-list .workshop-title').filter({hasText:'Atelier renommé'}).waitFor();
+    await admin.locator('#session-list h3').filter({hasText:'Atelier renommé'}).waitFor();
     check(await admin.locator('#demo-delete').isVisible(), 'Supprimer la démo perdu');
+    await admin.locator('[data-nav="overview"]').click();
     await admin.locator('#create-btn').click();
     await reference.setViewportSize({width:1280,height:720});
     await reference.locator('[data-nav="overview"]').click();
@@ -135,6 +137,32 @@ function check(value, message) { checks++; assert(value, message); }
     }
     check(modalDifferences.length===0,'Écarts de formulaire :\n'+modalDifferences.join('\n'));
     await admin.locator('#create-cancel').click();
+    // Mon espace : Vue d'ensemble, Bibliothèque de modèles et Mes ateliers reprennent les vues de la référence.
+    const spaceDifferences = [];
+    const spaces = {
+      overview: [['.session-summary','.session-summary',['padding-left','border-radius']],['.session-summary h2','#ov-name',['font-size','font-family']],
+        ['.content-card .metric-number','#space-overview .metric-number',['font-size','font-weight']],['.section-heading .panel-title','#space-overview .section-heading .panel-title',['font-size']]],
+      library: [['.library-grid','#library-grid',['grid-template-columns','column-gap']],['.library-grid article h2','#library-grid h2',['font-size']]],
+      history: [['.workshop-group','.workshop-group',['padding-left','border-radius']],['.workshop-group .panel-head','.workshop-group .panel-head',['padding-top','padding-left']],
+        ['.workshop-row','#session-list .workshop-row',['padding-left','border-radius']],['.workshop-row h3','#session-list h3',['font-size']],
+        ['.workshop-row-actions .btn','#session-list .workshop-row-actions .btn',['min-height','font-size']],['.demo-controls h2','.demo-controls h2',['font-size']]]
+    };
+    for (const [name, pairs] of Object.entries(spaces)) {
+      await admin.locator('.nav-item[data-nav="'+name+'"]').evaluate(node => node.click());
+      await reference.locator('[data-nav="'+name+'"]').evaluate(node => node.click());
+      for (const [width,height] of [[1280,720],[390,844]]) {
+        await admin.setViewportSize({width,height}); await reference.setViewportSize({width,height}); await admin.waitForTimeout(100);
+        for (const [expectedSelector,actualSelector,properties] of pairs) {
+          const read = (page,selector) => page.locator(selector).first().evaluate((node,properties) => {
+            const style = getComputedStyle(node); return Object.fromEntries(properties.map(key=>[key,style.getPropertyValue(key)]));
+          }, properties);
+          const actual = await read(admin,actualSelector), expected = await read(reference,expectedSelector);
+          for (const property of properties) { checks++; if (actual[property]!==expected[property]) spaceDifferences.push(name+' '+width+'px '+actualSelector+' '+property+': '+actual[property]+' au lieu de '+expected[property]); }
+        }
+        check(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), name+' '+width+'px : débordement horizontal');
+      }
+    }
+    check(spaceDifferences.length===0,'Écarts de Mon espace :\n'+spaceDifferences.join('\n'));
     check(errors.length === 0, 'Erreurs JS : '+errors.join(' ; '));
     console.log('Interface PHP : '+checks+' contrôles réussis, comparaison avec la référence et actions réelles.');
   } finally { await browser.close(); }
