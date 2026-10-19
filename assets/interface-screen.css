@@ -10,7 +10,8 @@ body.screen { display: flex; flex-direction: column; height: 100dvh; overflow: h
 .screen:not(.s-qr-big) .qr-corner .qr { width: 72px; height: 72px; }
 .screen:not(.s-qr-big) .qr-corner .qr svg, .screen:not(.s-qr-big) .qr-corner .qr canvas { width: 72px; height: 72px; }
 .screen:not(.s-qr-big) .qr-corner .qr-code { margin: 0; font-size: 13px; }
-.screen .screen-main { flex: 1; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 26px 4vw; overflow: hidden; }
+.screen .screen-main { position: relative; flex: 1; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; }
+.screen .projection-fit-canvas { position: absolute; top: 0; left: 0; width: 100%; padding: 26px 4vw; transform-origin: top left; }
 .screen .s-text { margin: 18px 0 24px; font-size: clamp(25px,3.4vw,50px); line-height: 1.3; }
 .screen .s-meta { font-size: 14px; margin: 0 0 22px; }
 .screen .s-results { margin: 0; font-size: clamp(17px,1.8vw,26px); }
@@ -25,7 +26,7 @@ body.screen { display: flex; flex-direction: column; height: 100dvh; overflow: h
   .screen #s-pilot .btn { padding: 10px; font-size: 13px; min-height: 44px; }
   .screen:not(.s-qr-big) .qr-corner { margin-left: auto; }
   .screen:not(.s-qr-big) .qr-corner .qr, .screen:not(.s-qr-big) .qr-corner .qr svg, .screen:not(.s-qr-big) .qr-corner .qr canvas { width: 52px; height: 52px; }
-  .screen .screen-main { padding: 16px; }
+  .screen .projection-fit-canvas { padding: 16px; }
   .screen .s-text { margin: 10px 0 16px; font-size: 25px; }
   .screen .s-meta { margin-bottom: 14px; }
 }

@@ -7,6 +7,33 @@
   var code = (new URLSearchParams(location.search).get('s') || '').toUpperCase();
   var qrDone = false, offset = 0, timer = null, last = null;
 
+  // Même calcul que la simulation : mesurer le contenu naturel avant chaque
+  // mise à l'échelle, pour ne jamais rétrécir à nouveau une vue déjà ajustée.
+  var canvas = $('projection-canvas'), viewport = canvas.parentElement, fitPending = false;
+  function resetCanvas() {
+    canvas.style.transform = 'none';
+    canvas.style.left = '0px';
+    canvas.style.width = viewport.clientWidth + 'px';
+  }
+  function fitProjection() {
+    resetCanvas();
+    var width = Math.max(canvas.scrollWidth, canvas.offsetWidth);
+    var height = Math.max(canvas.scrollHeight, canvas.offsetHeight);
+    if (!width || !height || !viewport.clientHeight) return;
+    var scale = Math.min(1, (viewport.clientWidth - 2) / width, (viewport.clientHeight - 2) / height);
+    canvas.style.transform = 'scale(' + scale + ')';
+    canvas.style.left = Math.max(0, (viewport.clientWidth - width * scale) / 2) + 'px';
+    canvas.dataset.fitScale = String(scale);
+  }
+  function scheduleFit() {
+    if (fitPending) return;
+    fitPending = true;
+    requestAnimationFrame(function () { fitPending = false; fitProjection(); });
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(scheduleFit).observe(viewport);
+  canvas.addEventListener('load', scheduleFit, true);
+
+
   function error(text) {
     $('screen-error').textContent = text || '';
     WL.show($('screen-error'), !!text);
@@ -38,11 +65,8 @@
     }, 800);
   }
   $('full-btn').addEventListener('click', toggleFullscreen);
-  // Retaille les résultats selon la place libre (au-dessus de la barre de pilotage).
-  function refit() {
-    if (!$('s-ended').hidden) fitRecap();
-    else if (document.body.classList.contains('s-live')) WL.fitResults($('s-results')); else fitQuestion();
-  }
+  // Le canevas réserve les commandes et adapte toute la diapositive.
+  function refit() { scheduleFit(); }
   window.addEventListener('resize', refit);
   document.addEventListener('fullscreenchange', function () {
     $('full-btn').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
@@ -51,6 +75,12 @@
   // --- Affichage ----------------------------------------------------------------
 
   function render(d) {
+    resetCanvas();
+    renderData(d);
+    scheduleFit();
+  }
+
+  function renderData(d) {
     // Dénominateur des « x / n » : téléphones actifs (signe de vie < 3 min).
     d.present = d.active === undefined ? d.participants : d.active;
     offset = d.now - Date.now() / 1000;
@@ -109,7 +139,7 @@
         $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre appareil : touchez ♥.'));
       }
       if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
-      WL.fitResults($('s-results'));
+      scheduleFit();
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
         : q.state === 'open' ? 'Répondez sur votre appareil !' : 'Les votes sont fermés.';
@@ -170,7 +200,7 @@
         body.appendChild(steps);
       }
     }
-    WL.fitResults(body);
+    scheduleFit();
   }
 
   /** Bilan projeté : une question par diapositive, ses résultats tels qu'ils
@@ -197,7 +227,7 @@
     }
     WL.renderResults($('s-results'), q, d.results, { participants: d.present });
     if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
-    WL.fitResults($('s-results'));
+    scheduleFit();
   }
 
   /** Conclusion qui monte du bas de l'écran, façon générique : une fois par
@@ -216,44 +246,8 @@
   }
   $('s-recap').addEventListener('animationend', function () { document.body.classList.remove('s-rolling'); });
 
-  /** Récap de fin : réduit pour tenir dans l'écran avec la conclusion. */
-  function fitRecap() {
-    var box = $('s-recap');
-    box.style.fontSize = '';
-    // Place de la barre de pilotage réservée dès le départ (cookie animateur) :
-    // sinon son apparition, en pleine montée, changerait la taille du texte.
-    var limit = WL.screenLimit();
-    // Position finale, montée en cours ou non (décalage de l'animation retiré).
-    var bottom = function () {
-      var m = getComputedStyle(box).transform.match(/matrix\(([^)]+)\)/);
-      return box.getBoundingClientRect().bottom - (m ? parseFloat(m[1].split(',')[5]) : 0);
-    };
-    if (bottom() <= limit) return;
-    var lo = 10, hi = parseFloat(getComputedStyle(box).fontSize);
-    for (var i = 0; i < 8; i++) {
-      var mid = (lo + hi) / 2;
-      box.style.fontSize = mid + 'px';
-      if (bottom() <= limit) lo = mid; else hi = mid;
-    }
-    box.style.fontSize = lo + 'px';
-  }
-
-  /** Pendant le vote : une longue question est réduite pour que le décompte
-   *  reste visible au-dessus de la barre de pilotage. */
-  function fitQuestion() {
-    var text = $('s-text');
-    text.style.fontSize = '';
-    var limit = WL.screenLimit();
-    var fits = function () { return $('s-results').getBoundingClientRect().bottom <= limit; };
-    if (document.body.classList.contains('s-live') || fits()) return;
-    var lo = 12, hi = parseFloat(getComputedStyle(text).fontSize);
-    for (var i = 0; i < 8; i++) {
-      var mid = (lo + hi) / 2;
-      text.style.fontSize = mid + 'px';
-      if (fits()) lo = mid; else hi = mid;
-    }
-    text.style.fontSize = lo + 'px';
-  }
+  function fitRecap() { scheduleFit(); }
+  function fitQuestion() { scheduleFit(); }
 
   function answeredText(d, unit) {
     return unit === 'réponse' ? d.answered + ' / ' + d.present + ' ont répondu'

@@ -12,6 +12,7 @@ header('Cache-Control: no-store');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="<?= wl_asset('favicon.svg') ?>">
 <meta name="robots" content="noindex">
 <title>WoocLight — Animateur</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">

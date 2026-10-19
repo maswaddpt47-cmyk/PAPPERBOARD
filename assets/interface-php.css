@@ -54,7 +54,7 @@ html { font-size: 16px; }
 .admin .choice-card { display: flex; gap: 12px; padding: 18px; margin: 12px 0; border: 1px solid var(--border); border-radius: 12px; }
 .admin .choice-card > span { display: grid; gap: 6px; }
 .admin .choice-card:has(input:checked) { background: var(--teal-light); border-color: var(--teal); }
-@media(min-width:1700px) { }
+@media(min-width:1280px) and (max-width:1500px) { .admin main.workspace { padding: 28px; } }
 @media(max-width:1279px) { .admin main.workspace { padding: 26px; } .admin .page-heading h1 { font-size: 25px; } }
 @media(max-width:1199px) { .admin .shell-topbar { padding: 12px 26px; } .admin .current-panel .live-results { padding-inline: 22px; } .admin .sidebar-bottom .profile-copy { display: none; } }
 @media(max-width:959px) { .admin .workshop-actions { flex-basis: 100%; justify-content: flex-start; } .admin .question-rail .rail-list { display: flex; overflow-x: auto; gap: 8px; } .admin .rail-list > li { flex: 0 0 172px; } .admin #gen-form { grid-template-columns: 1fr; } }

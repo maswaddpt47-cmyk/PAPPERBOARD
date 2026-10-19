@@ -11,6 +11,7 @@ wl_security_headers();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="<?= wl_asset('favicon.svg') ?>">
 <title>WoocLight — Projection</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 <link rel="stylesheet" href="<?= wl_asset('interface-screen.css') ?>">
@@ -49,6 +50,7 @@ wl_security_headers();
 </aside>
 </div>
 <main class="screen-main">
+<div id="projection-canvas" class="projection-fit-canvas">
   <section id="s-welcome" class="s-welcome" hidden>
     <p class="s-join-line">Rejoignez sur <strong id="s-url"></strong></p>
     <p class="s-join-line">avec le code <strong id="s-code-big" class="code-big"></strong></p>
@@ -65,6 +67,7 @@ wl_security_headers();
     <div id="s-show-body" class="s-results"></div>
   </section>
   <section id="s-ended" hidden><p class="s-join-line s-thanks">Session terminée. Merci !</p><div id="s-recap"></div></section>
+</div>
 </main>
 
 <script src="<?= wl_asset('qrcode.js') ?>"></script>

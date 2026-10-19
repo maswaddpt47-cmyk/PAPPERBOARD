@@ -16,6 +16,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="<?= wl_asset('favicon.svg') ?>">
 <title>WoocLight — Participer</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
 <link rel="stylesheet" href="<?= wl_asset('aides.css') ?>">

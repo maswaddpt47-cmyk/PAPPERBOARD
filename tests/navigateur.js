@@ -17,6 +17,7 @@ function check(cond, label) {
   const errors = [];
   const watch = (page, name) => {
     page.on('pageerror', e => errors.push(name + ' : ' + e.message));
+    page.on('response', r => { if (r.status() === 404) errors.push(name + ' : ressource absente ' + r.url()); });
     // Erreurs attendues : la coupure réseau provoquée plus bas, le refus
     // (409) de rejoindre une session terminée quand la page est rouverte, et le
     // refus (400) d'un thème illisible dans la bibliothèque.
