@@ -33,8 +33,14 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   « Validé » = seulement ce que l'utilisateur a nommé (« c'est bon » ne couvre pas le reste).
 - Toute fonction nouvelle se montre là où l'utilisateur teste (démo comprise) ; la
   réponse dit **où cliquer** en premier, jamais une fonction cachée sans le dire.
-- Signaler une déviation du cahier des charges ou une décision prise seul
-  **au moment où elle est prise**. Question seulement si le choix bloque.
+- **L'utilisateur décide, Claude propose** (19/10/2026) : toute déviation d'une
+  consigne ou du cahier des charges, tout choix de garder, retirer ou remplacer
+  un élément demandé, se demande **avant** d'être fait ; l'utilisateur a le
+  dernier mot. Jamais d'« écart assumé » tranché seul. Le travail qui n'en
+  dépend pas continue en attendant.
+- Changement de session annoncé : relever les règles de collaboration nées
+  pendant la session et absentes des `.md`, les présenter à l'utilisateur, puis
+  les inscrire (MD-LIB `collaboration.md`, règle 32).
 - Dates explicites, jamais « hier » / « demain ».
 - `CHANTIERS.md` tenu à jour à chaque étape, pas en fin de session : tâche
   finie = descriptif retiré, l'invariant remonte dans « Points à ne pas
