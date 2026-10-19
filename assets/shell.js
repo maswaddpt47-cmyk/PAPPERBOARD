@@ -25,6 +25,7 @@
     items.forEach(function (b) {
       var on = !!current[b.getAttribute('data-nav')];
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      b.classList.toggle('active', on);
     });
     byNav.workshop.setAttribute('aria-disabled', editor ? 'false' : 'true');
     byNav.workshop.title = editor ? 'L\'atelier ouvert' : 'Ouvrez d\'abord un atelier';

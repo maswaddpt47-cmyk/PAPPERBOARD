@@ -1,0 +1,34 @@
+{
+  "viewports": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1280,
+      720
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "files": {
+    "docs/simulation/index.html": "1de110926c26ac85d5b5f05b0b99d1e4af54dbfa7267b82a3c8849fd7aa89e47",
+    "docs/simulation/style.css": "68fd1cb6f7abbacf4b1e4d99299999ee4b9a5b5339aefda759021c104c6167fc",
+    "docs/simulation/refinements.css": "2ccd814064ea94cf8b4e364a4ae9398be43bd22c468f787b5d363d19054862cf",
+    "docs/simulation/jetons.css": "44215e6f782e8ad3a29c4968bf08557177fd482acdcb7d9193f00bc527f3ba35",
+    "docs/simulation/charte.css": "d3442b3cf17fbd68ab2658311ddf78c37b5c17ca9167c97ad72356548237295e",
+    "docs/simulation/icons.js": "d285bea5fdf5809677411b428563348d3f61c1415a3eb2f07d24458f853cbd06",
+    "docs/simulation/app.js": "d035c67c87c4f2e187e32c5d2c1a6da3a506cbd66427ded5594043d63ca87603",
+    "docs/simulation/preparation-tools.js": "c0fc70d5959e7a7a5e986644af4342927b93088cd39f285cb89c0973bd67c348",
+    "docs/simulation/tooltips.js": "2dc78fefb2c230d311d5be2eb2723b72c0e5d2b15159ba74f341276b7b4779fa",
+    "assets/style.css": "5579e78ea2077310224fef2a5e022fcea0697ce2060165d1c05540566ec34ba9",
+    "assets/qrcode.js": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+    "simulation.html": "b5a458854e46fd53d4a8647c9fb3643f7fa6b713af69ca52819c3514caa9857b"
+  }
+}

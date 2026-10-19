@@ -13,6 +13,8 @@ wl_security_headers();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WoocLight — Projection</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
+<link rel="stylesheet" href="<?= wl_asset('interface-screen.css') ?>">
+<link rel="stylesheet" href="<?= wl_asset('aides.css') ?>">
 </head>
 <?php // Cookie animateur présent : la page tentera le pilotage (vérifié par api.php). ?>
 <body class="screen"<?= isset($_COOKIE['WLADMIN']) ? ' data-pilot="1"' : '' ?>>
@@ -27,6 +29,7 @@ wl_security_headers();
   </div>
 </header>
 <!-- Commandes en haut (consigne du 19/10/2026) : la place libre pour les résultats se mesure jusqu'au bas de l'écran. -->
+<div class="screen-command-area">
 <nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
   <button id="p-step" class="btn btn-primary" type="button"></button>
@@ -39,6 +42,12 @@ wl_security_headers();
   <span class="s-swipe">Glissez ← → pour changer de question</span>
   <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
 </nav>
+<aside class="qr-corner" aria-label="Rejoindre la session">
+  <button id="qr-zoom" class="qr-zoom-btn" type="button" title="Agrandir le QR code (Q)" aria-label="Agrandir le QR code" aria-expanded="false"><span id="qr" class="qr"></span></button>
+  <p class="qr-code">Code <strong id="s-code"></strong></p>
+  <button id="qr-close" class="btn qr-close" type="button">Fermer</button>
+</aside>
+</div>
 <main class="screen-main">
   <section id="s-welcome" class="s-welcome" hidden>
     <p class="s-join-line">Rejoignez sur <strong id="s-url"></strong></p>
@@ -57,14 +66,11 @@ wl_security_headers();
   </section>
   <section id="s-ended" hidden><p class="s-join-line s-thanks">Session terminée. Merci !</p><div id="s-recap"></div></section>
 </main>
-<aside class="qr-corner" aria-label="Rejoindre la session">
-  <button id="qr-zoom" class="qr-zoom-btn" type="button" title="Agrandir le QR code (Q)" aria-label="Agrandir le QR code" aria-expanded="false"><span id="qr" class="qr"></span></button>
-  <p class="qr-code">Code <strong id="s-code"></strong></p>
-  <button id="qr-close" class="btn qr-close" type="button">Fermer</button>
-</aside>
+
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('screen.js') ?>"></script>
+<script src="<?= wl_asset('tooltips.js') ?>"></script>
 </body>
 </html>

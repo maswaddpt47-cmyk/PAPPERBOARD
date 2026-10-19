@@ -88,6 +88,9 @@
               + (s.ended ? ' · terminé' : ''))),
           el('div', { class: 'row wrap workshop-actions' },
             el('button', { type: 'button', class: 'btn btn-primary btn-small', onclick: function () { openSession(s.code); } }, 'Ouvrir'),
+            el('button', { type: 'button', class: 'btn btn-small', title: 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', onclick: function () {
+              openRename(s.code, s.title, true);
+            } }, ico('edit'), 'Renommer'),
             el('button', { type: 'button', class: 'btn btn-small', title: 'Nouvel atelier avec les mêmes questions et la même conclusion, sans participants ni réponses', onclick: function () {
               post('session_duplicate', { s: s.code }).then(showSessions);
             } }, ico('copy'), 'Dupliquer'),
@@ -504,6 +507,7 @@
       + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');
     renderCron(d.lastCron, d.now);
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
+    $('end-control-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
     $('end-live-label').textContent = d.ended ? 'Rouvrir l\'atelier' : 'Terminer l\'atelier';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
@@ -556,12 +560,12 @@
     d.questions.forEach(function (q, i) {
       var cur = i === d.current, state = q.state === 'open' ? 'Vote ouvert' : q.state === 'closed' ? 'Vote fermé' : 'À venir';
       list.appendChild(el('li', null, el('button', {
-        type: 'button', class: 'rail-item' + (cur ? ' is-current' : ''), 'aria-current': cur ? 'step' : null, disabled: d.ended,
+        type: 'button', class: 'rail-item question-item' + (cur ? ' is-current active' : ''), 'aria-current': cur ? 'step' : null, disabled: d.ended,
         title: d.ended ? 'Session terminée : rouvrez-la pour projeter une question' : cur ? 'Question projetée' : 'Projeter cette question (ouvre son vote si elle ne l\'a jamais été)',
         onclick: function () { if (!cur) control('goto', { qid: q.id }); }
       }, el('span', { class: 'number-bubble' }, q.state === 'closed' ? '✓' : String(i + 1)),
-        el('span', { class: 'rail-copy' }, el('span', { class: 'rail-name' }, q.text), el('span', { class: 'meta' }, WL.typeLabel(q) + ' · ' + state)),
-        el('span', { class: 'rail-state' + (q.state === 'open' ? ' is-live' : ''), 'aria-hidden': 'true' }))));
+        el('span', { class: 'rail-copy question-copy' }, el('span', { class: 'rail-name question-name' }, q.text), el('span', { class: 'meta' }, WL.typeLabel(q) + ' · ' + state)),
+        el('span', { class: 'rail-state question-state' + (q.state === 'open' ? ' is-live' : ''), 'aria-hidden': 'true' }))));
     });
   }
 
@@ -583,6 +587,18 @@
   var SIGNALS = { fast: '🐢 Trop vite', again: '🔁 À réexpliquer', help: '✋ Besoin d\'aide' };
 
   function renderExtras(d) {
+    var compact = WL.clear($('live-signals'));
+    Object.keys(SIGNALS).forEach(function (kind) {
+      compact.appendChild(el('div', { class: 'signal-row' }, el('span', { class: 'signal-copy' }, SIGNALS[kind]), el('strong', null, String((d.signals || {})[kind] || 0))));
+    });
+    $('live-clear-signals').disabled = !Object.keys(d.signals || {}).some(function (kind) { return d.signals[kind] > 0; });
+    var firstAsk = d.asks.filter(function (ask) { return !ask.published; })[0] || d.asks[0];
+    $('live-ask-text').textContent = firstAsk ? firstAsk.text : 'Aucune question pour le moment.';
+    $('live-ask-note').textContent = firstAsk ? (firstAsk.published ? 'Cette question est publiée.' : 'Vous seul voyez cette question avant publication.') : 'Les questions du groupe sont à relire dans Pilotage.';
+    $('live-ask-publish').disabled = !firstAsk;
+    $('live-ask-publish').textContent = firstAsk && firstAsk.published ? 'Masquer la question' : 'Publier la question';
+    $('live-ask-publish').dataset.aid = firstAsk ? firstAsk.id : '';
+    $('live-ask-publish').dataset.op = firstAsk && firstAsk.published ? 'unpublish' : 'publish';
     var sig = WL.clear($('signals')), any = false;
     Object.keys(SIGNALS).forEach(function (k) {
       var n = (d.signals || {})[k] || 0;
@@ -737,13 +753,31 @@
     control(data.ended ? 'reopen' : 'end');
   });
   $('end-live-btn').addEventListener('click', function () { $('end-btn').click(); });
+  $('end-control-btn').addEventListener('click', function () { $('end-btn').click(); });
   $('welcome-btn').addEventListener('click', function () { control('welcome'); });
   $('signals-clear').addEventListener('click', function () { control('signals_clear'); });
+  $('live-clear-signals').addEventListener('click', function () { $('signals-clear').click(); });
+  $('live-ask-publish').addEventListener('click', function () { if (this.dataset.aid) act('ask_admin', { aid: this.dataset.aid, op: this.dataset.op }); });
   $('lock-btn').addEventListener('click', function () { control(data.locked ? 'unlock' : 'lock'); });
   $('qr-btn').addEventListener('click', function () { control(data.qrHidden ? 'qr_show' : 'qr_hide'); });
-  $('rename-btn').addEventListener('click', function () {
-    var title = prompt('Nouveau titre', data.title);
-    if (title) act('session_rename', { title: title });
+  var renameTarget = null, renameFromList = false;
+  function openRename(target, title, fromList) {
+    renameTarget = target; renameFromList = !!fromList;
+    $('rename-title-input').value = title;
+    $('rename-error').textContent = '';
+    $('rename-dialog').showModal(); $('rename-title-input').focus();
+  }
+  $('rename-btn').addEventListener('click', function () { openRename(code, data.title, false); });
+  $('rename-cancel').addEventListener('click', function () { $('rename-dialog').close(); });
+  $('rename-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+    var title = $('rename-title-input').value.trim();
+    if (!title || title.length > 120) { $('rename-error').textContent = 'Donnez un titre de 1 à 120 caractères.'; return; }
+    $('rename-save').disabled = true;
+    post('session_rename', { s: renameTarget, title: title }).then(function () {
+      $('rename-dialog').close();
+      if (renameFromList) showSessions(); else if (poller) poller.refresh();
+    }).catch(function () { $('rename-error').textContent = 'Le nouveau nom n’a pas été enregistré. Réessayez.'; }).finally(function () { $('rename-save').disabled = false; });
   });
 
   function renderList(d) {

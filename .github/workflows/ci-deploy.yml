@@ -34,6 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Préparer les contrôles Chrome
+        run: |
+          timeout 90s npm install --prefix "$RUNNER_TEMP/wooclight-ui" --no-save --package-lock=false playwright@1.62.1
+          echo "NODE_PATH=$RUNNER_TEMP/wooclight-ui/node_modules" >> "$GITHUB_ENV"
+          echo "WL_CHROMIUM=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Syntaxe, bout en bout, coût, charge
         run: bash tests/run.sh
 

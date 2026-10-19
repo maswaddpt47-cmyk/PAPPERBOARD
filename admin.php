@@ -15,6 +15,8 @@ header('Cache-Control: no-store');
 <meta name="robots" content="noindex">
 <title>WoocLight — Animateur</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
+<link rel="stylesheet" href="<?= wl_asset('interface.css') ?>">
+<link rel="stylesheet" href="<?= wl_asset('interface-php.css') ?>">
 </head>
 <body class="admin is-login">
 <a class="skip-link" href="#main">Aller au contenu</a>
@@ -56,7 +58,7 @@ header('Cache-Control: no-store');
 <button class="nav-overlay" id="nav-overlay" type="button" aria-label="Fermer la navigation" tabindex="-1" hidden></button>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-  <p class="sidebar-brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">WoocLight</span></p>
+  <p class="sidebar-brand brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">Wooc<span>Light</span><small>LE LIEN FAIT L’ATELIER</small></span></p>
   <p class="nav-label">Mon espace</p>
   <nav class="main-nav" aria-label="Espace animateur">
     <button type="button" class="nav-item" data-nav="overview" title="Ateliers en cours"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Mes ateliers</span></button>
@@ -66,21 +68,23 @@ header('Cache-Control: no-store');
   </nav>
   <div class="sidebar-session" id="sidebar-session" hidden>
     <span class="sidebar-session-label"><span class="status-dot" aria-hidden="true"></span>Votre atelier</span>
-    <strong id="sidebar-session-title"></strong>
+    <strong id="sidebar-session-title"></strong><span class="sidebar-session-meta">Un moment pour apprendre ensemble.</span>
   </div>
   <div class="sidebar-bottom">
-    <span class="profile-avatar" aria-hidden="true">A</span>
+    <div class="sidebar-tip"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><strong>À vous de jouer.</strong><p>Préparez, invitez et animez. Un espace pour apprendre ensemble.</p><button id="help-open" class="btn btn-small" type="button" title="Consulter le parcours d’animation">Comment animer ?</button></div>
+
+    <span class="profile-avatar avatar" aria-hidden="true">A</span>
     <span class="profile-copy"><strong>Espace animateur</strong></span>
     <button id="logout-btn" class="btn btn-ghost btn-small" type="button" aria-label="Se déconnecter" title="Se déconnecter" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-logout"/></svg><span class="nav-copy">Se déconnecter</span></button>
   </div>
 </aside>
 <div class="main-shell">
-<header class="shell-topbar">
+<header class="shell-topbar topbar">
   <button class="btn btn-ghost mobile-menu" id="menu-toggle" type="button" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="sidebar"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg></button>
   <span class="brand shell-brand">WoocLight</span>
   <nav class="breadcrumb" aria-label="Fil d'Ariane"><span>Mon espace</span><span aria-hidden="true">›</span><strong id="crumb-current">Animateur</strong></nav>
 </header>
-<main id="main" tabindex="-1">
+<main id="main" class="workspace" tabindex="-1">
   <div id="banner" class="banner" role="status" aria-live="polite" hidden></div>
 
   <section id="login" class="card narrow" hidden>
@@ -97,7 +101,7 @@ header('Cache-Control: no-store');
     <div class="page-heading">
       <div class="heading-copy">
         <p class="eyebrow">Mon espace</p>
-        <h1>Mes ateliers</h1>
+        <h1 class="page-title">Mes ateliers</h1>
         <p class="page-subtitle">Créez un atelier vide, générez ou importez ses questions en JSON, ou partez d'une séance de la bibliothèque.</p>
       </div>
       <div class="heading-actions">
@@ -184,7 +188,7 @@ header('Cache-Control: no-store');
       </div>
     </div>
 
-    <div class="tabs view-tabs" role="tablist" aria-label="Étapes de l'atelier">
+    <div class="tabs view-tabs" id="workshop-tabs" role="tablist" aria-label="Étapes de l'atelier">
       <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, séquences prêtes, conclusion"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Préparer</button>
       <button class="tab" role="tab" type="button" id="t-control" aria-controls="tab-control" data-tab="control" title="Inviter les participants, accueil, signaux, Oser demander, pseudonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Pilotage</button>
       <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Questions, vote et résultats"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Animer</button>
@@ -274,6 +278,7 @@ header('Cache-Control: no-store');
     <div id="tab-control" class="tab-panel" role="tabpanel" aria-labelledby="t-control" hidden>
       <div class="pilotage-toolbar">
         <p class="meta">Gérez l'accueil, les inscriptions et les échanges du groupe. Les questions et les votes se pilotent depuis Animer.</p>
+        <button id="end-control-btn" class="btn btn-danger btn-small" type="button" title="Terminer après confirmation, ou rouvrir la session pour reprendre les votes">Terminer la session</button>
         <button id="go-live" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Aller aux questions</button>
       </div>
       <div class="grid2 session-controls">
@@ -304,10 +309,19 @@ header('Cache-Control: no-store');
         <p class="meta">Retours anonymes envoyés depuis les appareils ; chacun s'efface seul après 2 minutes.</p>
         <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les appareils ; chacun s'efface après 2 minutes"></p>
         <p><button id="signals-clear" class="btn btn-ghost btn-small" type="button" title="Vous avez pris en compte les signaux : ils sont effacés tout de suite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Effacer les signaux</button></p>
+      <div class="pseudo-section" id="pseudo-card">
+        <h3>Pseudonymes et classement</h3>
+        <p class="meta">Option de cette session : chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
+          les quiz corrigés comptent un point par bonne réponse. Seul le podium (rangs 1 à 3) est projeté.
+          Les pseudonymes sont effacés si vous désactivez l'option, et jamais archivés.</p>
+        <p class="row wrap"><button id="pseudo-btn" class="btn btn-small" type="button"></button>
+          <button id="podium-btn" class="btn btn-small" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
+        <ol id="ranking" class="ranking"></ol>
+      </div>
       </section>
       </div>
 
-      <div class="grid2">
+      <div class="pilotage-questions">
       <section class="card" id="asks-card">
         <h2>Oser demander</h2>
         <p class="meta">Questions anonymes des participants, à tout moment. Vous les lisez avant de les publier (un nom peut s'y glisser).</p>
@@ -316,15 +330,7 @@ header('Cache-Control: no-store');
         <ul id="asks-admin" class="ask-list"></ul>
       </section>
 
-      <section class="card" id="pseudo-card">
-        <h2>Pseudonymes et classement</h2>
-        <p class="meta">Option de cette session : chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
-          les quiz corrigés comptent un point par bonne réponse. Seul le podium (rangs 1 à 3) est projeté.
-          Les pseudonymes sont effacés si vous désactivez l'option, et jamais archivés.</p>
-        <p class="row wrap"><button id="pseudo-btn" class="btn btn-small" type="button"></button>
-          <button id="podium-btn" class="btn btn-small" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
-        <ol id="ranking" class="ranking"></ol>
-      </section>
+
       </div>
     </div>
 
@@ -346,13 +352,14 @@ header('Cache-Control: no-store');
             <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
           </nav>
           <p id="live-badges" class="question-topline"></p>
-          <p id="live-text" class="live-text"></p>
-          <p id="live-state" class="live-state" aria-live="polite"></p>
+          <h2 id="live-text" class="live-text question-title"></h2>
+          <p id="live-state" class="live-state result-explainer" aria-live="polite"></p>
+          <div id="live-results" class="live-results"></div>
           <div class="live-toolbar">
             <button class="btn btn-primary" id="open-btn" type="button"></button>
             <button class="btn" id="show-btn" type="button"></button>
           </div>
-          <div id="live-results" class="live-results"></div>
+
         </section>
         <aside class="insights">
           <section class="card metric-card">
@@ -362,6 +369,8 @@ header('Cache-Control: no-store');
             <div class="progress-track" aria-hidden="true"><span id="metric-fill" class="progress-fill"></span></div>
             <p id="metric-wait" class="meta"></p>
           </section>
+          <section class="card help-card"><h2 class="panel-title">Besoin d'un coup de main</h2><div id="live-signals"></div><p class="muted">Des signaux anonymes pour adapter votre rythme.</p><button id="live-clear-signals" class="btn btn-ghost btn-small" type="button" title="Effacer les signaux après les avoir pris en compte">C’est pris en compte</button></section>
+          <section class="card inbox-card"><h2 class="panel-title">Une question pour vous</h2><span class="badge">Anonyme</span><p id="live-ask-text" class="inbox-question"></p><p id="live-ask-note" class="muted"></p><button id="live-ask-publish" class="btn btn-small" type="button" title="Publier cette question après relecture, ou la retirer de la projection"></button></section>
         </aside>
       </div>
       <div class="session-footer">
@@ -437,6 +446,18 @@ header('Cache-Control: no-store');
     </form>
   </dialog>
 
+  <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Pilotage, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer, pilotez le vote et la visibilité des graphes et réponses.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, créez une session de démonstration dans Mes ateliers.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
+  <dialog id="rename-dialog" aria-labelledby="rename-title">
+    <form id="rename-form" novalidate>
+      <p class="eyebrow">Votre atelier</p><h2 id="rename-title">Renommer un atelier</h2>
+      <p>Le nom sera actualisé sur les écrans de cet atelier. Les questions et les réponses sont conservées.</p>
+      <label for="rename-title-input">Nom de l'atelier</label>
+      <input id="rename-title-input" maxlength="120" required>
+      <p id="rename-error" class="error" role="alert"></p>
+      <div class="modal-actions"><button id="rename-cancel" class="btn" type="button">Annuler</button><button id="rename-save" class="btn btn-primary" type="submit">Enregistrer le nom</button></div>
+    </form>
+  </dialog>
+
   <dialog id="qr-dialog" class="qr-dialog" aria-labelledby="qr-dialog-title">
     <h2 id="qr-dialog-title">Rejoindre l'atelier</h2>
     <div id="qr-big" class="qr qr-big"></div>
@@ -459,7 +480,7 @@ header('Cache-Control: no-store');
           <div><label for="gen-public">Public</label>
             <select id="gen-public">
               <option>tout public</option>
-              <option>seniors débutants</option>
+              <option>seniors</option>
               <option>collégiens</option>
               <option>professionnels de l'accompagnement</option>
               <option value="autres">Autres</option>
@@ -589,6 +610,7 @@ header('Cache-Control: no-store');
       </form>
     </dialog>
 </main>
+<footer class="app-footer"><span>WoocLight · Un espace pour apprendre ensemble</span><span>Votre espace animateur</span></footer>
 </div>
 </div>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
@@ -598,5 +620,7 @@ header('Cache-Control: no-store');
 <script src="<?= wl_asset('seances.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 <script src="<?= wl_asset('shell.js') ?>"></script>
+<script src="<?= wl_asset('interface.js') ?>"></script>
+<script src="<?= wl_asset('tooltips.js') ?>"></script>
 </body>
 </html>

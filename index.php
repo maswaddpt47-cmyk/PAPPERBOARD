@@ -18,6 +18,7 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WoocLight — Participer</title>
 <link rel="stylesheet" href="<?= wl_asset('style.css') ?>">
+<link rel="stylesheet" href="<?= wl_asset('aides.css') ?>">
 </head>
 <body class="participant">
 <header class="topbar"><span class="brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>WoocLight</span><span id="session-title" class="topbar-title"></span>
@@ -119,5 +120,6 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
 </footer>
 <script src="<?= wl_asset('common.js') ?>"></script>
 <script src="<?= wl_asset('app.js') ?>"></script>
+<script src="<?= wl_asset('tooltips.js') ?>"></script>
 </body>
 </html>

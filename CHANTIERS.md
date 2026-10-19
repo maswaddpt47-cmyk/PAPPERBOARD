@@ -6,6 +6,24 @@
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
+## Alignement fidèle sur la simulation — 19/10/2026
+
+**Autorisé par l’utilisateur le 19/10/2026** : feu vert explicite pour intégrer et
+publier sur PAPPERBOARD l’interface fidèle à la simulation, après vérifications.
+**En cours, pas en ligne** : branche `codex/interface-simulation-fidele`, base
+`98c91a6`, référence de simulation `PAPPERBOARD-CHATGPT@7a80fc3`.
+**Mesuré dans le code le 19/10/2026** : structure et composants issus des feuilles
+de la simulation, feuilles locales séparées pour les lier aux gabarits PHP,
+Terminer/Rouvrir dans Pilotage, Renommer dans Mes ateliers par formulaire,
+aides au survol et au clavier sur les trois écrans, cadres de projection en haut.
+Purge, démos, relecture JSON, modération, exports et opérations serveur gardés.
+Les jetons validés de production sont conservés ; les valeurs de repli des
+composants de la référence sont centralisées dans `:root`.
+**Vérifications à exécuter** : suite PHP complète, vrais parcours Chrome et
+comparaison des dimensions/styles avec la référence aux quatre tailles.
+PHP absent localement : ces contrôles passent par la CI. Aucune donnée ni
+configuration réelle n’est utilisée pour les tests.
+
 ## Chantier charte graphique (branche `test/nouvelle-charte`, phases 1 à 4 en ligne le 18/10/2026)
 
 Ouvert le 18/10/2026. **AG-006 tranché le 18/10/2026 par l'utilisateur** : évolution de « Papier & Terre », pas un remplacement ; la palette, les variantes et le PowerPoint adaptés sont gardés (ne pas les défaire sans nouveau bloc). Palette de base validée le 18/10/2026 (ivoire `#F7F0E4`, terracotta `#B74322`, pétrole `#10383C`, vert, moutarde, prune) et variantes validées avec leurs contrastes. **Phase 1 faite le 18/10/2026 : `assets/style.css` seulement** (jetons en trois niveaux, thème clair, projection sombre pétrole, projection claire). Aucune classe ni logique modifiée ; `bash tests/run.sh` vert. **Reste** : phase 2 (structure, composants), 3 (rendus, projection), 4 (responsive, accessibilité), 5 (validation) ; `assets/bilan-pptx.js` et l'impression gardent l'ancienne palette jusqu'à la phase 3 ; **phase 1 fusionnée dans `main` et en ligne le 18/10/2026 (`ad7c430`, déploiement vert) à la demande de l'utilisateur, pour la voir sur téléphone** ; les phases suivantes se travaillent sur la branche, à fusionner sur sa demande. Ressources de Codex : `docs/charte-v3/`.

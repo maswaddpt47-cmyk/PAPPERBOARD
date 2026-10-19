@@ -1,0 +1,4 @@
+
+#action-tooltip { position: fixed; inset: auto; margin: 0; z-index: 10000; width: max-content; max-width: min(23rem, calc(100vw - 24px)); padding: .65rem .8rem; border: 1px solid var(--wl-focus); border-radius: 8px; background: var(--wl-texte); color: var(--wl-fond); font: normal 14px/1.5 Verdana, sans-serif; text-align: left; white-space: normal; overflow-wrap: anywhere; box-shadow: 0 4px 18px var(--wl-ref-1); }
+
+#action-tooltip[hidden] { display: none; }

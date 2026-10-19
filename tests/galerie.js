@@ -10,7 +10,7 @@ const STATES = ['vide','reponses','corrige','masque'];
 const MODES = ['screen-dark','screen-light','participant','admin'];
 const SIZES = [[1440,900],[1024,768],[768,1024],[390,844]];
 (async () => {
-  const b = await chromium.launch(); const page = await b.newPage();
+  const b = await chromium.launch(process.env.WL_CHROMIUM ? { executablePath: process.env.WL_CHROMIUM } : {}); const page = await b.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await page.goto(FILE);
   let n = 0, bad = [];
