@@ -31,6 +31,58 @@ function check(cond, label) {
   await admin.goto(BASE + 'admin.php');
   await admin.fill('#password', process.env.WL_PASSWORD);
   await admin.click('#login-form button');
+  // Création : « Créer un atelier » ouvre une fenêtre (vide ou JSON) ; un JSON abandonné ne crée rien.
+  const countSessions = async () => (await (await admin.context().request.get(BASE + 'api.php?action=sessions')).json()).sessions.length;
+  await admin.click('#create-btn');
+  await admin.fill('#new-title', 'Atelier JSON');
+  await admin.check('#create-json');
+  check((await admin.textContent('#create-ok')) === 'Continuer', 'création : la voie JSON continue vers la préparation');
+  await admin.click('#create-ok');
+  await admin.waitForSelector('#gen-dialog[open]');
+  check((await admin.inputValue('#gen-theme')) === 'Atelier JSON', 'création JSON : le nom sert de thème');
+  check((await admin.inputValue('#gen-level')) === 'mixed', 'création JSON : « Groupe hétérogène » par défaut');
+  await admin.selectOption('#gen-public', 'autres');
+  check(await admin.isVisible('#gen-public-other'), 'public « Autres » : champ libre affiché');
+  await admin.click('#gen-copy');
+  check(/Précisez le public/.test(await admin.textContent('#gen-error')), 'public « Autres » vide : signalé avant la copie');
+  await admin.fill('#gen-public-other', 'aidants familiaux');
+  await admin.selectOption('#gen-level', 'discovery');
+  await admin.check('#gen-mode-duration');
+  await admin.fill('#gen-duration', '60');
+  check(/10 questions/.test(await admin.textContent('#gen-estimate')), 'durée 60 min en Découverte : 10 questions estimées');
+  await admin.fill('#gen-duration', '14');
+  check(/15 à 180/.test(await admin.textContent('#gen-estimate')), 'durée hors bornes signalée');
+  await admin.fill('#gen-duration', '45');
+  await admin.click('#gen-copy');
+  const genText = await admin.inputValue('#gen-prompt');
+  check(genText.includes('Public : aidants familiaux') && genText.includes('Niveau du public : Découverte') && genText.includes('Nombre de questions : 7')
+    && genText.includes('Durée totale de l\'atelier : 45 minutes'), 'consigne : public libre, niveau, durée et nombre estimé');
+  await admin.check('#gen-mode-count');
+  check((await admin.inputValue('#gen-count')) === '10', 'retour au nombre : le choix manuel est gardé');
+  await admin.fill('#gen-raw', '[{"type":"poll","text":"Q1 ?","options":["A","B"]},{"type":"conclusion","text":"À retenir : test."}]');
+  await admin.click('#gen-check');
+  await admin.waitForSelector('#gen-list input');
+  await admin.fill('#gen-raw', '[{"type":"poll","text":"Q2 ?","options":["A","B"]}]');
+  check(await admin.isDisabled('#gen-save') && await admin.isHidden('#gen-preview'), 'JSON modifié : l\'aperçu périmé est retiré, ajout impossible');
+  const before = await countSessions();
+  await admin.click('#gen-cancel');
+  check(await countSessions() === before, 'création JSON annulée : aucune session créée');
+  await admin.click('#create-btn');
+  await admin.fill('#new-title', 'Atelier JSON');
+  await admin.check('#create-json');
+  await admin.click('#create-ok');
+  await admin.fill('#gen-raw', '[{"type":"poll","text":"Q1 ?","options":["A","B"]},{"type":"conclusion","text":"À retenir : test."}]');
+  await admin.click('#gen-check');
+  await admin.waitForSelector('#gen-list input');
+  check((await admin.textContent('#gen-save')).startsWith('Créer l\'atelier'), 'création JSON : bouton « Créer l\'atelier »');
+  await admin.click('#gen-save');
+  await admin.waitForSelector('#editor:not([hidden])');
+  await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 1);
+  check((await admin.textContent('#ed-title')) === 'Atelier JSON' && (await admin.inputValue('#conclusion')) === 'À retenir : test.', 'création JSON : atelier créé avec la question et la conclusion cochées');
+  check(await countSessions() === before + 1, 'création JSON : une seule session créée');
+  await admin.click('#back-btn');
+  await admin.waitForSelector('#sessions:not([hidden])');
+  await admin.click('#create-btn');
   await admin.fill('#new-title', 'Atelier navigateur');
   await admin.click('#create-form button');
   await admin.waitForSelector('#editor:not([hidden])');
@@ -56,7 +108,15 @@ function check(cond, label) {
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
   check(await admin.locator('#tab-live').isHidden(), 'onglets : un seul panneau visible');
-  await admin.click('#t-live');
+  // Pilotage : invitation, QR agrandi (Échap le ferme et rend le focus).
+  await admin.click('#t-control');
+  check(await admin.isVisible('#ed-qr img') && await admin.isHidden('#open-btn'), 'Pilotage : QR visible, commandes de vote dans Animer');
+  await admin.click('#ed-qr-zoom');
+  check(await admin.locator('#qr-dialog').evaluate(d => d.open) && await admin.locator('#qr-big img').count() === 1, 'QR agrandi au clic');
+  await admin.keyboard.press('Escape');
+  check(!(await admin.locator('#qr-dialog').evaluate(d => d.open)) && (await admin.evaluate(() => document.activeElement.id)) === 'ed-qr-zoom', 'QR agrandi : Échap ferme, focus rendu');
+  await admin.click('#go-live');
+  check((await admin.getAttribute('#t-live', 'aria-selected')) === 'true', 'Pilotage → « Aller aux questions » ouvre Animer');
   await admin.click('#live [data-op="next"]'); // quitte l'accueil et ouvre le vote
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
 
@@ -253,7 +313,7 @@ function check(cond, label) {
   await demoPage.waitForSelector('#editor:not([hidden])');
   await demoPage.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 11);
   const lastDemo = demoPage.locator('#q-list .list-item').last();
-  check(/Défi à étapes — [1-9]\d* réponses?/.test(await lastDemo.textContent()), 'démo : le défi à étapes est ajouté, avec des étapes déjà cochées');
+  check(/Défi à étapes [—·] [1-9]\d* réponses?/.test(await lastDemo.textContent()), 'démo : le défi à étapes est ajouté, avec des étapes déjà cochées');
   await demoPage.close();
   await post('prefs_save', { beta: false });
 
@@ -324,6 +384,7 @@ function check(cond, label) {
   delete global.window;
   await admin.goto(BASE + 'admin.php');
   await admin.waitForSelector('#seance-select option[value="arnaques"]', { state: 'attached' });
+  await admin.click('#t-library');
   await admin.selectOption('#seance-select', 'arnaques');
   check(/Public : .* Durée : 45 minutes/.test(await admin.textContent('#seance-info')), 'bibliothèque : public, durée, prérequis et objectif affichés');
   // Relecture par une autre IA : consigne + séance copiées ; la réponse collée devient un thème « Mes thèmes ».
@@ -361,6 +422,7 @@ function check(cond, label) {
   check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'fiche mémo : rien ne dépasse à 390 px');
   await memoPage.goto(BASE + 'admin.php');
   await memoPage.waitForSelector('#seance-select', { state: 'attached' });
+  await memoPage.click('#t-library');
   await memoPage.click('#seance-add summary');
   await memoPage.waitForTimeout(500);
   check(await memoPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'bibliothèque (ajout de thème ouvert) : rien ne dépasse à 390 px');
@@ -398,13 +460,16 @@ function check(cond, label) {
   await shell.goto(BASE + 'admin.php');
   await shell.waitForSelector('#sessions:not([hidden])');
   check(await shell.locator('#sidebar').isVisible(), 'coque : menu latéral visible sur 1440 px');
-  check((await shell.getAttribute('[data-nav=overview]', 'aria-current')) === 'page', 'coque : « Vue d\'ensemble » actif sur la liste des sessions');
+  check((await shell.getAttribute('[data-nav=overview]', 'aria-current')) === 'page', 'coque : « Mes ateliers » actif sur la liste des sessions');
   check((await shell.getAttribute('[data-nav=workshop]', 'aria-disabled')) === 'true', 'coque : « Mon atelier » désactivé sans session ouverte');
   await shell.click('[data-nav=history]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=history]').getAttribute('aria-current') === 'page'); // le menu suit la vue au tour d'animation suivant
-  check((await shell.getAttribute('#t-archives', 'aria-selected')) === 'true' && (await shell.getAttribute('[data-nav=history]', 'aria-current')) === 'page', 'coque : « Historique » ouvre les archives');
+  check((await shell.getAttribute('#t-archives', 'aria-selected')) === 'true' && (await shell.getAttribute('[data-nav=history]', 'aria-current')) === 'page', 'coque : « Archives » ouvre les archives');
   await shell.click('[data-nav=library]');
-  check((await shell.evaluate(() => document.activeElement.id)) === 'seance-select', 'coque : « Bibliothèque » amène à la liste des séances');
+  await shell.waitForFunction(() => document.querySelector('[data-nav=library]').getAttribute('aria-current') === 'page');
+  check((await shell.getAttribute('#t-library', 'aria-selected')) === 'true' && await shell.isVisible('#seance-select'), 'coque : « Bibliothèque » amène à la liste des séances');
+  await shell.click('[data-nav=overview]');
+  await shell.waitForFunction(() => document.querySelector('[data-nav=overview]').getAttribute('aria-current') === 'page');
   await shell.click('#demo-btn');
   await shell.waitForSelector('#editor:not([hidden])');
   await shell.waitForFunction(() => document.getElementById('sidebar-session') && !document.getElementById('sidebar-session').hidden);

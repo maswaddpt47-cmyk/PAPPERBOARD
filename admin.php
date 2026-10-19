@@ -19,17 +19,39 @@ header('Cache-Control: no-store');
 <body class="admin is-login">
 <a class="skip-link" href="#main">Aller au contenu</a>
 <svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
-  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
-  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
-  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2zm0 0A2 2 0 0 0 6 21h14"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 5h12M9 12h12M9 19h12M3 5h.01M3 12h.01M3 19h.01"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-3-3-7-3-10-2v15c3-1 7-1 10 2m0-15c3-3 7-3 10-2v15c-3-1-7-1-10 2V6Z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 8v4l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 16v-4m5 4V7m5 9v-7"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="m9 3-1 3-3 1-2 3 2 2v3l3 1 2 3h4l1-3 3-1 2-3-2-2V7l-3-1-2-3H9Zm6 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm4 16h2"/></symbol>
+  <symbol id="i-screen" viewBox="0 0 24 24"><path d="M3 3h18v14H3V3Zm5 18h8m-4-4v4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1 M22 4 12 14l-3-3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm13 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A12 12 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.5 4.4M6.1 6.1A18 18 0 0 0 2 12s3.5 7 10 7a12 12 0 0 0 5.1-1.1"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.9M15 3.1a4 4 0 0 1 0 7.8M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="m16 3 5 5M4 16 16.5 3.5a3.5 3.5 0 0 1 5 5L9 21H3l1-5Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path d="M9 9h12v12H9V9Zm6-4V3H3v12h2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6m0-6L10 14M10 3H3v18h18v-7"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 11a9 9 0 0 1 15.5-6.2L21 7M21 2v5h-5m5 6a9 9 0 0 1-15.5 6.2L3 17m0 5v-5h5"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5a2 2 0 0 1 4 0v6-7a2 2 0 0 1 4 0v7-5a2 2 0 0 1 4 0v9a7 7 0 0 1-7 7h-1a7 7 0 0 1-5-2l-5-5a2 2 0 0 1 3-3l3 1V8"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3m.1 4h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7L12 3ZM20 2v4m-2-2h4"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 6h9M16 6h5M3 12h3M10 12h11M3 18h13M20 18h1"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
-  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
-  <symbol id="i-screen" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
-  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
 </svg>
 <button class="nav-overlay" id="nav-overlay" type="button" aria-label="Fermer la navigation" tabindex="-1" hidden></button>
 <div class="app-shell">
@@ -37,13 +59,13 @@ header('Cache-Control: no-store');
   <p class="sidebar-brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-word">WoocLight</span></p>
   <p class="nav-label">Mon espace</p>
   <nav class="main-nav" aria-label="Espace animateur">
-    <button type="button" class="nav-item" data-nav="overview" title="Mes sessions"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Vue d'ensemble</span></button>
-    <button type="button" class="nav-item" data-nav="workshop" title="La session ouverte" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span></button>
-    <button type="button" class="nav-item" data-nav="library" title="Séances prêtes à animer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque</span></button>
-    <button type="button" class="nav-item" data-nav="history" title="Archives anonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Historique</span></button>
+    <button type="button" class="nav-item" data-nav="overview" title="Ateliers en cours"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg><span class="nav-copy">Mes ateliers</span></button>
+    <button type="button" class="nav-item" data-nav="workshop" title="L'atelier ouvert" aria-disabled="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg><span class="nav-copy">Mon atelier</span></button>
+    <button type="button" class="nav-item" data-nav="library" title="Séances prêtes à animer et thèmes enregistrés"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><span class="nav-copy">Bibliothèque</span></button>
+    <button type="button" class="nav-item" data-nav="history" title="Archives anonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span class="nav-copy">Archives</span></button>
   </nav>
   <div class="sidebar-session" id="sidebar-session" hidden>
-    <span class="sidebar-session-label">Votre atelier</span>
+    <span class="sidebar-session-label"><span class="status-dot" aria-hidden="true"></span>Votre atelier</span>
     <strong id="sidebar-session-title"></strong>
   </div>
   <div class="sidebar-bottom">
@@ -72,19 +94,30 @@ header('Cache-Control: no-store');
   </section>
 
   <section id="sessions" hidden>
-    <h1>Mes sessions</h1>
-    <div class="tabs" role="tablist" aria-label="Mes sessions">
-      <button class="tab" role="tab" type="button" id="t-sessions" aria-controls="tab-sessions" data-tab="sessions">Sessions</button>
-      <button class="tab" role="tab" type="button" id="t-archives" aria-controls="tab-archives" data-tab="archives">Archives</button>
+    <div class="page-heading">
+      <div class="heading-copy">
+        <p class="eyebrow">Mon espace</p>
+        <h1>Mes ateliers</h1>
+        <p class="page-subtitle">Créez un atelier vide, générez ou importez ses questions en JSON, ou partez d'une séance de la bibliothèque.</p>
+      </div>
+      <div class="heading-actions">
+        <button id="create-btn" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
+      </div>
+    </div>
+    <div class="tabs view-tabs" role="tablist" aria-label="Mon espace">
+      <button class="tab" role="tab" type="button" id="t-sessions" aria-controls="tab-sessions" data-tab="sessions"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg>Ateliers en cours</button>
+      <button class="tab" role="tab" type="button" id="t-library" aria-controls="tab-library" data-tab="library"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Bibliothèque</button>
+      <button class="tab" role="tab" type="button" id="t-archives" aria-controls="tab-archives" data-tab="archives"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>Archives</button>
     </div>
     <div id="tab-sessions" class="tab-panel" role="tabpanel" aria-labelledby="t-sessions">
-    <form id="create-form" class="row">
-      <label for="new-title" class="sr-only">Titre de la nouvelle session</label>
-      <input id="new-title" placeholder="Titre de la nouvelle session" maxlength="120" required>
-      <button class="btn btn-primary" type="submit">Créer</button>
-    </form>
-    <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite">Créer une session de démonstration</button>
-      <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
+      <ul id="session-list" class="list workshop-list"></ul>
+      <div class="info-note">
+        <p>Pour vérifier tous les écrans seul : un atelier rempli de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux).</p>
+        <p class="row wrap"><button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg>Créer une session de démonstration</button>
+          <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden>Supprimer toutes les démos</button></p>
+      </div>
+    </div>
+    <div id="tab-library" class="tab-panel" role="tabpanel" aria-labelledby="t-library" hidden>
     <div class="card" id="library-card">
       <h2>Bibliothèque de séances</h2>
       <p class="meta">Des séances prêtes à animer, créées d'un clic (questions, avant / après, défi, conclusion). Ce sont des
@@ -114,13 +147,12 @@ header('Cache-Control: no-store');
           <span id="seance-new-msg" class="meta" aria-live="polite"></span></p>
       </details>
     </div>
-    <ul id="session-list" class="list"></ul>
     </div>
     <div id="tab-archives" class="tab-panel" role="tabpanel" aria-labelledby="t-archives" hidden>
     <p class="meta">Après 30 jours sans activité (ou sur « Archiver »), une session devient une archive anonyme :
       questions, résultats chiffrés, récap, conclusion et synthèse sont gardés ; les réponses une à une, les textes
       écrits par les participants et les jetons des appareils sont effacés. Les archives se gardent sans limite.</p>
-    <ul id="archive-list" class="list"></ul>
+    <ul id="archive-list" class="list workshop-list"></ul>
     </div>
   </section>
 
@@ -139,35 +171,58 @@ header('Cache-Control: no-store');
   </section>
 
   <section id="editor" hidden>
-    <p><button id="back-btn" class="btn btn-ghost" type="button">← Mes sessions</button></p>
-    <div class="row wrap">
-      <h1 id="ed-title" class="grow"></h1>
-      <span id="ed-participants" class="meta"></span>
+    <div class="page-heading">
+      <div class="heading-copy">
+        <p class="eyebrow">Votre atelier</p>
+        <h1 id="ed-title" class="page-title"></h1>
+        <p class="page-subtitle"><span id="ed-badge" class="badge"></span> <span id="ed-participants" class="meta"></span></p>
+      </div>
+      <div class="heading-actions">
+        <button id="back-btn" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button>
+        <a id="ed-preview" class="btn btn-small" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
+        <a id="ed-open-screen" class="btn btn-primary btn-small" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
+      </div>
     </div>
-    <p class="ed-actions">
-      <a id="ed-preview" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
-      <a id="ed-open-screen" class="btn btn-primary" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection</a>
-    </p>
 
-    <div class="tabs" role="tablist" aria-label="Session">
-      <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, génération par IA, conclusion"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Préparer</button>
-      <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Inviter les participants, piloter le vote"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Animer</button>
+    <div class="tabs view-tabs" role="tablist" aria-label="Étapes de l'atelier">
+      <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, séquences prêtes, conclusion"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Préparer</button>
+      <button class="tab" role="tab" type="button" id="t-control" aria-controls="tab-control" data-tab="control" title="Inviter les participants, accueil, signaux, Oser demander, pseudonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Pilotage</button>
+      <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Questions, vote et résultats"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Animer</button>
       <button class="tab" role="tab" type="button" id="t-bilan" aria-controls="tab-bilan" data-tab="bilan" title="Tableau de bord, synthèse par une IA, PowerPoint, exports"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg>Bilan</button>
       <button class="tab" role="tab" type="button" id="t-settings" aria-controls="tab-settings" data-tab="settings" title="Renommer, terminer, archiver, supprimer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Réglages</button>
     </div>
 
     <div id="tab-prep" class="tab-panel" role="tabpanel" aria-labelledby="t-prep">
-    <div class="card">
-      <h2>Questions</h2>
-      <p class="row wrap"><label for="all-duration" title="Chaque question aura cette durée de vote, avec compte à rebours sur la projection">Durée pour toutes les questions, en secondes (0 = sans limite)</label>
-        <input id="all-duration" type="number" min="0" max="3600" step="5" value="30">
-        <button id="all-duration-btn" class="btn" type="button" title="Donne cette durée à toutes les questions de la session (un vote en cours garde son compte à rebours)">Appliquer à toutes</button></p>
-      <ol id="q-list" class="list q-list"></ol>
-      <p class="row wrap"><button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button">+ Ajouter une question</button>
-        <button id="gen-btn" class="btn" title="Préparer des questions avec une IA (copier-coller) ou importer un fichier .json" type="button">Générer ou importer (JSON)</button></p>
-      <p class="row wrap"><label for="ice-select" class="sr-only">Brise-glace</label>
+    <section class="card prep-panel">
+      <div class="section-heading">
+        <div><h2>Le déroulé de votre atelier</h2>
+          <p class="meta">Préparez vos questions ici. Le vote se lance depuis Animer.</p></div>
+        <div class="row wrap">
+          <button id="gen-btn" class="btn" title="Ajouter à cet atelier des questions générées par une IA (copier-coller) ou un fichier .json" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Ajouter depuis un JSON</button>
+          <button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter une question</button>
+        </div>
+      </div>
+      <ol id="q-list" class="list q-list prep-list"></ol>
+      <div class="duration-row">
+        <label for="all-duration" title="Chaque question aura cette durée de vote, avec compte à rebours sur la projection">Durée de vote pour toutes les questions, en secondes (0 = sans limite)</label>
+        <div class="row">
+          <input id="all-duration" type="number" min="0" max="3600" step="5" value="30">
+          <button id="all-duration-btn" class="btn" type="button" title="Donne cette durée à toutes les questions de la session (un vote en cours garde son compte à rebours)">Appliquer à toutes</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-heading">
+      <div><h2>Des séquences prêtes à ajouter</h2>
+        <p class="meta">Un accueil, un geste pratique, une dernière parole : composez le rythme de votre atelier.</p></div>
+    </div>
+    <div class="quick-grid">
+      <section class="quick-card">
+        <div class="quick-card-title"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg><h3>Brise-glace</h3></div>
+        <p class="meta">Pour accueillir le groupe. La question est ajoutée en premier.</p>
+        <label for="ice-select" class="sr-only">Brise-glace</label>
         <select id="ice-select" title="Une question d'échauffement prête à l'emploi, modifiable ensuite">
-          <option value="">Brise-glace…</option>
+          <option value="">Choisir…</option>
           <option value="meteo">☀️ Votre météo du jour</option>
           <option value="energie">🔋 Votre niveau d'énergie (1 à 5)</option>
           <option value="mot">💬 Un mot pour vous décrire aujourd'hui</option>
@@ -176,88 +231,142 @@ header('Cache-Control: no-store');
           <option value="photo">📷 Plutôt photo ou vidéo ?</option>
           <option value="papier">📖 Plutôt papier ou écran ?</option>
         </select>
-        <button id="ice-btn" class="btn" type="button" title="Ajoute le brise-glace en tête de la session">Ajouter en premier</button></p>
-      <p class="row wrap"><label for="end-select" class="sr-only">Clôture</label>
+        <button id="ice-btn" class="btn" type="button" title="Ajoute le brise-glace en tête de la session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter en premier</button>
+      </section>
+      <section class="quick-card">
+        <div class="quick-card-title"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><h3>Clôture</h3></div>
+        <p class="meta">Pour faire le point ensemble. Les questions sont ajoutées à la fin.</p>
+        <label for="end-select" class="sr-only">Clôture</label>
         <select id="end-select" title="Des questions de fin d'atelier prêtes à l'emploi, modifiables ensuite">
-          <option value="">Clôture…</option>
+          <option value="">Choisir…</option>
           <option value="tout">🏁 Les trois questions de clôture</option>
           <option value="utile">⭐ Utilité de l'atelier (1 à 5)</option>
           <option value="retenu">💬 Un mot pour ce que vous retenez</option>
           <option value="pas">👣 Le prochain pas que vous voulez essayer</option>
         </select>
-        <button id="end-btn-add" class="btn" type="button" title="Ajoute la clôture à la fin de la session">Ajouter à la fin</button></p>
-      <p id="challenge-row" class="row wrap" hidden><label for="challenge-select" class="sr-only">Défi</label>
+        <button id="end-btn-add" class="btn" type="button" title="Ajoute la clôture à la fin de la session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter à la fin</button>
+      </section>
+      <section class="quick-card" id="challenge-row" hidden>
+        <div class="quick-card-title"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-hand"/></svg><h3>Défi à étapes <span class="badge">essai</span></h3></div>
+        <p class="meta">Un exercice pratique avec des consignes adaptées à l'appareil.</p>
+        <label for="challenge-select" class="sr-only">Défi</label>
         <select id="challenge-select" title="Un défi pratique à étapes prêt à l'emploi, modifiable ensuite (essai)">
-          <option value="">Défi à étapes (essai)…</option>
+          <option value="">Choisir…</option>
           <option value="notifs">🔕 Couper les notifications inutiles (Windows, Mac, iPhone, Android)</option>
           <option value="temps">⏱️ Regarder son temps d'écran (iPhone, Android)</option>
         </select>
-        <button id="challenge-btn" class="btn" type="button" title="Ajoute le défi à la fin de la session">Ajouter à la fin</button></p>
+        <button id="challenge-btn" class="btn" type="button" title="Ajoute le défi à la fin de la session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter à la fin</button>
+      </section>
     </div>
 
-    <div class="card">
-      <h2>Conclusion</h2>
-      <p class="meta">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et téléphones).</p>
-      <label for="conclusion" class="sr-only">Conclusion de l'atelier</label>
+    <section class="card">
+      <p class="eyebrow">Le message à emporter</p>
+      <h2>Conclusion de l'atelier</h2>
+      <p class="meta">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et appareils des participants). Également reprise dans la fiche mémo.</p>
+      <label for="conclusion">À retenir</label>
       <textarea id="conclusion" rows="3" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
-      <p class="row wrap"><button id="conclusion-btn" class="btn" type="button" title="Enregistrer la conclusion de cette session">Enregistrer la conclusion</button>
+      <p class="row wrap"><button id="conclusion-btn" class="btn btn-primary" type="button" title="Enregistrer la conclusion de cette session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Enregistrer la conclusion</button>
+        <span class="meta">600 caractères au plus</span>
         <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
-    </div>
+    </section>
     </div>
 
-    <div id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="t-live" hidden>
-      <div class="grid2">
-      <div class="card">
-        <h2>Rejoindre</h2>
-        <div id="ed-qr" class="qr qr-admin"></div>
-        <p>Code : <strong id="ed-code" class="code-big"></strong></p>
-        <p class="break">Adresse : <a id="ed-url" href="#"></a></p>
-        <p class="row wrap"><button id="ed-url-copy" class="btn" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button">Copier l'invitation</button>
-          <button id="ed-url-share" class="btn" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage du téléphone)" type="button" hidden>Partager</button>
-          <span id="ed-url-copied" class="meta" aria-live="polite"></span></p>
-        <p><a id="ed-screen" class="btn" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener">Ouvrir la projection</a></p>
-        <p class="row wrap"><button id="lock-btn" class="btn" type="button"></button>
-          <button id="qr-btn" class="btn" type="button"></button></p>
+    <div id="tab-control" class="tab-panel" role="tabpanel" aria-labelledby="t-control" hidden>
+      <div class="pilotage-toolbar">
+        <p class="meta">Gérez l'accueil, les inscriptions et les échanges du groupe. Les questions et les votes se pilotent depuis Animer.</p>
+        <button id="go-live" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Aller aux questions</button>
       </div>
+      <div class="grid2 session-controls">
+      <section class="card" id="join-card">
+        <h2>Rejoindre l'atelier</h2>
+        <div class="join-overview">
+          <button id="ed-qr-zoom" class="qr-zoom" type="button" title="Agrandir le QR code" aria-label="Agrandir le QR code"><span id="ed-qr" class="qr qr-admin"></span></button>
+          <div class="join-copy">
+            <p>Code : <strong id="ed-code" class="code-big"></strong></p>
+            <p id="ed-join-state" class="meta"></p>
+            <p class="break"><a id="ed-url" href="#"></a></p>
+          </div>
+        </div>
+        <p class="row wrap session-actions">
+          <button id="ed-url-copy" class="btn btn-small" title="Copie un message avec le lien et le code, à coller dans un SMS ou un mail" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier l'invitation</button>
+          <button id="ed-url-share" class="btn btn-small" title="Envoie l'invitation par SMS, WhatsApp… (menu de partage de l'appareil)" type="button" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg>Partager</button>
+          <a id="ed-screen" class="btn btn-small" title="Ouvre l'écran à projeter dans un nouvel onglet ; connecté ici, vous pouvez le piloter" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection</a>
+          <button id="lock-btn" class="btn btn-small" type="button"></button>
+          <button id="qr-btn" class="btn btn-small" type="button"></button></p>
+        <p id="ed-url-copied" class="meta" aria-live="polite"></p>
+      </section>
 
-      <div class="card" id="live">
+      <section class="card" id="direct-card">
         <h2>Pilotage en direct</h2>
-        <p class="row wrap"><button id="asks-chip" class="btn btn-small" type="button" title="Aller à la carte « Oser demander », plus bas dans cet onglet"></button></p>
-        <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les téléphones ; chacun s'efface après 2 minutes"></p>
-        <p id="live-pos" class="meta"></p>
-        <p id="live-text" class="live-text"></p>
-        <p id="live-state" class="live-state" aria-live="polite"></p>
-        <div class="row wrap">
-          <button class="btn" data-op="prev" title="Revenir à la question précédente sur la projection" type="button">← Précédente</button>
-          <button class="btn" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante →</button>
-        </div>
-        <div class="row wrap">
-          <button class="btn btn-primary" id="open-btn" type="button"></button>
-          <button class="btn" id="show-btn" type="button"></button>
-          <button class="btn btn-danger" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button">Réinitialiser</button>
-        </div>
-        <div id="live-results" class="live-results"></div>
-      </div>
+        <p class="row wrap session-actions">
+          <button id="welcome-btn" class="btn btn-small" type="button" title="La projection revient à l'accueil : adresse, code et QR code"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Afficher l'accueil</button>
+          <button id="asks-chip" class="btn btn-small" type="button" title="Aller à la carte « Oser demander », plus bas dans cet onglet"></button></p>
+        <p class="meta">Retours anonymes envoyés depuis les appareils ; chacun s'efface seul après 2 minutes.</p>
+        <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les appareils ; chacun s'efface après 2 minutes"></p>
+        <p><button id="signals-clear" class="btn btn-ghost btn-small" type="button" title="Vous avez pris en compte les signaux : ils sont effacés tout de suite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Effacer les signaux</button></p>
+      </section>
       </div>
 
       <div class="grid2">
-      <div class="card" id="asks-card">
+      <section class="card" id="asks-card">
         <h2>Oser demander</h2>
         <p class="meta">Questions anonymes des participants, à tout moment. Vous les lisez avant de les publier (un nom peut s'y glisser).</p>
-        <p class="row wrap"><button id="asks-btn" class="btn" type="button"></button>
-          <button id="asks-screen" class="btn" type="button" title="Projette les questions publiées, les plus votées d'abord"></button></p>
+        <p class="row wrap"><button id="asks-btn" class="btn btn-small" type="button"></button>
+          <button id="asks-screen" class="btn btn-small" type="button" title="Projette les questions publiées, les plus votées d'abord"></button></p>
         <ul id="asks-admin" class="ask-list"></ul>
-      </div>
+      </section>
 
-      <div class="card" id="pseudo-card">
+      <section class="card" id="pseudo-card">
         <h2>Pseudonymes et classement</h2>
         <p class="meta">Option de cette session : chaque participant reçoit un pseudonyme au hasard (« Panda curieux ») ;
           les quiz corrigés comptent un point par bonne réponse. Seul le podium (rangs 1 à 3) est projeté.
           Les pseudonymes sont effacés si vous désactivez l'option, et jamais archivés.</p>
-        <p class="row wrap"><button id="pseudo-btn" class="btn" type="button"></button>
-          <button id="podium-btn" class="btn" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
+        <p class="row wrap"><button id="pseudo-btn" class="btn btn-small" type="button"></button>
+          <button id="podium-btn" class="btn btn-small" type="button" title="Projette le podium (rangs 1 à 3)"></button></p>
         <ol id="ranking" class="ranking"></ol>
+      </section>
       </div>
+    </div>
+
+    <div id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="t-live" hidden>
+      <section class="live-summary" aria-label="État de la session">
+        <p id="live-summary" class="live-summary-text"></p>
+        <button id="go-control" class="btn btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Ouvrir Pilotage</button>
+      </section>
+      <div class="workbench">
+        <aside class="card question-rail" aria-label="Questions de l'atelier">
+          <div class="panel-head"><h2>Les questions</h2><span id="rail-count" class="meta"></span></div>
+          <ol id="rail-list" class="rail-list"></ol>
+          <p class="rail-footer"><button id="go-prep" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Gérer les questions</button></p>
+        </aside>
+        <section class="card current-panel" id="live">
+          <nav class="question-nav" aria-label="Navigation entre les questions">
+            <button class="btn btn-ghost btn-small" data-op="prev" title="Revenir à la question précédente sur la projection" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Précédente</button>
+            <span id="live-pos" class="meta"></span>
+            <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
+          </nav>
+          <p id="live-badges" class="question-topline"></p>
+          <p id="live-text" class="live-text"></p>
+          <p id="live-state" class="live-state" aria-live="polite"></p>
+          <div class="live-toolbar">
+            <button class="btn btn-primary" id="open-btn" type="button"></button>
+            <button class="btn" id="show-btn" type="button"></button>
+          </div>
+          <div id="live-results" class="live-results"></div>
+        </section>
+        <aside class="insights">
+          <section class="card metric-card">
+            <div class="panel-head"><h2>Participation</h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></div>
+            <p class="metric-number"><span id="metric-answered">0</span><span id="metric-total" class="metric-of"></span></p>
+            <p id="metric-caption" class="meta"></p>
+            <div class="progress-track" aria-hidden="true"><span id="metric-fill" class="progress-fill"></span></div>
+            <p id="metric-wait" class="meta"></p>
+          </section>
+        </aside>
+      </div>
+      <div class="session-footer">
+        <button class="btn btn-danger btn-small" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>Réinitialiser la question</button>
+        <button id="end-live-btn" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span id="end-live-label"></span></button>
       </div>
     </div>
 
@@ -294,7 +403,6 @@ header('Cache-Control: no-store');
         </p>
     </div>
     </div>
-
     <div id="tab-settings" class="tab-panel" role="tabpanel" aria-labelledby="t-settings" hidden>
     <div class="card">
       <h2>Réglages de la session</h2>
@@ -306,54 +414,117 @@ header('Cache-Control: no-store');
       <p id="cron-state" class="cron-state" role="status" title="Efface chaque heure les sessions trop anciennes et les traces d'IP de plus de 2 heures"></p>
     </div>
     </div>
+  </section>
 
-    <dialog id="gen-dialog" aria-labelledby="gen-title">
-      <form id="gen-form" method="dialog" novalidate>
-        <h2 id="gen-title">Générer ou importer des questions</h2>
-        <p class="meta">1. Décrivez l'atelier, copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <form id="create-form" method="dialog" novalidate>
+      <h2 id="create-title">Créer un atelier</h2>
+      <p class="meta">Donnez un nom à votre atelier et choisissez comment le préparer.</p>
+      <label for="new-title">Nom de l'atelier</label>
+      <input id="new-title" maxlength="120" required placeholder="ex. Repérer les arnaques en ligne">
+      <fieldset class="choice-cards">
+        <legend>Comment le préparer ?</legend>
+        <label class="choice-card"><input type="radio" name="create-mode" id="create-empty" value="empty" checked>
+          <span><strong>Partir d'un atelier vide</strong><span class="meta">Vous ajoutez les questions à la main dans Préparer.</span></span></label>
+        <label class="choice-card"><input type="radio" name="create-mode" id="create-json" value="json">
+          <span><strong>Générer ou importer un JSON</strong><span class="meta">Consigne pour une IA, réponse collée ou fichier ; rien n'est créé avant votre validation.</span></span></label>
+      </fieldset>
+      <p id="create-error" class="error" role="alert"></p>
+      <div class="row wrap modal-actions">
+        <button class="btn btn-primary" id="create-ok" type="submit">Créer l'atelier</button>
+        <button class="btn" id="create-cancel" type="button">Annuler</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="qr-dialog" class="qr-dialog" aria-labelledby="qr-dialog-title">
+    <h2 id="qr-dialog-title">Rejoindre l'atelier</h2>
+    <div id="qr-big" class="qr qr-big"></div>
+    <p class="qr-dialog-code">Code <strong id="qr-big-code"></strong></p>
+    <p class="break meta" id="qr-big-url"></p>
+    <p><button id="qr-close" class="btn" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>Fermer</button></p>
+  </dialog>
+
+  <dialog id="gen-dialog" class="gen-dialog" aria-labelledby="gen-title">
+    <form id="gen-form" method="dialog" novalidate>
+      <h2 id="gen-title">Générer ou importer des questions</h2>
+      <p id="gen-for" class="meta"></p>
+      <section class="gen-step">
+        <h3><span class="number-bubble">1</span>Préparer une consigne pour une IA</h3>
+        <p class="meta">Facultatif si vous avez déjà un fichier. Copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
           N'y mettez aucun nom ni donnée personnelle.</p>
         <label for="gen-theme">Thème</label>
         <input id="gen-theme" maxlength="200" placeholder="ex. Reconnaître un message frauduleux">
-        <div class="row wrap">
-          <div class="grow"><label for="gen-public">Public</label>
+        <div class="form-grid2">
+          <div><label for="gen-public">Public</label>
             <select id="gen-public">
               <option>tout public</option>
               <option>seniors débutants</option>
               <option>collégiens</option>
               <option>professionnels de l'accompagnement</option>
+              <option value="autres">Autres</option>
             </select></div>
-          <div><label for="gen-count">Nombre de questions</label>
-            <input id="gen-count" type="number" min="3" max="20" value="10"></div>
+          <div><label for="gen-level">Niveau du public</label>
+            <select id="gen-level">
+              <option value="mixed">Groupe hétérogène</option>
+              <option value="discovery">Découverte</option>
+              <option value="beginner">Débutant</option>
+              <option value="intermediate">Intermédiaire</option>
+              <option value="advanced">Avancé</option>
+            </select></div>
         </div>
+        <div id="gen-public-other-box" hidden>
+          <label for="gen-public-other">Précisez le public</label>
+          <input id="gen-public-other" maxlength="160" placeholder="ex. demandeurs d'emploi accompagnés par une association">
+        </div>
+        <fieldset class="gen-size">
+          <legend>Dimensionner l'atelier</legend>
+          <label class="check"><input type="radio" name="gen-mode" id="gen-mode-count" value="count" checked> Fixer le nombre de questions</label>
+          <label class="check"><input type="radio" name="gen-mode" id="gen-mode-duration" value="duration"> Fixer la durée de l'atelier</label>
+          <div id="gen-count-box"><label for="gen-count">Nombre de questions (1 à 30)</label>
+            <input id="gen-count" type="number" min="1" max="30" value="10"></div>
+          <div id="gen-duration-box" hidden><label for="gen-duration">Durée de l'atelier, en minutes (15 à 180)</label>
+            <input id="gen-duration" type="number" min="15" max="180" step="5" value="60"></div>
+          <p id="gen-estimate" class="meta" aria-live="polite"></p>
+        </fieldset>
         <label class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
         <label id="gen-defi-box" class="check" hidden><input id="gen-defi" type="checkbox"> Ajouter un défi pratique à étapes après les quiz (essai)</label>
-        <p><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button">Copier le texte pour l'IA</button>
+        <p class="row wrap"><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
-        <p class="meta">2. Collez ici toute la réponse de l'IA, ou importez un fichier JSON au même format
-          (étape 1 inutile dans ce cas), puis vérifiez.</p>
-        <p><label for="gen-file" class="btn">Importer un fichier .json</label>
+      </section>
+      <section class="gen-step">
+        <h3><span class="number-bubble">2</span>Coller la réponse ou importer un fichier</h3>
+        <p class="meta">Collez toute la réponse de l'IA, ou importez un fichier JSON au même format, puis vérifiez.</p>
+        <p><label for="gen-file" class="btn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Importer un fichier .json</label>
           <input id="gen-file" class="sr-only" type="file" accept=".json,.txt,application/json,text/plain"></p>
         <label for="gen-raw" class="sr-only">Réponse de l'IA ou contenu du fichier</label>
         <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
-        <p><button id="gen-check" class="btn" title="Contrôle la réponse de l'IA et affiche l'aperçu des questions" type="button">Vérifier la réponse</button></p>
-        <div id="gen-preview" hidden>
-          <p class="meta">3. Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong></p>
-          <ol id="gen-list" class="list gen-list"></ol>
-          <p class="meta">Facultatif, pour un nouveau thème ou un public sensible : faites relire par une <strong>autre</strong> IA
+        <p><button id="gen-check" class="btn" title="Contrôle la réponse de l'IA et affiche l'aperçu des questions" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Vérifier la réponse</button></p>
+      </section>
+      <section id="gen-preview" class="gen-step" hidden>
+        <h3><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
+        <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong>
+          L'aperçu ne prouve pas que le contenu est juste.</p>
+        <ol id="gen-list" class="list gen-list"></ol>
+        <div class="info-note">
+          <p>Facultatif, pour un nouveau thème ou un public sensible : faites relire par une <strong>autre</strong> IA
             que celle qui a écrit les questions (nouvelle conversation). Elle doit citer ses sources :
-            <strong>ouvrez chaque lien avant de vous y fier</strong>, une IA peut en inventer.</p>
-          <p><button id="gen-review" class="btn" title="Copie une consigne pour faire relire les questions par une autre IA que celle qui les a générées, sources exigées" type="button">Copier la consigne de relecture</button>
+            <strong>ouvrez chaque lien avant de vous y fier</strong>, une IA peut en inventer.
+            Elle rend une liste de corrections puis la version JSON corrigée : collez cette version à la place
+            de la réponse ci-dessus, puis cliquez de nouveau « Vérifier la réponse ».</p>
+          <p><button id="gen-review" class="btn" title="Copie une consigne pour faire relire les questions par une autre IA que celle qui les a générées, sources exigées" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier la consigne de relecture</button>
             <span class="meta">À coller dans une <strong>autre IA</strong> que celle qui a généré les questions.</span>
             <span id="gen-review-copied" class="meta" aria-live="polite"></span></p>
         </div>
-        <p id="gen-error" class="error" role="alert"></p>
-        <div class="row">
-          <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
-          <button class="btn" id="gen-cancel" type="button">Fermer</button>
-        </div>
-      </form>
-    </dialog>
+      </section>
+      <p id="gen-error" class="error" role="alert"></p>
+      <div class="row wrap modal-actions">
+        <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
+        <button class="btn" id="gen-cancel" type="button">Fermer</button>
+      </div>
+    </form>
+  </dialog>
 
     <dialog id="q-dialog" aria-labelledby="qd-title">
       <form id="q-form" method="dialog" novalidate>
@@ -417,7 +588,6 @@ header('Cache-Control: no-store');
         </div>
       </form>
     </dialog>
-  </section>
 </main>
 </div>
 </div>

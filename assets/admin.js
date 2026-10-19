@@ -6,6 +6,17 @@
   var el = WL.el, $ = WL.$;
   var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null, synthesisFor = null;
 
+  /** Icône du sprite d'admin.php (décorative : le libellé reste écrit). */
+  function ico(name) {
+    var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), use = document.createElementNS(ns, 'use');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    use.setAttribute('href', '#i-' + name);
+    svg.appendChild(use);
+    return svg;
+  }
+
   function banner(text) {
     $('banner').textContent = text || '';
     WL.show($('banner'), !!text);
@@ -64,31 +75,32 @@
     WL.api('sessions').then(function (r) {
       if (r.status === 401) return showLogin('');
       var list = WL.clear($('session-list'));
-      if (!r.data.sessions.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune session. Créez-en une ci-dessus.'));
+      if (!r.data.sessions.length) list.appendChild(el('li', { class: 'meta' }, 'Aucun atelier en cours. Cliquez « Créer un atelier » ou partez d\'une séance de la bibliothèque.'));
       var demos = r.data.sessions.filter(function (s) { return s.demo; }).length;
       WL.show($('demo-delete'), demos > 0);
       $('demo-delete').textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       r.data.sessions.forEach(function (s) {
-        list.appendChild(el('li', { class: 'list-item' },
-          el('div', { class: 'grow' }, el('strong', null, s.title),
-            el('p', { class: 'meta' }, 'Code ' + s.code + ' — ' + WL.plural(s.questions, 'question') + ' — '
-              + WL.plural(s.participants, 'participant') + ' — modifiée le ' + new Date(s.updated * 1000).toLocaleString('fr-FR')
-              + (s.ended ? ' — terminée' : ''))),
-          el('div', { class: 'row wrap' },
-            el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { openSession(s.code); } }, 'Ouvrir'),
-            el('button', { type: 'button', class: 'btn', onclick: function () {
+        list.appendChild(el('li', { class: 'list-item workshop-item' },
+          el('span', { class: 'workshop-icon', 'aria-hidden': 'true' }, ico(s.demo ? 'sparkles' : 'list')),
+          el('div', { class: 'grow' }, el('strong', { class: 'workshop-title' }, s.title),
+            el('p', { class: 'meta' }, 'Code ' + s.code + ' · ' + WL.plural(s.questions, 'question') + ' · '
+              + WL.plural(s.participants, 'participant') + ' · modifié le ' + new Date(s.updated * 1000).toLocaleString('fr-FR')
+              + (s.ended ? ' · terminé' : ''))),
+          el('div', { class: 'row wrap workshop-actions' },
+            el('button', { type: 'button', class: 'btn btn-primary btn-small', onclick: function () { openSession(s.code); } }, 'Ouvrir'),
+            el('button', { type: 'button', class: 'btn btn-small', title: 'Nouvel atelier avec les mêmes questions et la même conclusion, sans participants ni réponses', onclick: function () {
               post('session_duplicate', { s: s.code }).then(showSessions);
-            } }, 'Dupliquer'),
-            el('button', { type: 'button', class: 'btn', title: 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', onclick: function () {
+            } }, ico('copy'), 'Dupliquer'),
+            el('button', { type: 'button', class: 'btn btn-small', title: 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', onclick: function () {
               if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
                 post('session_archive', { s: s.code }).then(showSessions);
               }
-            } }, 'Archiver'),
-            el('button', { type: 'button', class: 'btn btn-danger', onclick: function () {
+            } }, ico('clock'), 'Archiver'),
+            el('button', { type: 'button', class: 'btn btn-danger btn-small', onclick: function () {
               if (confirm('Supprimer définitivement « ' + s.title + ' » et toutes ses réponses ?')) {
                 post('session_delete', { s: s.code }).then(showSessions);
               }
-            } }, 'Supprimer'))));
+            } }, ico('trash'), 'Supprimer'))));
       });
     });
   }
@@ -103,11 +115,12 @@
       if (r.status !== 200) return;
       if (!r.data.archives.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune archive pour le moment.'));
       r.data.archives.forEach(function (a) {
-        list.appendChild(el('li', { class: 'list-item' },
-          el('div', { class: 'grow' }, el('strong', null, a.title),
-            el('p', { class: 'meta' }, WL.plural(a.questions, 'question') + ' — ' + WL.plural(a.participants, 'participant')
-              + ' — archivée le ' + new Date(a.archived * 1000).toLocaleDateString('fr-FR'))),
-          el('button', { type: 'button', class: 'btn', onclick: function () { openArchive(a.id); } }, 'Ouvrir')));
+        list.appendChild(el('li', { class: 'list-item workshop-item' },
+          el('span', { class: 'workshop-icon', 'aria-hidden': 'true' }, ico('clock')),
+          el('div', { class: 'grow' }, el('strong', { class: 'workshop-title' }, a.title),
+            el('p', { class: 'meta' }, WL.plural(a.questions, 'question') + ' · ' + WL.plural(a.participants, 'participant')
+              + ' · archivé le ' + new Date(a.archived * 1000).toLocaleDateString('fr-FR'))),
+          el('button', { type: 'button', class: 'btn btn-small', onclick: function () { openArchive(a.id); } }, ico('chart'), 'Ouvrir')));
       });
     });
   }
@@ -156,12 +169,39 @@
     if (confirm('Supprimer définitivement l\'archive « ' + archive.title + ' » ?')) post('archive_delete', { id: archive.id }).then(showSessions);
   });
 
+  // --- Créer un atelier : vide, ou depuis un JSON (créé seulement à la validation de l'aperçu) ---
+
+  function createMode() { return $('create-json').checked ? 'json' : 'empty'; }
+  function syncCreate() { $('create-ok').textContent = createMode() === 'json' ? 'Continuer' : 'Créer l\'atelier'; }
+  $('create-btn').addEventListener('click', function () {
+    $('new-title').value = '';
+    $('create-empty').checked = true;
+    $('create-error').textContent = '';
+    syncCreate();
+    $('create-dialog').showModal();
+    $('new-title').focus();
+  });
+  $('create-empty').addEventListener('change', syncCreate);
+  $('create-json').addEventListener('change', syncCreate);
+  $('create-cancel').addEventListener('click', function () { $('create-dialog').close(); });
+
   $('create-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    post('session_create', { title: $('new-title').value }).then(function (d) {
-      $('new-title').value = '';
-      openSession(d.code);
-    });
+    var title = $('new-title').value.trim();
+    if (!title) { $('create-error').textContent = 'Donnez un nom à l\'atelier.'; $('new-title').focus(); return; }
+    if (createMode() === 'json') {
+      $('create-dialog').close();
+      openGen(title);
+      return;
+    }
+    $('create-ok').disabled = true;
+    WL.api('session_create', { body: { title: title }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
+      if (r.status === 401) { $('create-dialog').close(); return showLogin('Session expirée : reconnectez-vous.'); }
+      if (r.status !== 200) { $('create-error').textContent = r.data.error; return; }
+      $('create-dialog').close();
+      openSession(r.data.code);
+    }, function () { $('create-error').textContent = 'Pas de connexion au serveur.'; })
+      .then(function () { $('create-ok').disabled = false; });
   });
 
   $('demo-delete').addEventListener('click', function () {
@@ -282,7 +322,8 @@
     view('editor');
     var saved = null;
     try { saved = localStorage.getItem('wl_tab'); } catch (e) { /* sans stockage */ }
-    selectTab(document.querySelector('#editor .tabs'), saved || 'prep');
+    if (!document.querySelector('#editor .tab[data-tab="' + saved + '"]')) saved = 'prep';
+    selectTab(document.querySelector('#editor .tabs'), saved);
     if (poller) poller.stop();
     poller = new WL.Poller('admin_state', 's=' + code, render, function (kind, r) {
       if (kind === 'offline') banner('Connexion perdue. Reconnexion automatique…');
@@ -294,6 +335,16 @@
   }
 
   $('back-btn').addEventListener('click', showSessions);
+
+  /** Raccourcis entre onglets (Pilotage ↔ Animer, Animer → Préparer) : l'état de la session ne bouge pas. */
+  function goTab(name) {
+    selectTab(document.querySelector('#editor .tabs'), name);
+    $('t-' + name).focus({ preventScroll: true });
+    $('t-' + name).scrollIntoView({ block: 'nearest' });
+  }
+  $('go-live').addEventListener('click', function () { goTab('live'); });
+  $('go-control').addEventListener('click', function () { goTab('control'); });
+  $('go-prep').addEventListener('click', function () { goTab('prep'); });
 
   /** Envoie une commande puis rafraîchit tout de suite (sans attendre 2 s). */
   function act(action, body) {
@@ -447,19 +498,71 @@
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' — ' + d.active + ' actif' + (d.active > 1 ? 's' : '');
     $('ed-participants').title = 'Actif : téléphone ouvert sur l\'atelier depuis moins de 3 minutes';
+    $('ed-badge').textContent = d.ended ? 'Atelier terminé' : 'En cours';
+    $('ed-badge').className = 'badge' + (d.ended ? '' : ' badge-ok');
+    $('ed-join-state').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
+      + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');
     renderCron(d.lastCron, d.now);
     $('end-btn').textContent = d.ended ? 'Rouvrir la session' : 'Terminer la session';
+    $('end-live-label').textContent = d.ended ? 'Rouvrir l\'atelier' : 'Terminer l\'atelier';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
     $('lock-btn').textContent = d.locked ? 'Rouvrir les inscriptions' : 'Fermer les inscriptions';
     $('qr-btn').textContent = d.qrHidden ? 'Afficher le QR code sur la projection' : 'Masquer le QR code sur la projection';
     if (qrFor !== d.joinUrl) {
       WL.qr($('ed-qr'), d.joinUrl, 4);
+      if ($('qr-dialog').open) qrBig();
       qrFor = d.joinUrl;
     }
     renderLive(d);
     renderList(d);
+    renderRail(d);
     renderExtras(d);
+    renderSummary(d);
     tips();
+  }
+
+  /** QR agrandi (Pilotage) : noir sur blanc, fermé par le bouton, Échap ou un clic à côté ; le focus revient au QR. */
+  function qrBig() {
+    WL.qr($('qr-big'), data.joinUrl, 10);
+    $('qr-big-code').textContent = data.code;
+    $('qr-big-url').textContent = data.joinUrl;
+  }
+  $('ed-qr-zoom').addEventListener('click', function () {
+    if (!data) return;
+    qrBig();
+    $('qr-dialog').showModal();
+    $('qr-close').focus();
+  });
+  $('qr-close').addEventListener('click', function () { $('qr-dialog').close(); });
+  $('qr-dialog').addEventListener('click', function (e) { if (e.target === $('qr-dialog')) $('qr-dialog').close(); });
+  $('qr-dialog').addEventListener('close', function () { if (!$('editor').hidden) $('ed-qr-zoom').focus(); });
+
+  /** Animer : état de la session en une ligne (le détail est dans Pilotage). */
+  function renderSummary(d) {
+    var sig = 0;
+    Object.keys(d.signals || {}).forEach(function (k) { sig += d.signals[k] || 0; });
+    var pending = d.asks.filter(function (a) { return !a.published; }).length;
+    $('live-summary').textContent = WL.plural(d.participants, 'inscrit') + ' · ' + d.active + ' actif' + (d.active > 1 ? 's' : '')
+      + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes') + ' · ' + sig + (sig > 1 ? ' signaux' : ' signal')
+      + ' · Oser demander : ' + (d.asksOpen ? 'ouvert' : 'fermé') + (pending ? ', ' + pending + ' à relire' : '');
+    $('live-summary').parentNode.classList.toggle('is-alert', sig > 0 || pending > 0);
+  }
+
+  /** Animer : liste des questions ; un clic projette la question (et ouvre son vote si elle ne l'a jamais été). */
+  function renderRail(d) {
+    var list = WL.clear($('rail-list'));
+    $('rail-count').textContent = String(d.questions.length);
+    if (!d.questions.length) list.appendChild(el('li', { class: 'meta' }, 'Aucune question : ajoutez-en dans Préparer.'));
+    d.questions.forEach(function (q, i) {
+      var cur = i === d.current, state = q.state === 'open' ? 'Vote ouvert' : q.state === 'closed' ? 'Vote fermé' : 'À venir';
+      list.appendChild(el('li', null, el('button', {
+        type: 'button', class: 'rail-item' + (cur ? ' is-current' : ''), 'aria-current': cur ? 'step' : null, disabled: d.ended,
+        title: d.ended ? 'Session terminée : rouvrez-la pour projeter une question' : cur ? 'Question projetée' : 'Projeter cette question (ouvre son vote si elle ne l\'a jamais été)',
+        onclick: function () { if (!cur) control('goto', { qid: q.id }); }
+      }, el('span', { class: 'number-bubble' }, q.state === 'closed' ? '✓' : String(i + 1)),
+        el('span', { class: 'rail-copy' }, el('span', { class: 'rail-name' }, q.text), el('span', { class: 'meta' }, WL.typeLabel(q) + ' · ' + state)),
+        el('span', { class: 'rail-state' + (q.state === 'open' ? ' is-live' : ''), 'aria-hidden': 'true' }))));
+    });
   }
 
   /** Purge automatique : la tâche planifiée horaire tourne-t-elle ? */
@@ -494,6 +597,8 @@
         + (h.n > 1 ? 's' : '') + ' à l\'étape ' + (h.i + 1) + ' : ' + q.options[h.i]));
     });
     sig.classList.toggle('is-on', any);
+    $('signals-clear').disabled = !any && !(d.helpSteps || []).length;
+    $('welcome-btn').disabled = d.current < 0 && !d.show && !d.board;
 
     $('asks-btn').textContent = d.asksOpen ? 'Fermer « Oser demander »' : 'Ouvrir « Oser demander »';
     var pending = d.asks.filter(function (a) { return !a.published; }).length;
@@ -537,9 +642,9 @@
   var TIPS = {
     'Ouvrir le vote': 'Les participants peuvent répondre sur leur téléphone',
     'Fermer le vote': 'Plus aucune réponse acceptée pour cette question',
-    'Afficher les résultats': 'Montre les résultats (et la bonne réponse) sur la projection et les téléphones',
-    'Masquer les résultats': 'Retire les résultats de la projection et des téléphones',
-    'Publier (projection et téléphones)': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
+    'Afficher les graphes et réponses': 'Montre les résultats (et la bonne réponse) sur la projection et les appareils des participants',
+    'Masquer les graphes et réponses': 'Retire les résultats de la projection et des appareils ; les réponses reçues sont gardées',
+    'Publier (projection et appareils)': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
     'Masquer aux participants': 'Les participants ne voient plus que leurs propres contributions',
     'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
     'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',
@@ -554,32 +659,40 @@
     });
   }
 
+  /** Pastille d'état (texte toujours écrit : la couleur n'est jamais seule). */
+  function badge(text, kind) { return el('span', { class: 'badge' + (kind ? ' badge-' + kind : '') }, text); }
+
   function renderLive(d) {
     var q = d.questions[d.current];
     var has = !!q;
     ['open-btn', 'show-btn'].forEach(function (id) { $(id).disabled = !has; });
-    document.querySelector('#live [data-op="reset"]').disabled = !has;
+    document.querySelector('#tab-live [data-op="reset"]').disabled = !has;
     document.querySelector('#live [data-op="prev"]').disabled = d.current < 0;
     document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
+    var badges = WL.clear($('live-badges'));
     if (!has) {
       $('open-btn').textContent = 'Ouvrir le vote';
-      $('show-btn').textContent = 'Afficher les résultats';
-      $('live-pos').textContent = d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code.'
-        : 'Aucune question : ajoutez-en une ci-dessous.';
+      $('show-btn').textContent = 'Afficher les graphes et réponses';
+      $('live-pos').textContent = 'Accueil';
+      badges.appendChild(badge(d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code' : 'Aucune question : ajoutez-en dans Préparer'));
       $('live-text').textContent = d.questions.length ? '« Suivante » lance la première question et ouvre le vote.' : '';
       $('live-state').textContent = '';
       WL.clear($('live-results'));
+      renderMetric(d, null);
       return;
     }
     var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, d.now - Date.now() / 1000) === 0);
-    $('live-pos').textContent = 'Question projetée : ' + (d.current + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q);
+    $('live-pos').textContent = (d.current + 1) + ' / ' + d.questions.length;
+    badges.appendChild(badge('Question ' + (d.current + 1) + ' sur ' + d.questions.length));
+    badges.appendChild(badge(d.ended ? 'Atelier terminé' : open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé', open && !d.ended ? 'ok' : null));
+    badges.appendChild(el('span', { class: 'question-type' }, WL.typeLabel(q)));
     $('live-text').textContent = q.text;
     $('live-state').textContent = (open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé')
       + ' — ' + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution')
-        : q.results.total + ' / ' + d.active + ' ont répondu') + (q.showResults ? ' — résultats affichés' : '');
+        : q.results.total + ' / ' + d.active + ' ont répondu') + (q.showResults ? ' — graphes et réponses affichés' : ' — graphes et réponses masqués aux participants');
     $('open-btn').textContent = open ? 'Fermer le vote' : 'Ouvrir le vote';
     $('open-btn').dataset.next = open ? 'close' : 'open';
-    $('show-btn').textContent = q.showResults ? 'Masquer les résultats' : 'Afficher les résultats';
+    $('show-btn').textContent = q.showResults ? 'Masquer les graphes et réponses' : 'Afficher les graphes et réponses';
     $('show-btn').dataset.next = q.showResults ? 'hide' : 'show';
     // Modération (masquer) pour les textes libres ; outils post-it en plus.
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
@@ -588,8 +701,20 @@
       onAdmin: q.type === 'postit' ? function (pid, op, arg) { act('post_admin', { qid: q.id, pid: pid, op: op, arg: arg }); } : null
     });
     if (q.type === 'wall' || q.type === 'postit') {
-      $('show-btn').textContent = q.showResults ? 'Masquer aux participants' : 'Publier (projection et téléphones)';
+      $('show-btn').textContent = q.showResults ? 'Masquer aux participants' : 'Publier (projection et appareils)';
     }
+    renderMetric(d, q);
+  }
+
+  /** Carte « Participation » : réponses reçues sur les participants actifs. */
+  function renderMetric(d, q) {
+    var posts = q && (q.type === 'wall' || q.type === 'postit'), n = q ? q.results.total : 0, of = d.active;
+    $('metric-answered').textContent = String(n);
+    $('metric-total').textContent = posts ? '' : ' / ' + of;
+    $('metric-caption').textContent = !q ? 'Aucune question projetée' : posts ? (n > 1 ? 'contributions reçues' : 'contribution reçue')
+      : q.type === 'steps' ? 'personnes ont participé' : 'personnes ont répondu (sur les actifs)';
+    $('metric-fill').style.width = (!q || posts || !of ? 0 : Math.min(100, Math.round(100 * n / of))) + '%';
+    $('metric-wait').textContent = !q || posts ? '' : n >= of ? 'Tout le monde a répondu.' : WL.plural(of - n, 'réponse') + ' encore attendue' + (of - n > 1 ? 's' : '');
   }
 
   ['open-btn', 'show-btn'].forEach(function (id) {
@@ -601,7 +726,7 @@
       control(op);
     });
   });
-  document.querySelectorAll('#live [data-op]').forEach(function (b) {
+  document.querySelectorAll('#tab-live [data-op]').forEach(function (b) {
     b.addEventListener('click', function () {
       if (b.dataset.op === 'reset' && !confirm('Effacer toutes les réponses de cette question ?')) return;
       control(b.dataset.op);
@@ -611,6 +736,9 @@
     if (!data.ended && !confirm('Terminer la session ? Les participants ne pourront plus répondre.')) return;
     control(data.ended ? 'reopen' : 'end');
   });
+  $('end-live-btn').addEventListener('click', function () { $('end-btn').click(); });
+  $('welcome-btn').addEventListener('click', function () { control('welcome'); });
+  $('signals-clear').addEventListener('click', function () { control('signals_clear'); });
   $('lock-btn').addEventListener('click', function () { control(data.locked ? 'unlock' : 'lock'); });
   $('qr-btn').addEventListener('click', function () { control(data.qrHidden ? 'qr_show' : 'qr_hide'); });
   $('rename-btn').addEventListener('click', function () {
@@ -620,25 +748,23 @@
 
   function renderList(d) {
     var list = WL.clear($('q-list'));
+    if (!d.questions.length) list.appendChild(el('li', { class: 'meta' }, 'Votre atelier est vide : cliquez « Ajouter une question » ou « Ajouter depuis un JSON ».'));
     d.questions.forEach(function (q, i) {
-      list.appendChild(el('li', { class: 'list-item' + (i === d.current ? ' is-current' : '') },
+      var n = i + 1;
+      list.appendChild(el('li', { class: 'list-item prep-item' + (i === d.current ? ' is-current' : '') },
+        el('span', { class: 'number-bubble' }, String(n)),
         el('div', { class: 'grow' }, el('strong', null, q.text),
-          el('p', { class: 'meta' }, WL.typeLabel(q) + ' — ' + WL.plural(q.results.total, 'réponse')
-            + (q.duration ? ' — ' + q.duration + ' s' : '') + (i === d.current ? ' — projetée' : ''))),
-        el('div', { class: 'row wrap' },
-          // Session terminée : la projection reste sur la conclusion, projeter ne ferait rien.
-          el('button', { type: 'button', class: 'btn', disabled: i === d.current || d.ended,
-            title: d.ended ? 'Session terminée : « Rouvrir la session » (Réglages) pour projeter une question, ou touche B sur la projection pour le bilan'
-              : 'Afficher cette question sur la projection et ouvrir son vote',
-            onclick: function () { control('goto', { qid: q.id }); } }, 'Projeter'),
-          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Monter', title: 'Monter d\'un rang', disabled: i === 0,
-            onclick: function () { act('question_move', { qid: q.id, dir: -1 }); } }, '↑'),
-          el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Descendre', title: 'Descendre d\'un rang', disabled: i === d.questions.length - 1,
-            onclick: function () { act('question_move', { qid: q.id, dir: 1 }); } }, '↓'),
-          el('button', { type: 'button', class: 'btn', title: 'Changer l\'intitulé, les choix, la durée… (efface les réponses si le type ou les choix changent)', onclick: function () { openDialog(q); } }, 'Modifier'),
-          el('button', { type: 'button', class: 'btn btn-danger', title: 'Supprimer la question et ses réponses', onclick: function () {
+          el('p', { class: 'meta' }, WL.typeLabel(q) + ' · ' + WL.plural(q.results.total, 'réponse')
+            + (q.duration ? ' · ' + q.duration + ' s' : '') + (i === d.current ? ' · projetée' : ''))),
+        el('div', { class: 'prep-actions' },
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon', 'aria-label': 'Monter la question ' + n, title: 'Monter d\'un rang', disabled: i === 0,
+            onclick: function () { act('question_move', { qid: q.id, dir: -1 }); } }, ico('arrow-up')),
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon', 'aria-label': 'Descendre la question ' + n, title: 'Descendre d\'un rang', disabled: i === d.questions.length - 1,
+            onclick: function () { act('question_move', { qid: q.id, dir: 1 }); } }, ico('arrow-down')),
+          el('button', { type: 'button', class: 'btn btn-small', title: 'Changer l\'intitulé, les choix, la durée… (efface les réponses si le type ou les choix changent)', onclick: function () { openDialog(q); } }, ico('edit'), 'Modifier'),
+          el('button', { type: 'button', class: 'btn btn-ghost btn-icon btn-danger', 'aria-label': 'Supprimer la question ' + n, title: 'Supprimer la question et ses réponses', onclick: function () {
             if (confirm('Supprimer cette question et ses réponses ?')) act('question_delete', { qid: q.id });
-          } }, 'Supprimer'))));
+          } }, ico('trash')))));
     });
   }
 
@@ -865,12 +991,69 @@
     $('end-select').value = '';
   });
 
+  // Niveau du public : indépendant de l'âge ou du type de public ; ne change ni le format d'import ni les participants.
+  var LEVELS = {
+    mixed: ['Groupe hétérogène', 'Commence par des questions accessibles, puis augmente progressivement la difficulté. Explique les mots techniques et propose des approfondissements facultatifs.'],
+    discovery: ['Découverte', 'Ne suppose aucun prérequis numérique. Utilise des situations du quotidien, des phrases très courtes et une seule consigne à la fois. Explique chaque mot technique.'],
+    beginner: ['Débutant', 'Appuie-toi sur quelques bases simples. Guide les gestes par petites étapes, emploie un vocabulaire courant et donne des exemples concrets.'],
+    intermediate: ['Intermédiaire', 'Adresse-toi à des personnes autonomes dans les usages courants. Propose des mises en pratique, des comparaisons et des choix à expliquer, avec de brefs rappels.'],
+    advanced: ['Avancé', 'Propose des situations plus complexes, de l\'analyse critique et des choix à justifier. Approfondis les notions utiles en expliquant les termes spécialisés.']
+  };
+  // Minutes par question, échanges compris : hypothèses de préparation de la simulation,
+  // supposées le 19/10/2026, non mesurées sur le terrain. Accueil 5 min, conclusion 5 min, défi 10 min.
+  var PER_QUESTION = { discovery: 5, beginner: 4, intermediate: 3, advanced: 4, mixed: 4 };
+
+  function genPublic() {
+    return $('gen-public').value === 'autres' ? $('gen-public-other').value.trim() : $('gen-public').value;
+  }
+  function genDefi() { return $('gen-defi').checked && !$('gen-defi-box').hidden; }
+
+  /** Nombre de questions : choisi (1 à 30), ou estimé d'après la durée. { error } si impossible. */
+  function genPlan() {
+    if (!$('gen-mode-duration').checked) {
+      var n = Math.round(Number($('gen-count').value));
+      return n >= 1 && n <= 30 ? { mode: 'count', count: n } : { error: 'Nombre de questions : de 1 à 30.' };
+    }
+    var duration = Number($('gen-duration').value), per = PER_QUESTION[$('gen-level').value] || 4, defi = genDefi() ? 10 : 0;
+    if (!(Number.isInteger(duration) && duration >= 15 && duration <= 180)) return { error: 'Durée de l\'atelier : de 15 à 180 minutes, en minutes entières.' };
+    if (duration < 10 + defi + per) return { error: 'Prévoyez au moins ' + (10 + defi + per) + ' minutes avec ce niveau' + (defi ? ' et le défi, ou retirez le défi' : '') + '.' };
+    var count = Math.min(30, Math.floor((duration - 10 - defi) / per));
+    return { mode: 'duration', duration: duration, perQuestion: per, defi: defi, count: count,
+      margin: duration - 10 - defi - count * per, capped: Math.floor((duration - 10 - defi) / per) > 30 };
+  }
+  function planBudget(plan) {
+    return 'accueil 5 min ; questions et échanges ' + plan.count * plan.perQuestion + ' min' + (plan.defi ? ' ; défi 10 min' : '')
+      + ' ; conclusion 5 min ; marge ' + plan.margin + ' min.';
+  }
+  /** Affiche les champs utiles et l'estimation, recalculée à chaque changement de niveau, durée ou défi. */
+  function syncGenSize() {
+    var other = $('gen-public').value === 'autres', byDuration = $('gen-mode-duration').checked;
+    WL.show($('gen-public-other-box'), other);
+    WL.show($('gen-count-box'), !byDuration);
+    WL.show($('gen-duration-box'), byDuration);
+    var plan = genPlan(), note = $('gen-estimate');
+    note.classList.toggle('error', !!plan.error);
+    note.textContent = plan.error ? plan.error : byDuration
+      ? 'Estimation : ' + WL.plural(plan.count, 'question') + (plan.capped ? ' (plafond de 30)' : '') + ', environ ' + plan.perQuestion
+        + ' min chacune au niveau « ' + LEVELS[$('gen-level').value][0] + ' » ; ' + planBudget(plan)
+        + ' Hypothèses indicatives, non mesurées sur le terrain.'
+      : '';
+  }
+  ['gen-public', 'gen-level', 'gen-mode-count', 'gen-mode-duration', 'gen-defi', 'gen-qcm'].forEach(function (id) {
+    $(id).addEventListener('change', syncGenSize);
+  });
+  ['gen-count', 'gen-duration'].forEach(function (id) { $(id).addEventListener('input', syncGenSize); });
+
   function genPrompt() {
+    var plan = genPlan();
     return [
       'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
       'Thème : ' + $('gen-theme').value.trim(),
-      'Public : ' + $('gen-public').value,
-      'Nombre de questions : ' + $('gen-count').value,
+      'Public : ' + genPublic(),
+      'Niveau du public : ' + LEVELS[$('gen-level').value][0] + '. ' + LEVELS[$('gen-level').value][1],
+      'Nombre de questions : ' + plan.count,
+      plan.mode === 'duration' ? 'Durée totale de l\'atelier : ' + plan.duration + ' minutes. Budget indicatif : ' + planBudget(plan)
+        + ' Compte environ ' + plan.perQuestion + ' min par question, échanges compris, et garde des intitulés et des explications à la mesure de ce temps.' : null,
       '',
       'Règles :',
       '- Langage simple, phrases courtes, adapté au public. Aucun nom de personne réelle.',
@@ -980,12 +1163,25 @@
     $('gen-save').disabled = !genChecked().length;
   }
 
-  $('gen-btn').addEventListener('click', function () {
+  // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).
+  var genCreate = null;
+  function openGen(createTitle) {
+    genCreate = createTitle || null;
     genReset();
     $('gen-copied').textContent = '';
+    $('gen-review-copied').textContent = '';
+    WL.show($('gen-prompt'), false);
+    $('gen-title').textContent = genCreate ? 'Créer un atelier depuis un JSON' : 'Ajouter des questions depuis un JSON';
+    $('gen-for').textContent = genCreate
+      ? 'Nouvel atelier « ' + genCreate + ' » : il n\'est créé qu\'au clic sur « Créer l\'atelier », après relecture de l\'aperçu. Fermer ne crée rien.'
+      : 'Les questions cochées s\'ajoutent à la fin de « ' + data.title + ' ».';
+    if (genCreate) $('gen-theme').value = genCreate;
+    $('gen-save').textContent = genCreate ? 'Créer l\'atelier avec les questions cochées' : 'Ajouter les questions cochées';
+    syncGenSize();
     $('gen-dialog').showModal();
     $('gen-theme').focus();
-  });
+  }
+  $('gen-btn').addEventListener('click', function () { openGen(null); });
   $('gen-cancel').addEventListener('click', function () { $('gen-dialog').close(); });
   $('gen-list').addEventListener('change', function () { $('gen-save').disabled = !genChecked().length; });
   $('gen-raw').addEventListener('input', genReset);
@@ -1003,6 +1199,9 @@
 
   $('gen-copy').addEventListener('click', function () {
     if (!$('gen-theme').value.trim()) { $('gen-error').textContent = 'Indiquez un thème.'; $('gen-theme').focus(); return; }
+    if (!genPublic()) { $('gen-error').textContent = 'Précisez le public concerné avant de copier la consigne.'; $('gen-public-other').focus(); return; }
+    var plan = genPlan();
+    if (plan.error) { $('gen-error').textContent = plan.error; return; }
     $('gen-error').textContent = '';
     copyText(genPrompt(), $('gen-copied'));
   });
@@ -1039,7 +1238,11 @@
   }
 
   function reviewPrompt() {
-    return reviewText($('gen-theme').value.trim() || 'à déduire des questions', $('gen-public').value, $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), false);
+    var plan = genPlan();
+    return reviewText(($('gen-theme').value.trim() || 'à déduire des questions')
+      + (plan.mode === 'duration' ? ' ; durée visée : ' + plan.duration + ' minutes (' + WL.plural(plan.count, 'question') + ' environ)' : ''),
+      (genPublic() || 'non précisé') + ' ; niveau : ' + LEVELS[$('gen-level').value][0],
+      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), true);
   }
 
   // Garder les questions de la session comme thème de la bibliothèque (sans aucune réponse).
@@ -1099,7 +1302,7 @@
 
   function genCheck() {
     genReset();
-    var body = { s: code, raw: $('gen-raw').value, preview: true };
+    var body = { raw: $('gen-raw').value, preview: true }; // l'aperçu ne lit aucune session
     WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       if (r.status === 401) return showLogin('Session expirée : reconnectez-vous.');
       if (r.status !== 200) { $('gen-error').textContent = r.data.error; return; }
@@ -1110,15 +1313,42 @@
 
   $('gen-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    var body = { s: code, raw: $('gen-raw').value, keep: genChecked() };
-    WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
-      if (r.status === 401) return showLogin('Session expirée : reconnectez-vous.');
-      if (r.status !== 200) { $('gen-error').textContent = r.data.error; return; }
+    var raw = $('gen-raw').value, keep = genChecked(), headers = { 'X-CSRF-Token': csrf };
+    var fail = function (r) {
+      if (r.status === 401) { $('gen-dialog').close(); showLogin('Session expirée : reconnectez-vous.'); return true; }
+      if (r.status !== 200) { $('gen-error').textContent = r.data.error; return true; }
+      return false;
+    };
+    var done = function (c, added) {
       $('gen-dialog').close();
       $('gen-raw').value = '';
-      banner(WL.plural(r.data.added, 'question') + ' ajoutée' + (r.data.added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.');
-      poller.refresh();
-    }, function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; });
+      banner(WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.');
+      if (c !== code) openSession(c); else poller.refresh();
+    };
+    var offline = function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; };
+    $('gen-save').disabled = true;
+    var job;
+    if (!genCreate) {
+      job = WL.api('questions_import', { body: { s: code, raw: raw, keep: keep }, headers: headers }).then(function (r) {
+        if (!fail(r)) done(code, r.data.added);
+      }, offline);
+    } else {
+      // Créer puis importer ; si l'import est refusé, l'atelier vide est supprimé (aucune session orpheline).
+      job = WL.api('session_create', { body: { title: genCreate }, headers: headers }).then(function (r) {
+        if (fail(r)) return;
+        var c = r.data.code;
+        var undo = function (message) {
+          return WL.api('session_delete', { body: { s: c }, headers: headers }).then(null, function () {}).then(function () {
+            $('gen-error').textContent = message + ' L\'atelier n\'a pas été créé.';
+          });
+        };
+        return WL.api('questions_import', { body: { s: c, raw: raw, keep: keep }, headers: headers }).then(function (r2) {
+          if (r2.status === 200) { genCreate = null; done(c, r2.data.added); return; }
+          return undo(r2.data && r2.data.error || 'Import refusé.');
+        }, function () { return undo('Pas de connexion au serveur.'); });
+      }, offline);
+    }
+    job.then(function () { $('gen-save').disabled = !genChecked().length; });
   });
 
   // --- Démarrage ------------------------------------------------------------------

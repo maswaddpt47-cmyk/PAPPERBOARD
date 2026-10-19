@@ -1,7 +1,7 @@
 /* Coque de l'espace animateur (admin.php) : menu latéral, fil d'Ariane, tiroir sur téléphone.
  * Ne gère aucune donnée : elle observe les sections que admin.js affiche ou masque
  * (login, sessions, editor, archive-view) et relaie les clics du menu vers les boutons existants
- * (#back-btn, #archive-back, #t-sessions, #t-archives). */
+ * (#back-btn, #archive-back, #t-sessions, #t-library, #t-archives). */
 'use strict';
 
 (function () {
@@ -19,18 +19,19 @@
   function sync() {
     var login = shown('login'), editor = shown('editor'), sessions = shown('sessions'), archive = shown('archive-view');
     var history = archive || (sessions && selected('t-archives'));
+    var library = sessions && selected('t-library');
     body.classList.toggle('is-login', login);
-    var current = { overview: sessions && !history, workshop: editor, history: history, library: false };
+    var current = { overview: sessions && !history && !library, workshop: editor, history: history, library: library };
     items.forEach(function (b) {
       var on = !!current[b.getAttribute('data-nav')];
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     byNav.workshop.setAttribute('aria-disabled', editor ? 'false' : 'true');
-    byNav.workshop.title = editor ? 'La session ouverte' : 'Ouvrez d\'abord une session';
+    byNav.workshop.title = editor ? 'L\'atelier ouvert' : 'Ouvrez d\'abord un atelier';
     var title = ($('ed-title') && $('ed-title').textContent.trim()) || '';
     $('sidebar-session').hidden = !(editor && title);
     $('sidebar-session-title').textContent = title;
-    $('crumb-current').textContent = login ? 'Connexion' : editor ? (title || 'Session') : history ? 'Historique' : 'Vue d\'ensemble';
+    $('crumb-current').textContent = login ? 'Connexion' : editor ? (title || 'Atelier') : history ? 'Archives' : library ? 'Bibliothèque' : 'Mes ateliers';
     var code = ($('ed-code') && $('ed-code').textContent.trim()) || '';
     if (code) {
       $('ed-preview').href = 'index.php?s=' + encodeURIComponent(code);
@@ -85,12 +86,8 @@
     var nav = b.getAttribute('data-nav');
     if (nav === 'overview') goSessions('t-sessions');
     else if (nav === 'history') goSessions('t-archives');
-    else if (nav === 'library') {
-      goSessions('t-sessions', function () {
-        var card = $('library-card');
-        if (card) { card.scrollIntoView({ behavior: 'auto', block: 'start' }); $('seance-select').focus({ preventScroll: true }); }
-      });
-    } else if (nav === 'workshop') {
+    else if (nav === 'library') goSessions('t-library');
+    else if (nav === 'workshop') {
       if (!shown('editor')) return;
       $('main').focus();
     }
