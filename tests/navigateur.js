@@ -493,6 +493,7 @@ function check(cond, label) {
   check(await shell.isVisible('#library-grid .content-card') && await shell.isVisible('#seance-select'), 'coque : « Bibliothèque de modèles » montre les séances');
   await shell.click('[data-nav=overview]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=overview]').getAttribute('aria-current') === 'page');
+  check(await shell.evaluate(() => document.querySelectorAll('#ov-ideas .content-card').length === document.querySelectorAll('#library-grid .content-card').length && document.querySelectorAll('#ov-ideas .content-card').length > 2), 'coque : la Vue d’ensemble propose toutes les séances, pas deux');
   check(await shell.isVisible('#create-btn') && !(await shell.isVisible('.demo-controls')), 'coque : la Vue d’ensemble ne montre que ses propres actions');
   await shell.click('#create-btn');
   await shell.check('#create-demo');

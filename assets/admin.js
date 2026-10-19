@@ -295,7 +295,7 @@
     showSeance();
     renderLibraryCards();
   }
-  /** Cartes de séance (Bibliothèque de modèles, et deux idées dans la Vue d'ensemble). */
+  /** Cartes de séance (Bibliothèque de modèles, et toutes les idées dans la Vue d'ensemble, à la demande de l'utilisateur le 19/10/2026). */
   function libraryCard(t) {
     var n = t.items.filter(function (it) { return it.type !== 'conclusion'; }).length;
     return el('article', { class: 'card content-card' },
@@ -307,7 +307,7 @@
   function renderLibraryCards() {
     var grid = WL.clear($('library-grid')), ideas = WL.clear($('ov-ideas'));
     allThemes().forEach(function (t) { grid.appendChild(libraryCard(t)); });
-    (window.WL_SEANCES || []).slice(0, 2).forEach(function (t) { ideas.appendChild(libraryCard(t)); });
+    allThemes().forEach(function (t) { ideas.appendChild(libraryCard(t)); });
   }
   function createFromSeance(t) {
     post('session_create', { title: t.title }).then(function (d) {
