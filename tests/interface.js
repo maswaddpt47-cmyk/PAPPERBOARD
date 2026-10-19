@@ -44,6 +44,10 @@ function check(value, message) { checks++; assert(value, message); }
         for (const property of properties) { checks++; if (expected[property] !== actual[property]) differences.push(width + 'px ' + phpSelector + ' ' + property + ': ' + actual[property] + ' au lieu de ' + expected[property]); }
       }
       check(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), width + 'px: débordement horizontal');
+      if (process.env.WL_UI_ARTIFACTS) {
+        await require('fs/promises').mkdir(process.env.WL_UI_ARTIFACTS,{recursive:true});
+        for (const [label,page] of [['php',admin],['reference',reference]]) await page.screenshot({path:process.env.WL_UI_ARTIFACTS+'/'+label+'-'+width+'.png',fullPage:true});
+      }
     }
     check(differences.length === 0, 'Écarts visuels :\n' + differences.join('\n'));
     const me = await (await context.request.get(base+'api.php?action=me')).json();
@@ -105,8 +109,8 @@ function check(value, message) { checks++; assert(value, message); }
     for (const [width,height] of [[1280,720],[390,844]]) {
       await admin.setViewportSize({width,height}); await reference.setViewportSize({width,height});
       for (const [expectedSelector,actualSelector,properties] of [
-        ['#sandbox-dialog','#create-dialog',['width','padding-left','border-radius']],
-        ['#sandbox-dialog .modal-head','#create-dialog .modal-head',['padding-top','padding-left']],
+        ['dialog[open]','#create-dialog',['width','padding-left','border-radius']],
+        ['dialog[open] .modal-head','#create-dialog .modal-head',['padding-top','padding-left']],
         ['#workshop-title','#new-title',['font-size','min-height','padding-top','border-radius']]
       ]) {
         const read = (page,selector) => page.locator(selector).evaluate((node,properties) => {
