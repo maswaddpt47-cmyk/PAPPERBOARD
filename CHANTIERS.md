@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **18/10/2026** — commit de référence : voir `git log -1 main`.
+État au **19/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -19,8 +19,14 @@ aides au survol et au clavier sur les trois écrans, cadres de projection en hau
 Purge, démos, relecture JSON, modération, exports et opérations serveur gardés.
 Les jetons validés de production sont conservés ; les valeurs de repli des
 composants de la référence sont centralisées dans `:root`.
-**Vérifications à exécuter** : suite PHP complète, vrais parcours Chrome et
-comparaison des dimensions/styles avec la référence aux quatre tailles.
+**Mesuré en CI le 19/10/2026 sur `e152e44`** : syntaxe PHP/JS, 432 contrôles
+bout en bout, 6 de charge, 10 de configuration, 4 d’archivage, 5 de protection,
+15 de charte, 103 de parcours navigateur, 79 de comparaison/actions UI et 768 cas
+de galerie passent. Styles calculés comparés à la référence à quatre tailles.
+**Complément en cours de vérification** : fenêtres structurées comme la référence,
+contrôles supplémentaires des boutons et de chaque question de démo en projection.
+Le test cible maintenant explicitement « Créer » (la croix de fermeture est nouvelle).
+Aucun déploiement de cette branche à ce stade.
 PHP absent localement : ces contrôles passent par la CI. Aucune donnée ni
 configuration réelle n’est utilisée pour les tests.
 
@@ -100,7 +106,7 @@ clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
   n'est testé que sur le vrai serveur, par l'étape « Vérifier la mise en
   ligne » de `ci-deploy.yml` (verte le 14/10/2026).
 - Parcours navigateur (`tests/navigateur.js`) lancé seulement si Playwright
-  est installé : en local oui, en CI non (supposé, non revérifié le 18/10/2026).
+  est installé : en CI aussi depuis le 19/10/2026 (mesuré sur `e152e44`, 103 contrôles réussis).
 - Toutes les écritures d'une session passent par un verrou de fichier :
   150 arrivées + 150 votes simultanés en 340-450 ms (mesuré en local avec
   8 processus PHP, 09/10/2026). Non mesuré sur l'hébergement mutualisé.

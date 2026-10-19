@@ -98,6 +98,8 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#session-list .workshop-title').filter({hasText:'Atelier renommé'}).waitFor();
     check(await admin.locator('#demo-delete').isVisible(), 'Supprimer la démo perdu');
     await admin.locator('#create-btn').click();
+    await reference.setViewportSize({width:1280,height:720});
+    await reference.locator('[data-nav="overview"]').click();
     await reference.locator('[data-action="create-workshop"]').first().click();
     const modalDifferences = [];
     for (const [width,height] of [[1280,720],[390,844]]) {

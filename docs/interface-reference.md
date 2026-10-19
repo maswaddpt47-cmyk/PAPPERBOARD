@@ -17,4 +17,17 @@ modération, purge, démonstrations et exports. Les mentions de simulation et
 les réponses fictives ne sont pas introduites dans les ateliers réels.
 Aucune modification de config.php, de la CSP ou du stockage serveur.
 
-Statut au 19/10/2026 : code en branche ; tests de rendu et déploiement à vérifier.
+Mesuré en CI le 19/10/2026 sur `e152e44` : la suite PHP, 103 contrôles de
+parcours navigateur, 79 de comparaison/actions et 768 cas de galerie passent.
+Le complément de fenêtres et de projection est encore en vérification en branche.
+Le déploiement n’a pas encore eu lieu.
+
+Décisions préservées au 19/10/2026 : la moutarde claire `#B18400` reste celle
+validée en production. Le candidat `#8A6500` du prototype a été refusé dans
+AG-007 ; il n’est pas réintroduit par ce chantier. L’aperçu participant ouvre la
+vraie page PHP dans une fenêtre séparée, synchronisée par le serveur, plutôt
+qu’une copie de ses données dans l’espace animateur. Sa CSP reste inchangée.
+
+La comparaison automatisée porte sur les dimensions et styles calculés et sur
+le contenu visible dans le viewport. Elle ne constitue pas une comparaison
+exhaustive de toutes les captures pixel par pixel.
