@@ -37,3 +37,37 @@ question », carte « À vous de jouer », podium et scores fictifs, synchronisa
 | Projection : plein écran, commandes, bouton unique | `screen.php:19-58`, `assets/screen.js:241`, `:384` | commandes en haut, bouton unique Afficher / Masquer | barre de pilotage en bas | barre en haut ; libellés « graphes et réponses » |
 | QR agrandi | `assets/screen.js:447` (touche Q) | clic → fenêtre, Échap, extérieur, retour du focus | touche seulement | fenêtre agrandie au clic (projection et Pilotage) |
 | Participant | `index.php`, `assets/app.js` | aperçu participant | présent (refait le 18/10/2026) | inchangé dans ce chantier sauf écart constaté |
+
+## Réalisé le 19/10/2026 (branche, pas en ligne)
+
+Commits `7ab89e6`, `6df8842`, `fcdc747`. Mesuré en local (`bash tests/run.sh`, Playwright) : e2e 432,
+navigateur 103, galerie 768, charte 15 ; tout vert.
+
+- **Espace animateur** : onglets Préparer → Pilotage → Animer → Bilan → Réglages ; Animer en trois
+  colonnes (questions cliquables pour projeter, question au centre avec Précédente / Suivante en haut,
+  participation) ; Pilotage (invitation, QR agrandi, accueil, signaux effaçables, Oser demander,
+  pseudonymes) ; Mes ateliers / Bibliothèque / Archives en onglets.
+- **Création** : fenêtre « Créer un atelier » (vide ou JSON). Voie JSON : aperçu sans session,
+  session créée à la validation, supprimée si l'import est refusé (test navigateur : annuler ne crée
+  rien, valider en crée une seule). Public « Autres » (160 caractères), niveau, nombre 1 à 30 ou
+  durée 15 à 180 min avec estimation. La relecture par une autre IA demande maintenant la version
+  JSON corrigée, à recoller puis revérifier ; modifier le JSON retire l'aperçu.
+- **Écart signalé** : « Ajouter depuis un JSON » gardé dans Préparer pour compléter un atelier
+  existant (la simulation ne le propose qu'à la création). « Projeter » retiré de la liste de
+  Préparer : la liste d'Animer le remplace.
+- **Serveur** : commandes `welcome` (retour à l'accueil) et `signals_clear` (e2e : l'effacement ne
+  réveille pas les appareils).
+- **Projection** : bouton central à étapes gardé (point à ne pas défaire du 16/10/2026) ; son étape
+  d'affichage s'appelle « Afficher les graphes et réponses » et « Masquer les graphes et réponses »
+  apparaît seul ensuite, même sans réponse. Commandes en haut à partir de 761 px ; **en bas sur
+  téléphone** (en haut, repliées, elles faisaient sortir les gommettes de l'écran à 390 px, mesuré).
+  QR cliquable : agrandi, fermé par « Fermer », Échap ou clic à côté, focus rendu.
+
+Mesures navigateur du 19/10/2026 (démo, 10 formes, résultats affichés, animateur connecté) :
+- Espace animateur, 5 onglets + génération, à 1920×1080, 1280×720, 1024×768, 390×844 : aucun
+  débordement horizontal, aucune cible sous 44 px, aucune erreur JS.
+- Projection : dernière réponse dans l'écran pour les 10 formes aux 4 tailles. À 390 px (tactile),
+  polices de 13,6 à 18 px ; gommettes à 12 px, comme sur la base `3be45e5`.
+
+**Pas testé** : vrais appareils distants (seulement plusieurs contextes de navigateur sur le même
+serveur local), lecteur d'écran, projection physique, sondage, échelle et étapes en plein écran réel.

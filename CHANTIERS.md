@@ -24,6 +24,9 @@ Ouvert le 18/10/2026 : le prototype v3 (`docs/charte-v3/`) est une refonte de la
 Ouvert le 19/10/2026 (consigne `PAPPERBOARD-CHATGPT/docs/CONSIGNE-CLAUDE-UI-PHP.md`). Audit,
 décisions et suivi : `docs/integration-ui-simulation.md`. Mise en ligne seulement sur le feu vert
 de l'utilisateur. AG-007 (moutarde `#8A6500`) refusé par l'utilisateur le 19/10/2026 : `#B18400` gardé.
+**Fait sur la branche le 19/10/2026** (tests verts en local) : espace animateur, création vide / JSON
+(niveau, durée, public « Autres »), projection (commandes en haut, masquage dédié, QR cliquable).
+**Reste** : essai par l'utilisateur, puis feu vert pour avancer `main`.
 
 ## Restant, par priorité — tout côté utilisateur
 
