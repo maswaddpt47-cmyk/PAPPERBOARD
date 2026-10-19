@@ -84,6 +84,11 @@ expect_status($admin->post('control', ['s' => $code, 'op' => 'next']), 200, 'pre
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['question']['id'] === $qid['yesno'] && $st['question']['state'] === 'open', 'question suivante jamais ouverte : vote ouvert automatiquement');
 check($st['question']['correct'] === [], 'bonne réponse cachée avant affichage');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'welcome']), 200, 'retour à l\'accueil');
+check($admin->get("api.php?action=screen&s=$code")['json']['question'] === null
+    && $p[0]->get("api.php?action=state&s=$code")['json']['question'] === null, 'accueil : projection et appareils sans question');
+$admin->post('control', ['s' => $code, 'op' => 'next']);
+check(($p[0]->get("api.php?action=state&s=$code")['json']['question']['state'] ?? '') === 'open', 'après l\'accueil, « Suivante » reprend la première question, vote ouvert');
 
 /** Ouvre une question, fait voter, ferme, affiche ; renvoie les résultats. */
 function play(Client $admin, array $p, string $code, string $qid, array $votes): array
@@ -742,6 +747,12 @@ check(!str_contains(json_encode($scr()), 'signal'), 'signaux jamais servis à la
 $el[0]->post('signal', ['s' => $ws, 'kind' => 'fast']);
 check(($adm()['signals']['fast'] ?? 1) === 0, 'même signal renvoyé : retiré');
 expect_status($el[0]->post('signal', ['s' => $ws, 'kind' => 'pirate']), 400, 'signal inconnu refusé');
+// Signaux pris en compte : effacés par l'animateur, sans réveiller les téléphones.
+$el[2]->post('signal', ['s' => $ws, 'kind' => 'again']);
+$el[1]->poll($phonePath);
+expect_status($admin->post('control', ['s' => $ws, 'op' => 'signals_clear']), 200, 'signaux : effacés par l\'animateur');
+check(($adm()['signals'] ?? []) === ['fast' => 0, 'again' => 0, 'help' => 0], 'signaux : tous à zéro après effacement');
+check($el[1]->poll($phonePath)['status'] === 304, 'effacer les signaux ne réveille pas les téléphones');
 // Oser demander : anonyme, publié par l'animateur avant d'être vu des autres.
 expect_status($el[0]->post('ask', ['s' => $ws, 'text' => 'Question ?']), 409, 'oser demander fermé : refusé');
 $admin->post('control', ['s' => $ws, 'op' => 'asks_open']);

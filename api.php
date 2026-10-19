@@ -737,9 +737,15 @@ function api_control(array $b): void
     // Bilan, QR code, projection d'« Oser demander » ou du podium : seule la
     // projection change, pas les téléphones.
     $board = in_array($op, ['board', 'board_next', 'board_prev', 'board_off'], true);
-    $qr = $op === 'qr_hide' || $op === 'qr_show';
+    // Signaux pris en compte par l'animateur : effacés tout de suite (sinon après WL_SIGNAL_TTL).
+    // Les appareils n'ont pas à le savoir : leur bouton se relâche seul à l'échéance.
+    $qr = $op === 'qr_hide' || $op === 'qr_show' || $op === 'signals_clear';
     $show = in_array($op, ['show_asks', 'show_podium', 'show_off'], true);
     wl_update(api_code($b), function (array &$s) use ($op, $b, $board, $qr, $show) {
+        if ($op === 'signals_clear') {
+            $s['signals'] = [];
+            return;
+        }
         if ($qr) {
             $s['qrHidden'] = $op === 'qr_hide';
             return;
@@ -785,6 +791,10 @@ function api_control(array $b): void
         if ($op !== 'lock' && $op !== 'unlock') {
             $s['board'] = -1;
             $s['show'] = '';
+        }
+        if ($op === 'welcome') {
+            $s['current'] = -1; // accueil : adresse, code et QR code sur la projection
+            return;
         }
         if (in_array($op, ['next', 'prev', 'goto'], true)) {
             $target = match ($op) {
