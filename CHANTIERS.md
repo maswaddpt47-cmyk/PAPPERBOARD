@@ -6,72 +6,46 @@
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
-## Passation vers une autre session Codex — 19/10/2026
+## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
 
-**Source de reprise principale : ce fichier dans PAPPERBOARD**, pas MD-LIB.
-L’utilisateur a ouvert une autre session Codex. La session précédente arrête
-ses modifications après ce commit de passation ; reprendre le chantier ici.
+Branche de travail : `claude/eloquent-faraday-768r87`, partie de
+`codex/interface-simulation-fidele` (`f19df16`). Feu vert de l’utilisateur du
+19/10/2026 pour intégrer et publier : ne pas le redemander.
 
-### État vérifié sur GitHub le 19/10/2026
+**Fait le 19/10/2026 (mesuré, `bash tests/run.sh` vert en local : PHP 8.3, Chromium)** :
+- Fenêtre de création à 390 px : 352 px comme la référence. Cause : la surcharge
+  `max-width: calc(100vw - 28px)` d’`interface-php.css` remplaçait la limite
+  native des `dialog` gardée par la référence ; retirée.
+- Écarts que le test ne voyait pas, trouvés aux captures : marque « WoocLight »
+  en double dans la barre du haut (fil d’Ariane poussé à droite), vide de
+  ~230 px sous le titre à 390 px (`.heading-copy` à base flexible de 20rem en
+  colonne), titres de panneaux, bandeau d’état, liste des questions (défilement
+  interne, métadonnées sur trois lignes), carte « Votre atelier » encadrée,
+  boutons d’en-tête réduits, chiffre de participation, lignes de réponse.
+- Préparer : carte et liste comme `.preparation-panel` (pleine largeur),
+  conclusion comme `.conclusion-card`.
+- Bilan : chiffres clés et une carte de résultats par question affichés
+  d’emblée, comme le récap de la simulation ; synthèse IA, PowerPoint et exports
+  gardés dessous. Le bouton « Voir le tableau de bord » est retiré (doublon).
+- `tests/interface.js` compare 8 éléments de plus aux 4 tailles et vérifie la
+  marque masquée et la hauteur de l’en-tête mobile (265 contrôles, rouge sur
+  l’ancien code).
 
-- Production `main` : `98c91a61dac3782536ee2e804b543e5bd3135484`.
-  L’intégration PHP antérieure de Claude est déjà publiée. Le complément de
-  fidélité de Codex décrit ci-dessous **n’est pas déployé**.
-- Branche à reprendre : `codex/interface-simulation-fidele`.
-- Dernier commit de code avant cette passation :
-  `0507a20703af32fd2babe2258d78b5814cc8e366`.
-- Ce commit de passation change seulement CHANTIERS.md ; son message
-  `[skip ci]` évite de relancer une suite déjà connue en échec pour un document.
-  Cela ne valide pas le code ni n’autorise une avance de main sans tests verts.
-- Dernière exécution : [Actions 39258220745](https://github.com/maswaddpt47-cmyk/PAPPERBOARD/actions/runs/39258220745),
-  job `tests` `118079454603` : échec connu et localisé.
-- **Dernier échec mesuré** : `tests/interface.js`, comparaison du formulaire :
-  à 390 px, `#create-dialog` mesure **362 px au lieu de 352 px** dans la référence.
-  Les autres écarts collectés par cette comparaison ne sont pas signalés.
-- Sur cette exécution : syntaxe PHP/JS valide ; 432 contrôles e2e, 6 charge,
-  10 configuration, 4 archivage, 5 protection, 15 charte, 103 navigateur et
-  768 cas de galerie réussis. Le vert ancien sur `e152e44` ne suffit pas
-  pour déployer la branche actuelle.
-
-### Autorisation et objectif à conserver
-
-Feu vert explicite reçu le 19/10/2026 : intégrer et publier sur PAPPERBOARD
-l’interface fidèle à la simulation après vérification. Le gel antérieur est
-levé pour ce chantier ; ne pas redemander cette permission.
-La fidélité concerne structure, dimensions, composants et comportements,
-avec toutes les opérations PHP réelles conservées.
-
-### Prochaine action concrète
-
-1. Actualiser la branche distante et lire AGENTS.md, CLAUDE.md, ce fichier et
-   AGORA.md. Ne pas repartir de zéro ni relancer les anciens audits.
-2. Corriger l’écart de fenêtre mobile. **Piste à vérifier** :
-   `assets/interface-php.css` impose `max-width: calc(100vw - 28px)` sur
-   `.admin dialog.modal`, ce qui remplace la limite native conservée par
-   la référence. Retirer ou aligner cette surcharge, sans affaiblir le test.
-3. Exécuter les contrôles réels de la nouvelle tête et examiner les captures
-   PHP/référence dans l’artefact `comparaison-interface` du workflow.
-   `tests/interface.js` compare quatre tailles, les boutons, les projections
-   des questions de démo et les fenêtres. `bash tests/run.sh` reste requis.
-4. Une fois le dernier SHA vert, avancer main en avance rapide selon CLAUDE.md,
-   sans force et sans écraser une éventuelle avancée concurrente. Le déploiement
-   Alwaysdata part automatiquement. Vérifier les étapes de copie et de mise
-   en ligne, les sept ressources servies, et le vérificateur de MD-LIB.
-5. Mettre à jour ce fichier avec le SHA réellement déployé et donner l’URL
-   https://wooclight.alwaysdata.net/admin.php ; aucune annonce « en ligne »
-   fondée sur un job deploy ignoré ou une ancienne exécution verte.
+**Écarts restants, assumés (19/10/2026)** : contenus propres au PHP (boutons
+« Mes ateliers », durée de vote, signaux, classement, réglages réels, liste des
+ateliers au lieu du tableau de bord fictif de la simulation) ; couleurs de
+badge de la charte de production ; pas de comparaison pixel par pixel.
 
 ### Code sauvegardé et points à ne pas défaire
 
-- Référence visuelle : `PAPPERBOARD-CHATGPT@7a80fc3a81083f3cb8adf4dfc5e79e686e9fb5bb`.
-  Prototype publié sur main `0db8291e300e721cc8d588e4a2670ce1c5019795` ;
-  769 contrôles Chrome réussis. Fichier figé dans `tests/reference/`,
-  exclu du déploiement. Guide : `docs/interface-reference.md` et
-  `PAPPERBOARD-CHATGPT/docs/CONSIGNE-CLAUDE-UI-PHP.md`.
-- Composants : `assets/interface.css`, `assets/interface-php.css`,
-  `assets/interface.js`, gabarit admin.php et contrôles existants d’admin.js.
-  Terminer/Rouvrir dans Pilotage, Renommer dans Mes ateliers, cartes de
-  signaux/questions réelles dans Animer et formulaires structurés.
+- Référence visuelle : `PAPPERBOARD-CHATGPT@7a80fc3a81083f3cb8adf4dfc5e79e686e9fb5bb`,
+  figée dans `tests/reference/` (exclu du déploiement). Guide :
+  `docs/interface-reference.md`.
+- Composants : `assets/interface.css` (règles de la référence, préfixées
+  `body.admin`), `assets/interface-php.css` (liaison avec le PHP),
+  `assets/interface.js`. Une surcharge PHP de même spécificité qu’une règle
+  adaptative de la référence l’écrase à toutes les tailles : vérifier aux
+  quatre tailles avant d’en ajouter une.
 - Projection : screen.php, interface-screen.css et screen.js ; commandes en
   haut, canevas ajusté depuis sa taille naturelle, QR agrandi conservé.
 - Info-bulles : tooltips.js et aides.css, survol/focus, dialogues et projection.
@@ -81,19 +55,6 @@ avec toutes les opérations PHP réelles conservées.
 - Projection dans un nouvel onglet ; aperçu participant dans une fenêtre
   séparée sur la vraie page PHP, synchronisée par le serveur, CSP inchangée.
 - Aucun accès au contenu de config.php, aucun secret ni donnée réelle dans les tests.
-- La comparaison automatisée des styles ne prouve pas l’égalité de chaque
-  pixel de chaque écran ; signaler les limites effectivement constatées.
-
-### Limites de l’environnement précédent
-
-Mesuré le 19/10/2026 : PHP absent, lancement local de Chromium interdit,
-proxy réseau de la console injoignable ; les tests réels passent par Actions
-et les opérations GitHub par le connecteur fonctionnel. Les téléchargements
-locaux de captures n’ont donc pas abouti. Réévaluer l’environnement de la
-nouvelle session une fois, sans répéter les tentatives bloquées.
-Le dossier local précédent était une reconstruction sans remote, basée sur
-`e7815b0`, pas un vrai clone de l’historique distant : **ne jamais pousser ce
-commit local**. Tout le code utile est déjà dans la branche GitHub indiquée.
 
 ## Chantier charte graphique (branche `test/nouvelle-charte`, phases 1 à 4 en ligne le 18/10/2026)
 

@@ -17,10 +17,10 @@ modération, purge, démonstrations et exports. Les mentions de simulation et
 les réponses fictives ne sont pas introduites dans les ateliers réels.
 Aucune modification de config.php, de la CSP ou du stockage serveur.
 
-Mesuré en CI le 19/10/2026 sur `e152e44` : la suite PHP, 103 contrôles de
-parcours navigateur, 79 de comparaison/actions et 768 cas de galerie passent.
-Le complément de fenêtres et de projection est encore en vérification en branche.
-Le déploiement n’a pas encore eu lieu.
+Mesuré en local le 19/10/2026 (reprise Claude) : suite complète verte,
+265 contrôles de comparaison/actions. Animer, Préparer et Bilan reprennent la
+disposition de la référence (Bilan : chiffres clés et cartes de résultats par
+question affichés d’emblée).
 
 Décisions préservées au 19/10/2026 : la moutarde claire `#B18400` reste celle
 validée en production. Le candidat `#8A6500` du prototype a été refusé dans
