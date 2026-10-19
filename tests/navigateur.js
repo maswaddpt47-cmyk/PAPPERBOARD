@@ -310,8 +310,9 @@ function check(cond, label) {
   const demoPage = await admin.context().newPage();
   watch(demoPage, 'démo');
   await demoPage.goto(BASE + 'admin.php');
-  await demoPage.click('[data-nav=history]');
-  await demoPage.click('#demo-btn');
+  await demoPage.click('#create-btn');
+  await demoPage.check('#create-demo');
+  await demoPage.click('#create-ok');
   await demoPage.waitForSelector('#editor:not([hidden])');
   await demoPage.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 11);
   const lastDemo = demoPage.locator('#q-list .list-item').last();
@@ -486,15 +487,16 @@ function check(cond, label) {
   check((await shell.getAttribute('[data-nav=workshop]', 'aria-disabled')) === 'true', 'coque : « Mon atelier » désactivé sans session ouverte');
   await shell.click('[data-nav=history]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=history]').getAttribute('aria-current') === 'page'); // le menu suit la vue au tour d'animation suivant
-  check(await shell.isVisible('#archive-list') && await shell.isVisible('#session-list') && await shell.isVisible('#demo-btn'), 'coque : « Mes ateliers » montre les ateliers en cours, les archivés et les démos');
+  check(await shell.isVisible('#archive-list') && await shell.isVisible('#session-list') && await shell.isVisible('.demo-controls'), 'coque : « Mes ateliers » montre les ateliers en cours, les archivés et les démos');
   await shell.click('[data-nav=library]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=library]').getAttribute('aria-current') === 'page');
   check(await shell.isVisible('#library-grid .content-card') && await shell.isVisible('#seance-select'), 'coque : « Bibliothèque de modèles » montre les séances');
   await shell.click('[data-nav=overview]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=overview]').getAttribute('aria-current') === 'page');
-  check(await shell.isVisible('#create-btn') && !(await shell.isVisible('#demo-btn')), 'coque : la Vue d’ensemble ne montre que ses propres actions');
-  await shell.click('[data-nav=history]');
-  await shell.click('#demo-btn');
+  check(await shell.isVisible('#create-btn') && !(await shell.isVisible('.demo-controls')), 'coque : la Vue d’ensemble ne montre que ses propres actions');
+  await shell.click('#create-btn');
+  await shell.check('#create-demo');
+  await shell.click('#create-ok');
   await shell.waitForSelector('#editor:not([hidden])');
   await shell.waitForFunction(() => document.getElementById('sidebar-session') && !document.getElementById('sidebar-session').hidden);
   check((await shell.getAttribute('[data-nav=workshop]', 'aria-current')) === 'page', 'coque : « Mon atelier » actif avec une session ouverte');

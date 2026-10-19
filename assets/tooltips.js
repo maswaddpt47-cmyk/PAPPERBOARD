@@ -3,7 +3,7 @@
   var selector = 'button, a.btn, label.btn, [role="button"]';
   var tooltip, owner, timer, closing, priorDescription, priorTitle;
   var tips = {
-    'create-workshop': 'Créer un atelier vide ou préparer ses questions par génération ou import JSON.',
+    'create-workshop': 'Créer un atelier vide, préparer ses questions par génération ou import JSON, ou créer une démonstration avec des participants fictifs.',
     'create-demo': 'Créer un nouvel atelier avec des participants et des réponses fictifs pour tester seul.',
     'delete-demos': 'Supprimer uniquement les ateliers marqués Démo, après confirmation. Les créations, imports et copies sont conservés.',
     'open-history': 'Retrouver vos ateliers, vos archives et les commandes de démonstration.',
@@ -73,8 +73,7 @@
   var tabs = { prep: 'Préparer et organiser les questions et la conclusion.', control: 'Gérer les invitations, les inscriptions et les échanges avec le groupe.', live: 'Piloter les questions, les votes et la visibilité des résultats.', recap: 'Consulter le bilan et télécharger les résultats.', settings: 'Consulter les informations de conservation et le statut de purge de la simulation.' };
   var forms = { 'workshop-form': 'Continuer la création avec un atelier vide ou le parcours JSON choisi.', 'question-form': 'Vérifier et enregistrer cette question.', 'participant-form': 'Envoyer cette réponse fictive à l’animateur.', 'anonymous-question-form': 'Envoyer cette question anonyme à l’animateur pour relecture.', 'rename-workshop-form': 'Enregistrer le nouveau nom sans modifier les questions ni les réponses.', 'create-demo-form': 'Créer une démo sur le thème choisi, avec 12 participants fictifs et des réponses.' };
   var phpTips = {
-    'create-btn': 'Créer un atelier vide ou préparer ses questions par génération ou import JSON.',
-    'demo-btn': 'Créer une session de démonstration avec des participants et des réponses fictifs.',
+    'create-btn': 'Créer un atelier vide, préparer ses questions par génération ou import JSON, ou créer une démonstration avec des participants fictifs.',
     'demo-delete': 'Supprimer uniquement les sessions de démonstration, après confirmation. Les autres ateliers sont conservés.',
     'end-control-btn': 'Terminer la session après confirmation, ou la rouvrir pour reprendre les votes.',
     'end-live-btn': 'Terminer la session après confirmation, ou la rouvrir pour reprendre les votes.',

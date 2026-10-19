@@ -16,8 +16,8 @@ PHP 8.4 préparé hors dépôt ; tests API, charge et navigateur verts ;
 Chromium interdisant file:// ; équivalent HTTP : 768 cas, aucun échec.
 Branche `codex/atelier-en-cours`, publication Alwaysdata non effectuée :
 API GitHub Actions refusée par le proxy, CI distante non vérifiable.
-Suggestion utilisateur à discuter : déplacer la création de démo vers
-« Créer un atelier » ; proposition de garder la gestion des démos dans Mes ateliers.
+Décision utilisateur du 19/10/2026 : la création de démo passe dans « Créer un atelier »
+(3ᵉ choix « Démonstration ») ; « Supprimer les démos » reste dans Mes ateliers.
 
 ## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
 

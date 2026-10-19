@@ -199,9 +199,8 @@ header('Cache-Control: no-store');
       </section>
       <section class="card content-card demo-controls">
         <h2>Tester avec des participants fictifs</h2>
-        <p>Créez une démonstration avec 12 participants fictifs, des réponses, des signaux et une question anonyme. Les démos sont repérées par le badge « Démo ».</p>
+        <p>Pour créer une démonstration (12 participants fictifs, des réponses, des signaux et une question anonyme), utilisez « Créer un atelier ». Les démos sont repérées par le badge « Démo ».</p>
         <div class="session-actions">
-          <button id="demo-btn" class="btn" type="button" title="Session remplie de participants fictifs (une question de chaque type, Oser demander, pseudonymes, signaux) pour vérifier tous les écrans seul ; à supprimer ensuite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sparkles"/></svg>Créer une session de démonstration</button>
           <button id="demo-delete" class="btn btn-danger" type="button" title="Efface toutes les sessions de démonstration (aucune archive)" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>Supprimer toutes les démos</button>
         </div>
         <p class="muted">La suppression groupée concerne uniquement les ateliers marqués « Démo ». Vos créations, imports et copies sont conservés.</p>
@@ -507,6 +506,8 @@ header('Cache-Control: no-store');
           <span><strong>Partir d'un atelier vide</strong><span class="meta">Vous ajoutez les questions à la main dans Préparer.</span></span></label>
         <label class="choice-card"><input type="radio" name="create-mode" id="create-json" value="json">
           <span><strong>Générer ou importer un JSON</strong><span class="meta">Consigne pour une IA, réponse collée ou fichier ; rien n'est créé avant votre validation.</span></span></label>
+        <label class="choice-card"><input type="radio" name="create-mode" id="create-demo" value="demo">
+          <span><strong>Démonstration avec participants fictifs</strong><span class="meta">12 participants fictifs, une question de chaque type et des réponses pour tout essayer seul ; le nom ci-dessus n'est pas utilisé. À supprimer ensuite.</span></span></label>
       </fieldset>
       <p id="create-error" class="error" role="alert"></p>
       </div>
@@ -517,7 +518,7 @@ header('Cache-Control: no-store');
 </form>
 </dialog>
 
-  <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Pilotage, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer, pilotez le vote et la visibilité des graphes et réponses.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, créez une session de démonstration dans Mes ateliers.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Pilotage, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer, pilotez le vote et la visibilité des graphes et réponses.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, choisissez « Démonstration » dans Créer un atelier.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
   <dialog id="rename-dialog" aria-labelledby="rename-title">
     <form id="rename-form" novalidate>
 <header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="rename-title">Renommer un atelier</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="rename-cancel" aria-label="Fermer la fenêtre">×</button></header>

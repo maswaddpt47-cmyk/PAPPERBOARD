@@ -15,8 +15,9 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#password').fill(process.env.WL_PASSWORD);
     await admin.locator('#login-form button').click();
     await admin.locator('#sessions:not([hidden])').waitFor();
-    await admin.locator('[data-nav="history"]').click();
-    await admin.locator('#demo-btn').click();
+    await admin.locator('#create-btn').click();
+    await admin.locator('#create-demo').check();
+    await admin.locator('#create-ok').click();
     await admin.locator('#editor:not([hidden])').waitFor();
     await admin.locator('#ed-title').filter({hasText: 'Démo'}).waitFor();
     await reference.goto(base + 'tests/reference/interface.html');

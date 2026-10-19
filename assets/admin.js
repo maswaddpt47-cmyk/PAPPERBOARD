@@ -233,8 +233,12 @@
 
   // --- Créer un atelier : vide, ou depuis un JSON (créé seulement à la validation de l'aperçu) ---
 
-  function createMode() { return $('create-json').checked ? 'json' : 'empty'; }
-  function syncCreate() { $('create-ok').textContent = createMode() === 'json' ? 'Continuer' : 'Créer l\'atelier'; }
+  function createMode() { return $('create-json').checked ? 'json' : $('create-demo').checked ? 'demo' : 'empty'; }
+  function syncCreate() {
+    var m = createMode();
+    $('create-ok').textContent = m === 'json' ? 'Continuer' : m === 'demo' ? 'Créer la démonstration' : 'Créer l\'atelier';
+    $('new-title').required = m !== 'demo';
+  }
   $('create-btn').addEventListener('click', function () {
     $('new-title').value = '';
     $('create-empty').checked = true;
@@ -245,11 +249,13 @@
   });
   $('create-empty').addEventListener('change', syncCreate);
   $('create-json').addEventListener('change', syncCreate);
+  $('create-demo').addEventListener('change', syncCreate);
   $('create-cancel').addEventListener('click', function () { $('create-dialog').close(); });
 
   $('create-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var title = $('new-title').value.trim();
+    if (createMode() === 'demo') { $('create-dialog').close(); createDemo(); return; }
     if (!title) { $('create-error').textContent = 'Donnez un nom à l\'atelier.'; $('new-title').focus(); return; }
     if (createMode() === 'json') {
       $('create-dialog').close();
@@ -356,13 +362,13 @@
     }).catch(function () { /* message déjà affiché dans la bannière */ });
   });
 
-  $('demo-btn').addEventListener('click', function () {
+  function createDemo() {
     post('session_demo', {}).then(function (d) {
       // Fonctions en essai activées : le défi à étapes ferme la démo (la salle fictive y a déjà coché des étapes).
       var more = beta ? post('question_save', { s: d.code, question: CHALLENGES.notifs }) : Promise.resolve();
       more.then(function () { openSession(d.code); });
     });
-  });
+  }
 
   // --- Éditeur et pilotage ---------------------------------------------------------
 
