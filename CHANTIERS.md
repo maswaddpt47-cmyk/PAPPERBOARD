@@ -8,9 +8,12 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
 
 ## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
 
+**En ligne le 19/10/2026** : `main` = `8c512da`, run Actions 39267984825 vert
+(tests, deploy, paquet) ; l’étape « Vérifier la mise en ligne » a relu sur le
+serveur le contenu du commit pour les sept ressources de l’interface.
+**Reste** : essai par l’utilisateur sur PC et téléphone (Animer, Préparer, Bilan).
 Branche de travail : `claude/eloquent-faraday-768r87`, partie de
-`codex/interface-simulation-fidele` (`f19df16`). Feu vert de l’utilisateur du
-19/10/2026 pour intégrer et publier : ne pas le redemander.
+`codex/interface-simulation-fidele` (`f19df16`).
 
 **Fait le 19/10/2026 (mesuré, `bash tests/run.sh` vert en local : PHP 8.3, Chromium)** :
 - Fenêtre de création à 390 px : 352 px comme la référence. Cause : la surcharge
