@@ -34,7 +34,7 @@ wl_security_headers();
 <nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
   <button id="p-step" class="btn btn-primary" type="button"></button>
-  <button id="p-hide" class="btn" type="button" title="Retire les graphes et réponses de la projection et des appareils ; les réponses reçues sont gardées" hidden>Masquer les graphes et réponses</button>
+  <button id="p-hide" class="btn" type="button" hidden>Afficher</button>
   <button id="p-reopen" class="btn" type="button" title="Rouvre le vote de cette question (les résultats sont masqués avant, sauf pour un mur ou un post-it)" hidden>Rouvrir le vote</button>
   <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>

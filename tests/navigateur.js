@@ -161,8 +161,7 @@ function check(cond, label) {
   check(votes.length === 1, 'vote envoyé par le bouton « Envoyer »');
   check(await phone.getAttribute('.btn-choice >> text=Oui', 'aria-pressed') === 'true', 'choix marqué');
 
-  // Pilote sur téléphone : les étapes ouvrir / fermer / afficher restent des boutons ;
-  // « Question suivante » se cache (le glisser fait pareil).
+  // Pilote sur téléphone : vote et affichage restent des boutons ; le glisser remplace Précédente / Suivante.
   const mob = await (await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true,
     storageState: await admin.context().storageState() })).newPage();
   await mob.goto(BASE + 'screen.php?s=' + code);
@@ -187,8 +186,10 @@ function check(cond, label) {
   check(/100 % · Bonne réponse/.test(await screen.textContent('#s-results .donut-legend .is-good')), 'résultat projeté');
   await phone.waitForSelector('#my-result:not([hidden])');
   check(/Bonne réponse !/.test(await phone.textContent('#my-result')), 'correction sur le téléphone');
-  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Question suivante');
-  check(await mob.locator('#p-step').isHidden(), 'pilote sur téléphone : « Question suivante » caché, le glisser le remplace');
+  await mob.waitForFunction(() => document.getElementById('p-hide').textContent === 'Masquer');
+  check(await mob.locator('#p-step').isVisible() && (await mob.textContent('#p-step')) === 'Rouvrir le vote' && await mob.locator('#p-hide').isVisible(),
+    'projection pilotée : boutons « Rouvrir le vote » et « Masquer », comme dans Animer');
+  check(await mob.locator('#p-next').isHidden(), 'pilote sur téléphone : Suivante remplacée par le glisser');
   await mob.context().close();
 
   // Vrai/Faux corrigé et modifiable : un appui envoie tout de suite, sans « Envoyer ».
@@ -458,11 +459,11 @@ function check(cond, label) {
   // Afficher puis masquer les graphes et réponses, même sans réponse reçue : une seule commande visible à la fois.
   const lq = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
   await post('control', { s: ds, op: 'show' });
-  await lens.waitForFunction(() => !document.getElementById('p-hide').hidden);
-  check((await lens.textContent('#p-hide')) === 'Masquer les graphes et réponses' && !/Afficher/.test(await lens.textContent('#p-step')),
-    'projection : résultats affichés, « Masquer les graphes et réponses » seul présent');
+  await lens.waitForFunction(() => document.getElementById('p-hide').textContent === 'Masquer');
+  check(!/Afficher/.test(await lens.textContent('#p-step')) && await lens.locator('#p-prev').isVisible() && await lens.locator('#p-next').isVisible(),
+    'projection : résultats affichés, « Masquer » présent, Précédente / Suivante toujours là');
   await lens.click('#p-hide');
-  await lens.waitForFunction(() => document.getElementById('p-hide').hidden);
+  await lens.waitForFunction(() => document.getElementById('p-hide').textContent === 'Afficher');
   const lq2 = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
   check(lq2.questions[lq2.current].showResults === false && lq.questions[lq.current].results.total === lq2.questions[lq2.current].results.total,
     'projection : masquer retire les graphes, les réponses restent');

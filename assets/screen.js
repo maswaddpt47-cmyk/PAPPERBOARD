@@ -331,80 +331,94 @@
     return last.position >= last.count ? 'end' : 'next';
   }
 
-  /** Bouton central ou Espace : fermer ou afficher sans aucune réponse demande
-   *  un second appui dans les 4 secondes (un vote fermé trop tôt, 15/10/2026). */
-  var warnUntil = 0;
-  function step() {
-    var op = stepOp(), q = last && last.question;
+  /** Fermer ou afficher sans aucune réponse demande un second appui dans les
+   *  4 secondes (un vote fermé trop tôt, 15/10/2026). Vaut pour Espace et pour
+   *  les boutons « Fermer le vote » / « Afficher ». */
+  var warnUntil = 0, warnBtn = '';
+  function noAnswer() {
+    var q = last && last.question;
     var post = q && (q.type === 'wall' || q.type === 'postit');
-    var none = q && q.state !== 'draft' && !(post ? last.contributors : last.answered);
-    if ((op === 'close' || op === 'show') && none && Date.now() >= warnUntil) {
-      warnUntil = Date.now() + 4000;
+    return !!q && q.state !== 'draft' && !(post ? last.contributors : last.answered);
+  }
+  function guarded(btn, op, run) {
+    if ((op === 'close' || op === 'show') && noAnswer() && !(Date.now() < warnUntil && warnBtn === btn)) {
+      warnUntil = Date.now() + 4000; warnBtn = btn;
       pilotLabel();
       setTimeout(pilotLabel, 4100);
       return;
     }
-    warnUntil = 0;
-    control(op);
+    warnUntil = 0; warnBtn = '';
+    if (run) run(); else control(op);
+  }
+  /** Espace : l'étape suivante logique (ouvrir, fermer, afficher, suivante). */
+  function step() { var op = stepOp(); guarded('p-step', op === 'show' ? 'show' : op); }
+
+  /** Bouton de vote : Lancer (accueil), Ouvrir, Fermer ou Rouvrir le vote ;
+   *  en projection du bilan ou d'« Oser demander » : revenir à la question. */
+  function voteOp() {
+    var q = last && last.question;
+    if (last && (last.board || last.show)) return stepOp();
+    if (!q) return 'next';
+    var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
+    return q.state === 'draft' ? 'open' : open ? 'close' : 'reopen';
+  }
+  function vote() {
+    var op = voteOp();
+    guarded('p-step', op, op === 'reopen' ? reopen : null);
   }
 
+  /** Commandes de la projection : les mêmes que l'onglet Animer (demande de
+   *  l'utilisateur, 20/10/2026), libellés courts ; Espace garde l'étape logique. */
   function pilotLabel() {
     if (!csrf) return;
     var board = !!(last && last.board), ended = !!(last && last.ended);
     WL.show($('s-pilot'), true);
     // Session terminée : seul le bilan se pilote encore.
     var shown = !!(last && last.show);
-    ['p-prev', 'p-next', 'p-step', 'p-count'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
+    ['p-prev', 'p-next', 'p-step'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
+    WL.show($('p-count'), false);
     WL.show($('p-board'), !board);
     WL.show($('p-reopen'), false);
     WL.show($('p-hide'), false);
     // « Oser demander » ouvert : bouton pour projeter (ou quitter) les questions.
     WL.show($('p-asks'), !!(last && (last.asksOpen || last.show === 'asks')));
     $('p-asks').textContent = last && last.show === 'asks' ? 'Quitter les questions' : '❓ Questions (' + ((last && last.asksCount) || 0) + ')';
-    if (last && last.show) {
+    $('p-next').textContent = 'Suivante ▶';
+    if (shown) {
       $('p-step').textContent = 'Revenir à la question';
       $('p-step').title = 'Arrête la projection ' + (last.show === 'asks' ? 'des questions' : 'du podium') + ' (Espace)';
-      $('p-count').textContent = '';
       WL.show($('p-prev'), false);
       WL.show($('p-next'), false);
       return;
     }
     if (board) {
+      $('p-step').textContent = 'Revenir à la question';
       $('p-step').title = 'Revient à la projection de la question en cours (B)';
-      $('p-count').textContent = '';
       $('p-prev').disabled = last.board.position <= 1;
       $('p-next').disabled = last.board.position >= last.board.count;
       return;
     }
-    var q = last && last.question, op = stepOp();
+    var q = last && last.question, op = voteOp();
     var post = q && (q.type === 'wall' || q.type === 'postit');
-    $('p-step').textContent = op === 'open' ? 'Ouvrir le vote' : op === 'close' ? 'Fermer le vote'
-      : op === 'show' ? (post ? 'Publier' : 'Afficher les graphes et réponses') : op === 'end' ? 'Récap et conclusion'
-      : q ? 'Question suivante' : 'Commencer';
-    if (Date.now() < warnUntil) $('p-step').textContent = 'Aucune réponse : confirmer ?';
-    // À l'étape « Question suivante », le glisser fait pareil : le bouton se cache sur téléphone.
-    $('p-step').classList.toggle('s-swipe-only', !!q && op === 'next');
+    var warn = function (id) { return Date.now() < warnUntil && warnBtn === id; };
+    $('p-step').textContent = warn('p-step') ? 'Aucune réponse : confirmer ?'
+      : { next: 'Lancer', open: 'Ouvrir le vote', close: 'Fermer le vote', reopen: 'Rouvrir le vote' }[op];
     $('p-step').title = {
-      open: 'Les participants peuvent répondre', close: 'Plus aucune réponse acceptée',
-      show: post ? 'Rend les contributions visibles de tous' : 'Montre les résultats et la bonne réponse',
-      next: 'Passe à la question suivante',
-      end: 'Termine la session : récap et conclusion sur la projection et les téléphones (« Rouvrir la session » dans l\'espace animateur pour revenir)'
-    }[op] + ' (Espace)';
-    $('p-count').textContent = q && q.state !== 'draft'
-      ? (post ? last.contributors : last.answered) + ' / ' + last.present + (post ? ' ont participé' : ' ont répondu') : '';
+      next: 'Passe à la première question et ouvre son vote', open: 'Les participants peuvent répondre',
+      close: 'Plus aucune réponse acceptée', reopen: 'Rouvre le vote (les résultats sont masqués avant, sauf pour un mur ou un post-it)'
+    }[op] + ' (Espace : étape suivante)';
+    // Afficher / Masquer (Publier pour un mur ou un post-it).
+    WL.show($('p-hide'), !!q && !ended);
+    $('p-hide').textContent = warn('p-hide') ? 'Aucune réponse : confirmer ?' : q && q.showResults ? 'Masquer' : post ? 'Publier' : 'Afficher';
+    $('p-hide').title = q && q.showResults ? 'Retire les graphes et réponses de la projection et des appareils ; les réponses reçues sont gardées'
+      : post ? 'Rend les contributions visibles de tous' : 'Montre les graphes, les réponses et la bonne réponse';
     $('p-prev').disabled = !last || last.position === 0;
-    $('p-next').disabled = !!last && last.position >= last.count;
-    var voting = !!q && q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
-    WL.show($('p-reopen'), !!q && !ended && q.state !== 'draft' && !voting);
-    // Une seule commande d'affichage à la fois : le bouton central affiche, celui-ci masque (même sans réponse reçue).
-    WL.show($('p-hide'), !!q && q.showResults);
-    $('p-hide').textContent = post ? 'Masquer aux participants' : 'Masquer les graphes et réponses';
-    // Moins de boutons (demande du 16/10/2026) : « Suivante » seulement quand le
-    // bouton central fait autre chose ; décompte déjà projeté en grand ; « Bilan »
-    // à la dernière question (touche B toujours active).
-    WL.show($('p-next'), op !== 'next' && op !== 'end' && !!last && last.position < last.count);
-    WL.show($('p-count'), false);
-    WL.show($('p-board'), ended || (!!last && last.count > 0 && last.position >= last.count));
+    // Dernière question : « Suivante » devient « Récap et conclusion » (fin de session).
+    var lastOne = !!last && last.count > 0 && last.position >= last.count;
+    if (lastOne && q) $('p-next').textContent = 'Récap et conclusion ▶';
+    $('p-next').title = lastOne ? 'Termine la session : récap et conclusion sur la projection et les appareils' : 'Question suivante, son vote s\'ouvre (flèche droite)';
+    $('p-next').disabled = !last || (lastOne && !q);
+    WL.show($('p-board'), ended || lastOne);
   }
 
   /** QR agrandi au centre : clic sur le QR ou touche Q ; fermé par « Fermer », Échap ou un clic à côté. */
@@ -434,12 +448,19 @@
     var onBoard = function () { return !!(last && last.board); };
     var ended = function () { return !onBoard() && !(last && last.show) && !!(last && last.ended); };
     var prev = function () { if (!ended()) control(onBoard() ? 'board_prev' : 'prev'); };
-    var next = function () { if (!ended()) control(onBoard() ? 'board_next' : 'next'); };
+    var next = function () {
+      if (ended()) return;
+      var endHere = !onBoard() && !(last && last.show) && !!last && last.count > 0 && last.position >= last.count;
+      control(onBoard() ? 'board_next' : endHere ? 'end' : 'next');
+    };
     $('p-prev').addEventListener('click', prev);
     $('p-next').addEventListener('click', next);
-    $('p-step').addEventListener('click', step);
+    $('p-step').addEventListener('click', vote);
     $('p-reopen').addEventListener('click', reopen);
-    $('p-hide').addEventListener('click', function () { control('hide'); });
+    $('p-hide').addEventListener('click', function () {
+      var q = last && last.question;
+      if (q) guarded('p-hide', q.showResults ? 'hide' : 'show');
+    });
     $('p-board').addEventListener('click', function () { control('board'); });
     $('p-asks').addEventListener('click', function () { control(last && last.show === 'asks' ? 'show_off' : 'show_asks'); });
     // Téléphone : glisser vers la gauche = suivante, vers la droite = précédente

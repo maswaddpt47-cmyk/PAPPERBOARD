@@ -263,8 +263,10 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
 - Projection sur écran étroit : rien ne dépasse la largeur (gommettes : grille à 3
   colonnes fixes = 509 px sur 390, corrigé le 16/10/2026 ; nav, 390 px).
-- Pilotage au téléphone : glisser ← → (≥ 60 px, horizontal) ; le bouton central est
-  caché à l'étape « Question suivante » (le glisser fait pareil), jamais aux autres (nav).
+- Projection pilotée (20/10/2026, demande de l'utilisateur) : les mêmes commandes que l'onglet Animer,
+  libellés courts — Précédente | Lancer / Ouvrir / Fermer / Rouvrir le vote | Afficher / Masquer (Publier) |
+  Suivante (« Récap et conclusion » à la dernière question). Espace garde l'étape logique. Au téléphone,
+  glisser ← → (≥ 60 px, horizontal) remplace Précédente / Suivante (nav).
 - Défi à étapes (`steps`, 16/10/2026, en essai) : titres d'étapes communs ; variantes
   facultatives par appareil (2 à 4 : Windows, Mac, iPhone, Android…), même nombre
   d'étapes ; l'appareil choisi reste dans le navigateur, jamais envoyé ; décocher
