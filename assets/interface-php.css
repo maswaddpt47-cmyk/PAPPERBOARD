@@ -186,3 +186,6 @@ body.admin .question-nav .toolbar-main .btn { white-space: nowrap; }
   body.admin .question-nav .nav-label { display: none; }
   body.admin .question-nav > .btn { min-width: 44px; padding-left: .6rem; padding-right: .6rem; justify-content: center; }
 }
+@container live (max-width: 420px) {
+  body.admin .question-nav .toolbar-main .btn .icon { display: none; }
+}
