@@ -118,11 +118,12 @@ function check(cond, label) {
   check(!(await admin.locator('#qr-dialog').evaluate(d => d.open)) && (await admin.evaluate(() => document.activeElement.id)) === 'ed-qr-zoom', 'QR agrandi : Échap ferme, focus rendu');
   await admin.click('#go-live');
   check((await admin.getAttribute('#t-live', 'aria-selected')) === 'true', 'Pilotage → « Aller aux questions » ouvre Animer');
-  check(!(await admin.isDisabled('#open-btn')) && (await admin.textContent('#open-btn')) === 'Lancer la première question', 'Animer : à l’accueil, le bouton principal lance la première question (pas grisé)');
+  check(!(await admin.isDisabled('#open-btn')) && (await admin.textContent('#open-btn')) === 'Lancer', 'Animer : à l’accueil, le bouton principal lance la première question (pas grisé)');
   await admin.click('#open-btn'); // quitte l'accueil et ouvre le vote
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
   check(await admin.evaluate(() => { const b = document.getElementById('open-btn').getBoundingClientRect(), t = document.getElementById('live-text').getBoundingClientRect();
-    return b.bottom <= t.top; }), 'Animer : commandes de vote au-dessus de la question et du graphique');
+    const n = document.querySelector('#live [data-op="next"]').getBoundingClientRect(), p = document.querySelector('#live [data-op="prev"]').getBoundingClientRect();
+    return b.bottom <= t.top && b.left >= p.right && b.right <= n.left && b.top < n.bottom && b.bottom > n.top; }), 'Animer : commandes de vote entre Précédente et Suivante, au-dessus du graphique');
 
   // --- Projection ------------------------------------------------------------------
   const screen = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();

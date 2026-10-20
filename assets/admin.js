@@ -757,10 +757,10 @@
   var TIPS = {
     'Ouvrir le vote': 'Les participants peuvent répondre sur leur téléphone',
     'Fermer le vote': 'Plus aucune réponse acceptée pour cette question',
-    'Afficher les graphes et réponses': 'Montre les résultats (et la bonne réponse) sur la projection et les appareils des participants',
-    'Masquer les graphes et réponses': 'Retire les résultats de la projection et des appareils ; les réponses reçues sont gardées',
-    'Publier (projection et appareils)': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
-    'Masquer aux participants': 'Les participants ne voient plus que leurs propres contributions',
+    'Lancer': 'Passe à la première question et ouvre son vote (comme « Suivante »)',
+    'Afficher': 'Montre les graphes et réponses (et la bonne réponse) sur la projection et les appareils des participants',
+    'Masquer': 'Retire graphes, réponses ou contributions de la projection et des appareils ; rien n\'est effacé',
+    'Publier': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
     'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
     'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',
     'Terminer la session': 'Les téléphones affichent « Session terminée » ; les résultats restent',
@@ -788,12 +788,12 @@
     document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
     var badges = WL.clear($('live-badges'));
     if (!has) {
-      $('open-btn').textContent = 'Lancer la première question';
+      $('open-btn').textContent = 'Lancer';
       $('open-btn').dataset.next = 'next';
-      $('show-btn').textContent = 'Afficher les graphes et réponses';
+      $('show-btn').textContent = 'Afficher';
       $('live-pos').textContent = 'Accueil';
       badges.appendChild(badge(d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code' : 'Aucune question : ajoutez-en dans Préparer'));
-      $('live-text').textContent = d.questions.length ? '« Lancer la première question » ouvre son vote ; « Suivante » fait de même.' : '';
+      $('live-text').textContent = d.questions.length ? '« Lancer » passe à la première question et ouvre son vote.' : '';
       $('live-state').textContent = '';
       WL.clear($('live-results'));
       renderMetric(d, null);
@@ -810,7 +810,7 @@
         : q.results.total + ' / ' + d.active + ' ont répondu') + (q.showResults ? ' — graphes et réponses affichés' : ' — graphes et réponses masqués aux participants');
     $('open-btn').textContent = open ? 'Fermer le vote' : 'Ouvrir le vote';
     $('open-btn').dataset.next = open ? 'close' : 'open';
-    $('show-btn').textContent = q.showResults ? 'Masquer les graphes et réponses' : 'Afficher les graphes et réponses';
+    $('show-btn').textContent = q.showResults ? 'Masquer' : 'Afficher';
     $('show-btn').dataset.next = q.showResults ? 'hide' : 'show';
     // Modération (masquer) pour les textes libres ; outils post-it en plus.
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
@@ -820,7 +820,7 @@
       onAdmin: q.type === 'postit' ? function (pid, op, arg) { act('post_admin', { qid: q.id, pid: pid, op: op, arg: arg }); } : null
     });
     if (q.type === 'wall' || q.type === 'postit') {
-      $('show-btn').textContent = q.showResults ? 'Masquer aux participants' : 'Publier (projection et appareils)';
+      $('show-btn').textContent = q.showResults ? 'Masquer' : 'Publier';
     }
     renderMetric(d, q);
   }

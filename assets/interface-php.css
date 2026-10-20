@@ -170,19 +170,19 @@ body.admin .nav-item .sidebar-session { margin: 7px 0 0; padding: 0; border: 0; 
 body.admin .nav-item .sidebar-session strong { white-space: normal; overflow-wrap: anywhere; }
 body.admin .nav-item .sidebar-session-meta { margin-top: 3px; }
 
-/* Commandes de vote entre « Précédente » et « Suivante », au-dessus du graphique (demande de l'utilisateur, 20/10/2026) ;
-   sous 700 px de panneau, elles passent sur une ligne pleine largeur sous la navigation. */
+/* Commandes de vote entre « Précédente » et « Suivante », au-dessus du graphique, sur une ligne (demande de l'utilisateur, 20/10/2026). */
 body.admin #live { container: live / inline-size; }
-body.admin .question-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "prev pos next" "prev act next"; column-gap: .75rem; row-gap: .4rem; }
+body.admin .question-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "prev pos next" "prev act next"; column-gap: .5rem; row-gap: .3rem; }
 body.admin .question-nav [data-op="prev"] { grid-area: prev; justify-self: start; }
 body.admin .question-nav [data-op="next"] { grid-area: next; justify-self: end; }
 body.admin .question-nav #live-pos { grid-area: pos; text-align: center; }
 body.admin .question-nav .live-toolbar { grid-area: act; position: static; margin: 0; padding: 0; border: 0; background: none; display: block; }
 body.admin .question-nav .toolbar-main { display: flex; gap: .5rem; width: 100%; }
 body.admin .question-nav .toolbar-main .btn { flex: 1 1 0; min-width: 0; white-space: normal; }
-@container live (max-width: 700px) {
-  body.admin .question-nav { grid-template-areas: "prev pos next" "act act act"; }
-}
-@container live (max-width: 420px) {
-  body.admin .question-nav .toolbar-main { flex-direction: column; }
+/* Libellés courts (Lancer, Ouvrir/Fermer le vote, Afficher/Masquer, Publier) : tout tient sur une ligne ;
+   panneau étroit, Précédente / Suivante en flèches seules (nom gardé pour les lecteurs d'écran). */
+body.admin .question-nav .toolbar-main .btn { white-space: nowrap; }
+@container live (max-width: 640px) {
+  body.admin .question-nav .nav-label { display: none; }
+  body.admin .question-nav > .btn { min-width: 44px; padding-left: .6rem; padding-right: .6rem; justify-content: center; }
 }

@@ -397,13 +397,13 @@ header('Cache-Control: no-store');
         </aside>
         <section class="card current-panel" id="live">
           <nav class="question-nav" aria-label="Navigation entre les questions">
-            <button class="btn btn-ghost btn-small" data-op="prev" title="Revenir à la question précédente sur la projection" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Précédente</button>
+            <button class="btn btn-ghost btn-small" data-op="prev" title="Revenir à la question précédente sur la projection" type="button" aria-label="Précédente"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg><span class="nav-label">Précédente</span></button>
             <span id="live-pos" class="meta"></span>
             <div class="live-toolbar"><div class="toolbar-main">
               <button class="btn btn-primary" id="open-btn" type="button"></button>
               <button class="btn" id="show-btn" type="button"></button>
             </div></div>
-            <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
+            <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button" aria-label="Suivante"><span class="nav-label">Suivante</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
           </nav>
           <p id="live-badges" class="question-topline"></p>
           <h2 id="live-text" class="live-text question-title"></h2>
