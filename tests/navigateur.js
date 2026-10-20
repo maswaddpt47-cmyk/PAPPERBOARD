@@ -118,8 +118,11 @@ function check(cond, label) {
   check(!(await admin.locator('#qr-dialog').evaluate(d => d.open)) && (await admin.evaluate(() => document.activeElement.id)) === 'ed-qr-zoom', 'QR agrandi : Échap ferme, focus rendu');
   await admin.click('#go-live');
   check((await admin.getAttribute('#t-live', 'aria-selected')) === 'true', 'Pilotage → « Aller aux questions » ouvre Animer');
-  await admin.click('#live [data-op="next"]'); // quitte l'accueil et ouvre le vote
+  check(!(await admin.isDisabled('#open-btn')) && (await admin.textContent('#open-btn')) === 'Lancer la première question', 'Animer : à l’accueil, le bouton principal lance la première question (pas grisé)');
+  await admin.click('#open-btn'); // quitte l'accueil et ouvre le vote
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
+  check(await admin.evaluate(() => { const b = document.getElementById('open-btn').getBoundingClientRect(), t = document.getElementById('live-text').getBoundingClientRect();
+    return b.bottom <= t.top; }), 'Animer : commandes de vote au-dessus de la question et du graphique');
 
   // --- Projection ------------------------------------------------------------------
   const screen = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();

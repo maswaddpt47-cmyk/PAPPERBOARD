@@ -32,7 +32,6 @@ function check(value, message) { checks++; assert(value, message); }
       ['.question-title','#live-text',['font-family','font-size','line-height','font-weight']],
       ['.metric-card','#tab-live .metric-card',['padding-left','border-radius']],
       ['[data-action="toggle-vote"]','#open-btn',['min-height','font-size','padding-left','padding-top','border-radius']],
-      ['.live-toolbar','#live .live-toolbar',['padding-top','padding-left','padding-bottom']],
       ['.breadcrumb','.shell-topbar .breadcrumb',['font-size','color']],
       ['.page-subtitle','#editor .page-subtitle',['font-size']],
       ['.live-session-summary > div','#live-summary',['font-size','display','column-gap']],

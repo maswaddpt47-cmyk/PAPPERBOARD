@@ -399,16 +399,16 @@ header('Cache-Control: no-store');
           <nav class="question-nav" aria-label="Navigation entre les questions">
             <button class="btn btn-ghost btn-small" data-op="prev" title="Revenir à la question précédente sur la projection" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Précédente</button>
             <span id="live-pos" class="meta"></span>
+            <div class="live-toolbar"><div class="toolbar-main">
+              <button class="btn btn-primary" id="open-btn" type="button"></button>
+              <button class="btn" id="show-btn" type="button"></button>
+            </div></div>
             <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button">Suivante<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
           </nav>
           <p id="live-badges" class="question-topline"></p>
           <h2 id="live-text" class="live-text question-title"></h2>
           <p id="live-state" class="live-state result-explainer" aria-live="polite"></p>
           <div id="live-results" class="live-results"></div>
-          <div class="live-toolbar"><div class="toolbar-main">
-            <button class="btn btn-primary" id="open-btn" type="button"></button>
-            <button class="btn" id="show-btn" type="button"></button>
-          </div></div>
 
         </section>
         <aside class="insights">

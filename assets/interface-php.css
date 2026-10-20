@@ -101,7 +101,7 @@ body.admin .heading-copy { flex: 0 1 auto; }
 body.admin .metric-number > #metric-answered { font: inherit; letter-spacing: inherit; }
 body.admin :is(.current-panel,.result-group) .results-foot { font-size: 12px; line-height: 1.5; color: var(--muted); margin: 0; padding: 7px 0 0; }
 body.admin .question-nav { padding: 1rem 1.25rem; gap: .5rem; }
-body.admin .question-nav .btn { min-height: 44px; }
+body.admin .question-nav > .btn { min-height: 44px; }
 body.admin #live-pos { font-size: 10px; line-height: 1.5; margin: 0; }
 body.admin .metric-number > #metric-answered { color: inherit; }
 /* Lignes de réponse : marges de .answer-row de la référence, selon la largeur. */
@@ -169,3 +169,20 @@ body.admin .badge { border: 0; }
 body.admin .nav-item .sidebar-session { margin: 7px 0 0; padding: 0; border: 0; }
 body.admin .nav-item .sidebar-session strong { white-space: normal; overflow-wrap: anywhere; }
 body.admin .nav-item .sidebar-session-meta { margin-top: 3px; }
+
+/* Commandes de vote entre « Précédente » et « Suivante », au-dessus du graphique (demande de l'utilisateur, 20/10/2026) ;
+   sous 700 px de panneau, elles passent sur une ligne pleine largeur sous la navigation. */
+body.admin #live { container: live / inline-size; }
+body.admin .question-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "prev pos next" "prev act next"; column-gap: .75rem; row-gap: .4rem; }
+body.admin .question-nav [data-op="prev"] { grid-area: prev; justify-self: start; }
+body.admin .question-nav [data-op="next"] { grid-area: next; justify-self: end; }
+body.admin .question-nav #live-pos { grid-area: pos; text-align: center; }
+body.admin .question-nav .live-toolbar { grid-area: act; position: static; margin: 0; padding: 0; border: 0; background: none; display: block; }
+body.admin .question-nav .toolbar-main { display: flex; gap: .5rem; width: 100%; }
+body.admin .question-nav .toolbar-main .btn { flex: 1 1 0; min-width: 0; white-space: normal; }
+@container live (max-width: 700px) {
+  body.admin .question-nav { grid-template-areas: "prev pos next" "act act act"; }
+}
+@container live (max-width: 420px) {
+  body.admin .question-nav .toolbar-main { flex-direction: column; }
+}

@@ -780,17 +780,20 @@
   function renderLive(d) {
     var q = d.questions[d.current];
     var has = !!q;
-    ['open-btn', 'show-btn'].forEach(function (id) { $(id).disabled = !has; });
+    // À l'accueil, le bouton principal lance la première question (même effet que « Suivante »).
+    $('open-btn').disabled = !has && !d.questions.length;
+    $('show-btn').disabled = !has;
     document.querySelector('#tab-live [data-op="reset"]').disabled = !has;
     document.querySelector('#live [data-op="prev"]').disabled = d.current < 0;
     document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
     var badges = WL.clear($('live-badges'));
     if (!has) {
-      $('open-btn').textContent = 'Ouvrir le vote';
+      $('open-btn').textContent = 'Lancer la première question';
+      $('open-btn').dataset.next = 'next';
       $('show-btn').textContent = 'Afficher les graphes et réponses';
       $('live-pos').textContent = 'Accueil';
       badges.appendChild(badge(d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code' : 'Aucune question : ajoutez-en dans Préparer'));
-      $('live-text').textContent = d.questions.length ? '« Suivante » lance la première question et ouvre le vote.' : '';
+      $('live-text').textContent = d.questions.length ? '« Lancer la première question » ouvre son vote ; « Suivante » fait de même.' : '';
       $('live-state').textContent = '';
       WL.clear($('live-results'));
       renderMetric(d, null);
