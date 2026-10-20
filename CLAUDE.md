@@ -41,7 +41,8 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Changement de session annoncé : relever les règles de collaboration nées
   pendant la session et absentes des `.md`, les présenter à l'utilisateur, puis
   les inscrire (MD-LIB `collaboration.md`, règle 32).
-- Dates explicites, jamais « hier » / « demain ».
+- Dates explicites, jamais « hier » / « demain ». Heures en heure de Paris (GitHub et les
+  API affichent l'UTC).
 - `CHANTIERS.md` tenu à jour à chaque étape, pas en fin de session : tâche
   finie = descriptif retiré, l'invariant remonte dans « Points à ne pas
   défaire ». `scripts/check-chantiers.sh` signale un fichier à nettoyer.
@@ -55,6 +56,12 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Fichier partagé entre sessions (`AGORA.md`, `CHANTIERS.md`, `CLAUDE.md`) :
   refaire un `git fetch` et le relire **juste avant de rédiger**, pas seulement
   à l'ouverture.
+- Un comportement qui change **emporte ses textes** : dans la même livraison,
+  corriger tous les textes visibles qui décrivent l'ancien comportement
+  (dialogues, aide, annonces, messages d'erreur), ou les signaler.
+- Une capture envoyée pour valider un point **se lit en entier** : toute
+  incohérence visible ailleurs se signale, en hypothèse, sans corriger
+  d'office.
 - Pistes d'amélioration : au plus 3, en fin de fonctionnalité validée,
   consignées dans la section « Pistes » de `CHANTIERS.md`.
 
