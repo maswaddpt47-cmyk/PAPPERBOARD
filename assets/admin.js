@@ -4,6 +4,7 @@
 
 (function () {
   var el = WL.el, $ = WL.$;
+  var participantsRequested = false;
   var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null, synthesisFor = null;
 
   /** Libellé d'un bouton précédé de son icône, comme dans la simulation. */
@@ -63,7 +64,7 @@
       $('password').value = '';
       csrf = r.data.csrf;
       setBeta(r.data.prefs);
-      showSessions();
+      openRequestedSession();
     }, function () { $('login-error').textContent = 'Pas de connexion au serveur.'; });
   });
 
@@ -408,6 +409,7 @@
     view('editor');
     var saved = null;
     try { saved = localStorage.getItem('wl_tab'); } catch (e) { /* sans stockage */ }
+    if (saved === 'control') saved = 'live';
     if (!document.querySelector('#editor .tab[data-tab="' + saved + '"]')) saved = 'prep';
     selectTab(document.querySelector('#editor .tabs'), saved);
     if (poller) poller.stop();
@@ -422,14 +424,19 @@
 
   $('back-btn').addEventListener('click', function () { showSessions('history'); });
 
-  /** Raccourcis entre onglets (Pilotage ↔ Animer, Animer → Préparer) : l'état de la session ne bouge pas. */
+  /** Panneau Participants et raccourci Animer → Préparer : l'état de la session ne bouge pas. */
   function goTab(name) {
     selectTab(document.querySelector('#editor .tabs'), name);
     $('t-' + name).focus({ preventScroll: true });
     $('t-' + name).scrollIntoView({ block: 'nearest' });
   }
-  $('go-live').addEventListener('click', function () { goTab('live'); });
-  $('go-control').addEventListener('click', function () { goTab('control'); });
+  function openParticipants() { $('participants-dialog').showModal(); }
+  function closeParticipants() { $('participants-dialog').close(); }
+  $('participants-open').addEventListener('click', openParticipants);
+  $('go-control').addEventListener('click', openParticipants);
+  $('participants-close').addEventListener('click', closeParticipants);
+  $('participants-dialog').addEventListener('click', function (e) { if (e.target === this) closeParticipants(); });
+  $('go-live').addEventListener('click', function () { closeParticipants(); goTab('live'); });
   $('go-prep').addEventListener('click', function () { goTab('prep'); });
 
   /** Envoie une commande puis rafraîchit tout de suite (sans attendre 2 s). */
@@ -601,8 +608,8 @@
     $('ed-join-state').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');
     renderCron(d.lastCron, d.now);
-    label('end-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir la session' : 'Terminer la session');
-    label('end-control-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir la session' : 'Terminer la session');
+    label('end-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir l’atelier' : 'Terminer l’atelier');
+    label('end-control-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir l’atelier' : 'Terminer l’atelier');
     $('end-control-btn').classList.toggle('btn-danger', !d.ended);
     $('end-live-label').textContent = d.ended ? 'Rouvrir l\'atelier' : 'Terminer l\'atelier';
     $('bilan-screen').textContent = d.board ? 'Arrêter la projection du bilan' : 'Projeter le bilan';
@@ -620,9 +627,10 @@
     renderSummary(d);
     renderRecap(d);
     tips();
+    if (participantsRequested) { participantsRequested = false; openParticipants(); }
   }
 
-  /** QR agrandi (Pilotage) : noir sur blanc, fermé par le bouton, Échap ou un clic à côté ; le focus revient au QR. */
+  /** QR agrandi (Participants) : noir sur blanc, fermé par le bouton, Échap ou un clic à côté ; le focus revient au QR. */
   function qrBig() {
     WL.qr($('qr-big'), data.joinUrl, 10);
     $('qr-big-code').textContent = data.code;
@@ -638,7 +646,7 @@
   $('qr-dialog').addEventListener('click', function (e) { if (e.target === $('qr-dialog')) $('qr-dialog').close(); });
   $('qr-dialog').addEventListener('close', function () { if (!$('editor').hidden) $('ed-qr-zoom').focus(); });
 
-  /** Animer : état de la session en une ligne (le détail est dans Pilotage). */
+  /** Animer : état de la session en une ligne (le détail est dans Participants). */
   function renderSummary(d) {
     var sig = 0;
     Object.keys(d.signals || {}).forEach(function (k) { sig += d.signals[k] || 0; });
@@ -696,7 +704,7 @@
     $('live-clear-signals').disabled = !Object.keys(d.signals || {}).some(function (kind) { return d.signals[kind] > 0; });
     var firstAsk = d.asks.filter(function (ask) { return !ask.published; })[0] || d.asks[0];
     $('live-ask-text').textContent = firstAsk ? firstAsk.text : 'Aucune question pour le moment.';
-    $('live-ask-note').textContent = firstAsk ? (firstAsk.published ? 'Cette question est publiée.' : 'Vous seul voyez cette question avant publication.') : 'Les questions du groupe sont à relire dans Pilotage.';
+    $('live-ask-note').textContent = firstAsk ? (firstAsk.published ? 'Cette question est publiée.' : 'Vous seul voyez cette question avant publication.') : 'Les questions du groupe sont à relire dans Participants.';
     $('live-ask-publish').disabled = !firstAsk;
     $('live-ask-publish').textContent = firstAsk && firstAsk.published ? 'Masquer la question' : 'Publier la question';
     $('live-ask-publish').dataset.aid = firstAsk ? firstAsk.id : '';
@@ -755,21 +763,15 @@
 
   /** Bulles d'info des boutons dont le libellé change selon l'état. */
   var TIPS = {
-    'Ouvrir le vote': 'Les participants peuvent répondre sur leur téléphone',
-    'Fermer le vote': 'Plus aucune réponse acceptée pour cette question',
-    'Lancer': 'Passe à la première question et ouvre son vote (comme « Suivante »)',
-    'Afficher': 'Montre les graphes et réponses (et la bonne réponse) sur la projection et les appareils des participants',
-    'Masquer': 'Retire graphes, réponses ou contributions de la projection et des appareils ; rien n\'est effacé',
-    'Publier': 'Après relecture : rend les contributions visibles de tous ; sur le mur, publier avant de fermer le vote pour que chacun puisse aimer',
     'Fermer les inscriptions': 'Plus personne ne peut rejoindre ; les inscrits continuent',
     'Rouvrir les inscriptions': 'De nouveaux participants peuvent rejoindre avec le code',
-    'Terminer la session': 'Les téléphones affichent « Session terminée » ; les résultats restent',
-    'Rouvrir la session': 'Les participants peuvent de nouveau répondre',
+    'Terminer l’atelier': 'Les téléphones affichent « Session terminée » ; les résultats restent',
+    'Rouvrir l’atelier': 'Les participants peuvent de nouveau répondre',
     'Masquer le QR code sur la projection': 'Plus de place pour les questions et les résultats ; touche Q sur la projection pour le montrer en grand',
     'Afficher le QR code sur la projection': 'QR code et code de session dans le coin de la projection'
   };
   function tips() {
-    ['open-btn', 'show-btn', 'lock-btn', 'qr-btn', 'end-btn'].forEach(function (id) {
+    ['lock-btn', 'qr-btn', 'end-btn'].forEach(function (id) {
       $(id).title = TIPS[$(id).textContent] || '';
     });
   }
@@ -778,50 +780,48 @@
   function badge(text, kind) { return el('span', { class: 'badge' + (kind ? ' badge-' + kind : '') }, text); }
 
   function renderLive(d) {
-    var q = d.questions[d.current];
-    var has = !!q;
-    // À l'accueil, le bouton principal lance la première question (même effet que « Suivante »).
-    $('open-btn').disabled = !has && !d.questions.length;
-    $('show-btn').disabled = !has;
+    var q = d.questions[d.current], has = !!q;
+    var guide = WL.animationGuide(q, { ended: d.ended, position: d.current + 1, count: d.questions.length,
+      now: d.now, board: d.board, show: d.show });
+    WL.renderAnimationGuide($('live-guide'), guide);
+    $('open-btn').disabled = !guide.op;
+    $('open-btn').textContent = guide.label;
+    $('open-btn').dataset.next = guide.op;
+    $('open-btn').title = guide.hint;
+    WL.show($('show-btn'), guide.canToggle);
+    $('show-btn').textContent = guide.visibility;
+    $('show-btn').dataset.next = guide.published ? 'hide' : 'show';
+    $('show-btn').title = guide.published ? 'Masque les résultats sur les appareils. Un affichage en direct de la projection reste actif.'
+      : 'Rend les résultats visibles sur les appareils et l’écran du groupe.';
+    WL.show($('reopen-btn'), guide.canReopen);
+    $('reopen-btn').dataset.next = 'reopen_vote';
+    $('reopen-btn').title = guide.post ? 'Rouvre la collecte ; les contributions publiées restent visibles.'
+      : 'Masque les résultats avant de rouvrir les réponses de cette question.';
     document.querySelector('#tab-live [data-op="reset"]').disabled = !has;
-    document.querySelector('#live [data-op="prev"]').disabled = d.current < 0;
-    document.querySelector('#live [data-op="next"]').disabled = d.current >= d.questions.length - 1;
+    document.querySelector('#live [data-op="prev"]').disabled = d.ended || d.current < 0;
+    document.querySelector('#live [data-op="next"]').disabled = d.ended || d.current >= d.questions.length - 1;
     var badges = WL.clear($('live-badges'));
     if (!has) {
-      $('open-btn').textContent = 'Lancer';
-      $('open-btn').dataset.next = 'next';
-      $('show-btn').textContent = 'Afficher';
       $('live-pos').textContent = 'Accueil';
-      badges.appendChild(badge(d.questions.length ? 'Accueil : la projection affiche l\'adresse et le code' : 'Aucune question : ajoutez-en dans Préparer'));
-      $('live-text').textContent = d.questions.length ? '« Lancer » passe à la première question et ouvre son vote.' : '';
+      badges.appendChild(badge(d.questions.length ? 'Accueil du groupe' : 'Ajoutez une question dans Préparer'));
+      $('live-text').textContent = d.questions.length ? 'Prêt à commencer avec votre groupe ?' : 'Votre atelier attend ses questions.';
       $('live-state').textContent = '';
       WL.clear($('live-results'));
       renderMetric(d, null);
       return;
     }
-    var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, d.now - Date.now() / 1000) === 0);
-    $('live-pos').textContent = (d.current + 1) + ' / ' + d.questions.length;
-    badges.appendChild(badge('Question ' + (d.current + 1) + ' sur ' + d.questions.length));
-    badges.appendChild(badge(d.ended ? 'Atelier terminé' : open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé', open && !d.ended ? 'ok' : null));
+    $('live-pos').textContent = 'Question ' + (d.current + 1) + ' / ' + d.questions.length;
+    badges.appendChild(badge(guide.open ? 'Réponses ouvertes' : q.state === 'draft' ? 'Question à venir' : 'Réponses closes', guide.open ? 'ok' : null));
     badges.appendChild(el('span', { class: 'question-type' }, WL.typeLabel(q)));
     $('live-text').textContent = q.text;
-    $('live-state').textContent = (open ? 'Vote ouvert' : q.state === 'draft' ? 'Vote pas encore ouvert' : 'Vote fermé')
-      + ' — ' + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution')
-        : q.results.total + ' / ' + d.active + ' ont répondu') + (q.showResults ? ' — graphes et réponses affichés' : ' — graphes et réponses masqués aux participants');
-    $('open-btn').textContent = open ? 'Fermer le vote' : 'Ouvrir le vote';
-    $('open-btn').dataset.next = open ? 'close' : 'open';
-    $('show-btn').textContent = q.showResults ? 'Masquer' : 'Afficher';
-    $('show-btn').dataset.next = q.showResults ? 'hide' : 'show';
-    // Modération (masquer) pour les textes libres ; outils post-it en plus.
+    $('live-state').textContent = (guide.post ? WL.plural(q.results.total, 'contribution') : q.results.total + ' / ' + d.active + ' ont répondu')
+      + ' · Vue animateur : les réponses ci-dessous peuvent être encore masquées au groupe.';
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
     WL.renderResults($('live-results'), q, q.results, {
       participants: d.active,
       onHide: moderated ? function (aid, hidden) { act('answer_hide', { qid: q.id, aid: aid, hidden: hidden }); } : null,
       onAdmin: q.type === 'postit' ? function (pid, op, arg) { act('post_admin', { qid: q.id, pid: pid, op: op, arg: arg }); } : null
     });
-    if (q.type === 'wall' || q.type === 'postit') {
-      $('show-btn').textContent = q.showResults ? 'Masquer' : 'Publier';
-    }
     renderMetric(d, q);
   }
 
@@ -833,17 +833,26 @@
     $('metric-caption').textContent = !q ? 'Aucune question projetée' : posts ? (n > 1 ? 'contributions reçues' : 'contribution reçue')
       : q.type === 'steps' ? 'personnes ont participé' : 'personnes ont répondu (sur les actifs)';
     $('metric-fill').style.width = (!q || posts || !of ? 0 : Math.min(100, Math.round(100 * n / of))) + '%';
-    $('metric-wait').textContent = !q || posts ? '' : n >= of ? 'Tout le monde a répondu.' : WL.plural(of - n, 'réponse') + ' encore attendue' + (of - n > 1 ? 's' : '');
+    $('metric-wait').textContent = !q || posts ? '' : !of ? 'En attente des participants.' : n >= of ? 'Tout le monde a répondu.' : WL.plural(of - n, 'réponse') + ' encore attendue' + (of - n > 1 ? 's' : '');
   }
 
-  ['open-btn', 'show-btn'].forEach(function (id) {
-    $(id).addEventListener('click', function () {
-      var op = $(id).dataset.next, q = data.questions[data.current];
-      // Fermer ou afficher sans aucune réponse : confirmation (constaté le 15/10/2026).
-      if ((op === 'close' || op === 'show') && q && q.state !== 'draft' && q.results.total === 0
-        && !confirm('Personne n\'a encore répondu. ' + (op === 'close' ? 'Fermer le vote' : 'Afficher') + ' quand même ?')) return;
-      control(op);
-    });
+  var animationBusy = false;
+  function animate(op) {
+    if (!op || animationBusy) return;
+    if (op === 'end') { $('end-btn').click(); return; }
+    var q = data.questions[data.current];
+    if ((op === 'close' || op === 'show') && q && q.state !== 'draft' && q.results.total === 0
+      && !confirm('Personne n\'a encore répondu. ' + (op === 'close' ? 'Clore les réponses' : 'Afficher les résultats') + ' quand même ?')) return;
+    animationBusy = true;
+    var request;
+    if (op === 'reopen_vote') {
+      request = q && q.showResults && q.type !== 'wall' && q.type !== 'postit'
+        ? control('hide').then(function () { return control('open'); }) : control('open');
+    } else request = control(op);
+    request.then(function () { animationBusy = false; }, function () { animationBusy = false; });
+  }
+  ['open-btn', 'show-btn', 'reopen-btn'].forEach(function (id) {
+    $(id).addEventListener('click', function () { animate(this.dataset.next); });
   });
   document.querySelectorAll('#tab-live [data-op]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -852,7 +861,7 @@
     });
   });
   $('end-btn').addEventListener('click', function () {
-    if (!data.ended && !confirm('Terminer la session ? Les participants ne pourront plus répondre.')) return;
+    if (!data.ended && !confirm('Terminer l’atelier ? Les participants ne pourront plus répondre.')) return;
     control(data.ended ? 'reopen' : 'end');
   });
   $('end-live-btn').addEventListener('click', function () { $('end-btn').click(); });
@@ -1490,10 +1499,18 @@
 
   // --- Démarrage ------------------------------------------------------------------
 
+  function openRequestedSession() {
+    var params = new URLSearchParams(location.search), requested = (params.get('s') || '').toUpperCase();
+    if (/^[A-Z2-9]{5}$/.test(requested)) {
+      participantsRequested = params.get('participants') === '1';
+      openSession(requested);
+    } else showSessions();
+  }
+
   WL.api('me').then(function (r) {
     csrf = r.data.csrf || '';
     setBeta(r.data.prefs);
-    if (r.data.admin) showSessions();
+    if (r.data.admin) openRequestedSession();
     else showLogin('');
   }, function () { showLogin('Pas de connexion au serveur.'); });
 }());

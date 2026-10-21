@@ -30,3 +30,28 @@ body.screen { display: flex; flex-direction: column; height: 100dvh; overflow: h
   .screen .s-text { margin: 10px 0 16px; font-size: 25px; }
   .screen .s-meta { margin-bottom: 14px; }
 }
+
+/* Même étape et même action principale que dans Animer, au-dessus du contenu. */
+.screen .screen-head { min-height: 72px; padding-top: 12px; padding-bottom: 12px; }
+.screen .screen-command-area { padding-top: 10px; padding-bottom: 10px; }
+.screen #s-pilot { max-width: 100%; }
+.screen #p-step { white-space: normal; }
+.screen:not(.s-qr-big) .qr-corner .qr { display: block; flex: none; }
+.screen:not(.s-qr-big) .qr-corner .qr img { display: block; width: 72px; height: 72px; }
+.screen:not(.s-qr-big) .qr-corner .qr-code { color: var(--wl-texte); }
+.screen .animation-guide { flex: none; padding: 10px 26px; background: var(--wl-carte); border-bottom: 1px solid var(--wl-bord); }
+.screen .animation-stage { display: block; font-size: 15px; }
+.screen .animation-visibility { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 4px; font-size: 14px; }
+.screen .animation-hint { margin: 5px 0 0; font-size: 14px; color: var(--wl-texte-doux); }
+.screen .animation-options { position: relative; }
+.screen .animation-options > summary { display: flex; align-items: center; min-height: 44px; padding: 10px; cursor: pointer; border: 1px solid var(--wl-bord); border-radius: 9px; font-size: 14px; }
+.screen .animation-options-body { position: absolute; top: 100%; right: 0; z-index: 30; display: grid; gap: 8px; min-width: 260px; max-width: calc(100vw - 28px); padding: 12px; background: var(--wl-carte); border: 1px solid var(--wl-bord); border-radius: 9px; }
+.screen .animation-options-body .btn { white-space: normal; }
+.screen:not([data-pilot]) .animation-hint { display: none; }
+@media(max-width:760px) {
+  .screen:not(.s-qr-big) .qr-corner .qr img { width: 52px; height: 52px; }
+  .screen .animation-guide { padding: 8px 14px; }
+  .screen .animation-visibility { display: grid; gap: 3px; }
+  .screen .animation-hint { font-size: 13px; }
+  .screen .animation-options-body { position: fixed; top: auto; right: 14px; }
+}

@@ -1,10 +1,40 @@
 # CHANTIERS — WoocLight
 
-État au **19/10/2026** — commit de référence : voir `git log -1 main`.
+État au **21/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
+
+## Animation guidée — essai utilisateur à faire (21/10/2026)
+
+Feu vert de l’utilisateur le 21/10/2026 : même parcours dans **Animer et la projection**.
+Branche `codex/animation-guidee-20261021`, partie de `60adf58`.
+
+- Une action principale : démarrer, clore les réponses, afficher les résultats,
+  question suivante, terminer après confirmation (y compris au clavier et au glisser).
+  Fermer ne publie jamais la correction. Mur et post-it gardent la publication après
+  relecture, avant fermeture ; les modes de projection en direct sont conservés.
+- État distinct de l’écran du groupe et des appareils, calculé par le même helper.
+  La vue privée de l’animateur est explicitement identifiée. Participants est un panneau
+  modal (QR, inscriptions, échanges, classement) ; la projection ouvre ce même panneau
+  pour la bonne session. Les commandes avancées restent accessibles.
+- Aucun changement d’authentification, de CSRF, de stockage des réponses ou de polling.
+  Le seul champ public ajouté est le booléen de configuration `live`, pour nommer
+  correctement les deux affichages. Un mode direct garde son libellé « Masquer sur les
+  appareils » ; un quiz masque aussi la projection.
+- Aide intégrée, guide HTML et PDF actualisés. La galerie se teste par le serveur HTTP
+  de la suite, sans dépendre du protocole file:// du navigateur. Tous ses contrôles restent actifs.
+
+**Mesuré le 21/10/2026 en local (PHP 8.3, Chromium)** : contrôles PHP verts ; 112 contrôles
+navigateur, 307 contrôles d’interface et 768 cas de galerie réussis. Mesures à 1920×1080,
+1280×720, 1024×768 et 390×844 : aucun débordement horizontal ; projection sans défilement
+ni résultat coupé. Publication / masquage / réouverture synchronisés entre Animer,
+projection et participant ; la correction est masquée avant la réouverture.
+
+**À vérifier par l’utilisateur après publication** : Animer → Participants (QR / inscriptions),
+parcours d’un quiz depuis chaque écran, puis mur / post-it avec relecture. Les fichiers
+anciens de `/workspace/PAPPERBOARD` sont préservés : travail depuis une copie propre.
 
 ## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
 

@@ -110,7 +110,7 @@ function check(cond, label) {
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
   check(await admin.locator('#tab-live').isHidden(), 'onglets : un seul panneau visible');
   // Pilotage : invitation, QR agrandi (Échap le ferme et rend le focus).
-  await admin.click('#t-control');
+  await admin.click('#participants-open');
   check(await admin.isVisible('#ed-qr img') && await admin.isHidden('#open-btn'), 'Pilotage : QR visible, commandes de vote dans Animer');
   await admin.click('#ed-qr-zoom');
   check(await admin.locator('#qr-dialog').evaluate(d => d.open) && await admin.locator('#qr-big img').count() === 1, 'QR agrandi au clic');
@@ -118,12 +118,14 @@ function check(cond, label) {
   check(!(await admin.locator('#qr-dialog').evaluate(d => d.open)) && (await admin.evaluate(() => document.activeElement.id)) === 'ed-qr-zoom', 'QR agrandi : Échap ferme, focus rendu');
   await admin.click('#go-live');
   check((await admin.getAttribute('#t-live', 'aria-selected')) === 'true', 'Pilotage → « Aller aux questions » ouvre Animer');
-  check(!(await admin.isDisabled('#open-btn')) && (await admin.textContent('#open-btn')) === 'Lancer', 'Animer : à l’accueil, le bouton principal lance la première question (pas grisé)');
+  check(!(await admin.isDisabled('#open-btn')) && (await admin.textContent('#open-btn')) === 'Démarrer l’atelier', 'Animer : à l’accueil, le bouton principal lance la première question (pas grisé)');
   await admin.click('#open-btn'); // quitte l'accueil et ouvre le vote
-  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Fermer le vote');
-  check(await admin.evaluate(() => { const b = document.getElementById('open-btn').getBoundingClientRect(), t = document.getElementById('live-text').getBoundingClientRect();
-    const n = document.querySelector('#live [data-op="next"]').getBoundingClientRect(), p = document.querySelector('#live [data-op="prev"]').getBoundingClientRect();
-    return b.bottom <= t.top && b.left >= p.right && b.right <= n.left && b.top < n.bottom && b.bottom > n.top; }), 'Animer : commandes de vote entre Précédente et Suivante, au-dessus du graphique');
+  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Clore les réponses');
+  check(await admin.evaluate(() => {
+    const b = document.getElementById('open-btn').getBoundingClientRect(), t = document.getElementById('live-text').getBoundingClientRect();
+    const n = document.querySelector('#live [data-op="next"]').getBoundingClientRect();
+    return b.height >= 44 && b.bottom <= t.top && n.bottom <= b.top;
+  }), 'Animer : action principale lisible, navigation au-dessus du graphique');
 
   // --- Projection ------------------------------------------------------------------
   const screen = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -166,7 +168,7 @@ function check(cond, label) {
     storageState: await admin.context().storageState() })).newPage();
   await mob.goto(BASE + 'screen.php?s=' + code);
   await mob.waitForSelector('#s-pilot:not([hidden])');
-  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Fermer le vote');
+  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Clore les réponses');
   check(await mob.locator('#p-step').isVisible(), 'pilote sur téléphone : « Fermer le vote » reste un bouton');
 
   // Coût : requêtes du téléphone pendant 10 s sans changement.
@@ -180,16 +182,32 @@ function check(cond, label) {
 
   // Résultats et correction.
   await admin.click('#open-btn');
-  await admin.click('#show-btn');
+  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Afficher les résultats');
+  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Afficher les résultats');
+  check(await phone.locator('#my-result').isHidden(), 'clore garde la correction masquée sur le participant');
+  check(await screen.locator('#s-results .is-good').count() === 0, 'clore garde la correction masquée sur la projection');
+  await mob.click('#p-step'); // publier depuis la projection synchronise aussi Animer et le participant
+  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Question suivante');
   // Oui / Non projeté en anneau (charts.js) : bonne réponse cochée dans la légende.
   await screen.waitForSelector('#s-results .donut-legend .is-good');
   check(/100 % · Bonne réponse/.test(await screen.textContent('#s-results .donut-legend .is-good')), 'résultat projeté');
   await phone.waitForSelector('#my-result:not([hidden])');
   check(/Bonne réponse !/.test(await phone.textContent('#my-result')), 'correction sur le téléphone');
-  await mob.waitForFunction(() => document.getElementById('p-hide').textContent === 'Masquer');
-  check(await mob.locator('#p-step').isVisible() && (await mob.textContent('#p-step')) === 'Rouvrir le vote' && await mob.locator('#p-hide').isVisible(),
-    'projection pilotée : boutons « Rouvrir le vote » et « Masquer », comme dans Animer');
+  await mob.waitForFunction(() => document.getElementById('p-hide').textContent === 'Masquer les résultats');
+  check(await mob.locator('#p-step').isVisible() && (await mob.textContent('#p-step')) === 'Question suivante' && await mob.locator('#p-hide').isVisible(),
+    'projection pilotée : action « Question suivante » et commande « Masquer les résultats », comme dans Animer');
   check(await mob.locator('#p-next').isHidden(), 'pilote sur téléphone : Suivante remplacée par le glisser');
+  await mob.click('#p-hide');
+  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Afficher les résultats');
+  await phone.waitForSelector('#my-result', { state: 'hidden' });
+  check((await admin.textContent('#live-guide')).includes('Écran du groupe : Résultats masqués'), 'masquer depuis la projection est reflété dans Animer');
+  await admin.click('#open-btn');
+  await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Question suivante');
+  await mob.click('#p-options > summary');
+  await mob.click('#p-reopen');
+  await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Clore les réponses');
+  await phone.waitForSelector('#my-result', { state: 'hidden' });
+  check((await admin.textContent('#live-guide')).includes('Répondre · résultats masqués'), 'rouvrir depuis la projection masque la correction avant de reprendre');
   await mob.context().close();
 
   // Vrai/Faux corrigé et modifiable : un appui envoie tout de suite, sans « Envoyer ».
@@ -201,10 +219,10 @@ function check(cond, label) {
   admin.once('dialog', d => { warned = d.message(); d.dismiss(); });
   await admin.click('#open-btn');
   check(/Personne n'a encore répondu/.test(warned), 'animateur : confirmation avant de fermer un vote sans réponse');
-  check((await admin.textContent('#open-btn')) === 'Fermer le vote', 'animateur : vote resté ouvert après refus');
+  check((await admin.textContent('#open-btn')) === 'Clore les réponses', 'animateur : vote resté ouvert après refus');
   const early = await admin.context().newPage();
   await early.goto(BASE + 'screen.php?s=' + code);
-  await early.waitForFunction(() => document.getElementById('p-step') && document.getElementById('p-step').textContent === 'Fermer le vote');
+  await early.waitForFunction(() => document.getElementById('p-step') && document.getElementById('p-step').textContent === 'Clore les réponses');
   await early.click('#p-step');
   check(/confirmer/.test(await early.textContent('#p-step')), 'projection : un second appui demandé pour fermer sans réponse');
   await early.close();
@@ -256,6 +274,7 @@ function check(cond, label) {
   await pilot.goto(BASE + 'screen.php?s=' + code);
   await pilot.waitForSelector('#s-pilot:not([hidden])');
   check(await pilot.locator('#p-reopen').isHidden(), 'session terminée : pas de « Rouvrir le vote »');
+  await pilot.click('#p-options > summary');
   await pilot.click('#p-board');
   await pilot.waitForFunction(() => /^Bilan — 1 \//.test(document.getElementById('s-meta').textContent));
   await pilot.keyboard.press('ArrowRight');
@@ -459,11 +478,11 @@ function check(cond, label) {
   // Afficher puis masquer les graphes et réponses, même sans réponse reçue : une seule commande visible à la fois.
   const lq = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
   await post('control', { s: ds, op: 'show' });
-  await lens.waitForFunction(() => document.getElementById('p-hide').textContent === 'Masquer');
+  await lens.waitForFunction(() => /^Masquer /.test(document.getElementById('p-hide').textContent));
   check(!/Afficher/.test(await lens.textContent('#p-step')) && await lens.locator('#p-prev').isVisible() && await lens.locator('#p-next').isVisible(),
     'projection : résultats affichés, « Masquer » présent, Précédente / Suivante toujours là');
   await lens.click('#p-hide');
-  await lens.waitForFunction(() => document.getElementById('p-hide').textContent === 'Afficher');
+  await lens.waitForFunction(() => document.getElementById('p-hide').textContent === 'Afficher les résultats');
   const lq2 = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
   check(lq2.questions[lq2.current].showResults === false && lq.questions[lq.current].results.total === lq2.questions[lq2.current].results.total,
     'projection : masquer retire les graphes, les réponses restent');

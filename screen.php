@@ -31,15 +31,23 @@ wl_security_headers();
 </header>
 <!-- Commandes en haut (consigne du 19/10/2026) : la place libre pour les résultats se mesure jusqu'au bas de l'écran. -->
 <div class="screen-command-area">
-<nav id="s-pilot" class="s-pilot" aria-label="Pilotage" hidden>
+<nav id="s-pilot" class="s-pilot" aria-label="Animation guidée" hidden>
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
-  <button id="p-step" class="btn btn-primary" type="button"></button>
+  <button id="p-step" class="btn btn-primary" type="button" aria-describedby="s-guide"></button>
   <button id="p-hide" class="btn" type="button" hidden>Afficher</button>
-  <button id="p-reopen" class="btn" type="button" title="Rouvre le vote de cette question (les résultats sont masqués avant, sauf pour un mur ou un post-it)" hidden>Rouvrir le vote</button>
   <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
+  <details id="p-options" class="animation-options">
+  <summary>Autres actions</summary>
+  <div class="animation-options-body">
+  <button id="p-reopen" class="btn" type="button" hidden>Rouvrir les réponses</button>
+  <button id="p-welcome" class="btn" type="button">Revenir à l’accueil</button>
+  <a id="p-participants" class="btn" target="_blank" rel="noopener">Participants et accueil ↗</a>
   <button id="p-asks" class="btn" type="button" title="Projette les questions « Oser demander » publiées, les plus votées d'abord" hidden></button>
-  <button id="p-board" class="btn" type="button" title="Projette le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Bilan</button>
+  <button id="p-board" class="btn" type="button" title="Affiche le bilan : une question par diapositive, ses résultats tels qu'ils ont été montrés (B)">Afficher le bilan</button>
+  <button id="p-end" class="btn btn-danger" type="button">Terminer l’atelier</button>
+  </div>
+  </details>
   <span class="s-swipe">Glissez ← → pour changer de question</span>
   <span class="s-keys">Clavier : ← → · Espace · B (bilan) · Q (QR code) · F (plein écran)</span>
 </nav>
@@ -49,6 +57,7 @@ wl_security_headers();
   <button id="qr-close" class="btn qr-close" type="button">Fermer</button>
 </aside>
 </div>
+<section id="s-guide" class="animation-guide" aria-label="Étape de l’animation" aria-live="polite"></section>
 <main class="screen-main">
 <div id="projection-canvas" class="projection-fit-canvas">
   <section id="s-welcome" class="s-welcome" hidden>

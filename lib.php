@@ -1446,6 +1446,7 @@ function wl_public_question(array $q): array
         'duration' => $q['duration'], 'closesAt' => $q['closesAt'], 'state' => $q['state'],
         'allowChange' => $q['allowChange'], 'showResults' => $show, 'source' => $q['source'] ?? '', 'column' => $q['column'] ?? -1,
         'reveal' => $q['reveal'] ?? 'manual',
+        'live' => in_array($q['type'], WL_LIVE_TYPES, true) && ($q['live'] ?? true),
         'graded' => !empty($q['correct']), // quiz : le téléphone garde « Envoyer » (pas la bonne réponse)
         'correct' => $show ? $q['correct'] : [],
         'explain' => $show ? ($q['explain'] ?? '') : '', // jamais avant la correction

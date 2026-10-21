@@ -150,7 +150,7 @@ jobs:
           fi
           # Confirme les octets réellement servis pour les nouveaux composants.
           # Le SHA évite une réponse d'un cache de la version précédente.
-          for asset in assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js; do
+          for asset in assets/common.js assets/admin.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js; do
             curl --fail --silent --show-error --max-time 20 "$URL/$asset?verification=$GITHUB_SHA" -o "$RUNNER_TEMP/wooclight-asset-verifie"
             cmp -s "$asset" "$RUNNER_TEMP/wooclight-asset-verifie" \
               || { echo "::error::$asset diffère du commit déployé"; exit 1; }

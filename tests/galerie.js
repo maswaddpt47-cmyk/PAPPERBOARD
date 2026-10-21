@@ -4,7 +4,10 @@
 // Lancé par tests/run.sh si Playwright est installé.
 'use strict';
 const { chromium } = require('playwright');
-const path = require('path'); const FILE = 'file://' + path.resolve(__dirname, '..', 'docs', 'galerie-resultats', 'index.html');
+const path = require('path');
+// La suite fournit son serveur local : pas de dépendance à l'accès file:// du navigateur.
+const FILE = process.env.WL_BASE ? new URL('docs/galerie-resultats/index.html', process.env.WL_BASE).href
+  : 'file://' + path.resolve(__dirname, '..', 'docs', 'galerie-resultats', 'index.html');
 const TYPES = ['yesno','poll','mcq','mcqm','scale','wordcloud','text','steps','points','wall','postit','dots'];
 const STATES = ['vide','reponses','corrige','masque'];
 const MODES = ['screen-dark','screen-light','participant','admin'];

@@ -189,3 +189,27 @@ body.admin .question-nav .toolbar-main .btn { white-space: nowrap; }
 @container live (max-width: 420px) {
   body.admin .question-nav .toolbar-main .btn .icon { display: none; }
 }
+
+/* Parcours guidé : une action principale, les états et les outils du groupe. */
+body.admin .guided-nav { grid-template-areas: "prev pos next" "act act act"; row-gap: .75rem; }
+body.admin .guided-nav .toolbar-main { flex-wrap: wrap; }
+body.admin .guided-nav .toolbar-main .btn { white-space: normal; min-height: 46px; }
+body.admin .guided-nav .toolbar-main .btn-primary { flex-basis: 100%; }
+body.admin .animation-guide { margin: 0; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+body.admin .animation-stage { display: block; color: var(--text); }
+body.admin .animation-visibility { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin-top: .45rem; font-size: .8rem; }
+body.admin .animation-visibility > span { min-width: 0; overflow-wrap: anywhere; }
+body.admin .animation-hint { margin: .55rem 0 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+body.admin .animation-options > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; padding: .5rem; }
+body.admin #participants-dialog { width: min(1100px, calc(100vw - 32px)); padding: 0; max-height: calc(100dvh - 32px); }
+body.admin #participants-dialog .modal-head { position: sticky; top: 0; background: var(--card); z-index: 1; }
+body.admin .participants-body { padding: 1.25rem; }
+body.admin .participants-body .pilotage-toolbar { margin-bottom: 1rem; }
+body.admin .participants-body .session-controls { align-items: start; }
+@media(max-width:639px) {
+  body.admin .guided-nav .toolbar-main .btn { min-height: 48px; }
+  body.admin .animation-guide { padding: .85rem; }
+  body.admin .animation-visibility { display: grid; }
+  body.admin .participants-body { padding: .75rem; }
+  body.admin .participants-body .session-controls { grid-template-columns: minmax(0, 1fr); }
+}

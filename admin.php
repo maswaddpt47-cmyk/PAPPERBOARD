@@ -232,14 +232,14 @@ header('Cache-Control: no-store');
       </div>
       <div class="heading-actions">
         <button id="back-btn" class="btn btn-ghost" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button>
+        <button id="participants-open" class="btn" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Participants</button>
         <a id="ed-preview" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
-        <a id="ed-open-screen" class="btn btn-primary" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir la projection<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
+        <a id="ed-open-screen" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir l’écran du groupe<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
       </div>
     </div>
 
     <div class="tabs view-tabs" id="workshop-tabs" role="tablist" aria-label="Étapes de l'atelier">
       <button class="tab" role="tab" type="button" id="t-prep" aria-controls="tab-prep" data-tab="prep" title="Questions, séquences prêtes, conclusion"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Préparer</button>
-      <button class="tab" role="tab" type="button" id="t-control" aria-controls="tab-control" data-tab="control" title="Inviter les participants, accueil, signaux, Oser demander, pseudonymes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Pilotage</button>
       <button class="tab" role="tab" type="button" id="t-live" aria-controls="tab-live" data-tab="live" title="Questions, vote et résultats"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Animer</button>
       <button class="tab" role="tab" type="button" id="t-bilan" aria-controls="tab-bilan" data-tab="bilan" title="Tableau de bord, synthèse par une IA, PowerPoint, exports"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg>Bilan</button>
       <button class="tab" role="tab" type="button" id="t-settings" aria-controls="tab-settings" data-tab="settings" title="Renommer, terminer, archiver, supprimer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Réglages</button>
@@ -315,7 +315,7 @@ header('Cache-Control: no-store');
     <section class="card conclusion-card">
       <div class="section-heading"><div><p class="eyebrow">Le message à emporter</p>
       <h2>Conclusion de l'atelier</h2>
-      <p class="meta muted">Affichée avec le récap de l'atelier quand vous cliquez « Terminer la session » (projection et appareils des participants). Également reprise dans la fiche mémo.</p></div>
+      <p class="meta muted">Affichée avec le récap de l'atelier quand vous cliquez « Terminer l’atelier » (projection et appareils des participants). Également reprise dans la fiche mémo.</p></div>
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg></div>
       <label for="conclusion" class="field-label">À retenir</label>
       <textarea id="conclusion" rows="4" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
@@ -325,10 +325,12 @@ header('Cache-Control: no-store');
     </section>
     </div>
 
-    <div id="tab-control" class="tab-panel" role="tabpanel" aria-labelledby="t-control" hidden>
+    <dialog id="participants-dialog" aria-labelledby="participants-title">
+      <header class="modal-head"><h2 id="participants-title">Participants et accueil</h2><button id="participants-close" class="btn btn-ghost" type="button">Fermer</button></header>
+      <div id="tab-control" class="modal-body participants-body">
       <div class="pilotage-toolbar">
-        <p class="meta">Gérez l'accueil, les inscriptions et les échanges du groupe. Les questions et les votes se pilotent depuis Animer.</p>
-        <button id="go-live" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Aller aux questions</button>
+        <p class="meta">Invitez le groupe et réglez ses accès ici. Fermez ce panneau pour retrouver votre question, sans interrompre l’animation.</p>
+        <button id="go-live" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Revenir à Animer</button>
       </div>
       <div class="grid2 session-controls">
       <section class="card" id="join-card">
@@ -351,11 +353,11 @@ header('Cache-Control: no-store');
       </section>
 
       <section class="card" id="direct-card">
-        <h2>Pilotage en direct</h2>
+        <h2>Échanges avec le groupe</h2>
         <p class="row wrap session-actions">
           <button id="welcome-btn" class="btn btn-small" type="button" title="La projection revient à l'accueil : adresse, code et QR code"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Afficher l'accueil</button>
           <button id="asks-chip" class="btn btn-small" type="button" title="Les participants peuvent, ou non, poser une question anonyme depuis leur appareil"></button>
-          <button id="end-control-btn" class="btn btn-danger btn-small" type="button" title="Terminer après confirmation, ou rouvrir la session pour reprendre les votes">Terminer la session</button></p>
+          <button id="end-control-btn" class="btn btn-danger btn-small" type="button" title="Terminer après confirmation, ou rouvrir l’atelier pour reprendre les réponses">Terminer l’atelier</button></p>
         <p class="meta">Retours anonymes envoyés depuis les appareils ; chacun s'efface seul après 2 minutes.</p>
         <p id="signals" class="signals" aria-live="polite" title="Signaux anonymes envoyés depuis les appareils ; chacun s'efface après 2 minutes"></p>
         <p><button id="signals-clear" class="btn btn-ghost btn-small" type="button" title="Vous avez pris en compte les signaux : ils sont effacés tout de suite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Effacer les signaux</button></p>
@@ -384,10 +386,12 @@ header('Cache-Control: no-store');
       </div>
     </div>
 
+    </dialog>
+
     <div id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="t-live" hidden>
       <section class="live-summary live-session-summary" aria-label="État de la session">
         <div id="live-summary" class="live-summary-text"></div>
-        <button id="go-control" class="btn btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Ouvrir Pilotage</button>
+        <button id="go-control" class="btn btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Participants et accueil</button>
       </section>
       <div class="workbench">
         <aside class="card question-rail" aria-label="Questions de l'atelier">
@@ -396,15 +400,17 @@ header('Cache-Control: no-store');
           <p class="rail-footer"><button id="go-prep" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Gérer les questions</button></p>
         </aside>
         <section class="card current-panel" id="live">
-          <nav class="question-nav" aria-label="Navigation entre les questions">
+          <nav class="question-nav guided-nav" aria-label="Déroulement de la question">
             <button class="btn btn-ghost btn-small" data-op="prev" title="Revenir à la question précédente sur la projection" type="button" aria-label="Précédente"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg><span class="nav-label">Précédente</span></button>
             <span id="live-pos" class="meta"></span>
             <div class="live-toolbar"><div class="toolbar-main">
-              <button class="btn btn-primary" id="open-btn" type="button"></button>
+              <button class="btn btn-primary" id="open-btn" type="button" aria-describedby="live-guide"></button>
               <button class="btn" id="show-btn" type="button"></button>
+              <button class="btn" id="reopen-btn" type="button" hidden>Rouvrir les réponses</button>
             </div></div>
             <button class="btn btn-small" data-op="next" title="Passer à la question suivante (ouvre son vote si elle ne l'a jamais été)" type="button" aria-label="Suivante"><span class="nav-label">Suivante</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
           </nav>
+          <section id="live-guide" class="animation-guide" aria-label="Étape de l’animation" aria-live="polite"></section>
           <p id="live-badges" class="question-topline"></p>
           <h2 id="live-text" class="live-text question-title"></h2>
           <p id="live-state" class="live-state result-explainer" aria-live="polite"></p>
@@ -424,7 +430,7 @@ header('Cache-Control: no-store');
         </aside>
       </div>
       <div class="session-footer">
-        <button class="btn btn-danger btn-small" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>Réinitialiser la question</button>
+        <details class="animation-options"><summary>Autres actions</summary><button class="btn btn-danger btn-small" data-op="reset" title="Efface toutes les réponses de cette question pour la reposer" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>Réinitialiser la question</button></details>
         <button id="end-live-btn" class="btn btn-ghost btn-small" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span id="end-live-label"></span></button>
       </div>
     </div>
@@ -518,7 +524,7 @@ header('Cache-Control: no-store');
 </form>
 </dialog>
 
-  <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Pilotage, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer, pilotez le vote et la visibilité des graphes et réponses.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, choisissez « Démonstration » dans Créer un atelier.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Participants, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer ou sur l’écran du groupe, suivez le bouton principal : clore les réponses, afficher les résultats, puis question suivante. Les quiz restent masqués jusqu’à votre clic ; relisez les contributions avant publication.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, choisissez « Démonstration » dans Créer un atelier.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
   <dialog id="rename-dialog" aria-labelledby="rename-title">
     <form id="rename-form" novalidate>
 <header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="rename-title">Renommer un atelier</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="rename-cancel" aria-label="Fermer la fenêtre">×</button></header>

@@ -95,6 +95,7 @@
     }
     var q = d.question;
     last = d;
+    WL.renderAnimationGuide($('s-guide'), currentGuide());
     pilotLabel();
     var board = !!d.board; // tableau de bord projeté, une question par diapositive
     // QR masqué depuis l'espace animateur : un QR agrandi se ferme (la touche Q peut ensuite le montrer quand même).
@@ -293,6 +294,7 @@
 
   function control(op, after) {
     if (busy) return;
+    $('p-options').open = false;
     busy = true;
     WL.api('control', { body: { s: code, op: op }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       busy = false;
@@ -314,22 +316,14 @@
     else control('open');
   }
 
-  /** Espace ou bouton central : ouvrir le vote, le fermer, afficher les
-   *  résultats (publier pour mur et post-it), puis passer à la suivante. */
-  function stepOp() {
-    var q = last && last.question;
-    if (last && last.board) return 'board_off';
-    if (last && last.show) return 'show_off';
-    if (!q) return 'next';
-    var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
-    if (q.state === 'draft') return 'open';
-    // Mur : publier AVANT de fermer, sinon personne ne peut plus aimer.
-    if (open && q.type === 'wall' && !q.showResults) return 'show';
-    if (open) return 'close';
-    if (!q.showResults) return 'show';
-    // Dernière question terminée : la suite est le récap et la conclusion.
-    return last.position >= last.count ? 'end' : 'next';
+  function currentGuide() {
+    return WL.animationGuide(last && last.question, { ended: !!(last && last.ended),
+      position: last && last.position, count: last && last.count, now: last && last.now,
+      board: last && last.board, show: last && last.show, projected: !!(last && last.results) });
   }
+
+  /** Bouton principal et Espace : la même étape que dans Animer. */
+  function stepOp() { return currentGuide().op; }
 
   /** Fermer ou afficher sans aucune réponse demande un second appui dans les
    *  4 secondes (un vote fermé trop tôt, 15/10/2026). Vaut pour Espace et pour
@@ -341,6 +335,8 @@
     return !!q && q.state !== 'draft' && !(post ? last.contributors : last.answered);
   }
   function guarded(btn, op, run) {
+    if (!op) return;
+    if (op === 'end' && !confirm('Terminer l’atelier ? Les participants ne pourront plus répondre.')) return;
     if ((op === 'close' || op === 'show') && noAnswer() && !(Date.now() < warnUntil && warnBtn === btn)) {
       warnUntil = Date.now() + 4000; warnBtn = btn;
       pilotLabel();
@@ -353,72 +349,35 @@
   /** Espace : l'étape suivante logique (ouvrir, fermer, afficher, suivante). */
   function step() { var op = stepOp(); guarded('p-step', op === 'show' ? 'show' : op); }
 
-  /** Bouton de vote : Lancer (accueil), Ouvrir, Fermer ou Rouvrir le vote ;
-   *  en projection du bilan ou d'« Oser demander » : revenir à la question. */
-  function voteOp() {
-    var q = last && last.question;
-    if (last && (last.board || last.show)) return stepOp();
-    if (!q) return 'next';
-    var open = q.state === 'open' && !(q.closesAt && WL.remaining(q.closesAt, offset) === 0);
-    return q.state === 'draft' ? 'open' : open ? 'close' : 'reopen';
-  }
-  function vote() {
-    var op = voteOp();
-    guarded('p-step', op, op === 'reopen' ? reopen : null);
-  }
-
-  /** Commandes de la projection : les mêmes que l'onglet Animer (demande de
-   *  l'utilisateur, 20/10/2026), libellés courts ; Espace garde l'étape logique. */
   function pilotLabel() {
     if (!csrf) return;
-    var board = !!(last && last.board), ended = !!(last && last.ended);
+    var guide = currentGuide(), q = last && last.question;
+    var board = !!(last && last.board), shown = !!(last && last.show), ended = !!(last && last.ended);
     WL.show($('s-pilot'), true);
-    // Session terminée : seul le bilan se pilote encore.
-    var shown = !!(last && last.show);
-    ['p-prev', 'p-next', 'p-step'].forEach(function (id) { WL.show($(id), board || shown || !ended); });
+    WL.show($('p-step'), !ended || board || shown);
+    $('p-step').disabled = !guide.op;
+    $('p-step').textContent = Date.now() < warnUntil && warnBtn === 'p-step' ? 'Aucune réponse : confirmer ?' : guide.label;
+    $('p-step').title = guide.hint + ' (Espace : même action)';
+    WL.show($('p-hide'), guide.canToggle);
+    $('p-hide').textContent = Date.now() < warnUntil && warnBtn === 'p-hide' ? 'Aucune réponse : confirmer ?' : guide.visibility;
+    $('p-hide').title = guide.published ? 'Masque les résultats sur les appareils. Un affichage en direct de la projection reste actif.'
+      : 'Rend les résultats visibles sur les appareils et l’écran du groupe.';
+    WL.show($('p-reopen'), guide.canReopen && !board && !shown);
+    $('p-reopen').title = guide.post ? 'Rouvre la collecte ; les contributions publiées restent visibles.'
+      : 'Masque les résultats avant de rouvrir les réponses.';
     WL.show($('p-count'), false);
-    WL.show($('p-board'), !board);
-    WL.show($('p-reopen'), false);
-    WL.show($('p-hide'), false);
-    // « Oser demander » ouvert : bouton pour projeter (ou quitter) les questions.
-    WL.show($('p-asks'), !!(last && (last.asksOpen || last.show === 'asks')));
-    $('p-asks').textContent = last && last.show === 'asks' ? 'Quitter les questions' : '❓ Questions (' + ((last && last.asksCount) || 0) + ')';
+    WL.show($('p-prev'), board || (!shown && !ended));
+    WL.show($('p-next'), board || (!shown && !ended));
+    $('p-prev').disabled = board ? last.board.position <= 1 : !last || last.position === 0;
+    $('p-next').disabled = board ? last.board.position >= last.board.count : !last || last.position >= last.count;
     $('p-next').textContent = 'Suivante ▶';
-    if (shown) {
-      $('p-step').textContent = 'Revenir à la question';
-      $('p-step').title = 'Arrête la projection ' + (last.show === 'asks' ? 'des questions' : 'du podium') + ' (Espace)';
-      WL.show($('p-prev'), false);
-      WL.show($('p-next'), false);
-      return;
-    }
-    if (board) {
-      $('p-step').textContent = 'Revenir à la question';
-      $('p-step').title = 'Revient à la projection de la question en cours (B)';
-      $('p-prev').disabled = last.board.position <= 1;
-      $('p-next').disabled = last.board.position >= last.board.count;
-      return;
-    }
-    var q = last && last.question, op = voteOp();
-    var post = q && (q.type === 'wall' || q.type === 'postit');
-    var warn = function (id) { return Date.now() < warnUntil && warnBtn === id; };
-    $('p-step').textContent = warn('p-step') ? 'Aucune réponse : confirmer ?'
-      : { next: 'Lancer', open: 'Ouvrir le vote', close: 'Fermer le vote', reopen: 'Rouvrir le vote' }[op];
-    $('p-step').title = {
-      next: 'Passe à la première question et ouvre son vote', open: 'Les participants peuvent répondre',
-      close: 'Plus aucune réponse acceptée', reopen: 'Rouvre le vote (les résultats sont masqués avant, sauf pour un mur ou un post-it)'
-    }[op] + ' (Espace : étape suivante)';
-    // Afficher / Masquer (Publier pour un mur ou un post-it).
-    WL.show($('p-hide'), !!q && !ended);
-    $('p-hide').textContent = warn('p-hide') ? 'Aucune réponse : confirmer ?' : q && q.showResults ? 'Masquer' : post ? 'Publier' : 'Afficher';
-    $('p-hide').title = q && q.showResults ? 'Retire les graphes et réponses de la projection et des appareils ; les réponses reçues sont gardées'
-      : post ? 'Rend les contributions visibles de tous' : 'Montre les graphes, les réponses et la bonne réponse';
-    $('p-prev').disabled = !last || last.position === 0;
-    // Dernière question : « Suivante » devient « Récap et conclusion » (fin de session).
-    var lastOne = !!last && last.count > 0 && last.position >= last.count;
-    if (lastOne && q) $('p-next').textContent = 'Récap et conclusion ▶';
-    $('p-next').title = lastOne ? 'Termine la session : récap et conclusion sur la projection et les appareils' : 'Question suivante, son vote s\'ouvre (flèche droite)';
-    $('p-next').disabled = !last || (lastOne && !q);
-    WL.show($('p-board'), ended || lastOne);
+    $('p-next').title = 'Passe à la question suivante sans publier les résultats de celle-ci.';
+    WL.show($('p-board'), !board);
+    WL.show($('p-end'), !ended);
+    WL.show($('p-welcome'), !ended && !!q);
+    WL.show($('p-asks'), !!(last && (last.asksOpen || last.show === 'asks')));
+    $('p-asks').textContent = shown && last.show === 'asks' ? 'Revenir à la question' : 'Afficher les questions publiées (' + ((last && last.asksCount) || 0) + ')';
+    $('p-participants').href = 'admin.php?s=' + encodeURIComponent(code) + '&participants=1';
   }
 
   /** QR agrandi au centre : clic sur le QR ou touche Q ; fermé par « Fermer », Échap ou un clic à côté. */
@@ -451,17 +410,21 @@
     var next = function () {
       if (ended()) return;
       var endHere = !onBoard() && !(last && last.show) && !!last && last.count > 0 && last.position >= last.count;
-      control(onBoard() ? 'board_next' : endHere ? 'end' : 'next');
+      if (endHere) { guarded('p-step', 'end'); return; }
+      control(onBoard() ? 'board_next' : 'next');
     };
     $('p-prev').addEventListener('click', prev);
     $('p-next').addEventListener('click', next);
-    $('p-step').addEventListener('click', vote);
+    $('p-step').addEventListener('click', step);
     $('p-reopen').addEventListener('click', reopen);
     $('p-hide').addEventListener('click', function () {
       var q = last && last.question;
       if (q) guarded('p-hide', q.showResults ? 'hide' : 'show');
     });
     $('p-board').addEventListener('click', function () { control('board'); });
+    $('p-welcome').addEventListener('click', function () { control('welcome'); });
+    $('p-end').addEventListener('click', function () { guarded('p-end', 'end'); });
+    $('p-participants').addEventListener('click', function () { $('p-options').open = false; });
     $('p-asks').addEventListener('click', function () { control(last && last.show === 'asks' ? 'show_off' : 'show_asks'); });
     // Téléphone : glisser vers la gauche = suivante, vers la droite = précédente
     // (remplace les deux boutons). Geste franchement horizontal seulement, pour
@@ -478,8 +441,9 @@
       if (dx < 0) next(); else prev();
     }, { passive: true });
     document.addEventListener('keydown', function (e) {
-      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey || e.target.closest('input,textarea,select,[contenteditable="true"]')) return;
       var k = e.key;
+      if ((k === ' ' || k === 'Enter') && e.target.closest('button,a,summary')) return;
       if (k === 'ArrowRight' || k === 'PageDown') next();
       else if (k === 'ArrowLeft' || k === 'PageUp') prev();
       else if (k === ' ' || k === 'Enter') { if (!ended()) step(); }

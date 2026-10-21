@@ -135,6 +135,68 @@ var WL = (function () {
 
   function plural(n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); }
 
+  /** Un seul parcours pour Animer et la projection. Les opérations restent
+   * celles du serveur ; la fermeture ne publie jamais une correction. */
+  function animationGuide(q, state) {
+    state = state || {};
+    var open = !!q && q.state === 'open' && !(q.closesAt && q.closesAt <= state.now);
+    var post = !!q && (q.type === 'wall' || q.type === 'postit');
+    var published = !!q && !!q.showResults;
+    var live = !!q && ['poll', 'wordcloud', 'scale', 'points', 'steps'].indexOf(q.type) !== -1
+      && q.live !== false && q.state !== 'draft';
+    var projected = state.projected === undefined ? published || live : state.projected;
+    var op, label, hint, stage;
+    if (state.board || state.show) {
+      op = state.board ? 'board_off' : 'show_off'; label = 'Revenir à la question'; stage = 'Affichage spécial';
+      hint = 'Reprend la question en cours, sans modifier ses réponses.';
+    } else if (state.ended) {
+      op = ''; label = 'Atelier terminé'; stage = 'Atelier terminé';
+      hint = 'La conclusion est affichée. Le bilan et les exports restent disponibles.';
+    } else if (!q) {
+      op = state.count ? 'next' : ''; label = 'Démarrer l’atelier'; stage = 'Accueil du groupe';
+      hint = state.count ? 'Affiche la première question et permet aux participants de répondre.' : 'Ajoutez une question dans Préparer pour démarrer.';
+    } else if (q.state === 'draft') {
+      op = 'open'; label = 'Ouvrir les réponses'; stage = 'Question prête';
+      hint = 'Les participants pourront répondre à cette question.';
+    } else if (open && post && !published) {
+      op = 'show'; label = 'Publier les contributions'; stage = 'Contributions à relire';
+      hint = 'Relisez les contributions dans Animer avant de les rendre visibles. La collecte reste ouverte.';
+    } else if (open) {
+      op = 'close'; label = 'Clore les réponses'; stage = 'Réponses en cours';
+      hint = projected ? 'Arrête la collecte. Les résultats déjà affichés restent visibles.' : 'Arrête la collecte. Les résultats restent masqués jusqu’à votre clic.';
+    } else if (!published) {
+      op = 'show'; label = post ? 'Publier les contributions' : 'Afficher les résultats'; stage = 'Réponses closes';
+      hint = post ? 'Après relecture dans Animer, rend les contributions visibles du groupe.'
+        : 'Montre les résultats sur l’écran du groupe et les appareils des participants' + (q.graded ? ', avec la correction du quiz.' : '.');
+    } else {
+      op = state.position >= state.count ? 'end' : 'next';
+      label = op === 'end' ? 'Terminer l’atelier' : 'Question suivante'; stage = 'Échange autour des résultats';
+      hint = op === 'end' ? 'Après confirmation, clôt l’atelier et affiche sa conclusion.' : 'Affiche la question suivante et ouvre ses réponses si elle n’a pas encore été posée.';
+    }
+    var projection = state.board ? 'Bilan' : state.show === 'asks' ? 'Questions publiées' : state.show === 'podium' ? 'Podium'
+      : state.ended ? 'Conclusion' : !q ? 'Accueil et code' : projected ? 'Résultats visibles' : 'Résultats masqués';
+    var participant = state.ended ? 'Atelier terminé' : !q ? 'Accueil' : published ? 'Résultats visibles'
+      : open ? 'Répondre · résultats masqués' : 'En attente des résultats';
+    return { op: op, label: label, hint: hint, stage: stage, open: open, post: post, published: published,
+      projection: projection, participant: participant,
+      visibility: published ? (live && state.projected !== false ? 'Masquer sur les appareils' : 'Masquer les résultats')
+        : post ? 'Publier les contributions' : 'Afficher les résultats',
+      canToggle: !!q && !state.ended && (published || (op !== 'show' && !q.graded)),
+      canReopen: !!q && !state.ended && !open && q.state !== 'draft' };
+  }
+
+  /** État visible dans les deux écrans, sans reconstruire le DOM au polling. */
+  function renderAnimationGuide(node, guide) {
+    var signature = [guide.stage, guide.projection, guide.participant, guide.hint].join('|');
+    if (node.dataset.guide === signature) return;
+    node.dataset.guide = signature;
+    clear(node).appendChild(el('strong', { class: 'animation-stage' }, guide.stage));
+    node.appendChild(el('div', { class: 'animation-visibility' },
+      el('span', null, el('strong', null, 'Écran du groupe : '), guide.projection),
+      el('span', null, el('strong', null, 'Appareils des participants : '), guide.participant)));
+    node.appendChild(el('p', { class: 'animation-hint' }, guide.hint));
+  }
+
   /** Libellés des barres : choix, ou notes 1..N pour une échelle. */
   function labels(q) {
     if (q.type !== 'scale') return q.options;
@@ -493,6 +555,6 @@ var WL = (function () {
   return {
     el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
     TYPES: TYPES, plural: plural, renderResults: renderResults, compareText: compareText, linkHost: linkHost,
-    remaining: remaining, formatTime: formatTime
+    remaining: remaining, formatTime: formatTime, animationGuide: animationGuide, renderAnimationGuide: renderAnimationGuide
   };
 }());
