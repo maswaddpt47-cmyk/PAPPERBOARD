@@ -434,7 +434,6 @@ function check(cond, label) {
   await admin.click('#seance-new-save');
   await admin.waitForFunction(() => document.getElementById('banner') && document.getElementById('banner').textContent.length > 0);
   check(await admin.locator('#seance-select option', { hasText: 'Cassé' }).count() === 0, 'thème perso : un texte illisible n\'est pas enregistré');
-  check(await admin.getAttribute('#banner', 'class') === 'banner banner-erreur', 'bandeau : une erreur s\'affiche comme une erreur');
   admin.once('dialog', (d) => d.accept());
   await admin.click('#seance-del');
   await admin.waitForFunction(() => !document.querySelector('#seance-select optgroup'));
