@@ -5,145 +5,30 @@
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
-
-## Animation guidée — essai utilisateur à faire (21/10/2026)
-
-Feu vert de l’utilisateur le 21/10/2026 : même parcours dans **Animer et la projection**.
-Branche `codex/animation-guidee-20261021`, partie de `60adf58`.
-
-- Une action principale : démarrer, clore les réponses, afficher les résultats,
-  question suivante, terminer après confirmation (y compris au clavier et au glisser).
-  Fermer ne publie jamais la correction. Mur et post-it gardent la publication après
-  relecture, avant fermeture ; les modes de projection en direct sont conservés.
-- État distinct de l’écran du groupe et des appareils, calculé par le même helper.
-  La vue privée de l’animateur est explicitement identifiée. Participants est un panneau
-  modal (QR, inscriptions, échanges, classement) ; la projection ouvre ce même panneau
-  pour la bonne session. Les commandes avancées restent accessibles.
-- Aucun changement d’authentification, de CSRF, de stockage des réponses ou de polling.
-  Le seul champ public ajouté est le booléen de configuration `live`, pour nommer
-  correctement les deux affichages. Un mode direct garde son libellé « Masquer sur les
-  appareils » ; un quiz masque aussi la projection.
-- Aide intégrée, guide HTML et PDF actualisés. La galerie se teste par le serveur HTTP
-  de la suite, sans dépendre du protocole file:// du navigateur. Tous ses contrôles restent actifs.
-
-**Mesuré le 21/10/2026 en local (PHP 8.3, Chromium)** : contrôles PHP verts ; 112 contrôles
-navigateur, 307 contrôles d’interface et 768 cas de galerie réussis. Mesures à 1920×1080,
-1280×720, 1024×768 et 390×844 : aucun débordement horizontal ; projection sans défilement
-ni résultat coupé. Publication / masquage / réouverture synchronisés entre Animer,
-projection et participant ; la correction est masquée avant la réouverture.
-
-**À vérifier par l’utilisateur après publication** : Animer → Participants (QR / inscriptions),
-parcours d’un quiz depuis chaque écran, puis mur / post-it avec relecture. Les fichiers
-anciens de `/workspace/PAPPERBOARD` sont préservés : travail depuis une copie propre.
-
-## Chantier interface fidèle à la simulation — 19/10/2026 (reprise Claude)
-
-**En ligne le 19/10/2026** : `main` = `8c512da`, run Actions 39267984825 vert
-(tests, deploy, paquet) ; l’étape « Vérifier la mise en ligne » a relu sur le
-serveur le contenu du commit pour les sept ressources de l’interface.
-**Reste** : essai par l’utilisateur sur PC et téléphone (Animer, Préparer, Bilan).
-Branche de travail : `claude/eloquent-faraday-768r87`, partie de
-`codex/interface-simulation-fidele` (`f19df16`).
-
-**Fait le 19/10/2026 (mesuré, `bash tests/run.sh` vert en local : PHP 8.3, Chromium)** :
-- Fenêtre de création à 390 px : 352 px comme la référence. Cause : la surcharge
-  `max-width: calc(100vw - 28px)` d’`interface-php.css` remplaçait la limite
-  native des `dialog` gardée par la référence ; retirée.
-- Écarts que le test ne voyait pas, trouvés aux captures : marque « WoocLight »
-  en double dans la barre du haut (fil d’Ariane poussé à droite), vide de
-  ~230 px sous le titre à 390 px (`.heading-copy` à base flexible de 20rem en
-  colonne), titres de panneaux, bandeau d’état, liste des questions (défilement
-  interne, métadonnées sur trois lignes), carte « Votre atelier » encadrée,
-  boutons d’en-tête réduits, chiffre de participation, lignes de réponse.
-- Préparer : carte et liste comme `.preparation-panel` (pleine largeur),
-  conclusion comme `.conclusion-card`.
-- Bilan : chiffres clés et une carte de résultats par question affichés
-  d’emblée, comme le récap de la simulation ; synthèse IA, PowerPoint et exports
-  gardés dessous. Le bouton « Voir le tableau de bord » est retiré (doublon).
-- `tests/interface.js` compare 8 éléments de plus aux 4 tailles et vérifie la
-  marque masquée et la hauteur de l’en-tête mobile (265 contrôles, rouge sur
-  l’ancien code).
-
-**Second passage le 19/10/2026, sur la demande de l’utilisateur (« tout à l’identique »)** :
-« Mon espace » refait comme la simulation : Vue d’ensemble (atelier modifié en
-dernier, « Votre progression », deux idées de séance), Bibliothèque de modèles
-(cartes de séance, puis les outils de relecture et d’ajout de thème), Mes
-ateliers (ateliers en cours, ateliers archivés, démos) ; menu « Vue d’ensemble /
-Mon atelier / Bibliothèque de modèles / Mes ateliers ». Pilotage et Réglages
-réordonnés comme la référence. L’API gagne un seul champ, `explored` dans la
-liste des sessions. `tests/interface.js` compare aussi les trois vues (312 contrôles).
-
-**Tranché par l’utilisateur le 19/10/2026** (ne pas reproposer) :
-1. Textes de la simulation faux dans la vraie application : équivalent vrai,
-   même place, même style.
-2. Ligne d’atelier archivé : « Voir le bilan », « Réutiliser les questions »,
-   « Supprimer » (testé dans `tests/interface.js`).
-3. Fonctions réelles sans équivalent dans la simulation (durée de vote,
-   classement, signaux réels, carte « Cette session » de Réglages) : gardées.
-Ne restent volontairement absents : bandeau « Simulation interactive » et
-badge « Bac à sable » (proposé et accepté le 19/10/2026).
-
-### Code sauvegardé et points à ne pas défaire
-
-- Référence visuelle : `PAPPERBOARD-CHATGPT@7a80fc3a81083f3cb8adf4dfc5e79e686e9fb5bb`,
-  figée dans `tests/reference/` (exclu du déploiement). Guide :
-  `docs/interface-reference.md`.
-- Composants : `assets/interface.css` (règles de la référence, préfixées
-  `body.admin`), `assets/interface-php.css` (liaison avec le PHP),
-  `assets/interface.js`. Une surcharge PHP de même spécificité qu’une règle
-  adaptative de la référence l’écrase à toutes les tailles : vérifier aux
-  quatre tailles avant d’en ajouter une.
-- Projection : screen.php, interface-screen.css et screen.js ; commandes en
-  haut, canevas ajusté depuis sa taille naturelle, QR agrandi conservé.
-- Info-bulles : tooltips.js et aides.css, survol/focus, dialogues et projection.
-- Garder API, authentification, CSRF, CSP, anonymat, modération, purge horaire
-  réelle, démos, relecture JSON par une autre IA, exports et coût du polling.
-- AG-007 : `#8A6500` refusé par l’utilisateur ; conserver `#B18400` en production.
-- Projection dans un nouvel onglet ; aperçu participant dans une fenêtre
-  séparée sur la vraie page PHP, synchronisée par le serveur, CSP inchangée.
-- Aucun accès au contenu de config.php, aucun secret ni donnée réelle dans les tests.
-
-## Chantier charte graphique (branche `test/nouvelle-charte`, phases 1 à 4 en ligne le 18/10/2026)
-
-Ouvert le 18/10/2026. **AG-006 tranché le 18/10/2026 par l'utilisateur** : évolution de « Papier & Terre », pas un remplacement ; la palette, les variantes et le PowerPoint adaptés sont gardés (ne pas les défaire sans nouveau bloc). Palette de base validée le 18/10/2026 (ivoire `#F7F0E4`, terracotta `#B74322`, pétrole `#10383C`, vert, moutarde, prune) et variantes validées avec leurs contrastes. **Phase 1 faite le 18/10/2026 : `assets/style.css` seulement** (jetons en trois niveaux, thème clair, projection sombre pétrole, projection claire). Aucune classe ni logique modifiée ; `bash tests/run.sh` vert. **Reste** : phase 2 (structure, composants), 3 (rendus, projection), 4 (responsive, accessibilité), 5 (validation) ; `assets/bilan-pptx.js` et l'impression gardent l'ancienne palette jusqu'à la phase 3 ; **phase 1 fusionnée dans `main` et en ligne le 18/10/2026 (`ad7c430`, déploiement vert) à la demande de l'utilisateur, pour la voir sur téléphone** ; les phases suivantes se travaillent sur la branche, à fusionner sur sa demande. Ressources de Codex : `docs/charte-v3/`.
-**Phase 2 faite le 18/10/2026** (`style.css` seulement) : en-tête, navigation, titres, cartes, liste de questions, champs, boutons désactivés (pointillés), modale, états (symbole + couleur, état vide en pointillés, point d'attente). Quiz corrigé : les barres autres que la bonne réponse passent en neutre (le vert ne désigne que la bonne réponse). **Non fait, à décider** : le bandeau `banner` sert aux erreurs comme aux confirmations, sans variante ; les distinguer demande un changement JS (`admin.js`, `app.js`).
-**Phase 3 faite le 18/10/2026** : anneau Oui/Non aux couleurs des barres (Oui terracotta, Non vert ; quiz corrigé : vert pour la bonne réponse seulement), nuage aux quatre couleurs de la charte, filet d'explication, états vides encadrés (classe `results-none` ajoutée dans `common.js`), liseré d'en-tête par mode (animateur pétrole, participant moutarde), fonds de tracé visibles en projection claire (`--wl-trace`), jauge vide sans points parasites (`charts.js`), PowerPoint à la nouvelle palette claire. **Galerie des résultats** : `docs/galerie-resultats/index.html` (ouvrir le fichier dans un navigateur ; bloquée en ligne par `.htaccess`), 12 formes × 4 états × 4 modes avec les vraies fonctions de rendu, données fictives ; matrice de 768 cas mesurée le 18/10/2026 : 0 erreur JS, 0 débordement, 0 résultat vide, projection dans l'écran à partir de 768 px.
-**Phase 4 faite le 18/10/2026** (audit navigateur aux 4 tailles sur animateur, participant, projection sombre et claire, résultats masqués et publiés) : « détails » et lien d'invitation portés à 48 px de haut, textes de la projection jamais sous 15 px (méta de question, code sous le QR), barre de pilotage arrêtée avant le QR code (elle passait dessous à 768 et 1440 px). Mesuré : 0 débordement, 0 cible sous 44 px, 0 chevauchement, 0 texte sous 13,5 px, 0 `tabindex` positif, contour de focus plein sur tous les éléments parcourus au clavier. **Pas fait** : lecteur d'écran réel, simulation du daltonisme, zoom 200 %. **Phases 2 à 4 fusionnées dans `main` et en ligne le 18/10/2026 à la demande de l'utilisateur ; phase 5 (validation finale) faite le 18/10/2026, voir plus bas.**
-**Phase 5 faite le 18/10/2026** : `tests/charte.php` (statique : aucune adresse externe, aucune couleur hors des blocs de jetons, jetons définis, palette de base, contrastes des couples essentiels, 15 vérifications) et `tests/galerie.js` (768 cas de la galerie, avec Playwright) ajoutés à `tests/run.sh`. Contrôlés : syntaxe JS de `assets/`, de la galerie et des sources du sandbox ; import de `docs/charte-v3/sources/exemple-import.json` par l'interface réelle (4 questions + la conclusion, qui n'est pas une question) ; export PowerPoint de bout en bout (12 diapositives, nouvelle palette présente, ancienne absente) ; fichier autonome et archive du sandbox v3 (empreintes, `unzip -t`, sources identiques, `qa.cjs` 18 scénarios et `qa-preparation.cjs` 14 scénarios) ; paquet zip de la CI (22 fichiers, ni `docs/` ni `tests/`). **Connu, non causé par la charte** : l'export PowerPoint déclenche une erreur de console « inline style » refusée par la CSP, venue de `pptxgen.bundle.js`, déjà présente à `56d0751` ; le fichier est produit.
-Écarts connus (mesurés le 18/10/2026) : moutarde `#B18400` à 3,00:1 sur l'ivoire, sans marge ; moutarde sur la piste claire 2,7:1 (étiquette toujours écrite) ; prune et terracotta proches (ΔE 35), jamais la couleur seule.
-
-## Chantier navigation v3 (branche `test/navigation-v3`, étapes 1 à 3 en ligne le 18/10/2026)
-
-Ouvert le 18/10/2026 : le prototype v3 (`docs/charte-v3/`) est une refonte de la navigation de l\'espace animateur, pas une charte de couleurs ; l\'utilisateur a choisi la **palette A** (ivoire / terracotta, projection bleu pétrole) et les **titres en Georgia**, sur les **trois écrans**. Les points non tranchés reprennent mes propositions du 18/10/2026 : Réglages en 4ᵉ onglet, Vue d\'ensemble = Mes sessions, Bibliothèque = séances prêtes à animer, Historique = archives. **Étape 1 faite sur la branche, pas en ligne : espace animateur** (`admin.php`, `assets/shell.js` nouveau, `assets/style.css`) : menu latéral (complet dès 1200 px, icônes seules de 640 à 1199 px, tiroir avec voile sous 640 px), fil d\'Ariane, carte « Votre atelier », onglets à icônes, actions « Aperçu participant » et « Ouvrir la projection ». Aucun identifiant ni logique de `admin.js` modifié ; les entrées du menu relaient les boutons existants. **Étape 1 fusionnée dans `main` et en ligne le 18/10/2026 (`2a4472a`).** **Étapes 2 et 3 faites et fusionnées dans `main` le 18/10/2026 (`bfa0c93`, déploiement vert)** : participant (`index.php`, `style.css`) en-tête clair avec marque et liseré moutarde, type de question en petites capitales, choix en lignes avec lettre A, B, C… (le choix sélectionné reste brun neutre avec « ✓ », voir « Points à ne pas défaire ») ; case d'une bonne réponse qui garde son texte à côté (défaut ancien corrigé) ; projection (`screen.php`, `style.css`) : chaque réponse dans une carte (lettre, texte, décompte, barre fine), carte teintée pour la bonne réponse, plancher de 14 px sur téléphone. Aucun fichier JavaScript modifié, aucun identifiant renommé. Non repris du v3 : badge « Vote ouvert » sur la projection (contenu nouveau, à décider). Non repris du v3 : badge « Bac à sable », « Galerie des résultats » (hors ligne, `docs/`), carte « À vous de jouer », accroche « Le lien fait l\'atelier ».
-
-## Chantier interface de la simulation (en ligne le 19/10/2026, `1ab7778`)
-
-Ouvert le 19/10/2026 (consigne `PAPPERBOARD-CHATGPT/docs/CONSIGNE-CLAUDE-UI-PHP.md`). Audit,
-décisions et suivi : `docs/integration-ui-simulation.md`. Mise en ligne seulement sur le feu vert
-de l'utilisateur. AG-007 (moutarde `#8A6500`) refusé par l'utilisateur le 19/10/2026 : `#B18400` gardé.
-**Fait sur la branche le 19/10/2026** (tests verts en local) : espace animateur, création vide / JSON
-(niveau, durée, public « Autres »), projection (commandes en haut, masquage dédié, QR cliquable).
-**En ligne le 19/10/2026** sur le feu vert de l'utilisateur (`main` = `1ab7778`, déploiement vert,
-vérifié par `attendre-deploiement.sh`). **Reste** : essai par l'utilisateur sur PC (création JSON, Pilotage,
-Animer, projection).
+**Ménage du 21/10/2026** : récits des chantiers charte (18/10), navigation v3
+(18/10), interface de la simulation et interface fidèle (19/10), animation
+guidée (21/10) retirés — `git log -p CHANTIERS.md` ; leurs invariants sont
+plus bas.
 
 ## Restant, par priorité — tout côté utilisateur
 
-1. **À vérifier sur PC** (téléphone : seul le bouton principal de la projection est
-   validé, 15/10/2026) : onglets de l'espace animateur, archive anonyme, synthèse
-   enregistrée, post-its colorés, signaux, « Oser demander », pseudonymes et
-   podium, brise-glaces, Vrai/Faux au toucher, « Rouvrir le vote », tri des
-   barres de points ; ajouts du 16/10/2026 : « x actifs », bouton « ❓ Questions »,
-   barre de pilotage allégée et glisser ← → au téléphone, démos à 4 thèmes, avant /
-   après, « Clôture… », A− / A+ sur le téléphone, « Supprimer les démos ». Validé le
-   16/10/2026 sur téléphone : nuage lisible et fluide, session de démonstration ;
-   le reste à tester sur ordinateur. Le plus simple : **Créer une session de
-   démonstration**. Puis un **atelier réel** à 10 participants ou plus.
-   Ajouts des 16 au 18/10/2026, à voir sur PC : lien d'exercice et QR ; défi à étapes et
-   « ✋ Bloqué » (Réglages > fonctions en essai) ; avant / après sur les mêmes personnes ;
-   fiche mémo (Bilan > Exports) ; bibliothèque de séances et thèmes ajoutés (page Sessions) ;
-   rappel à l'archivage ; réordonner des choix efface les réponses ; PowerPoint avec « … et
-   N autres ».
+1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
+   - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
+     inscriptions), un quiz piloté depuis Animer puis depuis la projection,
+     un mur / post-it avec relecture avant publication ;
+   - interface reprise de la simulation (19/10) : création vide et par JSON,
+     Mon espace, Pilotage, Réglages, Bilan, projection ;
+   - fonctions des 15 au 18/10 jamais vues sur PC (téléphone : seuls le
+     bouton principal de la projection, le nuage et la démo sont validés) :
+     onglets, archive anonyme, synthèse, post-its colorés, signaux, « Oser
+     demander », pseudonymes et podium, brise-glaces, Vrai/Faux au toucher,
+     « Rouvrir le vote », « x actifs », « ❓ Questions », démos à 4 thèmes,
+     avant / après, « Clôture… », A− / A+, lien d'exercice et QR, défi à
+     étapes et « ✋ Bloqué » (Réglages > fonctions en essai), fiche mémo
+     (Bilan > Exports), bibliothèque de séances, rappel à l'archivage,
+     PowerPoint « … et N autres ».
+   Le plus simple : **Créer une session de démonstration**, puis un **atelier
+   réel** à 10 participants ou plus.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -154,17 +39,20 @@ Animer, projection).
    `trig_018SBR4ihGT8Y2ud7sP5kxYm` désactivée le 10/10/2026 (à supprimer).
 5. **Relire** les 5 séances de la bibliothèque (brouillons : le 33700 et « .gouv.fr » à
    vérifier) et la fiche `docs/registre-traitement.md` (deux lignes ajoutées le 17/10/2026).
-6. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
+6. **Branches** : 56 sur GitHub le 21/10/2026, dont 47 d'avant le 19/10/2026,
+   sans ancêtre commun avec `main` (son historique repart du 19/10). Garder
+   au moins `codex/interface-simulation-fidele` comme archive ; suppression par
+   l'utilisateur seul (refusée à Claude, HTTP 403).
+7. Facultatif : `contact` dans `config.php` (`php ~/www/configurer.php`, réponse
    `N` au mot de passe, SSH par mot de passe à rouvrir puis recouper). Journaux
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
 Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
 clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
 Faille PHP « PHP2Shell » (21/10/2026, mesuré) : version servie au web
-**8.4.27** (corrigée), relevée en SSH par un fichier `v.php` aussitôt supprimé ;
-SSH par mot de passe rouvert le temps de la vérification puis refermé
-(déclaré par l'utilisateur). Sur Alwaysdata, après un correctif PHP, le site peut
-rester sur l'ancienne version (cas d'ATELIERS le même jour) : Web → Sites →
+**8.4.27** (corrigée) ; SSH par mot de passe rouvert le temps de la
+vérification puis refermé (déclaré par l'utilisateur). Sur Alwaysdata, après
+un correctif PHP, le site peut rester sur l'ancienne version : Web → Sites →
 Redémarrer, puis contrôler la version servie, pas seulement `php -v`.
 
 ## Décisions à trancher
@@ -290,6 +178,36 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   Avec « fonctions en essai » cochées, la démo se termine par le défi à étapes (nav).
 
 **Affichage**
+- Interface reprise de la simulation (19/10/2026) : référence figée
+  `PAPPERBOARD-CHATGPT@7a80fc3a` dans `tests/reference/` (hors déploiement),
+  guide `docs/interface-reference.md`, comparée par `tests/interface.js` aux
+  4 tailles. Une surcharge d'`interface-php.css` de même spécificité qu'une
+  règle adaptative de la référence l'écrase à toutes les tailles : vérifier
+  aux quatre tailles avant d'en ajouter une. Tranché par l'utilisateur le
+  19/10/2026 (ne pas reproposer) : texte faux de la simulation → équivalent
+  vrai, même place ; archive : « Voir le bilan », « Réutiliser les
+  questions », « Supprimer » ; fonctions réelles sans équivalent gardées ;
+  ni bandeau « Simulation interactive » ni badge « Bac à sable ».
+- Animation guidée (21/10/2026) : une action principale par étape, même état
+  calculé pour Animer et la projection ; fermer ne publie jamais la
+  correction ; mur et post-it publiés après relecture, avant fermeture. Seul
+  champ public ajouté : le booléen `live`.
+- Charte : évolution de « Papier & Terre » (AG-006, 18/10/2026), palette A
+  (ivoire `#F7F0E4`, terracotta `#B74322`, pétrole `#10383C`), titres Georgia ;
+  `tests/charte.php` (jetons, contrastes) et `tests/galerie.js` (768 cas).
+  Moutarde `#B18400` gardée (AG-007, `#8A6500` refusé) : 3,00:1 sur l'ivoire,
+  sans marge ; prune et terracotta proches, jamais la couleur seule. Galerie :
+  `docs/galerie-resultats/index.html`, hors ligne. Non décidé : variante du
+  bandeau `banner` (erreur / confirmation) ; badge « Vote ouvert » sur la
+  projection. Connu : l'export PowerPoint provoque une erreur de console CSP
+  « inline style » (`pptxgen.bundle.js`), le fichier est produit.
+- Choix sélectionné du participant : brun neutre avec « ✓ » ; le vert ne
+  désigne que la bonne réponse (quiz corrigé : autres barres en neutre).
+  Projection : commandes en haut, canevas ajusté depuis sa taille naturelle,
+  QR agrandi conservé.
+- Projection dans un nouvel onglet ; aperçu participant dans une fenêtre
+  séparée, synchronisée par le serveur, CSP inchangée. Info-bulles
+  (`tooltips.js`, `aides.css`) au survol et au focus.
 - Charte « Papier & Terre » (`INTEGRATION.md`) : bonne réponse en vert avec coche,
   jamais la couleur seule ; contraste AA, y compris cartes en thème sombre.
 - `fitResults` : tout tient sans défilement (1280x720). Sous 760 px, pas de
@@ -372,14 +290,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 ## Pistes d'amélioration
 
 *Proposées, en attente :*
-- 16/10/2026 — Exercices pratiques après un quiz. (1) Défi à étapes : **en ligne
-  le 16/10/2026, en essai** (voir « Points à ne pas défaire »). (2) Lien d'exercice avec QR code : **en ligne
-  le 17/10/2026**. (3) Fiche mémo à emporter : **faite le 17/10/2026**, voir « Points à ne pas défaire ». Limite : tout est déclaratif.
-  La plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
-*Faites le 17/10/2026, à valider par l'utilisateur* : avant / après sur les mêmes personnes,
-aide « Bloqué » par étape (AG-003 et AG-004 tranchés le 17/10/2026).
-*Faites le 16/10/2026* : avant / après, clôture prête à l'emploi, taille du texte,
-défi à étapes (en essai).
+- Aucune en attente (les trois pistes du 16/10/2026 sont en ligne). Rappel : la
+  plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
 *Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
