@@ -160,6 +160,12 @@ Animer, projection).
 
 Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
 clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
+Faille PHP « PHP2Shell » (21/10/2026, mesuré) : version servie au web
+**8.4.27** (corrigée), relevée en SSH par un fichier `v.php` aussitôt supprimé ;
+SSH par mot de passe rouvert le temps de la vérification puis refermé
+(déclaré par l'utilisateur). Sur Alwaysdata, après un correctif PHP, le site peut
+rester sur l'ancienne version (cas d'ATELIERS le même jour) : Web → Sites →
+Redémarrer, puis contrôler la version servie, pas seulement `php -v`.
 
 ## Décisions à trancher
 
