@@ -1,0 +1,184 @@
+# Contrôle d'intégrité du serveur WoocLight (21/10/2026, après la faille PHP
+# « PHP2Shell »). Adapté du contrôle d'ATELIERS_NEWGEN (integrite-api.yml,
+# relu par Codex : AGORA AG-025 et AG-026 de ce dépôt-là).
+# Lecture seule : rien n'est écrit sur le serveur. Les noms de fichiers des
+# données et les IP ne sortent jamais du serveur ; seuls des nombres, des
+# chemins de l'application et des empreintes publiques sont rapportés.
+# Résultat : vert = rien d'anormal parmi ce qui est contrôlé ; ce contrôle
+# ne permet pas d'exclure une compromission (AG-026).
+name: Intégrité WoocLight
+
+on:
+  workflow_dispatch:
+    inputs:
+      depuis:
+        description: "Début de la période examinée (AAAA-MM-JJ)"
+        default: "2026-10-19"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  integrite:
+    runs-on: ubuntu-latest
+    env:
+      DEPUIS: ${{ inputs.depuis }}
+      CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Préparer l'accès SSH
+        env:
+          CLE: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
+          HOTES: ${{ secrets.ALWAYSDATA_KNOWN_HOSTS }}
+        run: |
+          printf '%s' "$DEPUIS" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || { echo "::error::IMPOSSIBLE : date « $DEPUIS » invalide"; exit 1; }
+          if ! printf '%s' "$CHEMIN" | grep -Eq '^[A-Za-z0-9_./-]+/$' || printf '%s' "$CHEMIN" | grep -q '\.\.'; then
+            echo "::error::IMPOSSIBLE : WOOCLIGHT_CHEMIN invalide"; exit 1
+          fi
+          [ -n "$CLE" ] && [ -n "$COMPTE" ] || { echo "::error::IMPOSSIBLE : secret ALWAYSDATA_SSH_KEY ou ALWAYSDATA_COMPTE absent"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CLE" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          if [ -n "$HOTES" ]; then printf '%s\n' "$HOTES" | tr -d '\r' > ~/.ssh/known_hosts; v=yes; else v=accept-new; fi
+          echo "SSHO=-o StrictHostKeyChecking=$v -o ConnectTimeout=20" >> "$GITHUB_ENV"
+          echo "HOTE=$COMPTE@ssh-$COMPTE.alwaysdata.net" >> "$GITHUB_ENV"
+          ssh -o StrictHostKeyChecking=$v -o ConnectTimeout=20 "$COMPTE@ssh-$COMPTE.alwaysdata.net" true \
+            || { echo "::error::IMPOSSIBLE : connexion SSH au serveur refusée ou injoignable"; exit 1; }
+
+      # Référence = commit du dernier déploiement réussi (ci-deploy.yml sur
+      # main), avec les mêmes exclusions que son rsync.
+      - name: Fichiers de l'application identiques au déploiement ?
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          sha=$(gh api "repos/${{ github.repository }}/actions/workflows/ci-deploy.yml/runs?status=success&branch=main&event=push&per_page=1" --jq '.workflow_runs[0].head_sha // ""') \
+            || { echo "::error::IMPOSSIBLE : référence de déploiement illisible"; exit 1; }
+          [ -n "$sha" ] || { echo "::error::IMPOSSIBLE : aucun déploiement réussi trouvé"; exit 1; }
+          rm -rf ref && mkdir ref && git archive "$sha" | tar -x -C ref || { echo "::error::IMPOSSIBLE : commit $sha introuvable"; exit 1; }
+          ( cd ref && rm -rf data config.php tests scripts docs .claude .git* && find . -name '*.md' -delete )
+          ( cd ref && find . -type f | LC_ALL=C sort | xargs -r sha256sum ) > attendu.sha
+          # PHP autorisés à répondre 200 : ceux du déploiement (étape suivante).
+          echo "PHP_CONNUS=$(cd ref && find . -name '*.php' | sed 's#^\./#/#' | tr '\n' ' ')" >> "$GITHUB_ENV"
+          coupure=$(ssh $SSHO "$HOTE" 'test -e "$HOME/.wooclight-coupure" && echo oui || echo non') \
+            || { echo "::error::IMPOSSIBLE : état de la coupure illisible"; exit 1; }
+          # Pendant une coupure, www/.htaccess est volontairement remplacé.
+          excl=""; [ "$coupure" = oui ] && { echo "coupure d'urgence active : .htaccess hors comparaison"; excl="-not -path ./.htaccess"; }
+          ssh $SSHO "$HOTE" "cd '$CHEMIN' && find . -type f -not -path ./config.php -not -path './data/*' $excl | LC_ALL=C sort | xargs -r sha256sum" > serveur.sha \
+            || { echo "::error::IMPOSSIBLE : $CHEMIN illisible sur le serveur"; exit 1; }
+          [ -s serveur.sha ] || { echo "::error::ALERTE : $CHEMIN vide sur le serveur"; exit 1; }
+          [ "$coupure" = oui ] && sed -i '/  \.\/\.htaccess$/d' attendu.sha
+          echo "== $CHEMIN comparé au déploiement ${sha:0:7}"
+          # différent / manquant : ALERTE. En trop : rsync n'efface pas les
+          # fichiers retirés du dépôt ; un PHP en trop reste une ALERTE.
+          awk 'NR==FNR { a[$2]=$1; next } { s[$2]=$1 }
+            END {
+              for (f in a) { if (!(f in s)) print "ALERTE manquant : " f; else if (a[f] != s[f]) print "ALERTE différent : " f }
+              for (f in s) if (!(f in a)) { if (f ~ /\.(php|phtml|phar)[^\/]*$/) print "ALERTE PHP en trop : " f; else print "info, en trop (ancien fichier ?) : " f }
+            }' attendu.sha serveur.sha | LC_ALL=C sort > ecart.txt
+          if [ -s ecart.txt ]; then cat ecart.txt; else echo "identique"; fi
+          if grep -q '^ALERTE' ecart.txt; then grep '^ALERTE' ecart.txt | sed 's/^/::error::/'; exit 1; fi
+
+      - name: Fichiers, accès, tâches et journaux
+        if: always()
+        run: |
+          ssh $SSHO "$HOTE" DEPUIS="$DEPUIS" CHEMIN="$CHEMIN" PHP_CONNUS="$PHP_CONNUS" 'bash -s' <<'FIN' > rapport.txt 2>&1 || echo "IMPOSSIBLE : le script distant s'est arrêté (code $?)" >> rapport.txt
+          set -u
+          alerte(){ echo "ALERTE : $*"; }
+          impossible(){ echo "IMPOSSIBLE : $*"; }
+          W="$HOME/${CHEMIN%/}"
+          [ -d "$W" ] || impossible "dossier $CHEMIN introuvable"
+
+          echo "== fichiers PHP hors de l'application (données, autres dossiers web)"
+          if x=$(find ~/wooclight-data ~/www -name "*.ph*" -not -path "$W/*" 2>&1); then
+            if [ -n "$x" ]; then echo "$x" | sed "s#^$HOME/##"; alerte "fichier PHP hors de l'application"; else echo "aucun"; fi
+          else impossible "recherche des fichiers PHP"; fi
+          echo "-- dans les données (attendu : aucun)"
+          if x=$(find ~/wooclight-data -type f \( -name "*.ph*" -o -name ".htaccess" -o -name ".user.ini" \) 2>&1); then
+            if [ -n "$x" ]; then echo "$(echo "$x" | wc -l) fichier(s)"; alerte "fichier exécutable ou de configuration dans les données"; else echo "aucun"; fi
+          else impossible "recherche dans les données"; fi
+
+          echo "== configuration PHP et Apache (.htaccess, .user.ini, php.ini)"
+          if x=$(find ~ -maxdepth 5 \( -name ".htaccess" -o -name ".user.ini" -o -name "php.ini" \) -not -path "$HOME/admin/*" 2>&1); then
+            echo "$x" | sed "s#^$HOME/##" | sort
+            echo "(le .htaccess de l'application est comparé à l'étape précédente)"
+          else impossible "recherche des fichiers de configuration"; fi
+
+          echo "== fichiers modifiés depuis $DEPUIS (hors données, journaux, sauvegardes Alwaysdata)"
+          if r=$(find ~ -type f -newermt "$DEPUIS" -not -path "$HOME/wooclight-data/*" -not -path "$HOME/admin/*" -not -path "$HOME/.cache/*" \
+            -printf "%TY-%Tm-%Td %TH:%TM  %8s  %P\n" 2>/dev/null); then echo "$r" | sort | tail -60
+          else impossible "liste des fichiers récents"; fi
+          if n=$(find ~/wooclight-data -type f -newermt "$DEPUIS" 2>/dev/null | wc -l); then echo "données : $n fichier(s) modifié(s) (noms non affichés)"; fi
+
+          echo "== clés SSH autorisées (empreintes publiques, date)"
+          if [ -f ~/.ssh/authorized_keys ]; then
+            if k=$(ssh-keygen -lf ~/.ssh/authorized_keys 2>/dev/null); then echo "$k" | awk '{print $1, $2, $4}'
+            else impossible "lecture des empreintes des clés"; fi
+            stat -c "modifié le %y" ~/.ssh/authorized_keys
+            find ~/.ssh -type f -newermt "$DEPUIS" 2>/dev/null | grep -q . && alerte "~/.ssh modifié depuis $DEPUIS (clé ajoutée ?)"
+          else impossible "~/.ssh/authorized_keys introuvable (le contrôle passe pourtant par une clé)"; fi
+
+          echo "== tâches cron de l'utilisateur (attendu : aucune ; la purge est une tâche planifiée Alwaysdata)"
+          if ! command -v crontab >/dev/null; then echo "commande crontab absente du serveur : aucune tâche cron possible"
+          else
+            c=$(crontab -l 2>&1); s=$?
+            if [ $s -eq 0 ]; then
+              if echo "$c" | grep -vE '^\s*(#|$)' | grep -q .; then alerte "tâche cron inattendue"; echo "$c" | grep -vE '^\s*(#|$)' | awk '{print $1,$2,$3,$4,$5, "(commande masquée)"}'; else echo "aucune"; fi
+            elif echo "$c" | grep -qiE "no crontab|not allowed|permission"; then echo "aucune (ou crontab non disponible)"
+            else impossible "lecture de la crontab"; fi
+          fi
+
+          echo "== processus du compte (noms seuls, sans arguments)"
+          if p=$(ps -u "$(id -u)" -o comm= 2>/dev/null); then echo "$p" | grep -vxE "bash|ps|sshd|sort|uniq|grep|sed|awk" | sort | uniq -c
+          else impossible "liste des processus"; fi
+
+          echo "== journaux HTTP depuis $DEPUIS"
+          fichiers=$(find ~/admin/logs -type f -name "*http*" -newermt "$DEPUIS" 2>/dev/null)
+          if [ -z "$fichiers" ]; then
+            impossible "aucun journal HTTP trouvé depuis $DEPUIS"
+          elif ! journal=$(zcat -f $fichiers 2>/dev/null); then
+            impossible "lecture des journaux HTTP en échec"
+          else
+            # Date, méthode, chemin SANS paramètres, code. Jamais d'IP.
+            lignes=$(printf '%s\n' "$journal" | grep -ac . || true)
+            req=$(printf '%s\n' "$journal" | grep -aoE '\[[0-9]{2}/[A-Za-z]{3}/[0-9]{4}:[^]]*\] "[A-Z]+ [^ "]+ HTTP/[0-9.]+" [0-9]{3}' \
+              | sed -E 's#^\[([0-9]{2}/[A-Za-z]{3}/[0-9]{4}):[^]]*\] "([A-Z]+) ([^ ?"]*)[^ "]* HTTP/[0-9.]+" ([0-9]{3})$#\1 \2 \3 \4#' || true)
+            reconnues=$(printf '%s' "$req" | grep -c . || true)
+            echo "$(echo "$fichiers" | wc -l) fichier(s), $lignes ligne(s), $reconnues requête(s) reconnue(s)"
+            if [ "${lignes:-0}" -gt 0 ] && [ $((reconnues * 2)) -lt "$lignes" ]; then
+              impossible "format des journaux non reconnu ($reconnues requêtes reconnues sur $lignes lignes)"
+            fi
+            echo "-- requêtes par jour (un jour à 0 n'est pas une anomalie ici : WoocLight sert surtout pendant les ateliers)"
+            j="$DEPUIS"; auj=$(date +%F)
+            while [ ! "$j" \> "$auj" ]; do
+              cle=$(LC_ALL=C date -d "$j" +%d/%b/%Y)
+              echo "$j : $(printf '%s\n' "$req" | grep -c "^$cle " || true)"
+              j=$(date -d "$j + 1 day" +%F)
+            done
+            echo "-- chemins appelés (nombre, méthode, chemin, code ; 40 premiers)"
+            printf '%s\n' "$req" | cut -d' ' -f2- | grep -v '^$' | sort | uniq -c | sort -rn | head -40
+            echo "-- fichiers PHP hors du déploiement ayant répondu 200"
+            # Toléré : /v.php le 21/10/2026, relevé de version fait à la main
+            # en SSH puis supprimé (CHANTIERS.md).
+            php200=$(printf '%s\n' "$req" | awk -v k=" $PHP_CONNUS " '$4 == "200" && $3 ~ /\.ph/ && index(k, " " $3 " ") == 0' \
+              | grep -vE '^21/Oct/2026 [A-Z]+ /v\.php 200$' | cut -d' ' -f2- | sort | uniq -c || true)
+            if [ -n "$php200" ]; then echo "$php200"; alerte "fichier PHP hors du déploiement a répondu 200"; else echo "aucun"; fi
+            echo "-- motifs d'exploitation connus (allow_url_include, auto_prepend, php://, %ad, /cgi-bin/)"
+            st=0; n=$(printf '%s\n' "$journal" | grep -aciE 'allow_url_include|auto_prepend|php://|%ad|/cgi-bin/') || st=$?
+            if [ $st -gt 1 ]; then impossible "recherche des motifs d'exploitation"
+            else echo "${n:-0} requête(s)"; [ "${n:-0}" -gt 0 ] && alerte "${n} requête(s) avec un motif d'exploitation connu"; fi
+          fi
+          echo "== heure du serveur"; date
+          echo "FIN_DU_RAPPORT"
+          FIN
+          cat rapport.txt
+          grep -q '^FIN_DU_RAPPORT$' rapport.txt || echo "IMPOSSIBLE : rapport incomplet (script interrompu)" >> rapport.txt
+          if grep -q '^IMPOSSIBLE' rapport.txt; then grep '^IMPOSSIBLE' rapport.txt | sed 's/^/::error::/'; fi
+          if grep -q '^ALERTE' rapport.txt; then grep '^ALERTE' rapport.txt | sed 's/^/::error::/'; fi
+          if grep -qE '^(ALERTE|IMPOSSIBLE)' rapport.txt; then exit 1; fi
+          echo "Tout ce qui est contrôlé est conforme (sans pouvoir exclure une compromission)."
