@@ -39,6 +39,7 @@
   --wl-ok: #3C7B3C;
   --wl-ok-fond: #EAF3E5;         /* ok dessus 4,5:1 */
   --wl-ko: #B3261E;
+  --wl-ko-fond: #FBE9E7;         /* ko dessus 5,6:1 */
   --wl-focus: #1F6F6B;
   --wl-barre: var(--wl-primaire);
   --wl-barre-ok: var(--wl-ok);
@@ -277,6 +278,11 @@ li.meta { list-style: none; margin: 0; padding: var(--wl-esp-4); text-align: cen
   background: var(--wl-alerte-fond); border: 2px solid var(--wl-alerte-bord); color: var(--wl-alerte-texte);
   border-radius: var(--wl-rayon); padding: .75rem 1rem; margin-bottom: 1rem; font-weight: bold;
 }
+/* Bandeau de l'animateur (21/10/2026) : une erreur ne ressemble plus à une confirmation. */
+.banner.banner-erreur { background: var(--wl-ko-fond); border-color: var(--wl-ko); color: var(--wl-ko); }
+.banner.banner-erreur::before { content: "⚠ "; }
+.banner.banner-ok { background: var(--wl-ok-fond); border-color: var(--wl-ok); color: var(--wl-ok); }
+.banner.banner-ok::before { content: "✓ "; }
 
 .row { display: flex; gap: var(--wl-esp-2); align-items: center; }
 .wrap { flex-wrap: wrap; }
@@ -646,7 +652,7 @@ label.btn { cursor: pointer; }
   --wl-primaire: #E89B85; --wl-primaire-fonce: #E89B85; --wl-primaire-clair: var(--wl-c-petrole-carte); --wl-primaire-pale: var(--wl-c-petrole-carte);
   --wl-sur-primaire: var(--wl-c-petrole);
   --wl-barre: #E89B85; --wl-barre-ok: #7FD36B; --wl-ok: #7FD36B; --wl-ok-fond: var(--wl-c-petrole-carte);
-  --wl-ko: #FF9A8A; --wl-accent: #6FD0C8; --wl-focus: #F5C84C;
+  --wl-ko: #FF9A8A; --wl-ko-fond: var(--wl-c-petrole-carte); --wl-accent: #6FD0C8; --wl-focus: #F5C84C;
   --wl-b1: #E89B85; --wl-b2: #79BE79; --wl-b3: #DDA500; --wl-b4: #D69DC4;
   --wl-b5: #6FD0C8; --wl-b6: #8DB8F0; --wl-b7: #CFC3B0;
   --wl-pastille: #DDA500; --wl-pastille-bord: #F5C84C; --wl-moutarde: #DDA500;

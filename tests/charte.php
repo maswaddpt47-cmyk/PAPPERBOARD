@@ -89,7 +89,7 @@ $light = tokens($root_b);
 $dark = array_merge($light, tokens($dark_b));
 $pairs = [
     ['texte', 'fond', 4.5], ['texte', 'carte', 4.5], ['texte-doux', 'fond', 4.5], ['texte-doux', 'carte', 4.5],
-    ['primaire', 'fond', 4.5], ['ok', 'fond', 4.5], ['ko', 'fond', 4.5], ['accent', 'fond', 4.5],
+    ['primaire', 'fond', 4.5], ['ok', 'fond', 4.5], ['ko', 'fond', 4.5], ['ok', 'ok-fond', 4.5], ['ko', 'ko-fond', 4.5], ['accent', 'fond', 4.5],
     ['sur-primaire', 'primaire', 4.5], ['focus', 'fond', 3], ['champ', 'carte', 3],
     ['b1', 'carte', 3], ['b2', 'carte', 3], ['b3', 'carte', 3], ['b4', 'carte', 3], ['b5', 'carte', 3], ['b6', 'carte', 3], ['b7', 'carte', 3],
 ];

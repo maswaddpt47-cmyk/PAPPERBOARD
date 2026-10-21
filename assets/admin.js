@@ -25,8 +25,10 @@
     return svg;
   }
 
-  function banner(text) {
+  // kind : 'erreur' (rouge, ⚠) ou 'ok' (vert, ✓) ; sans kind, information (ℹ).
+  function banner(text, kind) {
     $('banner').textContent = text || '';
+    $('banner').className = 'banner' + (text && kind ? ' banner-' + kind : '');
     WL.show($('banner'), !!text);
   }
 
@@ -39,11 +41,11 @@
   function post(action, body) {
     return WL.api(action, { body: body || {}, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       if (r.status === 401) { showLogin('Session expirée : reconnectez-vous.'); throw r; }
-      if (r.status !== 200) { banner(r.data.error); throw r; }
+      if (r.status !== 200) { banner(r.data.error, 'erreur'); throw r; }
       banner('');
       return r.data;
     }, function (e) {
-      banner('Pas de connexion au serveur. Réessayez.');
+      banner('Pas de connexion au serveur. Réessayez.', 'erreur');
       throw e;
     });
   }
@@ -190,7 +192,7 @@
 
   function openArchive(id) {
     WL.api('archive', { query: 'id=' + encodeURIComponent(id) }).then(function (r) {
-      if (r.status !== 200) { banner(r.data.error); return; }
+      if (r.status !== 200) { banner(r.data.error, 'erreur'); return; }
       archive = r.data;
       view('archive-view');
       $('ar-title').textContent = archive.title;
@@ -331,7 +333,7 @@
   $('seance-select').addEventListener('change', function () { $('seance-copied').textContent = ''; showSeance(); });
   $('seance-btn').addEventListener('click', function () {
     var t = seanceOf($('seance-select').value);
-    if (!t) { banner('Choisissez une séance dans la liste.'); return; }
+    if (!t) { banner('Choisissez une séance dans la liste.', 'erreur'); return; }
     createFromSeance(t);
   });
   $('seance-del').addEventListener('click', function () {
@@ -342,7 +344,7 @@
   });
   $('seance-review').addEventListener('click', function () {
     var t = seanceOf($('seance-select').value), box = $('seance-prompt'), note = $('seance-copied');
-    if (!t) { banner('Choisissez une séance dans la liste.'); return; }
+    if (!t) { banner('Choisissez une séance dans la liste.', 'erreur'); return; }
     var text = reviewText(t.title + ' — objectif : ' + (t.objectif || 'non précisé') + ' ; durée : ' + (t.duree || 'non précisée') + ' ; prérequis : ' + (t.prerequis || 'aucun'),
       t.public || 'non précisé', JSON.stringify(t.items, null, 1), true);
     box.value = text;
@@ -414,10 +416,10 @@
     selectTab(document.querySelector('#editor .tabs'), saved);
     if (poller) poller.stop();
     poller = new WL.Poller('admin_state', 's=' + code, render, function (kind, r) {
-      if (kind === 'offline') banner('Connexion perdue. Reconnexion automatique…');
+      if (kind === 'offline') banner('Connexion perdue. Reconnexion automatique…', 'erreur');
       else if (kind === 'online') banner('');
       else if (r.status === 401) showLogin('Session expirée : reconnectez-vous.');
-      else if (r.status === 404) { banner(r.data.error); showSessions(); }
+      else if (r.status === 404) { banner(r.data.error, 'erreur'); showSessions(); }
     });
     poller.now();
   }
@@ -446,7 +448,7 @@
 
   $('all-duration-btn').addEventListener('click', function () {
     var n = Math.round(Number($('all-duration').value));
-    if (!(n >= 0 && n <= 3600)) { banner('Durée entre 0 et 3600 secondes.'); return; }
+    if (!(n >= 0 && n <= 3600)) { banner('Durée entre 0 et 3600 secondes.', 'erreur'); return; }
     act('questions_duration', { duration: n });
   });
 
@@ -1061,7 +1063,7 @@
   };
   $('ice-btn').addEventListener('click', function () {
     var tpl = ICE[$('ice-select').value];
-    if (!tpl) { banner('Choisissez un brise-glace dans la liste.'); return; }
+    if (!tpl) { banner('Choisissez un brise-glace dans la liste.', 'erreur'); return; }
     act('question_save', { question: tpl, first: true });
     $('ice-select').value = '';
   });
@@ -1116,9 +1118,9 @@
   };
   $('challenge-btn').addEventListener('click', function () {
     var tpl = CHALLENGES[$('challenge-select').value];
-    if (!tpl) { banner('Choisissez un défi dans la liste.'); return; }
+    if (!tpl) { banner('Choisissez un défi dans la liste.', 'erreur'); return; }
     act('question_save', { question: tpl }).then(function () {
-      banner('Défi ajouté. Vérifiez les menus sur vos appareils : ils changent selon la marque et la version.');
+      banner('Défi ajouté. Vérifiez les menus sur vos appareils : ils changent selon la marque et la version.', 'ok');
     });
     $('challenge-select').value = '';
   });
@@ -1132,7 +1134,7 @@
   $('end-btn-add').addEventListener('click', function () {
     var pick = $('end-select').value;
     var list = pick === 'tout' ? [CLOSING.utile, CLOSING.retenu, CLOSING.pas] : CLOSING[pick] ? [CLOSING[pick]] : null;
-    if (!list) { banner('Choisissez une clôture dans la liste.'); return; }
+    if (!list) { banner('Choisissez une clôture dans la liste.', 'erreur'); return; }
     act('questions_import', { raw: JSON.stringify(list), keep: list.map(function (_, i) { return i; }) });
     $('end-select').value = '';
   });
@@ -1395,7 +1397,7 @@
   $('ed-theme').addEventListener('click', function () {
     var title = window.prompt('Titre du thème dans la bibliothèque :', data.title);
     if (!title) return;
-    post('seance_save', { s: code, title: title }).then(function () { banner('Thème enregistré : il est dans la bibliothèque, page Sessions, sous « Mes thèmes ».'); });
+    post('seance_save', { s: code, title: title }).then(function () { banner('Thème enregistré : il est dans la bibliothèque, page Sessions, sous « Mes thèmes ».', 'ok'); });
   });
 
   $('gen-review').addEventListener('click', function () { copyText(reviewPrompt(), $('gen-review-copied'), 'une autre IA que celle qui a généré les questions'); });
@@ -1468,7 +1470,7 @@
     var done = function (c, added) {
       $('gen-dialog').close();
       $('gen-raw').value = '';
-      banner(WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.');
+      banner(WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.', 'ok');
       if (c !== code) openSession(c); else poller.refresh();
     };
     var offline = function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; };
