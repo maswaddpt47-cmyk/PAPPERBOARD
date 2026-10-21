@@ -1,0 +1,80 @@
+name: Coupure d'urgence
+run-name: "Coupure WoocLight : ${{ inputs.action }}"
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Couper ou rouvrir WoocLight
+        type: choice
+        options: [couper, rouvrir]
+        required: true
+      confirmation:
+        description: Retaper couper ou rouvrir pour confirmer
+        required: true
+permissions:
+  contents: read
+jobs:
+  coupure:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: wooclight-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Confirmer et préparer
+        env:
+          ACTION: ${{ inputs.action }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          CLE: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          HOTES: ${{ secrets.ALWAYSDATA_KNOWN_HOSTS }}
+          COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
+          CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
+          URL: ${{ vars.WOOCLIGHT_URL }}
+        run: |
+          case "$ACTION" in couper|rouvrir) ;; *) exit 1;; esac
+          [ "$CONFIRMATION" = "$ACTION" ] || { echo '::error::Confirmation différente'; exit 1; }
+          [[ "$COMPTE" =~ ^[A-Za-z0-9_-]+$ && -n "$CLE" ]] || exit 1
+          [[ "$CHEMIN" =~ ^www/([A-Za-z0-9_-]+/)*$ ]] || exit 1
+          URL="${URL:-https://$COMPTE.alwaysdata.net/wooclight}"
+          [[ "$URL" =~ ^https://[A-Za-z0-9.-]+(/[A-Za-z0-9_/-]*)?$ ]] || exit 1
+          mkdir -p ~/.ssh; chmod 700 ~/.ssh
+          printf '%s\n' "$CLE" | tr -d '\r' > ~/.ssh/id_ed25519; chmod 600 ~/.ssh/id_ed25519
+          if [ -n "$HOTES" ]; then
+            printf '%s\n' "$HOTES" | tr -d '\r' > ~/.ssh/known_hosts
+            echo 'SSH_VERIF=yes' >> "$GITHUB_ENV"
+          else
+            echo '::warning::KNOWN_HOSTS absent : même acceptation initiale que le déploiement'
+            echo 'SSH_VERIF=accept-new' >> "$GITHUB_ENV"
+          fi
+          echo "HOTE=$COMPTE@ssh-$COMPTE.alwaysdata.net" >> "$GITHUB_ENV"
+          echo "CHEMIN=$CHEMIN" >> "$GITHUB_ENV"
+          echo "URL=${URL%/}" >> "$GITHUB_ENV"
+      - name: Appliquer
+        env:
+          ACTION: ${{ inputs.action }}
+        run: |
+          set -o pipefail
+          ssh -o StrictHostKeyChecking="$SSH_VERIF" -o ConnectTimeout=15 "$HOTE" ACTION="$ACTION" CHEMIN="$CHEMIN" 'bash -s' < scripts/coupure-urgence.sh | tee serveur.txt
+          cat serveur.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Vérifier les accès publics
+        env:
+          ACTION: ${{ inputs.action }}
+        run: |
+          echec=0
+          for page in index.php admin.php screen.php api.php assets/common.js; do
+            rc=0
+            code=$(curl --silent --show-error --max-time 15 -o "$RUNNER_TEMP/coupure-corps" -w '%{http_code}' "$URL/$page") || rc=$?
+            if [ "$ACTION" = couper ]; then
+              if [ "$rc" != 0 ] || [ "$code" != 403 ]; then echec=1; fi
+            else
+              case "$page" in
+                index.php|admin.php|assets/common.js) [ "$rc" = 0 ] && [ "$code" = 200 ] || echec=1;;
+                *) [ "$rc" = 0 ] && [ "$code" != 403 ] || echec=1;;
+              esac
+            fi
+            echo "- $page : HTTP $code (curl $rc)" >> "$GITHUB_STEP_SUMMARY"
+          done
+          if [ "$echec" != 0 ]; then echo '::error::État non confirmé sur toutes les URL : consulter le résumé'; exit 1; fi
+          if [ "$ACTION" = couper ]; then echo '### Coupure constatée sur les URL contrôlées' >> "$GITHUB_STEP_SUMMARY"
+          else echo '### Blocage retiré, pages principales accessibles ; aucun vote réel testé' >> "$GITHUB_STEP_SUMMARY"; fi

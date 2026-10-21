@@ -271,3 +271,24 @@ Vote par gommettes sur ce post-it pour choisir le thème de la séance suivante.
   (`assets/LICENSE-qrcode.txt`).
 - `assets/pptxgen.bundle.js` : PptxGenJS 4.0.1 (avec JSZip), licence MIT
   (`assets/LICENSE-pptxgenjs.txt`), chargé seulement pour l'export PowerPoint du bilan.
+
+
+## Coupure d'urgence depuis le téléphone
+
+[Ouvrir le bouton GitHub](https://github.com/maswaddpt47-cmyk/PAPPERBOARD/actions/workflows/coupure-urgence.yml),
+puis **Run workflow**, branche `main`, action `couper` ou `rouvrir` et retaper
+ce mot dans la confirmation. Enregistrer ce lien sur l'écran d'accueil du téléphone.
+Attendre le résultat et lire le résumé : lancer le workflow ne prouve pas la coupure.
+
+Le workflow utilise les mêmes secrets, environnement `production`, chemin et URL que
+le déploiement (`WOOCLIGHT_CHEMIN`, `WOOCLIGHT_URL`). Il conserve le `.htaccess`
+original dans `~/.wooclight-coupure`, hors du site ; la réouverture le restaure
+sans perdre les protections des fichiers internes. Ne pas effacer ce dossier.
+Un déploiement est refusé pendant la coupure et les deux commandes sont sérialisées.
+Les données et la purge planifiée ne sont pas supprimées ni arrêtées.
+
+Le contrôle HTTP couvre les pages principales, l'API et une ressource statique
+sur l'URL configurée ; il ne certifie pas les domaines alternatifs ni tous les
+parcours de l'application. Garder l'administration Alwaysdata / SSH comme secours
+si GitHub Actions tarde ou devient indisponible. Une session SSH manuelle doit
+éviter toute intervention concurrente sur `.htaccess`.

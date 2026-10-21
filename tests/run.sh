@@ -5,6 +5,7 @@ set -u
 cd "$(dirname "$0")/.."
 
 echo "=== Syntaxe ==="
+bash tests/coupure.sh || exit 1
 fail=0
 for f in *.php tests/*.php; do php -l "$f" >/dev/null || { echo "❌ $f"; fail=1; }; done
 for f in assets/*.js; do node --check "$f" || { echo "❌ $f"; fail=1; }; done

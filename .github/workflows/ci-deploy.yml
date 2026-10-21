@@ -71,6 +71,9 @@ jobs:
           retention-days: 30
 
   deploy:
+    concurrency:
+      group: wooclight-production
+      cancel-in-progress: false
     needs: tests
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -123,6 +126,9 @@ jobs:
           COMPTE: ${{ secrets.ALWAYSDATA_COMPTE }}
           CHEMIN: ${{ vars.WOOCLIGHT_CHEMIN || 'www/wooclight/' }}
         run: |
+          # Ne jamais remplacer la coupure par le .htaccess du dépôt.
+          ssh -o StrictHostKeyChecking=$SSH_VERIF "$COMPTE@ssh-$COMPTE.alwaysdata.net" 'test ! -e "$HOME/.wooclight-coupure"' \
+            || { echo "::error::Coupure active ou état illisible : déploiement suspendu. Rouvrir explicitement avant de déployer."; exit 1; }
           ssh -o StrictHostKeyChecking=$SSH_VERIF "$COMPTE@ssh-$COMPTE.alwaysdata.net" "mkdir -p '$CHEMIN'"
           rsync -az -e "ssh -o StrictHostKeyChecking=$SSH_VERIF" \
             --exclude 'data/' --exclude 'config.php' --exclude '.git*' --exclude 'tests/' \
