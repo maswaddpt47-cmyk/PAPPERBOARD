@@ -63,8 +63,9 @@ jobs:
           rm -rf ref && mkdir ref && git archive "$sha" | tar -x -C ref || { echo "::error::IMPOSSIBLE : commit $sha introuvable"; exit 1; }
           ( cd ref && rm -rf data config.php tests scripts docs .claude .git* && find . -name '*.md' -delete )
           ( cd ref && find . -type f | LC_ALL=C sort | xargs -r sha256sum ) > attendu.sha
-          # PHP autorisés à répondre 200 : ceux du déploiement (étape suivante).
-          echo "PHP_CONNUS=$(cd ref && find . -name '*.php' | sed 's#^\./#/#' | tr '\n' ' ')" >> "$GITHUB_ENV"
+          # PHP autorisés à répondre 200 : ceux du déploiement (étape suivante),
+          # séparés par des virgules (une espace couperait la variable côté serveur).
+          echo "PHP_CONNUS=$(cd ref && find . -name '*.php' | sed 's#^\./#/#' | tr '\n' ',')" >> "$GITHUB_ENV"
           coupure=$(ssh $SSHO "$HOTE" 'test -e "$HOME/.wooclight-coupure" && echo oui || echo non') \
             || { echo "::error::IMPOSSIBLE : état de la coupure illisible"; exit 1; }
           # Pendant une coupure, www/.htaccess est volontairement remplacé.
@@ -165,7 +166,7 @@ jobs:
             echo "-- fichiers PHP hors du déploiement ayant répondu 200"
             # Toléré : /v.php le 21/10/2026, relevé de version fait à la main
             # en SSH puis supprimé (CHANTIERS.md).
-            php200=$(printf '%s\n' "$req" | awk -v k=" $PHP_CONNUS " '$4 == "200" && $3 ~ /\.ph/ && index(k, " " $3 " ") == 0' \
+            php200=$(printf '%s\n' "$req" | awk -v k=",$PHP_CONNUS" '$4 == "200" && $3 ~ /\.ph/ && index(k, "," $3 ",") == 0' \
               | grep -vE '^21/Oct/2026 [A-Z]+ /v\.php 200$' | cut -d' ' -f2- | sort | uniq -c || true)
             if [ -n "$php200" ]; then echo "$php200"; alerte "fichier PHP hors du déploiement a répondu 200"; else echo "aucun"; fi
             echo "-- motifs d'exploitation connus (allow_url_include, auto_prepend, php://, %ad, /cgi-bin/)"
