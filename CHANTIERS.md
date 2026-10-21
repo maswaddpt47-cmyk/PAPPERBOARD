@@ -49,16 +49,11 @@ plus bas.
 
 Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
 clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
-Faille PHP « PHP2Shell » (21/10/2026, mesuré) : version servie au web
-**8.4.27** (corrigée) ; SSH par mot de passe rouvert le temps de la
-vérification puis refermé (déclaré par l'utilisateur). Sur Alwaysdata, après
-un correctif PHP, le site peut rester sur l'ancienne version : Web → Sites →
-Redémarrer, puis contrôler la version servie, pas seulement `php -v`.
-Contrôle d'intégrité (`integrite.yml`, lancé à la main, lecture seule) : vert
-le 22/10/2026 à 00 h 11 sur la période du 19 au 22/10 (fichiers identiques au
-déploiement, aucun PHP hors application ni dans les données, une seule clé SSH
-inchangée depuis le 14/10, aucun motif d'exploitation dans 5 495 requêtes).
-Ne permet pas d'exclure une compromission (AG-026 d'ATELIERS_NEWGEN).
+Faille PHP « PHP2Shell » (21/10/2026) : PHP servi **8.4.27** (corrigé,
+mesuré). Après un correctif PHP, Alwaysdata peut garder l'ancienne version :
+Web → Sites → Redémarrer, puis contrôler la version servie. `integrite.yml`
+(à la main, lecture seule) vert le 22/10 à 00 h 11 sur le 19-22/10 ; n'exclut
+pas une compromission (AG-026 d'ATELIERS_NEWGEN).
 
 ## Décisions à trancher
 
