@@ -6,17 +6,6 @@
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
-## Coupure d'urgence — préparation du 21/10/2026
-
-- Branche `codex/coupure-urgence` : bouton Actions manuel couper/rouvrir,
-  réutilisation des secrets et paramètres de déploiement. Original `.htaccess`
-  conservé hors du site, déploiement bloqué pendant la coupure.
-- Mesuré en local : restauration exacte, répétition des commandes, refus d'un
-  contenu concurrent et d'un lien symbolique (`bash tests/coupure.sh`).
-- À vérifier : CI `tests` avant intégration à `main`, puis essai réel volontaire
-  de coupure et réouverture et lecture du résumé depuis le téléphone. Aucun
-  changement de disponibilité du site n'a été déclenché pendant la préparation.
-
 ## Animation guidée — essai utilisateur à faire (21/10/2026)
 
 Feu vert de l’utilisateur le 21/10/2026 : même parcours dans **Animer et la projection**.
@@ -245,6 +234,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Pseudonymes : option par session, effacés à la désactivation ; podium rangs 1-3.
 
 **Hébergement et outillage**
+- Coupure d'urgence depuis le téléphone : intégrée à `main` (`4e61580`), CI
+  verte ; coupure et réouverture déclarées fonctionnelles par l'utilisateur
+  le 21/10/2026. Accès : Actions → Coupure d'urgence. Le `.htaccess` original
+  reste conservé hors du site dans `~/.wooclight-coupure` pendant la coupure ;
+  les déploiements sont alors bloqués. Ne pas effacer cette sauvegarde.
 - Alwaysdata, compte `wooclight`, appli dans `~/www/` (variable GitHub
   `WOOCLIGHT_CHEMIN` = `www/`), données dans `~/wooclight-data`. Aucune clé à
   conserver : tout se recrée (README, `configurer.php`).
