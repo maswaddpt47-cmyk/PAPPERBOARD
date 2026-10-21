@@ -200,7 +200,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   `docs/galerie-resultats/index.html`, hors ligne. Bandeau de l'animateur
   (21/10/2026, choix de l'utilisateur) : erreur en rouge avec ⚠, confirmation
   en vert avec ✓, information inchangée (`banner(texte, 'erreur' | 'ok')`) ;
-  rouge validé par l'utilisateur le 21/10/2026, vert pas encore vu. Badge « Vote ouvert » sur la projection : écarté le 21/10/2026. Connu : l'export PowerPoint provoque une erreur de console CSP
+  rouge et vert validés par l'utilisateur le 21/10/2026. Badge « Vote ouvert » sur la projection : écarté le 21/10/2026. Connu : l'export PowerPoint provoque une erreur de console CSP
   « inline style » (`pptxgen.bundle.js`), le fichier est produit.
 - Choix sélectionné du participant : brun neutre avec « ✓ » ; le vert ne
   désigne que la bonne réponse (quiz corrigé : autres barres en neutre).
