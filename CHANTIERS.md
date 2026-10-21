@@ -54,6 +54,11 @@ Faille PHP « PHP2Shell » (21/10/2026, mesuré) : version servie au web
 vérification puis refermé (déclaré par l'utilisateur). Sur Alwaysdata, après
 un correctif PHP, le site peut rester sur l'ancienne version : Web → Sites →
 Redémarrer, puis contrôler la version servie, pas seulement `php -v`.
+Contrôle d'intégrité (`integrite.yml`, lancé à la main, lecture seule) : vert
+le 22/10/2026 à 00 h 11 sur la période du 19 au 22/10 (fichiers identiques au
+déploiement, aucun PHP hors application ni dans les données, une seule clé SSH
+inchangée depuis le 14/10, aucun motif d'exploitation dans 5 495 requêtes).
+Ne permet pas d'exclure une compromission (AG-026 d'ATELIERS_NEWGEN).
 
 ## Décisions à trancher
 
