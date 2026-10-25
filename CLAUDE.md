@@ -62,8 +62,24 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Une capture envoyée pour valider un point **se lit en entier** : toute
   incohérence visible ailleurs se signale, en hypothèse, sans corriger
   d'office.
-- Pistes d'amélioration : au plus 3, en fin de fonctionnalité validée,
-  consignées dans la section « Pistes » de `CHANTIERS.md`.
+- **Prendre l'initiative de propositions d'amélioration et de nouveautés**
+  (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
+  demande, lors d'une revue et après une livraison validée, proposer sans
+  attendre qu'on le demande **au plus 3 pistes, classées par utilité**, présentées
+  brièvement. Anticiper les besoins encore non exprimés et chercher les fonctions
+  manquantes. Examiner aussi la pertinence de l'existant : recommander de
+  simplifier, réunir ou retirer ce qui encombre, lorsqu'un constat le justifie.
+  Chercher **dans** l'outil et **autour** : tâches encore faites sur tableur,
+  par mail ou sur papier, demandes répétées de l'équipe ou de la hiérarchie.
+  Pour chaque piste, préciser le problème observé, le bénéfice attendu et
+  **le choix recommandé**, en évaluant aussi la complexité ou la charge ajoutée
+  pour l'utilisateur. Donner un avis net et argumenté, appuyé sur les usages,
+  les retours et les chantiers ; signaler les hypothèses. Éviter les idées
+  forcées pour remplir un quota et le flux permanent de suggestions.
+  L'utilisateur décide de la réalisation des changements supplémentaires.
+  Consigner chaque piste dans « Pistes » de `CHANTIERS.md` : *proposée, en
+  attente* ou *écartée*, avec date et raison ; ne pas reproposer une piste
+  écartée sans fait nouveau.
 
 ## 3. Tests — dosés
 

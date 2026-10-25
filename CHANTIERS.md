@@ -290,6 +290,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 ## Pistes d'amélioration
 
+Consigne renforcée et propagation approuvée par l'utilisateur le 25/10/2026 :
+initiative dès l'analyse, recommandations argumentées et examen de la pertinence
+de l'existant. Règle 22 de MD-LIB copiée dans `CLAUDE.md` ; ce registre garde
+les pistes et les décisions, sans reproposer une piste écartée sans fait nouveau.
+
 *Proposées, en attente :*
 - Aucune en attente (les trois pistes du 16/10/2026 sont en ligne). Rappel : la
   plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
