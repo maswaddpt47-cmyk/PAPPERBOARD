@@ -49,6 +49,13 @@ Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une c
 
 ## Décisions à trancher
 
+- **AG-007, réponse de session B (26/10/2026, lecture vérifiée sur `875075f`)** :
+  verdict amendé dans `AGORA.md` ; échéance à préserver lors des reclassements,
+  bilan de cycle à conserver avec les agrégats archivés, total à nommer
+  « participations cumulées ». Arbitrage utilisateur en attente ; aucun correctif
+  applicatif effectué par la session B. Charge annuelle et audit RGPD distinct
+  restent à faire.
+
 - **Durée de purge** : 30 jours sans action de l'animateur (défaut,
   `purge_days`). C'est à l'utilisateur, responsable de traitement, de la fixer.
 
