@@ -1,14 +1,11 @@
 # CHANTIERS — WoocLight
 
-État au **21/10/2026** — commit de référence : voir `git log -1 main`.
+État au **26/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
-**Ménage du 21/10/2026** : récits des chantiers charte (18/10), navigation v3
-(18/10), interface de la simulation et interface fidèle (19/10), animation
-guidée (21/10) retirés — `git log -p CHANTIERS.md` ; leurs invariants sont
-plus bas.
+Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus bas.
 
 ## Restant, par priorité — tout côté utilisateur
 
@@ -48,12 +45,9 @@ plus bas.
    Apache et sauvegardes d'Alwaysdata à regarder une fois.
 
 Fait côté hébergement (14/10/2026, déclaré) : HTTPS forcé, SSH par clé seule,
-clés supprimées, secret `ALWAYSDATA_KNOWN_HOSTS` présent, ruleset sur `main`.
-Faille PHP « PHP2Shell » (21/10/2026) : PHP servi **8.4.27** (corrigé,
-mesuré). Après un correctif PHP, Alwaysdata peut garder l'ancienne version :
-Web → Sites → Redémarrer, puis contrôler la version servie. `integrite.yml`
-(à la main, lecture seule) vert le 22/10 à 00 h 11 sur le 19-22/10 ; n'exclut
-pas une compromission (AG-026 d'ATELIERS_NEWGEN).
+secret `ALWAYSDATA_KNOWN_HOSTS`, ruleset sur `main`. PHP servi **8.4.27** (corrigé
+de « PHP2Shell », mesuré le 21/10/2026) ; après un correctif PHP : Web → Sites →
+Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une compromission.
 
 ## Décisions à trancher
 
@@ -295,9 +289,11 @@ initiative dès l'analyse, recommandations argumentées et examen de la pertinen
 de l'existant. Règle 22 de MD-LIB copiée dans `CLAUDE.md` ; ce registre garde
 les pistes et les décisions, sans reproposer une piste écartée sans fait nouveau.
 
-*Proposées, en attente :*
-- Aucune en attente (les trois pistes du 16/10/2026 sont en ligne). Rappel : la
-  plupart des ateliers se font sur ordinateur (dire « appareil », pas « téléphone »).
+*Retenues le 26/10/2026* (« la totale ») : « Mes ateliers » séparé en « Ouverts
+aux réponses » / « Terminés », « En cours » renommé « Ouvert aux réponses », date
+de la dernière action et date d'archivage automatique sur chaque ligne.
+*Demandée, en cours de cadrage (26/10/2026)* : espace d'archivage par partenaire
+avec bilan de fin de cycle, partenaire choisi à l'archivage.
 *Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
