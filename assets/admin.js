@@ -1333,6 +1333,9 @@
     WL.show($('gen-preview'), true);
     WL.show($('gen-preview-wait'), false);
     genSaveState();
+    // Les coches sont sous la réponse collée : la fenêtre y descend seule, sans défilement à faire.
+    $('gen-preview-title').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    $('gen-preview-title').focus({ preventScroll: true });
   }
 
   // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).

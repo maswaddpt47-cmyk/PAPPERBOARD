@@ -627,7 +627,7 @@ header('Cache-Control: no-store');
           et la consigne pour faire relire par une autre IA.</p>
       </section>
       <section id="gen-preview" class="gen-step" hidden>
-        <h3><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
+        <h3 id="gen-preview-title" tabindex="-1"><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
         <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong>
           L'aperçu ne prouve pas que le contenu est juste.</p>
         <ol id="gen-list" class="list gen-list"></ol>

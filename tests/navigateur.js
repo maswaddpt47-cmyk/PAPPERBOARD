@@ -75,6 +75,9 @@ function check(cond, label) {
   await admin.fill('#gen-raw', '[{"type":"poll","text":"Q1 ?","options":["A","B"]},{"type":"conclusion","text":"À retenir : test."}]');
   await admin.click('#gen-check');
   await admin.waitForSelector('#gen-list input');
+  await admin.waitForTimeout(600); // défilement doux
+  check(await admin.evaluate(() => { const r = document.querySelector('#gen-preview-title').getBoundingClientRect(), b = document.querySelector('#gen-dialog .modal-body, #gen-dialog').getBoundingClientRect();
+    return r.top >= b.top - 1 && r.bottom <= b.bottom + 1; }), 'Vérifier la réponse : la fenêtre descend jusqu\'aux coches');
   check((await admin.textContent('#gen-save')).startsWith('Créer l\'atelier'), 'création JSON : bouton « Créer l\'atelier »');
   await admin.click('#gen-save');
   await admin.waitForSelector('#editor:not([hidden])');
