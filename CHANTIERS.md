@@ -284,16 +284,15 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 ## Pistes d'amélioration
 
-Consigne renforcée et propagation approuvée par l'utilisateur le 25/10/2026 :
-initiative dès l'analyse, recommandations argumentées et examen de la pertinence
-de l'existant. Règle 22 de MD-LIB copiée dans `CLAUDE.md` ; ce registre garde
-les pistes et les décisions, sans reproposer une piste écartée sans fait nouveau.
+Règle 22 de MD-LIB (25/10/2026, dans `CLAUDE.md`) : ce registre garde les pistes
+et décisions ; ne pas reproposer une piste écartée sans fait nouveau.
 
-*Retenues le 26/10/2026* (« la totale ») : « Mes ateliers » séparé en « Ouverts
-aux réponses » / « Terminés », « En cours » renommé « Ouvert aux réponses », date
-de la dernière action et date d'archivage automatique sur chaque ligne.
-*Demandée, en cours de cadrage (26/10/2026)* : espace d'archivage par partenaire
-avec bilan de fin de cycle, partenaire choisi à l'archivage.
+*En ligne le 26/10/2026, à essayer sur PC* : Mes ateliers en onglets (Ouverts,
+Terminés, Archivés, Démos ; date de dernière action et d'archivage par ligne) ;
+« Faire relire par une autre IA » (Préparer), remplacement refusé après réponse (e2e).
+*Demandée, à trancher (26/10/2026)* : archivage par partenaire, bilan de fin de
+cycle, partenaire choisi à l'archivage, atelier gardé complet : durée plafond et
+retrait des pseudonymes/jetons à confirmer, fiche registre à modifier, audit Codex.
 *Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
