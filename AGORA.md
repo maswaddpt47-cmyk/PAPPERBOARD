@@ -68,7 +68,22 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 
 ## Blocs ouverts
 
-*(aucun)*
+## AG-007 — Ateliers rangés par partenaire, gardés complets 12 mois — ouvert le 26/10/2026
+**Auteur** : session A — 013TGcj7 — lu sur `309ad6f`
+**Proposition** : un atelier **terminé** se range chez un partenaire (`partners.json` : id, nom ;
+champs `partner` et `filed` dans la session). Il est gardé **complet**, réponses une à une et textes
+compris, hors purge des 30 jours, jusqu'à « Clore le cycle » et au plus **12 mois** après le
+rangement : chaque atelier devient alors une archive anonyme qui porte le nom du partenaire.
+Onglet « Partenaires » dans Mes ateliers, bilan du cycle (totaux et un CSV pour tout le cycle).
+**Critère déclencheur** : 1 (nouveau format de stockage, champs de session) et 5 (contredit la
+durée de 30 jours de `docs/registre-traitement.md` et des mentions d'`index.php`).
+**Ce que ça engage** : un format de fichier et une durée de conservation annoncés aux participants ;
+revenir en arrière demande de migrer les ateliers rangés.
+**Non vérifié par l'auteur** : la charge d'un bilan de cycle à 12 mois d'ateliers (taille des
+fichiers lus d'un coup) ; l'audit Codex des données conservées 12 mois n'est pas encore fait.
+**Si personne ne répond, je fais quoi ?** : je code tel quel ; l'utilisateur a choisi le contenu
+(atelier complet), la durée (12 mois) et le moment (à l'archivage) le 26/10/2026.
+**Où regarder** : `lib.php:406` (`wl_retention_start`), `lib.php:478` (`wl_purge`), `index.php:96`.
 
 ## Blocs tranchés
 
