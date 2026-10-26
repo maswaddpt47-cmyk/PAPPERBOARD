@@ -132,7 +132,7 @@ L'utilisateur décide de coller la phrase ou non, et tranche. Le bloc se dépose
 **au moment du choix**, avant le code (après, la lecture est biaisée vers le
 statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, CI, avance rapide.
 
-**Les six critères** (vérifiables dans le diff) :
+**Les sept critères** (vérifiables dans le diff) :
 1. La décision ferme une porte : schéma de données, format de stockage ou
    d'export, nouvelle dépendance, contrat entre modules (une migration pour défaire).
 2. Deux options ont été envisagées, une seule écrite, sans arbitrage extérieur.
@@ -140,12 +140,18 @@ statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, C
 4. Proposition de défaire un existant dont la raison d'être n'est pas retrouvée.
 5. La proposition contredit une note datée du dépôt (`CLAUDE.md`, `CHANTIERS.md`).
 6. Coût irréversible côté usager : suppression de données, migration.
+7. Le changement touche un calcul ou un chiffre affiché (résultats d'un vote,
+   pourcentages, nuage de mots, bilan PowerPoint, export) — **systématique,
+   quelle que soit sa taille** (MD-LIB `agora.md` critère 7, 26/10/2026).
+   Contradicteur : Codex. Bloc ouvert avant la correction, définitions séparées
+   des défauts démontrés et tranchées par l'utilisateur.
 
 Toute entrée « décision à trancher » de `CHANTIERS.md` est candidate : dire à
 l'écriture pourquoi on ouvre un bloc ou non.
 
 **Ne vont pas à l'AGORA** : un changement de rendu pur, un correctif localisé
-appuyé sur une preuve (test rouge puis vert), tout ce qui se défait en un commit.
+appuyé sur une preuve (test rouge puis vert), tout ce qui se défait en un commit —
+**sauf calcul ou chiffre affiché : critère 7, toujours.**
 **La sécurité, l'authentification et les données personnelles vont à Codex**
 (§4), pas à l'AGORA.
 
