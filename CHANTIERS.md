@@ -9,21 +9,19 @@ Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus ba
 
 ## Restant, par priorité — tout côté utilisateur
 
+0. **Partenaires (26/10/2026)** : relire et valider `docs/registre-traitement.md`
+   (durée) et « Confidentialité » d'`index.php` ; coller
+   `docs/consigne-audit-codex-26-10-2026.md` dans Codex ; coller dans une autre
+   session « pull, lis AGORA.md du dépôt maswaddpt47-cmyk/PAPPERBOARD, réponds à
+   AG-007, tu es la session B ».
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
      un mur / post-it avec relecture avant publication ;
    - interface reprise de la simulation (19/10) : création vide et par JSON,
      Mon espace, Pilotage, Réglages, Bilan, projection ;
-   - fonctions des 15 au 18/10 jamais vues sur PC (téléphone : seuls le
-     bouton principal de la projection, le nuage et la démo sont validés) :
-     onglets, archive anonyme, synthèse, post-its colorés, signaux, « Oser
-     demander », pseudonymes et podium, brise-glaces, Vrai/Faux au toucher,
-     « Rouvrir le vote », « x actifs », « ❓ Questions », démos à 4 thèmes,
-     avant / après, « Clôture… », A− / A+, lien d'exercice et QR, défi à
-     étapes et « ✋ Bloqué » (Réglages > fonctions en essai), fiche mémo
-     (Bilan > Exports), bibliothèque de séances, rappel à l'archivage,
-     PowerPoint « … et N autres ».
+   - fonctions des 15 au 18/10 jamais vues sur PC (liste : `git log -p CHANTIERS.md`,
+     version du 25/10/2026) ; téléphone : projection, nuage et démo validés.
    Le plus simple : **Créer une session de démonstration**, puis un **atelier
    réel** à 10 participants ou plus.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
@@ -96,6 +94,11 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
+- Partenaires (26/10/2026, choix de l'utilisateur, AG-007 ouvert) : atelier terminé rangé
+  gardé **complet** (pseudonymes tirés au hasard et jetons compris) jusqu'à « Clore le
+  cycle », **12 mois** au plus après rangement (`WL_PARTNER_DAYS`, e2e), puis archive anonyme.
+- Import : explication > 400 caractères raccourcie et signalée, jamais la question écartée ;
+  liste JSON trouvée malgré des « [ » avant (liens d'une IA relectrice) (e2e).
 - Projet personnel (14/10/2026) : ni charte, ni DPD, ni Archives du CD47.
   L'utilisateur est responsable de traitement ; mentions dans `config.php`,
   fiche `docs/registre-traitement.md` (V1 validée le 16/10/2026 ; la tenir à jour
@@ -287,12 +290,10 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 Règle 22 de MD-LIB (25/10/2026, dans `CLAUDE.md`) : ce registre garde les pistes
 et décisions ; ne pas reproposer une piste écartée sans fait nouveau.
 
-*En ligne le 26/10/2026, à essayer sur PC* : Mes ateliers en onglets (Ouverts,
-Terminés, Archivés, Démos ; date de dernière action et d'archivage par ligne) ;
-« Faire relire par une autre IA » (Préparer), remplacement refusé après réponse (e2e).
-*Demandée, à trancher (26/10/2026)* : archivage par partenaire, bilan de fin de
-cycle, partenaire choisi à l'archivage, atelier gardé complet : durée plafond et
-retrait des pseudonymes/jetons à confirmer, fiche registre à modifier, audit Codex.
+*En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets
+(Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
+(Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
+« Clore le cycle ».
 *Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
