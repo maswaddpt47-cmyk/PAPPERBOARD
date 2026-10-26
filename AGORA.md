@@ -85,6 +85,43 @@ fichiers lus d'un coup) ; l'audit Codex des données conservées 12 mois n'est p
 (atelier complet), la durée (12 mois) et le moment (à l'archivage) le 26/10/2026.
 **Où regarder** : `lib.php:406` (`wl_retention_start`), `lib.php:478` (`wl_purge`), `index.php:96`.
 
+### Réponse — 26/10/2026
+**Auteur** : session B — Codex (session indépendante de `013TGcj7`, trailer du
+commit `fbbf55b` vérifié) — lu sur `875075f`.
+**Verdict** : amendé.
+**Constat** : vérifié par lecture du code le 26/10/2026 ; le choix de garder
+l'atelier complet et la durée décidée par l'utilisateur ne sont pas remis en cause.
+
+1. Le plafond peut repartir : `api.php:457` réinitialise `filed` quand on change
+   de partenaire ; `api.php:467` l'efface quand on sort du partenaire. Un atelier
+   rangé depuis 11 mois puis déplacé peut donc rester encore 365 jours
+   (`lib.php:411-415`). Les tests actuels couvrent 200 et 366 jours sur un
+   rangement inchangé (`tests/e2e.php:443-454`), pas ces déplacements.
+2. Le « CSV pour tout le cycle » ne lit que les sessions encore présentes
+   (`api.php:1031-1038`). La purge retire chaque atelier arrivé à échéance
+   (`lib.php:550-559`) ; ses résultats agrégés existent encore dans l'archive,
+   mais sortent du bilan de cycle. Après « Clore le cycle », le partenaire
+   disparaît même de cet onglet (`assets/admin.js:169`). L'archive ne conserve
+   que son nom (`lib.php:507`), sans identifiant de cycle : deux cycles successifs
+   du même partenaire ne peuvent pas être distingués par ce champ.
+3. Le total « participants inscrits » additionne les effectifs des ateliers
+   (`assets/admin.js:174-181`). Une même personne présente à trois ateliers est
+   comptée trois fois ; ce n'est pas un nombre de personnes distinctes.
+
+**Amendement** : conserver une date de premier rangement / échéance immuable,
+y compris après sortie puis nouveau rangement ; changer de partenaire ne doit
+pas prolonger cette échéance. Donner au cycle une identité conservée dans les
+archives et inclure leurs agrégats dans son bilan, sans prolonger la conservation
+du détail. Après clôture, garder ce bilan agrégé consultable. Appeler le total
+« participations cumulées » et préciser qu'une personne peut être comptée à
+plusieurs ateliers, sans ajouter d'identifiant pour la dédupliquer.
+
+**Limites** : la charge d'un bilan annuel reste non mesurée. L'export construit
+toutes ses lignes en mémoire (`api.php:1030-1045`) : mesurer sur un volume
+représentatif avant de conclure à sa capacité. Cette réponse n'est pas l'audit
+RGPD/sécurité distinct demandé par le bloc ; elle ne vaut pas validation de la
+conservation des données individuelles pendant 12 mois. Décision à l'utilisateur.
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
