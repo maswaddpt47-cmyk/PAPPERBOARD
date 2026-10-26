@@ -193,6 +193,7 @@ header('Cache-Control: no-store');
         <button class="tab" role="tab" type="button" id="ht-open" aria-controls="hist-open" data-tab="open" title="Ateliers où les participants peuvent répondre"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Ouverts <span id="open-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-ended" aria-controls="hist-ended" data-tab="ended" title="Ateliers terminés : réponses closes, résultats consultables"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Terminés <span id="ended-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-archived" aria-controls="hist-archived" data-tab="archived" title="Résultats chiffrés gardés sans limite, détail des réponses effacé"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Archivés <span id="archived-count" class="tab-count"></span></button>
+        <button class="tab" role="tab" type="button" id="ht-partners" aria-controls="hist-partners" data-tab="partners" title="Ateliers terminés rangés par partenaire, pour le bilan de fin de cycle"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Partenaires <span id="partners-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-demo" aria-controls="hist-demo" data-tab="demo" title="Ateliers de démonstration avec participants fictifs"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Démos <span id="demo-count" class="tab-count"></span></button>
       </div>
       <section id="hist-open" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-open">
@@ -206,6 +207,11 @@ header('Cache-Control: no-store');
       <section id="hist-archived" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-archived" hidden>
         <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2></div>
         <div id="archive-list" class="history-list"></div>
+      </section>
+      <section id="hist-partners" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-partners" hidden>
+        <div class="panel-head"><h2 class="panel-title">Partenaires</h2></div>
+        <p class="meta partner-note">Un atelier terminé rangé chez un partenaire est gardé complet jusqu'à « Clore le cycle », 12 mois au plus après son rangement ; il devient ensuite une archive anonyme.</p>
+        <div id="partner-list" class="history-list"></div>
       </section>
       <div id="hist-demo" class="tab-panel" role="tabpanel" aria-labelledby="ht-demo" hidden>
       <section class="card panel workshop-group">
@@ -552,6 +558,21 @@ header('Cache-Control: no-store');
       <p id="rename-error" class="error" role="alert"></p>
       </div>
 <div class="modal-actions"><button id="rename-cancel" class="btn" type="button">Annuler</button><button id="rename-save" class="btn btn-primary" type="submit">Enregistrer le nom</button></div>
+</form>
+</dialog>
+
+  <dialog id="file-dialog" aria-labelledby="file-title">
+    <form id="file-form" novalidate>
+<header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="file-title">Ranger chez un partenaire</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="file-cancel" aria-label="Fermer la fenêtre">×</button></header>
+<div class="modal-body">
+      <p><span id="file-for"></span> sera gardé complet, réponses comprises, jusqu'à la fin du cycle du partenaire (12 mois au plus), pour son bilan.</p>
+      <label for="file-partner">Partenaire</label>
+      <select id="file-partner"></select>
+      <div id="file-new"><label for="file-name">Nom du nouveau partenaire</label>
+        <input id="file-name" maxlength="80" placeholder="ex. Centre social du quartier"></div>
+      <p id="file-error" class="error" role="alert"></p>
+      </div>
+<div class="modal-actions"><button id="file-cancel" class="btn" type="button">Annuler</button><button id="file-save" class="btn btn-primary" type="submit">Ranger</button></div>
 </form>
 </dialog>
 

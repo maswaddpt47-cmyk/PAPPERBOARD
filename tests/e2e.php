@@ -423,6 +423,39 @@ check(!str_contains($raw, $p[0]->token) && !str_contains($raw, 'Dupont') && !str
 $yes = array_values(array_filter($ar['questions'], fn($q) => $q['text'] === 'Avez-vous un smartphone ?'))[0] ?? [];
 check(isset($yes['results']['counts']) && !isset($yes['results']['texts']), 'archive : résultats chiffrés gardés');
 expect_status($p[0]->get('api.php?action=archives'), 401, 'archives réservées à l\'animateur');
+
+// --- Partenaires : atelier terminé rangé, gardé complet 12 mois, bilan du cycle (AG-007) ----
+$pa = $admin->post('session_create', ['title' => 'Cycle un'])['json']['code'] ?? '';
+$pb = $admin->post('session_create', ['title' => 'Cycle deux'])['json']['code'] ?? '';
+$admin->post('questions_import', ['s' => $pa, 'raw' => $rawc, 'keep' => [0, 1]]);
+expect_status($admin->post('session_file', ['s' => $pa, 'name' => 'Centre Été']), 400, 'partenaire : atelier non terminé refusé');
+$admin->post('control', ['s' => $pa, 'op' => 'end']);
+$admin->post('control', ['s' => $pb, 'op' => 'end']);
+$pid = $admin->post('session_file', ['s' => $pa, 'name' => 'Centre Été'])['json']['partner'] ?? '';
+check($pid !== '' && ($admin->post('session_file', ['s' => $pb, 'name' => 'centre ete'])['json']['partner'] ?? '') === $pid, 'partenaire : même nom (casse, accents) = même partenaire');
+$sl = $admin->get('api.php?action=sessions')['json'];
+check(count(array_filter($sl['sessions'], fn($x) => $x['partner'] === $pid)) === 2 && ($sl['partners'][0]['name'] ?? '') === 'Centre Été', 'partenaire : deux ateliers rangés, nom gardé');
+$csv = $admin->get("api.php?action=export&format=cycle&partner=$pid")['body'];
+check(str_contains($csv, 'Cycle un') && str_contains($csv, 'Cycle deux') && str_contains($csv, 'Participants inscrits'), 'bilan du cycle : un CSV pour tous les ateliers, même sans réponse');
+$fa = "$data/sessions/$pa.json";
+$ja = json_decode(file_get_contents($fa), true);
+$ja['activity'] = time() - 200 * 86400;
+$ja['filed'] = time() - 200 * 86400;
+file_put_contents($fa, json_encode($ja));
+touch("$data/last-purge", time() - 7200);
+$admin->get('api.php?action=me');
+check(is_file($fa), 'partenaire : gardé complet au-delà de la durée de purge (200 jours)');
+$ja['filed'] = time() - 366 * 86400;
+file_put_contents($fa, json_encode($ja));
+touch("$data/last-purge", time() - 7200);
+$admin->get('api.php?action=me');
+$parch = array_values(array_filter($admin->get('api.php?action=archives')['json']['archives'] ?? [], fn($a) => $a['title'] === 'Cycle un'));
+clearstatcache(); // is_file($fa) vrai plus haut : sans cela, PHP répond depuis son cache
+check(!is_file($fa) && ($parch[0]['partner'] ?? '') === 'Centre Été', 'partenaire : après 12 mois, archive anonyme au nom du partenaire');
+$admin->post('session_unfile', ['s' => $pb]);
+check((array_values(array_filter($admin->get('api.php?action=sessions')['json']['sessions'], fn($x) => $x['code'] === $pb))[0]['partner'] ?? 'x') === '', 'partenaire : « Sortir du partenaire » remet l\'atelier dans Terminés');
+$admin->post('session_file', ['s' => $pb, 'partner' => $pid]);
+check(($admin->post('partner_close', ['id' => $pid])['json']['archived'] ?? 0) === 1 && !is_file("$data/sessions/$pb.json"), 'clore le cycle : l\'atelier restant devient une archive');
 $reuse = $admin->post('archive_reuse', ['id' => $aid]);
 check(count($admin->get('api.php?action=admin_state&s=' . ($reuse['json']['code'] ?? ''))['json']['questions'] ?? []) > 0, 'archive : questions réutilisées dans une nouvelle session');
 expect_status($admin->post('archive_delete', ['id' => '../sessions/x']), 404, 'archive : identifiant invalide refusé');
@@ -497,6 +530,10 @@ $relu = "Corrections :\n1. Q1 : voir [Service-public.fr](https://www.service-pub
     . json_encode([['type' => 'poll', 'text' => 'Relue ?', 'options' => ['A', 'B']]]) . "\n```\nFin [2].";
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $relu, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Relue ?',
     'import : réponse d\'une IA relectrice (liens entre crochets avant et après la liste) lue');
+$long = $admin->post('questions_import', ['s' => $gen, 'preview' => true, 'raw' => json_encode([['type' => 'yesno', 'text' => 'Longue ?', 'correct' => 'Oui',
+    'explain' => str_repeat('Une phrase de source vérifiée. ', 20)]])])['json']['items'][0] ?? [];
+check(mb_strlen($long['explain'] ?? '') <= 400 && str_ends_with($long['explain'] ?? '', '.') && str_contains($long['warning'] ?? '', 'raccourcie'),
+    'import : explication trop longue raccourcie et signalée, question gardée');
 $copied = '\\[ { "type": "poll", "text": "Copié depuis l\'appli", "options": \\[ "A", "B" \\] } \\]';
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $copied, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Copié depuis l\'appli',
     'import : « \\[ » ajoutés par l\'affichage d\'une IA retirés');

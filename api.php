@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive', 'seances'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close'];
 
 try {
     wl_maybe_purge();
@@ -349,7 +349,7 @@ function api_logout(array $b): void
 
 function api_sessions(): void
 {
-    wl_json(['ok' => true, 'sessions' => wl_list_sessions(), 'purgeDays' => max(1, (int)wl_config()['purge_days'])]);
+    wl_json(['ok' => true, 'sessions' => wl_list_sessions(), 'partners' => wl_partners(), 'purgeDays' => max(1, (int)wl_config()['purge_days'])]);
 }
 
 /** Tout l'état d'une session, résultats compris (réponses masquées signalées). */
@@ -439,6 +439,47 @@ function api_session_archive(array $b): void
         throw new WlError('Session introuvable ou expirée.', 404);
     }
     wl_json(['ok' => true, 'id' => $id]);
+}
+
+/** Ranger un atelier terminé chez un partenaire (existant par id, ou nouveau par nom) : gardé
+ *  complet jusqu'à la clôture du cycle, WL_PARTNER_DAYS jours au plus (AG-007). */
+function api_session_file(array $b): void
+{
+    $s = wl_load_or_fail(api_code($b));
+    if (!$s['ended'] || !empty($s['demo'])) {
+        throw new WlError('Seul un atelier terminé, hors démo, se range chez un partenaire.');
+    }
+    $partner = wl_partner_resolve(preg_replace('/[^0-9a-f]/', '', (string)($b['partner'] ?? '')), (string)($b['name'] ?? ''));
+    wl_update($s['code'], function (array &$s) use ($partner) {
+        if (!$s['ended']) {
+            throw new WlError('Seul un atelier terminé se range chez un partenaire.');
+        }
+        $s['filed'] = empty($s['filed']) || ($s['partner'] ?? '') !== $partner ? time() : $s['filed'];
+        $s['partner'] = $partner;
+    });
+    wl_json(['ok' => true, 'partner' => $partner]);
+}
+
+/** Sortir un atelier de chez son partenaire : il revient dans « Terminés », purge normale. */
+function api_session_unfile(array $b): void
+{
+    wl_update(api_code($b), function (array &$s) {
+        unset($s['partner'], $s['filed']);
+    });
+    wl_json(['ok' => true]);
+}
+
+/** Clore le cycle : chaque atelier du partenaire devient une archive anonyme à son nom. */
+function api_partner_close(array $b): void
+{
+    $id = preg_replace('/[^0-9a-f]/', '', (string)($b['id'] ?? ''));
+    $done = 0;
+    foreach (wl_list_sessions() as $s) {
+        if ($id !== '' && $s['partner'] === $id && wl_delete_session($s['code'], null, fn(array $full) => wl_archive_session($full))) {
+            $done++;
+        }
+    }
+    wl_json(['ok' => true, 'archived' => $done]);
 }
 
 /** Thèmes ajoutés par l'animateur (la bibliothèque livrée avec l'application est côté navigateur). */
@@ -885,6 +926,9 @@ function api_answer_hide(array $b): void
 
 function api_export(): void
 {
+    if (($_GET['format'] ?? '') === 'cycle') {
+        api_export_cycle(preg_replace('/[^0-9a-f]/', '', (string)($_GET['partner'] ?? '')));
+    }
     $s = wl_load_or_fail(api_code($_GET));
     // public=1 : version à diffuser, sans les réponses masquées par l'animateur.
     $all = empty($_GET['public']);
@@ -970,6 +1014,35 @@ function api_export_csv(array $s, bool $all): never
     echo "\xEF\xBB\xBF";
     $head = ['N°', 'Question', 'Type', 'Réponse', 'Nombre', 'Participants ayant répondu'];
     foreach ([$head, ...api_export_rows($s, $all)] as $row) {
+        echo implode(';', array_map('api_csv_cell', $row)), "\r\n";
+    }
+    exit;
+}
+
+/** Bilan de fin de cycle d'un partenaire : un CSV pour tous ses ateliers, version à diffuser
+ *  (sans les réponses masquées par l'animateur). */
+function api_export_cycle(string $partner): never
+{
+    $name = $partner !== '' ? wl_partner_name($partner) : '';
+    if ($name === '') {
+        throw new WlError('Partenaire introuvable.', 404);
+    }
+    $rows = [];
+    foreach (array_reverse(wl_list_sessions()) as $item) {
+        if ($item['partner'] !== $partner || !is_array($s = wl_load($item['code']))) {
+            continue;
+        }
+        $head = [$s['title'], date('d/m/Y', (int)($s['created'] ?? 0)), count($s['participants'])];
+        foreach (api_export_rows($s, false) ?: [['', '', '', 'Aucune réponse', '', 0]] as $row) {
+            $rows[] = [...$head, ...$row];
+        }
+    }
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="wooclight-cycle-' . $partner . '-' . date('Y-m-d') . '.csv"');
+    header('Cache-Control: no-store');
+    echo "\xEF\xBB\xBF";
+    $head = ['Atelier', 'Date', 'Participants inscrits', 'N°', 'Question', 'Type', 'Réponse', 'Nombre', 'Participants ayant répondu'];
+    foreach ([$head, ...$rows] as $row) {
         echo implode(';', array_map('api_csv_cell', $row)), "\r\n";
     }
     exit;

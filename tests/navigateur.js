@@ -515,7 +515,7 @@ function check(cond, label) {
   await shell.click('[data-nav=history]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=history]').getAttribute('aria-current') === 'page'); // le menu suit la vue au tour d'animation suivant
   check(await shell.isVisible('#session-list') && !(await shell.isVisible('#ended-list')) && !(await shell.isVisible('.demo-controls')), 'coque : « Mes ateliers » s\'ouvre sur l\'onglet « Ouverts »');
-  for (const [tab, list] of [['ended', '#ended-list'], ['archived', '#archive-list'], ['demo', '.demo-controls']]) {
+  for (const [tab, list] of [['ended', '#ended-list'], ['archived', '#archive-list'], ['partners', '#partner-list'], ['demo', '.demo-controls']]) {
     await shell.click('#ht-' + tab);
     check(await shell.isVisible(list) && !(await shell.isVisible('#session-list')), 'coque : onglet « ' + tab + ' » de Mes ateliers');
   }

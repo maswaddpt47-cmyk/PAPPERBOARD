@@ -366,6 +366,7 @@ function wl_list_sessions(): array
                 'activity' => wl_retention_start($s),
                 'questions' => count($s['questions']), 'participants' => count($s['participants']),
                 'ended' => $s['ended'], 'demo' => !empty($s['demo']),
+                'partner' => $s['partner'] ?? '', 'filed' => (int)($s['filed'] ?? 0), 'expires' => wl_retention_start($s) + 86400 * max(1, (int)wl_config()['purge_days']),
                 // Questions ayant reçu au moins une réponse ou contribution (« Votre progression »).
                 'explored' => count(array_filter($s['questions'], fn($q) => !empty($q['answers']) || !empty($q['posts']))),
             ];
@@ -404,10 +405,69 @@ function wl_delete_session(string $code, ?int $expiredBefore = null, ?callable $
     }
 }
 
-/** Date qui fait foi pour la purge : dernière action de l'animateur. */
+/** Date qui fait foi pour la purge : dernière action de l'animateur. Un atelier rangé chez un
+ *  partenaire est gardé complet WL_PARTNER_DAYS jours après son rangement (AG-007), quelle que
+ *  soit la durée de purge : la date rendue est décalée pour que la purge le prenne à ce terme. */
 function wl_retention_start(array $s): int
 {
+    if (!empty($s['filed'])) {
+        return (int)$s['filed'] + 86400 * (WL_PARTNER_DAYS - max(1, (int)wl_config()['purge_days']));
+    }
     return (int)($s['activity'] ?? $s['created'] ?? 0);
+}
+
+// ---------------------------------------------------------------------------
+// Partenaires (partners.json) : ateliers terminés rangés pour le bilan de fin de cycle
+// ---------------------------------------------------------------------------
+
+const WL_PARTNER_DAYS = 365;
+const WL_MAX_PARTNERS = 50;
+
+function wl_partners_file(): string
+{
+    return wl_data_dir() . '/partners.json';
+}
+
+function wl_partners(): array
+{
+    $d = is_file(wl_partners_file()) ? json_decode((string)file_get_contents(wl_partners_file()), true) : null;
+    return is_array($d) && is_array($d['partners'] ?? null) ? array_values($d['partners']) : [];
+}
+
+function wl_partner_name(string $id): string
+{
+    foreach (wl_partners() as $p) {
+        if ($p['id'] === $id) {
+            return $p['name'];
+        }
+    }
+    return '';
+}
+
+/** Partenaire existant (id) ou créé (nom) ; rend son id. */
+function wl_partner_resolve(string $id, string $name): string
+{
+    $name = wl_clean_text($name);
+    if ($id === '' && ($name === '' || wl_strlen($name) > 80)) {
+        throw new WlError('Nom du partenaire : 1 à 80 caractères.');
+    }
+    return wl_locked_json(wl_partners_file(), function (array &$d) use ($id, $name) {
+        $list = is_array($d['partners'] ?? null) ? $d['partners'] : [];
+        foreach ($list as $p) {
+            if ($p['id'] === $id || ($id === '' && wl_fold($p['name']) === wl_fold($name))) {
+                return $p['id'];
+            }
+        }
+        if ($id !== '') {
+            throw new WlError('Partenaire introuvable.', 404);
+        }
+        if (count($list) >= WL_MAX_PARTNERS) {
+            throw new WlError(WL_MAX_PARTNERS . ' partenaires au plus.');
+        }
+        $new = ['id' => bin2hex(random_bytes(4)), 'name' => $name, 'created' => time()];
+        $d['partners'] = [...$list, $new];
+        return $new['id'];
+    });
 }
 
 /** Purge au fil des requêtes, au plus une fois par heure. Complétée par
@@ -444,6 +504,7 @@ function wl_archive_session(array $s): string
         'id' => $id, 'title' => $s['title'], 'created' => $s['created'] ?? null, 'archived' => time(),
         'participants' => count($s['participants']), 'questions' => $questions,
         'recap' => wl_recap($s, true), 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '',
+        'partner' => !empty($s['partner']) ? wl_partner_name($s['partner']) : '',
     ];
     $file = wl_data_dir() . '/archives/' . $id . '.json';
     $tmp = $file . '.tmp';
@@ -471,7 +532,7 @@ function wl_list_archives(): array
         $a = json_decode((string)file_get_contents($file), true);
         if (is_array($a)) {
             $list[] = ['id' => $a['id'], 'title' => $a['title'], 'created' => $a['created'], 'archived' => $a['archived'],
-                'questions' => count($a['questions']), 'participants' => $a['participants']];
+                'questions' => count($a['questions']), 'participants' => $a['participants'], 'partner' => $a['partner'] ?? ''];
         }
     }
     usort($list, fn($a, $b) => $b['archived'] <=> $a['archived']);
@@ -870,8 +931,15 @@ function wl_import_parse(string $raw): array
         throw new WlError(WL_MAX_QUESTIONS . ' questions au plus.');
     }
     $items = [];
+    $shortened = [];
     foreach ($list as $in) {
         try {
+            // Explication trop longue (une IA relectrice y ajoute ses sources) : raccourcie et
+            // signalée, plutôt que d'écarter toute la question.
+            if (is_array($in) && is_string($in['explain'] ?? null) && wl_strlen(wl_clean_text($in['explain'])) > 400) {
+                $in['explain'] = wl_shorten(wl_clean_text($in['explain']), 400);
+                $shortened[count($items)] = true;
+            }
             // Dernier élément possible : la conclusion de l'atelier (pas une question).
             if (is_array($in) && ($in['type'] ?? '') === 'conclusion') {
                 $items[] = ['conclusion' => wl_clean_conclusion($in['text'] ?? '')];
@@ -921,6 +989,10 @@ function wl_import_parse(string $raw): array
         }
     }
     foreach ($items as $i => $it) {
+        if (isset($shortened[$i], $it['q'])) {
+            $note = 'explication raccourcie à 400 caractères : relisez-la (et sa source) dans la question.';
+            $items[$i]['warning'] = $it['warning'] = isset($it['warning']) ? $it['warning'] . ' Et ' . $note : $note;
+        }
         // Un lien venu d'un texte collé (IA ou fichier) : montré à l'animateur, à vérifier avant l'atelier.
         if (($it['q']['link'] ?? '') !== '') {
             $note = 'le lien « ' . parse_url($it['q']['link'], PHP_URL_HOST) . ' » est à vérifier avant l\'atelier.';
@@ -1356,6 +1428,21 @@ function wl_recap(array $s, bool $anonymous = false): array
         $lines[] = ['text' => $q['text'], 'summary' => $line];
     }
     return $lines;
+}
+
+/** Texte coupé à $max caractères au plus, après la dernière phrase entière, sinon au dernier mot (« … »). */
+function wl_shorten(string $text, int $max): string
+{
+    if (wl_strlen($text) <= $max) {
+        return $text;
+    }
+    $cut = mb_substr($text, 0, $max - 1);
+    $end = max(mb_strrpos($cut, '. ') ?: 0, mb_strrpos($cut, '! ') ?: 0, mb_strrpos($cut, '? ') ?: 0);
+    if ($end > $max / 2) {
+        return mb_substr($cut, 0, $end + 1);
+    }
+    $space = mb_strrpos($cut, ' ');
+    return rtrim(mb_substr($cut, 0, $space ?: $max - 1), ' ,;:') . '…';
 }
 
 function wl_plural(int $n, string $word): string

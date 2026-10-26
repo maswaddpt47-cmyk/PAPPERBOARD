@@ -94,12 +94,13 @@
     return el('button', { type: 'button', class: 'btn btn-small' + (cls ? ' ' + cls : ''), title: title || null, onclick: onclick }, ico(icon), label);
   }
 
+  function day(t) { return new Date(t * 1000).toLocaleDateString('fr-FR'); }
+
   /** « Dernière action le … » et la date où la purge archivera (ou supprimera, pour une démo)
    *  l'atelier si l'animateur n'y touche plus : seule son activité repousse la purge. */
-  function lastAction(s, days) {
-    var day = function (t) { return new Date(t * 1000).toLocaleDateString('fr-FR'); };
+  function lastAction(s) {
     return 'dernière action le ' + day(s.activity) + ' · ' + (s.demo ? 'suppression' : 'archivage')
-      + ' le ' + day(s.activity + 86400 * days) + ' si rien ne bouge';
+      + ' le ' + day(s.expires) + ' si rien ne bouge';
   }
 
   function showSessions(name) {
@@ -113,8 +114,11 @@
       if (r.status === 401) return showLogin('');
       sessionsList = r.data.sessions;
       renderOverview();
-      // Onglets de Mes ateliers : une démo va dans « Démos », ouverte ou terminée.
-      var tabOf = function (s) { return s.demo ? 'demo' : s.ended ? 'ended' : 'open'; };
+      // Onglets de Mes ateliers : une démo va dans « Démos », ouverte ou terminée ; un atelier
+      // rangé chez un partenaire, dans « Partenaires ».
+      var tabOf = function (s) { return s.partner ? 'partners' : s.demo ? 'demo' : s.ended ? 'ended' : 'open'; };
+      partners = r.data.partners || [];
+      renderPartners(sessionsList.filter(function (s) { return s.partner; }));
       var lists = { open: WL.clear($('session-list')), ended: WL.clear($('ended-list')), demo: WL.clear($('demo-list')) };
       var empty = { open: 'Aucun atelier ouvert aux réponses.', ended: 'Aucun atelier terminé.', demo: 'Aucune démo : « Créer un atelier », 3ᵉ choix.' };
       Object.keys(lists).forEach(function (k) {
@@ -126,10 +130,11 @@
       WL.show($('demo-delete'), demos > 0);
       $('demo-delete').lastChild.textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       sessionsList.forEach(function (s) {
+        if (s.partner) return;
         lists[tabOf(s)].appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, s.ended ? 'Démo terminée' : 'Démo') : null,
-            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + lastAction(s, r.data.purgeDays))),
+            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + lastAction(s))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
             rowButton('Renommer', 'edit', '', 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', function () {
@@ -138,6 +143,9 @@
             rowButton('Dupliquer', 'copy', '', 'Nouvel atelier avec les mêmes questions et la même conclusion, sans participants ni réponses', function () {
               post('session_duplicate', { s: s.code }).then(showSessions);
             }),
+            s.ended && !s.demo ? rowButton('Ranger chez un partenaire', 'users', '', 'Garde l\'atelier complet jusqu\'à la fin du cycle du partenaire (12 mois au plus) pour son bilan', function () {
+              openFile(s);
+            }) : null,
             rowButton('Archiver', 'book', '', 'Garde les questions et les résultats chiffrés, efface le détail des réponses (anonyme, sans limite de durée)', function () {
               if (confirm('Archiver « ' + s.title + ' » ? Les réponses une à une et les textes des participants seront effacés ; les résultats chiffrés, le récap, la conclusion et la synthèse sont gardés SANS LIMITE DE DURÉE : relisez la conclusion et la synthèse, aucun nom ne doit y figurer.')) {
                 post('session_archive', { s: s.code }).then(showSessions);
@@ -151,6 +159,77 @@
       });
     });
   }
+
+  // --- Partenaires : ateliers terminés rangés pour le bilan de fin de cycle (AG-007) ---------
+
+  var partners = [], fileTarget = null;
+
+  function renderPartners(filed) {
+    var list = WL.clear($('partner-list'));
+    var used = partners.filter(function (p) { return filed.some(function (s) { return s.partner === p.id; }); });
+    $('partners-count').textContent = '(' + used.length + ')';
+    if (!used.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun partenaire : dans « Terminés », cliquez « Ranger chez un partenaire ».'));
+    used.forEach(function (p) {
+      var mine = filed.filter(function (s) { return s.partner === p.id; });
+      var people = mine.reduce(function (n, s) { return n + s.participants; }, 0);
+      var first = Math.min.apply(null, mine.map(function (s) { return s.filed; }));
+      var until = Math.min.apply(null, mine.map(function (s) { return s.expires; }));
+      list.appendChild(el('section', { class: 'partner-group' },
+        el('div', { class: 'prep-item workshop-row' },
+          el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('users')),
+          el('div', { class: 'grow' }, el('h3', null, p.name),
+            el('p', { class: 'muted' }, WL.plural(mine.length, 'atelier') + ' · ' + WL.plural(people, 'participant') + ' inscrit' + (people > 1 ? 's' : '')
+              + ' · cycle depuis le ' + day(first) + ' · archivage automatique le ' + day(until) + ' au plus tard')),
+          el('div', { class: 'workshop-row-actions' },
+            el('a', { class: 'btn btn-small', href: 'api.php?action=export&format=cycle&partner=' + encodeURIComponent(p.id),
+              title: 'Un tableau pour tous les ateliers du cycle (version à diffuser)' }, ico('download'), 'Bilan du cycle (CSV)'),
+            rowButton('Clore le cycle', 'book', 'btn-danger', 'Chaque atelier devient une archive anonyme au nom du partenaire', function () {
+              if (confirm('Clore le cycle de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle : les ' + WL.plural(mine.length, 'atelier')
+                + ' deviennent des archives anonymes (réponses une à une et textes des participants effacés).')) {
+                post('partner_close', { id: p.id }).then(function (d) { banner(WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '.', 'ok'); showSessions(); });
+              }
+            }))),
+        el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
+          return el('div', { class: 'prep-item workshop-row' },
+            el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
+            el('div', { class: 'grow' }, el('h3', null, s.title),
+              el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + WL.plural(s.participants, 'participant') + ' · rangé le ' + day(s.filed))),
+            el('div', { class: 'workshop-row-actions' },
+              rowButton('Voir le bilan', 'chart', '', 'Résultats complets de cet atelier', function () { openSession(s.code, 'bilan'); }),
+              rowButton('Sortir du partenaire', 'arrow-left', '', 'Remet l\'atelier dans « Terminés » (purge normale)', function () {
+                post('session_unfile', { s: s.code }).then(showSessions);
+              })));
+        })))));
+    });
+  }
+
+  function openFile(s) {
+    fileTarget = s.code;
+    var sel = WL.clear($('file-partner'));
+    partners.forEach(function (p) { sel.appendChild(el('option', { value: p.id }, p.name)); });
+    sel.appendChild(el('option', { value: '' }, 'Nouveau partenaire…'));
+    $('file-name').value = '';
+    $('file-for').textContent = '« ' + s.title + ' »';
+    $('file-error').textContent = '';
+    syncFile();
+    $('file-dialog').showModal();
+    (partners.length ? sel : $('file-name')).focus();
+  }
+  function syncFile() { WL.show($('file-new'), $('file-partner').value === ''); }
+  $('file-partner').addEventListener('change', syncFile);
+  $('file-cancel').addEventListener('click', function () { $('file-dialog').close(); });
+  $('file-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = $('file-partner').value, name = $('file-name').value.trim();
+    if (!id && !name) { $('file-error').textContent = 'Donnez le nom du partenaire.'; $('file-name').focus(); return; }
+    $('file-save').disabled = true;
+    post('session_file', { s: fileTarget, partner: id, name: name }).then(function () {
+      $('file-dialog').close();
+      showSessions();
+      selectTab($('history-tabs'), 'partners');
+    }).catch(function (r) { $('file-error').textContent = (r && r.data && r.data.error) || 'Non rangé : réessayez.'; })
+      .finally(function () { $('file-save').disabled = false; });
+  });
 
   /** Vue d'ensemble : l'atelier modifié en dernier, sa progression et deux séances de la bibliothèque. */
   function renderOverview() {
@@ -419,12 +498,12 @@
     selectTab(group, tabs[0].dataset.tab);
   });
 
-  function openSession(c) {
+  function openSession(c, tab) {
     code = c;
     data = null;
     view('editor');
-    var saved = null;
-    try { saved = localStorage.getItem('wl_tab'); } catch (e) { /* sans stockage */ }
+    var saved = tab || null;
+    if (!saved) try { saved = localStorage.getItem('wl_tab'); } catch (e) { /* sans stockage */ }
     if (saved === 'control') saved = 'live';
     if (!document.querySelector('#editor .tab[data-tab="' + saved + '"]')) saved = 'prep';
     selectTab(document.querySelector('#editor .tabs'), saved);
@@ -1418,7 +1497,9 @@
       withReply
         ? '5. Termine par la liste des corrections à faire, question par question (n\'écris aucun crochet carré dans les points 1 à 5), '
           + 'puis, tout à la fin, la VERSION CORRIGÉE : la liste complète, du « [ » au « ] », au même format que ci-dessous, mêmes types et même ordre, '
-          + 'sans adresse de site inventée. Pas de note, pas de compliment. Si une catégorie n\'a aucun défaut, dis-le en une ligne.'
+          + 'sans adresse de site inventée. Limites de la version corrigée : intitulé 200 caractères au plus, choix 80, '
+          + 'explication ("explain") 300 caractères au plus, source comprise (cite l\'organisme et le titre, sans lien long), conclusion 600. '
+          + 'Pas de note, pas de compliment. Si une catégorie n\'a aucun défaut, dis-le en une ligne.'
         : '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
           + 'Si une catégorie n\'a aucun défaut, dis-le en une ligne.',
       '',
