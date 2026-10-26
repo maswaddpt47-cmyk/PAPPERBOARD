@@ -62,6 +62,26 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Une capture envoyée pour valider un point **se lit en entier** : toute
   incohérence visible ailleurs se signale, en hypothèse, sans corriger
   d'office.
+- **Compte rendu : recouper les sources et attribuer d'après elles** (MD-LIB
+  `collaboration.md`, règles 34-35). Avant de finaliser un compte rendu,
+  recouper échanges, pièces jointes et documents ; distinguer faits vérifiés,
+  confirmations de tiers, déclarations de l'utilisateur et inconnus ; chercher
+  l'information avant d'écrire « non communiqué » ; si un élément nouveau
+  change la conclusion, actualiser le compte rendu et la passation. Chaque
+  apport s'attribue à son auteur d'après la source (`AGORA.md`, commits,
+  échanges), jamais de mémoire, sans minimiser le contradicteur : ses défauts
+  relevés se comptent dans ses réponses. Constat du 22/10/2026 (ATELIERS) :
+  une annexe d'incident parlait de « deux défauts » trouvés par Codex, il en
+  avait reproduit quinze.
+- **Une tâche programmée n'est présentée comme une surveillance qu'après
+  comptage de ses passages réels** (règle 36), par une commande sur
+  l'historique des exécutions : une programmation écrite n'est pas une
+  exécution. Constat du 22/10/2026 (ATELIERS) : un contrôle « toutes les
+  heures » n'avait tourné seul qu'une fois en 7 h.
+- **Un moyen d'arrêt (annulation, coupure, désactivation) s'essaie en réel
+  avant d'être annoncé** (règle 37), comme la fonction qu'il arrête. Constat
+  du 22/10/2026 (ATELIERS) : un veilleur lançait encore son successeur quand
+  on l'annulait.
 - **Prendre l'initiative de propositions d'amélioration et de nouveautés**
   (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
   demande, lors d'une revue et après une livraison validée, proposer sans
