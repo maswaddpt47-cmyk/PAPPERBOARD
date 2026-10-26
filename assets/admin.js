@@ -166,29 +166,39 @@
 
   function renderPartners(filed) {
     var list = WL.clear($('partner-list'));
-    var used = partners.filter(function (p) { return filed.some(function (s) { return s.partner === p.id; }); });
+    var used = partners.filter(function (p) {
+      return p.archived.ateliers || p.closed.length || filed.some(function (s) { return s.partner === p.id; });
+    });
     $('partners-count').textContent = '(' + used.length + ')';
     if (!used.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun partenaire : dans « Terminés », cliquez « Ranger chez un partenaire ».'));
     used.forEach(function (p) {
       var mine = filed.filter(function (s) { return s.partner === p.id; });
-      var people = mine.reduce(function (n, s) { return n + s.participants; }, 0);
-      var first = Math.min.apply(null, mine.map(function (s) { return s.filed; }));
-      var until = Math.min.apply(null, mine.map(function (s) { return s.expires; }));
+      var people = mine.reduce(function (n, s) { return n + s.participants; }, 0) + p.archived.participations;
+      var count = mine.length + p.archived.ateliers;
+      var until = mine.length ? Math.min.apply(null, mine.map(function (s) { return s.expires; })) : 0;
+      var cycleCsv = function (n) { return 'api.php?action=export&format=cycle&partner=' + encodeURIComponent(p.id) + '&cycle=' + n; };
+      var cumul = 'Somme des inscrits de chaque atelier : une personne venue à plusieurs ateliers compte plusieurs fois.';
       list.appendChild(el('section', { class: 'partner-group' },
         el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('users')),
-          el('div', { class: 'grow' }, el('h3', null, p.name),
-            el('p', { class: 'muted' }, WL.plural(mine.length, 'atelier') + ' · ' + WL.plural(people, 'participant') + ' inscrit' + (people > 1 ? 's' : '')
-              + ' · cycle depuis le ' + day(first) + ' · archivage automatique le ' + day(until) + ' au plus tard')),
+          el('div', { class: 'grow' }, el('h3', null, p.name + ' — cycle ' + p.cycle),
+            el('p', { class: 'muted', title: cumul }, WL.plural(count, 'atelier') + (p.archived.ateliers ? ' (dont ' + p.archived.ateliers + ' déjà archivé' + (p.archived.ateliers > 1 ? 's' : '') + ', chiffres seulement)' : '')
+              + ' · ' + WL.plural(people, 'participation') + ' cumulée' + (people > 1 ? 's' : '')
+              + (until ? ' · archivage automatique dès le ' + day(until) : ''))),
           el('div', { class: 'workshop-row-actions' },
-            el('a', { class: 'btn btn-small', href: 'api.php?action=export&format=cycle&partner=' + encodeURIComponent(p.id),
-              title: 'Un tableau pour tous les ateliers du cycle (version à diffuser)' }, ico('download'), 'Bilan du cycle (CSV)'),
+            el('a', { class: 'btn btn-small', href: cycleCsv(p.cycle),
+              title: 'Un tableau pour tous les ateliers du cycle, déjà archivés compris (version à diffuser)' }, ico('download'), 'Bilan du cycle (CSV)'),
             rowButton('Clore le cycle', 'book', 'btn-danger', 'Chaque atelier devient une archive anonyme au nom du partenaire', function () {
-              if (confirm('Clore le cycle de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle : les ' + WL.plural(mine.length, 'atelier')
-                + ' deviennent des archives anonymes (réponses une à une et textes des participants effacés).')) {
-                post('partner_close', { id: p.id }).then(function (d) { banner(WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '.', 'ok'); showSessions(); });
+              if (confirm('Clore le cycle ' + p.cycle + ' de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle si vous voulez le détail : les '
+                + WL.plural(mine.length, 'atelier') + ' deviennent des archives anonymes (réponses une à une et textes des participants effacés) ; '
+                + 'le bilan chiffré du cycle reste consultable.')) {
+                post('partner_close', { id: p.id }).then(function (d) { banner('Cycle ' + p.cycle + ' clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
               }
             }))),
+        p.closed.length ? el.apply(null, ['p', { class: 'meta partner-closed' }, 'Cycles clos : '].concat(p.closed.slice().reverse().map(function (c, i) {
+          return el('span', null, i ? ' · ' : '', el('a', { href: cycleCsv(c.cycle), title: cumul },
+            'cycle ' + c.cycle + ' (clos le ' + day(c.at) + ', ' + WL.plural(c.ateliers, 'atelier') + ', ' + WL.plural(c.participations, 'participation') + ') — CSV'));
+        }))) : null,
         el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
           return el('div', { class: 'prep-item workshop-row' },
             el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),

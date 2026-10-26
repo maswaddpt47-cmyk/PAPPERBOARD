@@ -217,3 +217,4 @@ body.admin .participants-body .session-controls { align-items: start; }
 /* Partenaires : note sous le titre, ateliers du partenaire en retrait sous sa ligne. */
 body.admin .partner-note { margin: 0; padding: 0 20px 14px; }
 body.admin .partner-workshops { padding: 10px 0 0 1.5rem; }
+body.admin .partner-closed { margin: .5rem 0 0; padding-left: 1.5rem; }

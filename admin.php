@@ -210,7 +210,7 @@ header('Cache-Control: no-store');
       </section>
       <section id="hist-partners" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-partners" hidden>
         <div class="panel-head"><h2 class="panel-title">Partenaires</h2></div>
-        <p class="meta partner-note">Un atelier terminé rangé chez un partenaire est gardé complet jusqu'à « Clore le cycle », 12 mois au plus après son rangement ; il devient ensuite une archive anonyme.</p>
+        <p class="meta partner-note">Un atelier terminé rangé chez un partenaire est gardé complet jusqu'à « Clore le cycle », 12 mois au plus après son premier rangement ; il devient ensuite une archive anonyme, toujours comptée (en chiffres) dans le bilan de son cycle.</p>
         <div id="partner-list" class="history-list"></div>
       </section>
       <div id="hist-demo" class="tab-panel" role="tabpanel" aria-labelledby="ht-demo" hidden>

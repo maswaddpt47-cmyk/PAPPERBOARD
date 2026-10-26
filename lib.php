@@ -406,14 +406,18 @@ function wl_delete_session(string $code, ?int $expiredBefore = null, ?callable $
 }
 
 /** Date qui fait foi pour la purge : dernière action de l'animateur. Un atelier rangé chez un
- *  partenaire est gardé complet WL_PARTNER_DAYS jours après son rangement (AG-007), quelle que
- *  soit la durée de purge : la date rendue est décalée pour que la purge le prenne à ce terme. */
+ *  partenaire est gardé complet WL_PARTNER_DAYS jours après son PREMIER rangement (AG-007),
+ *  quelle que soit la durée de purge : la date rendue est décalée pour que la purge le prenne à
+ *  ce terme. `filed` ne change plus une fois posé : changer de partenaire, sortir puis ranger de
+ *  nouveau ne prolonge rien ; sorti, l'atelier suit la purge normale sans dépasser ce terme. */
 function wl_retention_start(array $s): int
 {
-    if (!empty($s['filed'])) {
-        return (int)$s['filed'] + 86400 * (WL_PARTNER_DAYS - max(1, (int)wl_config()['purge_days']));
+    $start = (int)($s['activity'] ?? $s['created'] ?? 0);
+    if (empty($s['filed'])) {
+        return $start;
     }
-    return (int)($s['activity'] ?? $s['created'] ?? 0);
+    $cap = (int)$s['filed'] + 86400 * (WL_PARTNER_DAYS - max(1, (int)wl_config()['purge_days']));
+    return !empty($s['partner']) ? $cap : min($start, $cap);
 }
 
 // ---------------------------------------------------------------------------
@@ -434,14 +438,33 @@ function wl_partners(): array
     return is_array($d) && is_array($d['partners'] ?? null) ? array_values($d['partners']) : [];
 }
 
-function wl_partner_name(string $id): string
+function wl_partner(string $id): ?array
 {
     foreach (wl_partners() as $p) {
         if ($p['id'] === $id) {
-            return $p['name'];
+            return $p + ['cycle' => 1, 'closed' => []];
         }
     }
-    return '';
+    return null;
+}
+
+function wl_partner_name(string $id): string
+{
+    return wl_partner($id)['name'] ?? '';
+}
+
+/** Clôture du cycle en cours : il est noté avec sa date, le suivant commence. */
+function wl_partner_next_cycle(string $id): void
+{
+    wl_locked_json(wl_partners_file(), function (array &$d) use ($id) {
+        foreach ($d['partners'] ?? [] as $i => $p) {
+            if ($p['id'] === $id) {
+                $n = (int)($p['cycle'] ?? 1);
+                $d['partners'][$i]['closed'] = [...($p['closed'] ?? []), ['cycle' => $n, 'at' => time()]];
+                $d['partners'][$i]['cycle'] = $n + 1;
+            }
+        }
+    });
 }
 
 /** Partenaire existant (id) ou créé (nom) ; rend son id. */
@@ -464,7 +487,7 @@ function wl_partner_resolve(string $id, string $name): string
         if (count($list) >= WL_MAX_PARTNERS) {
             throw new WlError(WL_MAX_PARTNERS . ' partenaires au plus.');
         }
-        $new = ['id' => bin2hex(random_bytes(4)), 'name' => $name, 'created' => time()];
+        $new = ['id' => bin2hex(random_bytes(4)), 'name' => $name, 'created' => time(), 'cycle' => 1, 'closed' => []];
         $d['partners'] = [...$list, $new];
         return $new['id'];
     });
@@ -504,8 +527,12 @@ function wl_archive_session(array $s): string
         'id' => $id, 'title' => $s['title'], 'created' => $s['created'] ?? null, 'archived' => time(),
         'participants' => count($s['participants']), 'questions' => $questions,
         'recap' => wl_recap($s, true), 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '',
-        'partner' => !empty($s['partner']) ? wl_partner_name($s['partner']) : '',
+        'partner' => '',
     ];
+    // Atelier d'un partenaire : l'archive garde son cycle, pour le bilan du cycle (AG-007).
+    if (!empty($s['partner']) && ($p = wl_partner($s['partner']))) {
+        $archive = ['partner' => $p['name'], 'partnerId' => $p['id'], 'cycle' => (int)$p['cycle']] + $archive;
+    }
     $file = wl_data_dir() . '/archives/' . $id . '.json';
     $tmp = $file . '.tmp';
     // L'appelant supprime la session ensuite : une archive absente, tronquée ou vide doit tout arrêter.
@@ -532,7 +559,8 @@ function wl_list_archives(): array
         $a = json_decode((string)file_get_contents($file), true);
         if (is_array($a)) {
             $list[] = ['id' => $a['id'], 'title' => $a['title'], 'created' => $a['created'], 'archived' => $a['archived'],
-                'questions' => count($a['questions']), 'participants' => $a['participants'], 'partner' => $a['partner'] ?? ''];
+                'questions' => count($a['questions']), 'participants' => $a['participants'], 'partner' => $a['partner'] ?? '',
+                'partnerId' => $a['partnerId'] ?? '', 'cycle' => (int)($a['cycle'] ?? 0)];
         }
     }
     usort($list, fn($a, $b) => $b['archived'] <=> $a['archived']);

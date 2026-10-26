@@ -11,9 +11,8 @@ Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus ba
 
 0. **Partenaires (26/10/2026)** : relire et valider `docs/registre-traitement.md`
    (durée) et « Confidentialité » d'`index.php` ; coller
-   `docs/consigne-audit-codex-26-10-2026.md` dans Codex ; coller dans une autre
-   session « pull, lis AGORA.md du dépôt maswaddpt47-cmyk/PAPPERBOARD, réponds à
-   AG-007, tu es la session B ».
+   `docs/consigne-audit-codex-26-10-2026.md` dans Codex (audit RGPD distinct de
+   la réponse AG-007) ; charge d'un bilan annuel non mesurée.
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
@@ -48,13 +47,6 @@ de « PHP2Shell », mesuré le 21/10/2026) ; après un correctif PHP : Web → S
 Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une compromission.
 
 ## Décisions à trancher
-
-- **AG-007, réponse de session B (26/10/2026, lecture vérifiée sur `875075f`)** :
-  verdict amendé dans `AGORA.md` ; échéance à préserver lors des reclassements,
-  bilan de cycle à conserver avec les agrégats archivés, total à nommer
-  « participations cumulées ». Arbitrage utilisateur en attente ; aucun correctif
-  applicatif effectué par la session B. Charge annuelle et audit RGPD distinct
-  restent à faire.
 
 - **Durée de purge** : 30 jours sans action de l'animateur (défaut,
   `purge_days`). C'est à l'utilisateur, responsable de traitement, de la fixer.
@@ -101,10 +93,12 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
-- Partenaires (26/10/2026, choix de l'utilisateur, AG-007 ouvert) : atelier terminé rangé
-  gardé **complet** (pseudonymes tirés au hasard et jetons compris) jusqu'à « Clore le
-  cycle », **12 mois** au plus après rangement (`WL_PARTNER_DAYS`, e2e), puis archive anonyme.
-- Import : explication > 400 caractères raccourcie et signalée, jamais la question écartée ;
+- Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
+  jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
+  prolongé (`filed` immuable, e2e) ; archive au nom et au cycle du partenaire ; bilan du
+  cycle = ateliers gardés + déjà archivés (chiffres) ; « participations cumulées ».
+- Import : intitulé, explication, étape trop longs raccourcis et signalés, jamais la question
+  écartée ; toutes les limites redites dans la consigne de relecture (`LIMITS`, admin.js) ;
   liste JSON trouvée malgré des « [ » avant (liens d'une IA relectrice) (e2e).
 - Projet personnel (14/10/2026) : ni charte, ni DPD, ni Archives du CD47.
   L'utilisateur est responsable de traitement ; mentions dans `config.php`,
@@ -294,8 +288,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 ## Pistes d'amélioration
 
-Règle 22 de MD-LIB (25/10/2026, dans `CLAUDE.md`) : ce registre garde les pistes
-et décisions ; ne pas reproposer une piste écartée sans fait nouveau.
+Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
 
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets
 (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »

@@ -349,7 +349,14 @@ function api_logout(array $b): void
 
 function api_sessions(): void
 {
-    wl_json(['ok' => true, 'sessions' => wl_list_sessions(), 'partners' => wl_partners(), 'purgeDays' => max(1, (int)wl_config()['purge_days'])]);
+    $stats = api_partner_stats();
+    $partners = array_map(function ($p) use ($stats) {
+        $p += ['cycle' => 1, 'closed' => []];
+        $p['archived'] = $stats[$p['id'] . '#' . $p['cycle']] ?? ['ateliers' => 0, 'participations' => 0];
+        $p['closed'] = array_map(fn($c) => $c + ($stats[$p['id'] . '#' . $c['cycle']] ?? ['ateliers' => 0, 'participations' => 0]), $p['closed']);
+        return $p;
+    }, wl_partners());
+    wl_json(['ok' => true, 'sessions' => wl_list_sessions(), 'partners' => $partners, 'purgeDays' => max(1, (int)wl_config()['purge_days'])]);
 }
 
 /** Tout l'état d'une session, résultats compris (réponses masquées signalées). */
@@ -454,32 +461,54 @@ function api_session_file(array $b): void
         if (!$s['ended']) {
             throw new WlError('Seul un atelier terminé se range chez un partenaire.');
         }
-        $s['filed'] = empty($s['filed']) || ($s['partner'] ?? '') !== $partner ? time() : $s['filed'];
+        // Premier rangement seulement : l'échéance des 12 mois ne repart jamais (AG-007, amendement).
+        $s['filed'] = (int)($s['filed'] ?? 0) ?: time();
         $s['partner'] = $partner;
     });
     wl_json(['ok' => true, 'partner' => $partner]);
 }
 
-/** Sortir un atelier de chez son partenaire : il revient dans « Terminés », purge normale. */
+/** Sortir un atelier de chez son partenaire : il revient dans « Terminés », purge normale,
+ *  sans dépasser l'échéance de son premier rangement (`filed` est gardé). */
 function api_session_unfile(array $b): void
 {
     wl_update(api_code($b), function (array &$s) {
-        unset($s['partner'], $s['filed']);
+        unset($s['partner']);
     });
     wl_json(['ok' => true]);
 }
 
-/** Clore le cycle : chaque atelier du partenaire devient une archive anonyme à son nom. */
+/** Clore le cycle : chaque atelier du partenaire devient une archive anonyme à son nom et au
+ *  numéro du cycle ; le cycle clos reste consultable (chiffres), le suivant commence. */
 function api_partner_close(array $b): void
 {
     $id = preg_replace('/[^0-9a-f]/', '', (string)($b['id'] ?? ''));
+    if ($id === '' || !wl_partner($id)) {
+        throw new WlError('Partenaire introuvable.', 404);
+    }
     $done = 0;
     foreach (wl_list_sessions() as $s) {
-        if ($id !== '' && $s['partner'] === $id && wl_delete_session($s['code'], null, fn(array $full) => wl_archive_session($full))) {
+        if ($s['partner'] === $id && wl_delete_session($s['code'], null, fn(array $full) => wl_archive_session($full))) {
             $done++;
         }
     }
+    wl_partner_next_cycle($id);
     wl_json(['ok' => true, 'archived' => $done]);
+}
+
+/** Par partenaire et par cycle : ateliers déjà archivés (purge des 12 mois ou clôture) et
+ *  participations cumulées, lus dans les archives. */
+function api_partner_stats(): array
+{
+    $stats = [];
+    foreach (wl_list_archives() as $a) {
+        if ($a['partnerId'] !== '' && $a['cycle'] > 0) {
+            $k = $a['partnerId'] . '#' . $a['cycle'];
+            $stats[$k] = ['ateliers' => ($stats[$k]['ateliers'] ?? 0) + 1,
+                'participations' => ($stats[$k]['participations'] ?? 0) + (int)$a['participants']];
+        }
+    }
+    return $stats;
 }
 
 /** Thèmes ajoutés par l'animateur (la bibliothèque livrée avec l'application est côté navigateur). */
@@ -927,7 +956,7 @@ function api_answer_hide(array $b): void
 function api_export(): void
 {
     if (($_GET['format'] ?? '') === 'cycle') {
-        api_export_cycle(preg_replace('/[^0-9a-f]/', '', (string)($_GET['partner'] ?? '')));
+        api_export_cycle(preg_replace('/[^0-9a-f]/', '', (string)($_GET['partner'] ?? '')), (int)($_GET['cycle'] ?? 0));
     }
     $s = wl_load_or_fail(api_code($_GET));
     // public=1 : version à diffuser, sans les réponses masquées par l'animateur.
@@ -1019,33 +1048,68 @@ function api_export_csv(array $s, bool $all): never
     exit;
 }
 
-/** Bilan de fin de cycle d'un partenaire : un CSV pour tous ses ateliers, version à diffuser
- *  (sans les réponses masquées par l'animateur). */
-function api_export_cycle(string $partner): never
+/** Bilan d'un cycle d'un partenaire (en cours par défaut) : un CSV pour tous ses ateliers. Ateliers
+ *  encore gardés : détail, version à diffuser (sans les réponses masquées) ; ateliers déjà archivés
+ *  (purge des 12 mois ou clôture) : leurs chiffres regroupés, pour qu'aucun ne manque au bilan. */
+function api_export_cycle(string $partner, int $cycle): never
 {
-    $name = $partner !== '' ? wl_partner_name($partner) : '';
-    if ($name === '') {
+    $p = $partner !== '' ? wl_partner($partner) : null;
+    if (!$p) {
         throw new WlError('Partenaire introuvable.', 404);
     }
+    $cycle = $cycle > 0 ? $cycle : (int)$p['cycle'];
     $rows = [];
-    foreach (array_reverse(wl_list_sessions()) as $item) {
-        if ($item['partner'] !== $partner || !is_array($s = wl_load($item['code']))) {
+    $none = [['', '', '', 'Aucune réponse', '', 0]];
+    if ($cycle === (int)$p['cycle']) {
+        foreach (array_reverse(wl_list_sessions()) as $item) {
+            if ($item['partner'] !== $partner || !is_array($s = wl_load($item['code']))) {
+                continue;
+            }
+            $head = [$s['title'], date('d/m/Y', (int)($s['created'] ?? 0)), count($s['participants']), 'en cours'];
+            foreach (api_export_rows($s, false) ?: $none as $row) {
+                $rows[] = [...$head, ...$row];
+            }
+        }
+    }
+    foreach (array_reverse(wl_list_archives()) as $item) {
+        if ($item['partnerId'] !== $partner || $item['cycle'] !== $cycle || !is_array($a = json_decode((string)@file_get_contents(wl_archive_file($item['id'])), true))) {
             continue;
         }
-        $head = [$s['title'], date('d/m/Y', (int)($s['created'] ?? 0)), count($s['participants'])];
-        foreach (api_export_rows($s, false) ?: [['', '', '', 'Aucune réponse', '', 0]] as $row) {
+        $head = [$a['title'], date('d/m/Y', (int)($a['created'] ?? 0)), (int)$a['participants'], 'archivé (chiffres)'];
+        foreach (api_archive_rows($a) ?: $none as $row) {
             $rows[] = [...$head, ...$row];
         }
     }
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="wooclight-cycle-' . $partner . '-' . date('Y-m-d') . '.csv"');
+    header('Content-Disposition: attachment; filename="wooclight-cycle-' . $partner . '-' . $cycle . '-' . date('Y-m-d') . '.csv"');
     header('Cache-Control: no-store');
     echo "\xEF\xBB\xBF";
-    $head = ['Atelier', 'Date', 'Participants inscrits', 'N°', 'Question', 'Type', 'Réponse', 'Nombre', 'Participants ayant répondu'];
+    $head = ['Atelier', 'Date', 'Participants inscrits', 'Conservation', 'N°', 'Question', 'Type', 'Réponse', 'Nombre', 'Participants ayant répondu'];
     foreach ([$head, ...$rows] as $row) {
         echo implode(';', array_map('api_csv_cell', $row)), "\r\n";
     }
     exit;
+}
+
+/** Lignes d'une archive au format du CSV : chiffres regroupés seulement (l'archive ne garde
+ *  aucun texte de participant). */
+function api_archive_rows(array $a): array
+{
+    $rows = [];
+    foreach ($a['questions'] as $n => $q) {
+        $r = $q['results'] ?? [];
+        $base = [$n + 1, $q['text'], api_type_label($q['type'])];
+        if (!empty($r['counts']) && is_array($r['counts'])) {
+            foreach ($r['counts'] as $i => $c) {
+                $rows[] = [...$base, $q['options'][$i] ?? ('Choix ' . ($i + 1)), $c, $r['total'] ?? 0];
+            }
+        } elseif (isset($r['average'])) {
+            $rows[] = [...$base, 'Moyenne', str_replace('.', ',', (string)$r['average']), $r['total'] ?? 0];
+        } else {
+            $rows[] = [...$base, 'Réponses', $r['total'] ?? 0, $r['total'] ?? 0];
+        }
+    }
+    return $rows;
 }
 
 /** Fiche mémo à emporter : ce que l'animateur a écrit (conclusion, explications, bonnes réponses,
