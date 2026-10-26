@@ -349,7 +349,7 @@ function api_logout(array $b): void
 
 function api_sessions(): void
 {
-    wl_json(['ok' => true, 'sessions' => wl_list_sessions()]);
+    wl_json(['ok' => true, 'sessions' => wl_list_sessions(), 'purgeDays' => max(1, (int)wl_config()['purge_days'])]);
 }
 
 /** Tout l'état d'une session, résultats compris (réponses masquées signalées). */

@@ -94,6 +94,14 @@
     return el('button', { type: 'button', class: 'btn btn-small' + (cls ? ' ' + cls : ''), title: title || null, onclick: onclick }, ico(icon), label);
   }
 
+  /** « Dernière action le … » et la date où la purge archivera (ou supprimera, pour une démo)
+   *  l'atelier si l'animateur n'y touche plus : seule son activité repousse la purge. */
+  function lastAction(s, days) {
+    var day = function (t) { return new Date(t * 1000).toLocaleDateString('fr-FR'); };
+    return 'dernière action le ' + day(s.activity) + ' · ' + (s.demo ? 'suppression' : 'archivage')
+      + ' le ' + day(s.activity + 86400 * days) + ' si rien ne bouge';
+  }
+
   function showSessions(name) {
     if (poller) poller.stop();
     code = null;
@@ -105,17 +113,21 @@
       if (r.status === 401) return showLogin('');
       sessionsList = r.data.sessions;
       renderOverview();
-      var list = WL.clear($('session-list'));
-      $('session-count').textContent = String(sessionsList.length);
-      if (!sessionsList.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier dans cette section.'));
+      var open = sessionsList.filter(function (s) { return !s.ended; });
+      var ended = sessionsList.filter(function (s) { return s.ended; });
+      var lists = { 'false': WL.clear($('session-list')), 'true': WL.clear($('ended-list')) };
+      $('session-count').textContent = String(open.length);
+      $('ended-count').textContent = String(ended.length);
+      if (!open.length) lists['false'].appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier ouvert aux réponses.'));
+      if (!ended.length) lists['true'].appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier terminé.'));
       var demos = sessionsList.filter(function (s) { return s.demo; }).length;
       WL.show($('demo-delete'), demos > 0);
       $('demo-delete').lastChild.textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       sessionsList.forEach(function (s) {
-        list.appendChild(el('div', { class: 'prep-item workshop-row' },
+        lists[String(!!s.ended)].appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, 'Démo') : null,
-            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + (s.ended ? 'Terminé' : 'En cours'))),
+            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + lastAction(s, r.data.purgeDays))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
             rowButton('Renommer', 'edit', '', 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', function () {
@@ -148,7 +160,7 @@
     $('ov-subtitle').textContent = s ? 'Préparez simplement. Gardez le contact avec votre groupe.'
       : 'Créez un atelier vide, générez ou importez un JSON, ou partez d’un modèle.';
     if (!s) return;
-    $('ov-state').textContent = s.ended ? 'Terminé' : 'En cours';
+    $('ov-state').textContent = s.ended ? 'Terminé' : 'Ouvert aux réponses';
     $('ov-state').className = 'badge ' + (s.ended ? 'neutral' : 'green');
     WL.show($('ov-demo'), !!s.demo);
     $('ov-name').textContent = s.title;
@@ -605,7 +617,7 @@
     $('ed-participants').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' — ' + d.active + ' actif' + (d.active > 1 ? 's' : '');
     $('ed-participants').title = 'Actif : téléphone ouvert sur l\'atelier depuis moins de 3 minutes';
-    $('ed-badge').textContent = d.ended ? 'Atelier terminé' : 'En cours';
+    $('ed-badge').textContent = d.ended ? 'Atelier terminé' : 'Ouvert aux réponses';
     $('ed-badge').className = 'badge' + (d.ended ? '' : ' badge-ok');
     $('ed-join-state').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');

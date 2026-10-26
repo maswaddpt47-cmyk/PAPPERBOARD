@@ -190,8 +190,12 @@ header('Cache-Control: no-store');
         </div>
       </div>
       <section class="card panel workshop-group">
-        <div class="panel-head"><h2 class="panel-title">Ateliers en cours</h2><span id="session-count" class="muted"></span></div>
+        <div class="panel-head"><h2 class="panel-title">Ouverts aux réponses</h2><span id="session-count" class="muted"></span></div>
         <div id="session-list" class="history-list"></div>
+      </section>
+      <section class="card panel workshop-group">
+        <div class="panel-head"><h2 class="panel-title">Terminés</h2><span id="ended-count" class="muted"></span></div>
+        <div id="ended-list" class="history-list"></div>
       </section>
       <section class="card panel workshop-group">
         <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2><span id="archive-count" class="muted"></span></div>

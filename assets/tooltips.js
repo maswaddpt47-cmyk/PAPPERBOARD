@@ -11,7 +11,7 @@
     'rename-workshop': 'Changer le nom de cet atelier sans modifier ses questions ni ses réponses.',
     'duplicate-workshop': 'Créer une copie des questions et de la conclusion, sans participants ni réponses.',
     'archive-workshop': 'Ranger cet atelier dans les archives locales en conservant son contenu et ses résultats.',
-    'restore-workshop': 'Remettre cet atelier archivé dans les ateliers en cours.',
+    'restore-workshop': 'Remettre cet atelier archivé dans les ateliers ouverts aux réponses.',
     'delete-workshop': 'Supprimer cet atelier et ses réponses de ce navigateur, après confirmation.',
     'projection': 'Ouvrir la projection synchronisée dans un nouvel onglet, à déplacer sur l’écran du groupe.',
     'participant': 'Ouvrir un aperçu participant synchronisé et essayer une réponse fictive.',

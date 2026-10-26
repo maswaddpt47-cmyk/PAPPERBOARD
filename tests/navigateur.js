@@ -511,7 +511,7 @@ function check(cond, label) {
   check((await shell.getAttribute('[data-nav=workshop]', 'aria-disabled')) === 'true', 'coque : « Mon atelier » désactivé sans session ouverte');
   await shell.click('[data-nav=history]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=history]').getAttribute('aria-current') === 'page'); // le menu suit la vue au tour d'animation suivant
-  check(await shell.isVisible('#archive-list') && await shell.isVisible('#session-list') && await shell.isVisible('.demo-controls'), 'coque : « Mes ateliers » montre les ateliers en cours, les archivés et les démos');
+  check(await shell.isVisible('#archive-list') && await shell.isVisible('#session-list') && await shell.isVisible('#ended-list') && await shell.isVisible('.demo-controls'), 'coque : « Mes ateliers » montre les ateliers ouverts, terminés, archivés et les démos');
   await shell.click('[data-nav=library]');
   await shell.waitForFunction(() => document.querySelector('[data-nav=library]').getAttribute('aria-current') === 'page');
   check(await shell.isVisible('#library-grid .content-card') && await shell.isVisible('#seance-select'), 'coque : « Bibliothèque de modèles » montre les séances');

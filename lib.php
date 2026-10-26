@@ -362,6 +362,8 @@ function wl_list_sessions(): array
         if (is_array($s)) {
             $list[] = [
                 'code' => $s['code'], 'title' => $s['title'], 'updated' => $s['updated'],
+                // Dernière action de l'animateur : point de départ de la purge.
+                'activity' => wl_retention_start($s),
                 'questions' => count($s['questions']), 'participants' => count($s['participants']),
                 'ended' => $s['ended'], 'demo' => !empty($s['demo']),
                 // Questions ayant reçu au moins une réponse ou contribution (« Votre progression »).
