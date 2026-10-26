@@ -187,7 +187,8 @@
     var visible = function (list) { return (list || []).filter(function (x) { return !x.hidden; }); };
     var gone = !r.counts && !r.words && !r.texts && !r.posts && !r.items; // archive : textes non conservés
     if (gone) {
-      text(slide, WL.plural(r.total, post ? 'contribution' : 'réponse') + ' — textes des participants non conservés dans l\'archive (anonymat).',
+      text(slide, r.few ? 'Moins de 3 réponses : détail non conservé dans l\'archive (anonymat).'
+        : WL.plural(r.total, post ? 'contribution' : 'réponse') + ' — textes des participants non conservés dans l\'archive (anonymat).',
         Object.assign({ fontSize: 18, color: C.doux }, box));
     } else if (q.type === 'yesno' || q.type === 'truefalse') {
       donut(pptx, slide, q, r, box);

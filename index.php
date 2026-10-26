@@ -93,8 +93,8 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     <summary>Confidentialité</summary>
     <p><strong>En bref.</strong> Pas de nom, pas de compte. N'écrivez pas votre nom ni celui de
     quelqu'un d'autre dans vos réponses : ce que vous écrivez peut être affiché sur le grand écran,
-    devant tout le groupe. Ce qui vient de vous est effacé du serveur <?= $days ?> jours après l'atelier, ou au plus tard
-    12 mois après si l'atelier fait partie du cycle d'un partenaire (on ne garde ensuite que les résultats
+    devant tout le groupe. Ce qui vient de vous est effacé du serveur <?= $days ?> jours après l'atelier ; si l'animateur
+    le range dans le cycle d'un partenaire, au plus tard 12 mois après ce rangement (on ne garde ensuite que les résultats
     de groupe, comme « 2 personnes sur 3 ») ; les résultats
     que l'animateur a exportés pour le bilan restent sous sa responsabilité.</p>
     <p><strong>Responsable</strong> : <?= wl_h($org) ?>.
@@ -113,7 +113,8 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     vous quittez WoocLight et ce site applique ses propres règles.
     <strong>Hébergement</strong> : Alwaysdata, en France.
     <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, ou jusqu'à la fin du cycle
-    d'ateliers d'un partenaire (structure qui accueille l'atelier), 12 mois au plus, pour son bilan ; puis suppression de vos
+    d'ateliers d'un partenaire (structure qui accueille l'atelier), pour son bilan : 12 mois au plus après le
+    rangement de l'atelier dans ce cycle, qui a lieu après l'atelier ; puis suppression de vos
     réponses et de l'identifiant de l'appareil ; seuls des résultats regroupés et anonymes sont archivés.</p>
     <p><strong>Vos droits</strong> (accès, effacement, opposition…) : pendant l'atelier, demandez à
     l'animateur de retirer une réponse ; ensuite, écrivez à : <?= wl_h($contact) ?>.

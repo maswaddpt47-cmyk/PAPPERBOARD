@@ -373,7 +373,7 @@ function api_admin_state(): void
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
             'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
-            'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'demo' => !empty($s['demo']),
+            'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'purgeFailures' => wl_purge_failures(), 'demo' => !empty($s['demo']),
             'signals' => wl_signal_counts($s), 'helpSteps' => wl_signal_steps($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
             'pseudo' => !empty($s['pseudo']), 'ranking' => !empty($s['pseudo']) ? wl_ranking($s) : [], 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
             'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
@@ -464,6 +464,7 @@ function api_session_file(array $b): void
         // Premier rangement seulement : l'échéance des 12 mois ne repart jamais (AG-007, amendement).
         $s['filed'] = (int)($s['filed'] ?? 0) ?: time();
         $s['partner'] = $partner;
+        wl_minimize_filed($s);
     });
     wl_json(['ok' => true, 'partner' => $partner]);
 }
@@ -483,16 +484,35 @@ function api_session_unfile(array $b): void
 function api_partner_close(array $b): void
 {
     $id = preg_replace('/[^0-9a-f]/', '', (string)($b['id'] ?? ''));
-    if ($id === '' || !wl_partner($id)) {
-        throw new WlError('Partenaire introuvable.', 404);
-    }
-    $done = 0;
-    foreach (wl_list_sessions() as $s) {
-        if ($s['partner'] === $id && wl_delete_session($s['code'], null, fn(array $full) => wl_archive_session($full))) {
-            $done++;
+    $cycle = (int)($b['cycle'] ?? 0);
+    // Tout sous le verrou de partners.json : un rangement chez ce partenaire (qui le prend aussi)
+    // attend, et deux clôtures ne peuvent pas avancer deux fois le numéro.
+    $done = wl_locked_json(wl_partners_file(), function (array &$d) use ($id, $cycle) {
+        $i = array_search($id, array_column($d['partners'] ?? [], 'id'), true);
+        if ($id === '' || $i === false) {
+            throw new WlError('Partenaire introuvable.', 404);
         }
-    }
-    wl_partner_next_cycle($id);
+        $p = &$d['partners'][$i];
+        $n = (int)($p['cycle'] ?? 1);
+        if ($cycle !== $n) {
+            // Écran resté ouvert sur un cycle déjà clos : jamais clore le suivant à sa place.
+            throw new WlError('Ce cycle est déjà clos : rechargez la page.', 409);
+        }
+        $done = 0;
+        foreach (wl_list_sessions() as $s) {
+            if ($s['partner'] === $id && wl_delete_session($s['code'], null, function (array $full) use ($id, $p) {
+                if (($full['partner'] ?? '') !== $id) {
+                    return false; // déplacé entre-temps
+                }
+                wl_archive_session($full, $p);
+            })) {
+                $done++;
+            }
+        }
+        $p['closed'] = [...($p['closed'] ?? []), ['cycle' => $n, 'at' => time()]];
+        $p['cycle'] = $n + 1;
+        return $done;
+    });
     wl_json(['ok' => true, 'archived' => $done]);
 }
 
@@ -1099,7 +1119,9 @@ function api_archive_rows(array $a): array
     foreach ($a['questions'] as $n => $q) {
         $r = $q['results'] ?? [];
         $base = [$n + 1, $q['text'], api_type_label($q['type'])];
-        if (!empty($r['counts']) && is_array($r['counts'])) {
+        if (!empty($r['few'])) {
+            $rows[] = [...$base, 'Moins de 3 réponses (détail non conservé)', '', $r['total'] ?? 0];
+        } elseif (!empty($r['counts']) && is_array($r['counts'])) {
             foreach ($r['counts'] as $i => $c) {
                 $rows[] = [...$base, $q['options'][$i] ?? ('Choix ' . ($i + 1)), $c, $r['total'] ?? 0];
             }

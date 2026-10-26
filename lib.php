@@ -395,8 +395,10 @@ function wl_delete_session(string $code, ?int $expiredBefore = null, ?callable $
         if ($expiredBefore !== null && is_array($s) && wl_retention_start($s) >= $expiredBefore) {
             return false;
         }
-        if ($archive !== null && is_array($s)) {
-            $archive($s); // lève une erreur : la session est alors conservée
+        // Le rappel relit la session sous verrou : false = elle a changé, on n'y touche pas
+        // (ex. atelier déplacé chez un autre partenaire pendant une clôture).
+        if ($archive !== null && is_array($s) && $archive($s) === false) {
+            return false; // une erreur levée par le rappel conserve aussi la session
         }
         return @unlink($file);
     } finally {
@@ -425,6 +427,7 @@ function wl_retention_start(array $s): int
 // ---------------------------------------------------------------------------
 
 const WL_PARTNER_DAYS = 365;
+const WL_ARCHIVE_MIN = 3;
 const WL_MAX_PARTNERS = 50;
 
 function wl_partners_file(): string
@@ -453,18 +456,26 @@ function wl_partner_name(string $id): string
     return wl_partner($id)['name'] ?? '';
 }
 
-/** Clôture du cycle en cours : il est noté avec sa date, le suivant commence. */
-function wl_partner_next_cycle(string $id): void
+/** Au rangement, retire ce qui ne sert pas au bilan du cycle (audit Codex du 26/10/2026) :
+ *  présences et signaux, heures des réponses et des inscriptions, auteurs des contributions et
+ *  de qui les a aimées ou soutenues, questions « Oser demander » non publiées. Restent les
+ *  questions, les réponses (avant / après, podium), les textes publiés et les pseudonymes. */
+function wl_minimize_filed(array &$s): void
 {
-    wl_locked_json(wl_partners_file(), function (array &$d) use ($id) {
-        foreach ($d['partners'] ?? [] as $i => $p) {
-            if ($p['id'] === $id) {
-                $n = (int)($p['cycle'] ?? 1);
-                $d['partners'][$i]['closed'] = [...($p['closed'] ?? []), ['cycle' => $n, 'at' => time()]];
-                $d['partners'][$i]['cycle'] = $n + 1;
-            }
+    $s['seen'] = [];
+    $s['signals'] = [];
+    $s['participants'] = array_map(fn() => 0, $s['participants']);
+    $s['asks'] = array_values(array_map(fn($a) => ['p' => '', 'votes' => array_fill(0, count($a['votes'] ?? []), ''), 't' => 0] + $a,
+        array_filter($s['asks'] ?? [], fn($a) => !empty($a['published']))));
+    foreach ($s['questions'] as &$q) {
+        foreach ($q['answers'] ?? [] as $k => $a) {
+            $q['answers'][$k]['t'] = 0;
         }
-    });
+        foreach ($q['posts'] ?? [] as $k => $p) {
+            $q['posts'][$k] = ['p' => '', 'likes' => array_fill(0, count($p['likes'] ?? []), ''), 't' => 0] + $p;
+        }
+    }
+    unset($q);
 }
 
 /** Partenaire existant (id) ou créé (nom) ; rend son id. */
@@ -511,10 +522,15 @@ function wl_maybe_purge(): int
  *  Rien qui vienne d'un participant pris à part : ni jeton, ni réponse une à
  *  une, ni texte écrit (réponses libres, nuage, mur, post-it), ni IP. Ces
  *  données ne sont plus personnelles : l'archive se garde sans limite. */
-function wl_archive_session(array $s): string
+function wl_archive_session(array $s, ?array $partner = null): string
 {
     $questions = array_map(function ($q) use ($s) {
         $r = wl_results($q, false, $s);
+        // Moins de WL_ARCHIVE_MIN réponses : le détail par choix révélerait la réponse de chacun.
+        if ($r['total'] < WL_ARCHIVE_MIN) {
+            return array_intersect_key($q, array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
+                + ['results' => ['total' => $r['total'], 'few' => true]];
+        }
         $kept = ['total' => $r['total']] + array_intersect_key($r, array_flip(['counts', 'average', 'compare']));
         if ($q['type'] === 'postit') {
             $kept['columns'] = $q['options'];
@@ -530,7 +546,8 @@ function wl_archive_session(array $s): string
         'partner' => '',
     ];
     // Atelier d'un partenaire : l'archive garde son cycle, pour le bilan du cycle (AG-007).
-    if (!empty($s['partner']) && ($p = wl_partner($s['partner']))) {
+    // Partenaire lu sous verrou par la clôture (passé en paramètre), sinon relu ici (purge).
+    if (!empty($s['partner']) && ($p = $partner ?? wl_partner($s['partner']))) {
         $archive = ['partner' => $p['name'], 'partnerId' => $p['id'], 'cycle' => (int)$p['cycle']] + $archive;
     }
     $file = wl_data_dir() . '/archives/' . $id . '.json';
@@ -588,9 +605,17 @@ function wl_purge(): int
                     $count++;
                 }
             } catch (WlError) {
-                // Archive impossible : la session reste, nouvel essai à la prochaine purge.
+                // Archive impossible : la session reste, nouvel essai à la prochaine purge,
+                // et l'échec est compté pour Réglages (une session échue ne reste pas en silence).
+                $failed = ($failed ?? 0) + 1;
             }
         }
+    }
+    $marker = wl_data_dir() . '/purge-failures';
+    if (!empty($failed)) {
+        @file_put_contents($marker, (string)$failed);
+    } elseif (is_file($marker)) {
+        @unlink($marker);
     }
     foreach (glob(wl_data_dir() . '/sessions/*.lock') ?: [] as $lock) {
         if (!is_file(substr($lock, 0, -5)) && filemtime($lock) < time() - 3600) {
@@ -944,7 +969,8 @@ function wl_import_list(string $raw): ?array
     if (!is_array($list)) {
         // Copie depuis l'affichage d'une IA (application mobile) : « \[ », « \] »
         // ajoutés par la mise en forme, espaces insécables. Jamais valides en JSON.
-        $list = wl_import_json(str_replace("\u{00A0}", ' ', preg_replace('/(?<!\\\\)\\\\([\[\]_*#`>+\-.!()])/', '$1', $raw)));
+        $fixed = str_replace("\u{00A0}", ' ', preg_replace('/(?<!\\\\)\\\\([\[\]_*#`>+\-.!()])/', '$1', $raw));
+        $list = $fixed !== $raw ? wl_import_json($fixed) : null; // texte inchangé : second passage inutile
     }
     return $list;
 }
@@ -1090,10 +1116,12 @@ function wl_import_json(string $raw): ?array
     // La liste peut suivre un texte qui contient déjà des crochets (liens « [source](…) »
     // d'une relecture par une IA) : premier « [ » qui ouvre une liste JSON valide, jusqu'à
     // l'un des derniers « ] » (un texte peut suivre la liste).
-    preg_match_all('/\[/', $raw, $open, PREG_OFFSET_CAPTURE);
+    // Seuls les « [ » suivis d'un « { » ouvrent une liste de questions ; 20 essais au plus
+    // (un texte piégé plein de crochets bloquait le serveur plusieurs secondes, audit du 26/10/2026).
+    preg_match_all('/\[(?=\s*\{)/', $raw, $open, PREG_OFFSET_CAPTURE);
     preg_match_all('/\]/', $raw, $close, PREG_OFFSET_CAPTURE);
     $ends = array_slice(array_reverse(array_column($close[0], 1)), 0, 5);
-    foreach (array_column($open[0], 1) as $start) {
+    foreach (array_slice(array_column($open[0], 1), 0, 20) as $start) {
         foreach ($ends as $end) {
             $list = $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
             // Une liste de questions (objets) : « [1] » d'un renvoi de note est du JSON valide aussi.
@@ -1437,6 +1465,10 @@ function wl_recap(array $s, bool $anonymous = false): array
     foreach ($s['questions'] as $q) {
         $r = wl_results($q, false, $s);
         if (!$r['total']) {
+            continue;
+        }
+        if ($anonymous && $r['total'] < WL_ARCHIVE_MIN) {
+            $lines[] = ['text' => $q['text'], 'summary' => 'Moins de ' . WL_ARCHIVE_MIN . ' réponses : détail non conservé (anonymat)'];
             continue;
         }
         $pct = fn(int $n) => round(100 * $n / $r['total']) . ' %';
@@ -2276,6 +2308,13 @@ function wl_last_cron(): ?int
 {
     $f = wl_data_dir() . '/last-cron';
     return is_file($f) ? filemtime($f) : null;
+}
+
+/** Sessions échues que la dernière purge n'a pas pu archiver (0 si aucune). */
+function wl_purge_failures(): int
+{
+    $f = wl_data_dir() . '/purge-failures';
+    return is_file($f) ? (int)file_get_contents($f) : 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -192,7 +192,7 @@
               if (confirm('Clore le cycle ' + p.cycle + ' de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle si vous voulez le détail : les '
                 + WL.plural(mine.length, 'atelier') + ' deviennent des archives anonymes (réponses une à une et textes des participants effacés) ; '
                 + 'le bilan chiffré du cycle reste consultable.')) {
-                post('partner_close', { id: p.id }).then(function (d) { banner('Cycle ' + p.cycle + ' clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
+                post('partner_close', { id: p.id, cycle: p.cycle }).then(function (d) { banner('Cycle ' + p.cycle + ' clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
               }
             }))),
         p.closed.length ? el.apply(null, ['p', { class: 'meta partner-closed' }, 'Cycles clos : '].concat(p.closed.slice().reverse().map(function (c, i) {
@@ -310,7 +310,8 @@
       archive.questions.forEach(function (q, i) {
         var res = el('div');
         board.appendChild(el('section', { class: 'bilan-q' }, el('h3', null, (i + 1) + '. ' + q.text), el('p', { class: 'meta' }, WL.typeLabel(q)), res));
-        if (q.results.counts) WL.renderResults(res, Object.assign({ showResults: true, options: [] }, q), q.results);
+        if (q.results.few) res.appendChild(el('p', { class: 'meta' }, 'Moins de 3 réponses : détail non conservé (anonymat).'));
+        else if (q.results.counts) WL.renderResults(res, Object.assign({ showResults: true, options: [] }, q), q.results);
         else res.appendChild(el('p', { class: 'meta' }, WL.plural(q.results.total, 'réponse') + ' (textes non conservés dans l\'archive)'));
       });
     });
@@ -712,7 +713,7 @@
     $('ed-badge').className = 'badge' + (d.ended ? '' : ' badge-ok');
     $('ed-join-state').textContent = WL.plural(d.participants, 'participant') + ' inscrit' + (d.participants > 1 ? 's' : '')
       + ' · Inscriptions ' + (d.locked ? 'fermées' : 'ouvertes');
-    renderCron(d.lastCron, d.now);
+    renderCron(d.lastCron, d.now, d.purgeFailures);
     label('end-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir l’atelier' : 'Terminer l’atelier');
     label('end-control-btn', d.ended ? 'refresh' : 'check-circle', d.ended ? 'Rouvrir l’atelier' : 'Terminer l’atelier');
     $('end-control-btn').classList.toggle('btn-danger', !d.ended);
@@ -784,9 +785,15 @@
   }
 
   /** Purge automatique : la tâche planifiée horaire tourne-t-elle ? */
-  function renderCron(t, now) {
+  function renderCron(t, now, failures) {
     var box = $('cron-state'), min = t ? Math.round((now - t) / 60) : null;
-    var ok = min !== null && min <= 120;
+    var ok = min !== null && min <= 120 && !failures;
+    if (failures) {
+      box.className = 'cron-state is-ko';
+      box.textContent = '⚠️ ' + WL.plural(failures, 'atelier') + ' arrivé' + (failures > 1 ? 's' : '') + ' à échéance mais non archivé'
+        + (failures > 1 ? 's' : '') + ' (écriture impossible) : vérifiez l\'espace disque et les droits du dossier de données chez Alwaysdata.';
+      return;
+    }
     box.className = 'cron-state ' + (ok ? 'is-ok' : 'is-ko');
     // Suit le libellé « Dernier passage de la purge horaire : » écrit dans la carte de Réglages.
     box.textContent = min === null

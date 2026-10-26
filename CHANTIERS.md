@@ -11,8 +11,9 @@ Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus ba
 
 0. **Partenaires (26/10/2026)** : relire et valider `docs/registre-traitement.md`
    (durée) et « Confidentialité » d'`index.php` ; coller
-   `docs/consigne-audit-codex-26-10-2026.md` dans Codex (audit RGPD distinct de
-   la réponse AG-007) ; charge d'un bilan annuel non mesurée.
+   audit Codex rendu le 26/10/2026 sur `d70a931`, 7 points vérifiés et corrigés le
+   même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
+   (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
@@ -96,7 +97,10 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
   jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
   prolongé (`filed` immuable, e2e) ; archive au nom et au cycle du partenaire ; bilan du
-  cycle = ateliers gardés + déjà archivés (chiffres) ; « participations cumulées ».
+  cycle = ateliers gardés + déjà archivés (chiffres) ; « participations cumulées ». Audit
+  du 26/10 : clôture du cycle affiché seulement, sous verrou ; atelier déplacé jamais archivé
+  par la clôture d'un autre ; données techniques retirées au rangement ; archive : < 3 réponses
+  = nombre seul ; échec d'archivage signalé dans Réglages ; recherche JSON bornée (e2e).
 - Import : intitulé, explication, étape trop longs raccourcis et signalés, jamais la question
   écartée ; toutes les limites redites dans la consigne de relecture (`LIMITS`, admin.js) ;
   liste JSON trouvée malgré des « [ » avant (liens d'une IA relectrice) (e2e).
@@ -232,12 +236,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   « fonctions en essai » (réglage serveur `prefs.json`, commun à tous les appareils de
   l'animateur, écrit sous verrou : une écriture qui échoue renvoie une erreur, e2e) ; le serveur accepte le type dans tous
   les cas. Menus des défis prêts à l'emploi : à vérifier sur appareils (e2e, nav).
-- Audit Codex du 17/10/2026 rendu (rapport hors dépôt public, lu sur `8f0eda2`). Vérifiés dans le
-  code puis corrigés (e2e, `tests/archivage.php`, `tests/configurer.php`) : archivage vérifié
-  avant suppression et sous le même verrou ; `prefs.json` sous verrou ; `ping` sans fichier de
-  verrou pour un code inventé ; relance de `configurer.php` qui garde les réglages ; texte du
-  bilan IA (nuage, gommettes) soumis à la case ; QR d'une adresse non ASCII ; pourcentages
-  PowerPoint (QCM multiple, étapes) ; « Quitter » hors ligne ne promet plus l'effacement.
+- Audit Codex du 17/10/2026 (lu sur `8f0eda2`) : corrections tenues par e2e, `tests/archivage.php`,
+  `tests/configurer.php` (détail : `git log -p CHANTIERS.md`).
   Réordonner les choix d'une question (mêmes choix, autre ordre) efface ses réponses, décidé
   le 17/10/2026 (`wl_options_reordered`, e2e), sauf les colonnes d'un post-it (les notes suivent leur colonne, par son nom) ;
   reformuler un choix garde les réponses.

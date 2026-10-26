@@ -437,6 +437,25 @@ $sl = $admin->get('api.php?action=sessions')['json'];
 check(count(array_filter($sl['sessions'], fn($x) => $x['partner'] === $pid)) === 2 && ($sl['partners'][0]['name'] ?? '') === 'Centre Été', 'partenaire : deux ateliers rangés, nom gardé');
 $csv = $admin->get("api.php?action=export&format=cycle&partner=$pid")['body'];
 check(str_contains($csv, 'Cycle un') && str_contains($csv, 'Cycle deux') && str_contains($csv, 'Participants inscrits'), 'bilan du cycle : un CSV pour tous les ateliers, même sans réponse');
+$pm = $admin->post('session_create', ['title' => 'Minimisé'])['json']['code'] ?? '';
+$admin->post('control', ['s' => $pm, 'op' => 'end']);
+$fm = "$data/sessions/$pm.json";
+$jm = json_decode(file_get_contents($fm), true);
+$jm['participants'] = ['k1' => time(), 'k2' => time()];
+$jm['seen'] = ['k1' => time()];
+$jm['signals'] = ['k1' => ['k' => 'fast', 't' => time()]];
+$jm['asks'] = [['id' => 'qa', 'p' => 'k1', 'text' => 'Publiée ?', 't' => time(), 'votes' => ['k2'], 'published' => true, 'answered' => false],
+    ['id' => 'qb', 'p' => 'k2', 'text' => 'Non publiée', 't' => time(), 'votes' => [], 'published' => false, 'answered' => false]];
+$jm['questions'] = [['id' => 'w1', 'type' => 'wall', 'text' => 'Mur', 'options' => [], 'correct' => [], 'answers' => ['k1' => ['v' => 0, 't' => time()]],
+    'posts' => [['id' => 'n1', 'p' => 'k1', 'text' => 'Idée', 'col' => 0, 't' => time(), 'likes' => ['k2'], 'parent' => null]]]];
+file_put_contents($fm, json_encode($jm));
+$admin->post('session_file', ['s' => $pm, 'name' => 'Centre Été']);
+$jm = json_decode(file_get_contents($fm), true);
+check(!$jm['seen'] && !$jm['signals'] && $jm['participants'] === ['k1' => 0, 'k2' => 0] && count($jm['asks']) === 1 && $jm['asks'][0]['p'] === ''
+    && count($jm['asks'][0]['votes']) === 1 && $jm['questions'][0]['posts'][0]['p'] === '' && $jm['questions'][0]['posts'][0]['likes'] === ['']
+    && $jm['questions'][0]['answers']['k1']['t'] === 0 && $jm['questions'][0]['posts'][0]['text'] === 'Idée',
+    'rangement : présences, signaux, heures, auteurs et questions non publiées retirés ; textes publiés et nombres gardés');
+$admin->post('session_delete', ['s' => $pm]);
 $fa = "$data/sessions/$pa.json";
 $ja = json_decode(file_get_contents($fa), true);
 $ja['activity'] = time() - 200 * 86400;
@@ -480,9 +499,16 @@ $admin->post('session_unfile', ['s' => $pb]);
 check((array_values(array_filter($admin->get('api.php?action=sessions')['json']['sessions'], fn($x) => $x['code'] === $pb))[0]['partner'] ?? 'x') === '', 'partenaire : « Sortir du partenaire » remet l\'atelier dans Terminés');
 $admin->post('session_file', ['s' => $pb, 'partner' => $pid]);
 $csv = $admin->get("api.php?action=export&format=cycle&partner=$pid")['body'];
+check(str_contains($csv, 'Moins de 3 réponses'), 'archive : moins de 3 réponses, détail par choix non conservé');
 check(str_contains($csv, 'Cycle un') && str_contains($csv, 'archivé (chiffres)') && str_contains($csv, 'Cycle deux'), 'bilan du cycle : l\'atelier déjà archivé (12 mois) y figure, en chiffres');
 clearstatcache();
-check(($admin->post('partner_close', ['id' => $pid])['json']['archived'] ?? 0) === 1 && !is_file("$data/sessions/$pb.json"), 'clore le cycle : l\'atelier restant devient une archive');
+expect_status($admin->post('partner_close', ['id' => $pid, 'cycle' => 2]), 409, 'clore le cycle : numéro périmé ou faux refusé');
+$pd = $admin->post('session_create', ['title' => 'Déplacé'])['json']['code'] ?? '';
+$admin->post('control', ['s' => $pd, 'op' => 'end']);
+$admin->post('session_file', ['s' => $pd, 'name' => 'Autre centre']);
+check(($admin->post('partner_close', ['id' => $pid, 'cycle' => 1])['json']['archived'] ?? 0) === 1 && !is_file("$data/sessions/$pb.json") && is_file("$data/sessions/$pd.json"),
+    'clore le cycle : l\'atelier restant devient une archive, celui d\'un autre partenaire reste');
+expect_status($admin->post('partner_close', ['id' => $pid, 'cycle' => 1]), 409, 'clore le cycle : second clic (écran périmé) refusé, le cycle 2 n\'est pas clos');
 $pp = array_values(array_filter($admin->get('api.php?action=sessions')['json']['partners'], fn($x) => $x['id'] === $pid))[0] ?? [];
 check(($pp['cycle'] ?? 0) === 2 && ($pp['closed'][0]['ateliers'] ?? 0) === 2 && ($pp['archived']['ateliers'] ?? -1) === 0, 'clore le cycle : cycle 1 clos et consultable (2 ateliers), cycle 2 vide');
 check(str_contains($admin->get("api.php?action=export&format=cycle&partner=$pid&cycle=1")['body'], 'Cycle deux'), 'cycle clos : son CSV reste disponible (chiffres)');
@@ -560,6 +586,9 @@ $relu = "Corrections :\n1. Q1 : voir [Service-public.fr](https://www.service-pub
     . json_encode([['type' => 'poll', 'text' => 'Relue ?', 'options' => ['A', 'B']]]) . "\n```\nFin [2].";
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $relu, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Relue ?',
     'import : réponse d\'une IA relectrice (liens entre crochets avant et après la liste) lue');
+$t0 = microtime(true);
+expect_status($admin->post('questions_import', ['s' => $gen, 'preview' => true, 'raw' => str_repeat('[', 29000) . str_repeat(']', 29000)]), 400, 'import : texte piégé de crochets refusé');
+check(microtime(true) - $t0 < 1, 'import : texte piégé de crochets traité en moins d\'une seconde');
 $long = $admin->post('questions_import', ['s' => $gen, 'preview' => true, 'raw' => json_encode([['type' => 'yesno', 'text' => 'Longue ?', 'correct' => 'Oui',
     'explain' => str_repeat('Une phrase de source vérifiée. ', 20)]])])['json']['items'][0] ?? [];
 check(mb_strlen($long['explain'] ?? '') <= 400 && str_ends_with($long['explain'] ?? '', '.') && str_contains($long['warning'] ?? '', 'explication (400)'),

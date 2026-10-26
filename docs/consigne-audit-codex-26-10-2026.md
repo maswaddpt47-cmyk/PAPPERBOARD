@@ -41,8 +41,10 @@ CHANGEMENTS À EXAMINER EN PRIORITÉ (26/10/2026)
    décale la date prise en compte par wl_purge.
 3. partner_close : chaque atelier du partenaire passe par wl_archive_session
    puis est supprimé (wl_delete_session) ; l'archive porte le nom du partenaire.
-4. Export format=cycle&partner=ID (api_export_cycle, api.php) : un CSV qui
-   réunit les résultats de tous les ateliers d'un partenaire.
+4. Export format=cycle&partner=ID&cycle=N (api_export_cycle, api_archive_rows) :
+   un CSV qui réunit les ateliers encore gardés (détail) et les archives du même
+   cycle (chiffres). Version envoyée à Codex le 26/10/2026 sur `d70a931` (cycles,
+   échéance fixe) : rapport rendu le jour même, corrections dans `CHANTIERS.md`.
 5. Liste des sessions (action `sessions`) : nouveaux champs partner, filed,
    expires, et liste des partenaires.
 6. Textes d'information mis à jour : index.php (« Confidentialité »),
