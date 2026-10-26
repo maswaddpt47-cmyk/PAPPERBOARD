@@ -970,10 +970,22 @@ function wl_theme_clean(array $in, array $list): array
 /** Liste JSON comprise entre le premier « [ » et le dernier « ] », ou null. */
 function wl_import_json(string $raw): ?array
 {
-    $start = strpos($raw, '[');
-    $end = strrpos($raw, ']');
-    $list = $start !== false && $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
-    return is_array($list) ? $list : null;
+    // La liste peut suivre un texte qui contient déjà des crochets (liens « [source](…) »
+    // d'une relecture par une IA) : premier « [ » qui ouvre une liste JSON valide, jusqu'à
+    // l'un des derniers « ] » (un texte peut suivre la liste).
+    preg_match_all('/\[/', $raw, $open, PREG_OFFSET_CAPTURE);
+    preg_match_all('/\]/', $raw, $close, PREG_OFFSET_CAPTURE);
+    $ends = array_slice(array_reverse(array_column($close[0], 1)), 0, 5);
+    foreach (array_column($open[0], 1) as $start) {
+        foreach ($ends as $end) {
+            $list = $end > $start ? json_decode(substr($raw, $start, $end - $start + 1), true) : null;
+            // Une liste de questions (objets) : « [1] » d'un renvoi de note est du JSON valide aussi.
+            if (is_array($list) && $list && array_is_list($list) && !array_filter($list, fn($q) => !is_array($q))) {
+                return $list;
+            }
+        }
+    }
+    return null;
 }
 
 /** Format de l'IA vers celui du formulaire : bonnes réponses données par leur

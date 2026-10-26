@@ -642,9 +642,9 @@ header('Cache-Control: no-store');
             <span id="gen-review-copied" class="meta" aria-live="polite"></span></p>
         </div>
       </section>
-      <p id="gen-error" class="error" role="alert"></p>
       </div>
 <div class="row wrap modal-actions">
+        <p id="gen-error" class="error" role="alert"></p>
         <span id="gen-save-hint" class="meta">Cliquez d'abord « Vérifier la réponse ».</span>
         <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
         <button class="btn" id="gen-cancel" type="button">Fermer</button>

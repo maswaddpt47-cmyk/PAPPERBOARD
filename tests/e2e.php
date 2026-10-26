@@ -493,6 +493,10 @@ check(count($admin->get("api.php?action=admin_state&s=$gen")['json']['questions'
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [0, 3]]), 400, 'import : question écartée refusée');
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => $raw, 'keep' => [5]]), 400, 'import : gommettes sans leur source refusées');
 expect_status($admin->post('questions_import', ['s' => $gen, 'raw' => 'pas de JSON', 'preview' => true]), 400, 'import : réponse illisible refusée');
+$relu = "Corrections :\n1. Q1 : voir [Service-public.fr](https://www.service-public.fr) [1].\n\nVersion corrigée :\n```json\n"
+    . json_encode([['type' => 'poll', 'text' => 'Relue ?', 'options' => ['A', 'B']]]) . "\n```\nFin [2].";
+check(($admin->post('questions_import', ['s' => $gen, 'raw' => $relu, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Relue ?',
+    'import : réponse d\'une IA relectrice (liens entre crochets avant et après la liste) lue');
 $copied = '\\[ { "type": "poll", "text": "Copié depuis l\'appli", "options": \\[ "A", "B" \\] } \\]';
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $copied, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Copié depuis l\'appli',
     'import : « \\[ » ajoutés par l\'affichage d\'une IA retirés');

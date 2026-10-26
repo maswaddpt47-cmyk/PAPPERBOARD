@@ -1281,15 +1281,15 @@
     WL.clear($('gen-list'));
     WL.show($('gen-preview'), false);
     WL.show($('gen-preview-wait'), true);
-    genSaveState();
     $('gen-error').textContent = '';
+    genSaveState();
   }
 
   /** Bouton d'ajout inactif tant que l'aperçu n'est pas affiché : la raison est écrite à côté. */
   function genSaveState() {
     var ready = !$('gen-preview').hidden;
     $('gen-save').disabled = !ready || !genChecked().length;
-    $('gen-save-hint').textContent = !ready ? 'Cliquez d\'abord « Vérifier la réponse ».'
+    $('gen-save-hint').textContent = $('gen-error').textContent ? '' : !ready ? 'Cliquez d\'abord « Vérifier la réponse ».'
       : (genChecked().length ? '' : 'Cochez au moins une question.');
   }
 
@@ -1495,7 +1495,7 @@
     var body = { raw: $('gen-raw').value, preview: true }; // l'aperçu ne lit aucune session
     WL.api('questions_import', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       if (r.status === 401) return showLogin('Session expirée : reconnectez-vous.');
-      if (r.status !== 200) { $('gen-error').textContent = r.data.error; return; }
+      if (r.status !== 200) { $('gen-error').textContent = r.data.error; genSaveState(); return; }
       genItems = r.data.items;
       genRender();
     }, function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; });
