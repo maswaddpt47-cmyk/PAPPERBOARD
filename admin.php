@@ -189,17 +189,28 @@ header('Cache-Control: no-store');
           <button id="create-btn-history" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
         </div>
       </div>
-      <section class="card panel workshop-group">
-        <div class="panel-head"><h2 class="panel-title">Ouverts aux réponses</h2><span id="session-count" class="muted"></span></div>
+      <div class="tabs view-tabs" id="history-tabs" role="tablist" aria-label="Classement des ateliers">
+        <button class="tab" role="tab" type="button" id="ht-open" aria-controls="hist-open" data-tab="open" title="Ateliers où les participants peuvent répondre"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Ouverts <span id="open-count" class="tab-count"></span></button>
+        <button class="tab" role="tab" type="button" id="ht-ended" aria-controls="hist-ended" data-tab="ended" title="Ateliers terminés : réponses closes, résultats consultables"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Terminés <span id="ended-count" class="tab-count"></span></button>
+        <button class="tab" role="tab" type="button" id="ht-archived" aria-controls="hist-archived" data-tab="archived" title="Résultats chiffrés gardés sans limite, détail des réponses effacé"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Archivés <span id="archived-count" class="tab-count"></span></button>
+        <button class="tab" role="tab" type="button" id="ht-demo" aria-controls="hist-demo" data-tab="demo" title="Ateliers de démonstration avec participants fictifs"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Démos <span id="demo-count" class="tab-count"></span></button>
+      </div>
+      <section id="hist-open" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-open">
+        <div class="panel-head"><h2 class="panel-title">Ouverts aux réponses</h2></div>
         <div id="session-list" class="history-list"></div>
       </section>
-      <section class="card panel workshop-group">
-        <div class="panel-head"><h2 class="panel-title">Terminés</h2><span id="ended-count" class="muted"></span></div>
+      <section id="hist-ended" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-ended" hidden>
+        <div class="panel-head"><h2 class="panel-title">Terminés</h2></div>
         <div id="ended-list" class="history-list"></div>
       </section>
-      <section class="card panel workshop-group">
-        <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2><span id="archive-count" class="muted"></span></div>
+      <section id="hist-archived" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-archived" hidden>
+        <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2></div>
         <div id="archive-list" class="history-list"></div>
+      </section>
+      <div id="hist-demo" class="tab-panel" role="tabpanel" aria-labelledby="ht-demo" hidden>
+      <section class="card panel workshop-group">
+        <div class="panel-head"><h2 class="panel-title">Démos</h2></div>
+        <div id="demo-list" class="history-list"></div>
       </section>
       <section class="card content-card demo-controls">
         <h2>Tester avec des participants fictifs</h2>
@@ -209,6 +220,7 @@ header('Cache-Control: no-store');
         </div>
         <p class="muted">La suppression groupée concerne uniquement les ateliers marqués « Démo ». Vos créations, imports et copies sont conservés.</p>
       </section>
+      </div>
       <p class="info-note">Archiver conserve les questions et les résultats chiffrés ; les réponses une à une, les textes des participants et les jetons des appareils sont effacés. Une session devient aussi une archive après 30 jours sans activité. Les archives se gardent sans limite.</p>
     </div>
   </section>

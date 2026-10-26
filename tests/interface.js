@@ -109,11 +109,12 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#t-settings').click();
     check((await admin.locator('#cron-state').textContent()).length > 0, 'Indicateur réel de purge perdu');
     await admin.locator('#back-btn').click();
-    const row = admin.locator('#session-list .workshop-row').filter({hasText:'Démo'}).first();
+    await admin.locator('#ht-demo').click(); // les démos ont leur onglet dans Mes ateliers
+    const row = admin.locator('#demo-list .workshop-row').filter({hasText:'Démo'}).first();
     await row.getByRole('button',{name:'Renommer',exact:true}).click();
     await admin.locator('#rename-title-input').fill('  Atelier renommé  ');
     await admin.locator('#rename-save').click();
-    await admin.locator('#session-list h3').filter({hasText:'Atelier renommé'}).waitFor();
+    await admin.locator('#demo-list h3').filter({hasText:'Atelier renommé'}).waitFor();
     check(await admin.locator('#demo-delete').isVisible(), 'Supprimer la démo perdu');
     await admin.locator('[data-nav="overview"]').click();
     await admin.locator('#create-btn').click();
@@ -145,8 +146,8 @@ function check(value, message) { checks++; assert(value, message); }
         ['.content-card .metric-number','#space-overview .metric-number',['font-size','font-weight']],['.section-heading .panel-title','#space-overview .section-heading .panel-title',['font-size']]],
       library: [['.library-grid','#library-grid',['grid-template-columns','column-gap']],['.library-grid article h2','#library-grid h2',['font-size']]],
       history: [['.workshop-group','.workshop-group',['padding-left','border-radius']],['.workshop-group .panel-head','.workshop-group .panel-head',['padding-top','padding-left']],
-        ['.workshop-row','#session-list .workshop-row',['padding-left','border-radius']],['.workshop-row h3','#session-list h3',['font-size']],
-        ['.workshop-row-actions .btn','#session-list .workshop-row-actions .btn',['min-height','font-size']],['.demo-controls h2','.demo-controls h2',['font-size']]]
+        ['.workshop-row','#demo-list .workshop-row',['padding-left','border-radius']],['.workshop-row h3','#demo-list h3',['font-size']],
+        ['.workshop-row-actions .btn','#demo-list .workshop-row-actions .btn',['min-height','font-size']],['.demo-controls h2','.demo-controls h2',['font-size']]]
     };
     for (const [name, pairs] of Object.entries(spaces)) {
       await admin.locator('.nav-item[data-nav="'+name+'"]').evaluate(node => node.click());
@@ -171,6 +172,7 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.setViewportSize({width:1280,height:720});
     await admin.reload(); await admin.locator('#sessions:not([hidden])').waitFor();
     await admin.locator('.nav-item[data-nav="history"]').click();
+    await admin.locator('#ht-archived').click();
     const archived = admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'});
     await archived.waitFor();
     for (const name of ['Voir le bilan','Réutiliser les questions','Supprimer']) check(await archived.getByRole('button',{name,exact:true}).isVisible(), 'Archive : bouton « '+name+' » absent');

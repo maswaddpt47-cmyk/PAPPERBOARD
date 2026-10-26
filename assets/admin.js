@@ -113,20 +113,22 @@
       if (r.status === 401) return showLogin('');
       sessionsList = r.data.sessions;
       renderOverview();
-      var open = sessionsList.filter(function (s) { return !s.ended; });
-      var ended = sessionsList.filter(function (s) { return s.ended; });
-      var lists = { 'false': WL.clear($('session-list')), 'true': WL.clear($('ended-list')) };
-      $('session-count').textContent = String(open.length);
-      $('ended-count').textContent = String(ended.length);
-      if (!open.length) lists['false'].appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier ouvert aux réponses.'));
-      if (!ended.length) lists['true'].appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier terminé.'));
+      // Onglets de Mes ateliers : une démo va dans « Démos », ouverte ou terminée.
+      var tabOf = function (s) { return s.demo ? 'demo' : s.ended ? 'ended' : 'open'; };
+      var lists = { open: WL.clear($('session-list')), ended: WL.clear($('ended-list')), demo: WL.clear($('demo-list')) };
+      var empty = { open: 'Aucun atelier ouvert aux réponses.', ended: 'Aucun atelier terminé.', demo: 'Aucune démo : « Créer un atelier », 3ᵉ choix.' };
+      Object.keys(lists).forEach(function (k) {
+        var n = sessionsList.filter(function (s) { return tabOf(s) === k; }).length;
+        $(k + '-count').textContent = '(' + n + ')';
+        if (!n) lists[k].appendChild(el('p', { class: 'workshop-empty muted' }, empty[k]));
+      });
       var demos = sessionsList.filter(function (s) { return s.demo; }).length;
       WL.show($('demo-delete'), demos > 0);
       $('demo-delete').lastChild.textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       sessionsList.forEach(function (s) {
-        lists[String(!!s.ended)].appendChild(el('div', { class: 'prep-item workshop-row' },
+        lists[tabOf(s)].appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
-          el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, 'Démo') : null,
+          el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, s.ended ? 'Démo terminée' : 'Démo') : null,
             el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + lastAction(s, r.data.purgeDays))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
@@ -183,7 +185,7 @@
     WL.api('archives').then(function (r) {
       var list = WL.clear($('archive-list'));
       if (r.status !== 200) return;
-      $('archive-count').textContent = String(r.data.archives.length);
+      $('archived-count').textContent = '(' + r.data.archives.length + ')';
       if (!r.data.archives.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier dans cette section.'));
       r.data.archives.forEach(function (a) {
         list.appendChild(el('div', { class: 'prep-item workshop-row' },
