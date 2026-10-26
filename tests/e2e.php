@@ -532,8 +532,11 @@ check(($admin->post('questions_import', ['s' => $gen, 'raw' => $relu, 'preview' 
     'import : réponse d\'une IA relectrice (liens entre crochets avant et après la liste) lue');
 $long = $admin->post('questions_import', ['s' => $gen, 'preview' => true, 'raw' => json_encode([['type' => 'yesno', 'text' => 'Longue ?', 'correct' => 'Oui',
     'explain' => str_repeat('Une phrase de source vérifiée. ', 20)]])])['json']['items'][0] ?? [];
-check(mb_strlen($long['explain'] ?? '') <= 400 && str_ends_with($long['explain'] ?? '', '.') && str_contains($long['warning'] ?? '', 'raccourcie'),
+check(mb_strlen($long['explain'] ?? '') <= 400 && str_ends_with($long['explain'] ?? '', '.') && str_contains($long['warning'] ?? '', 'explication (400)'),
     'import : explication trop longue raccourcie et signalée, question gardée');
+$step = $admin->post('questions_import', ['s' => $gen, 'preview' => true, 'raw' => json_encode([['type' => 'steps', 'text' => 'Défi ?',
+    'options' => ['Ouvrir', 'Fermer'], 'variants' => ['Windows' => ['Ouvrir le menu.', str_repeat('Cliquez puis vérifiez. ', 10)], 'Android' => ['Toucher.', 'Fermer.']]]])])['json']['items'][0] ?? [];
+check(!isset($step['error']) && str_contains($step['warning'] ?? '', 'étapes (160)'), 'import : étape trop longue raccourcie et signalée, défi gardé');
 $copied = '\\[ { "type": "poll", "text": "Copié depuis l\'appli", "options": \\[ "A", "B" \\] } \\]';
 check(($admin->post('questions_import', ['s' => $gen, 'raw' => $copied, 'preview' => true])['json']['items'][0]['text'] ?? '') === 'Copié depuis l\'appli',
     'import : « \\[ » ajoutés par l\'affichage d\'une IA retirés');

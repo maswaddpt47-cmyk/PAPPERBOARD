@@ -934,11 +934,28 @@ function wl_import_parse(string $raw): array
     $shortened = [];
     foreach ($list as $in) {
         try {
-            // Explication trop longue (une IA relectrice y ajoute ses sources) : raccourcie et
-            // signalée, plutôt que d'écarter toute la question.
-            if (is_array($in) && is_string($in['explain'] ?? null) && wl_strlen(wl_clean_text($in['explain'])) > 400) {
-                $in['explain'] = wl_shorten(wl_clean_text($in['explain']), 400);
-                $shortened[count($items)] = true;
+            // Texte trop long (une IA relectrice allonge, ajoute ses sources) : raccourci et
+            // signalé, plutôt que d'écarter toute la question. Les choix ne sont jamais coupés
+            // (une bonne réponse est retrouvée par son texte).
+            if (is_array($in)) {
+                $cut = [];
+                foreach (['text' => [200, 'intitulé'], 'explain' => [400, 'explication']] as $key => [$max, $label]) {
+                    if (is_string($in[$key] ?? null) && wl_strlen(wl_clean_text($in[$key])) > $max) {
+                        $in[$key] = wl_shorten(wl_clean_text($in[$key]), $max);
+                        $cut[] = $label . ' (' . $max . ')';
+                    }
+                }
+                foreach (is_array($in['variants'] ?? null) ? $in['variants'] : [] as $name => $steps) {
+                    foreach (is_array($steps) ? $steps : [] as $k => $t) {
+                        if (is_string($t) && wl_strlen(wl_clean_text($t)) > 160) {
+                            $in['variants'][$name][$k] = wl_shorten(wl_clean_text($t), 160);
+                            $cut['steps'] = 'étapes (160)';
+                        }
+                    }
+                }
+                if ($cut) {
+                    $shortened[count($items)] = implode(', ', $cut);
+                }
             }
             // Dernier élément possible : la conclusion de l'atelier (pas une question).
             if (is_array($in) && ($in['type'] ?? '') === 'conclusion') {
@@ -990,7 +1007,7 @@ function wl_import_parse(string $raw): array
     }
     foreach ($items as $i => $it) {
         if (isset($shortened[$i], $it['q'])) {
-            $note = 'explication raccourcie à 400 caractères : relisez-la (et sa source) dans la question.';
+            $note = 'raccourci, caractères au plus : ' . $shortened[$i] . ' ; relisez la question après l\'ajout.';
             $items[$i]['warning'] = $it['warning'] = isset($it['warning']) ? $it['warning'] . ' Et ' . $note : $note;
         }
         // Un lien venu d'un texte collé (IA ou fichier) : montré à l'animateur, à vérifier avant l'atelier.

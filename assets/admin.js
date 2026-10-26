@@ -1478,6 +1478,13 @@
   /** Consigne pour faire relire les questions par une autre IA. Ordre imposé
    *  (public, fond, sources, forme) et sources exigées sans invention : retenu
    *  après l'évaluation croisée de quatre IA du 14/10/2026 (CHANTIERS.md). */
+  // Limites vérifiées à l'import (lib.php) : redites dans la consigne de relecture, sinon l'IA
+  // relectrice allonge les textes et des questions sont raccourcies ou écartées.
+  var LIMITS = 'Limites de la version corrigée, en caractères au plus : intitulé ("text") 200 ; chaque choix ("options") 80, de 2 à 10 choix ; '
+    + 'explication ("explain") 300, source comprise (cite l\'organisme et le titre, sans lien long) ; '
+    + 'défi "steps" : titres d\'étapes ("options") 80, chaque étape détaillée des "variants" 160, autant d\'étapes par appareil que de titres ; '
+    + 'conclusion 600.';
+
   function reviewText(theme, publicLabel, questions, withReply) {
     return [
       'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
@@ -1497,8 +1504,7 @@
       withReply
         ? '5. Termine par la liste des corrections à faire, question par question (n\'écris aucun crochet carré dans les points 1 à 5), '
           + 'puis, tout à la fin, la VERSION CORRIGÉE : la liste complète, du « [ » au « ] », au même format que ci-dessous, mêmes types et même ordre, '
-          + 'sans adresse de site inventée. Limites de la version corrigée : intitulé 200 caractères au plus, choix 80, '
-          + 'explication ("explain") 300 caractères au plus, source comprise (cite l\'organisme et le titre, sans lien long), conclusion 600. '
+          + 'sans adresse de site inventée. ' + LIMITS + ' '
           + 'Pas de note, pas de compliment. Si une catégorie n\'a aucun défaut, dis-le en une ligne.'
         : '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
           + 'Si une catégorie n\'a aucun défaut, dis-le en une ligne.',
