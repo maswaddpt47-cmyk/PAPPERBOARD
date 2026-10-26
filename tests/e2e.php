@@ -515,6 +515,10 @@ check(!str_contains($exp['body'], '"answers"') && ($json[4]['source'] ?? 0) === 
 $copy = $admin->post('session_create', ['title' => 'Copie'])['json']['code'] ?? '';
 expect_status($admin->post('questions_import', ['s' => $copy, 'raw' => $exp['body'], 'keep' => range(0, 6)]), 200, 'export questions : réimport');
 check($admin->get("api.php?action=export&format=questions&s=$copy")['body'] === $exp['body'], 'export questions : réimport identique (réglages compris)');
+// Relecture par une autre IA : remplacer les questions, seulement avant toute réponse.
+$rep = $admin->post('questions_import', ['s' => $copy, 'raw' => $rawc, 'keep' => [0, 1], 'replace' => true]);
+$rq = $admin->get("api.php?action=admin_state&s=$copy")['json'];
+check(($rep['status'] ?? 0) === 200 && count($rq['questions'] ?? []) === 1 && ($rq['conclusion'] ?? '') === 'Bravo à tous.', 'relecture : questions remplacées par la version corrigée');
 
 // --- Même durée pour toutes les questions ------------------------------------------
 $admin->post('questions_duration', ['s' => $copy, 'duration' => 45]);
@@ -800,6 +804,8 @@ check(count($dm['questions'] ?? []) === 10 && ($dm['participants'] ?? 0) === 12 
     'démo : 10 questions, 12 participants fictifs dont 10 actifs');
 check(count($dm['asks'] ?? []) === 3 && count($dm['ranking'] ?? []) === 12 && ($dm['questions'][9]['results']['total'] ?? 0) === 12,
     'démo : Oser demander, classement et gommettes remplis');
+expect_status($admin->post('questions_import', ['s' => $demo, 'raw' => $rawc, 'keep' => [0], 'replace' => true]), 400, 'relecture : remplacement refusé après des réponses');
+check(count($admin->get("api.php?action=admin_state&s=$demo")['json']['questions'] ?? []) === 10, 'relecture refusée : questions et réponses intactes');
 $admin->post('control', ['s' => $demo, 'op' => 'goto', 'qid' => $dm['questions'][7]['id']]); // mur : aucune réponse « vote »
 check(($admin->get("api.php?action=screen&s=$demo")['json']['active'] ?? 0) === 10, 'projection : dénominateur = téléphones actifs');
 // Questions ajoutées à une démo : la salle fictive y répond aussi ; les fictifs restent « actifs » dans le temps.

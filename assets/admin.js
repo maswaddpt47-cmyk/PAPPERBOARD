@@ -1278,8 +1278,17 @@
     genItems = [];
     WL.clear($('gen-list'));
     WL.show($('gen-preview'), false);
-    $('gen-save').disabled = true;
+    WL.show($('gen-preview-wait'), true);
+    genSaveState();
     $('gen-error').textContent = '';
+  }
+
+  /** Bouton d'ajout inactif tant que l'aperçu n'est pas affiché : la raison est écrite à côté. */
+  function genSaveState() {
+    var ready = !$('gen-preview').hidden;
+    $('gen-save').disabled = !ready || !genChecked().length;
+    $('gen-save-hint').textContent = !ready ? 'Cliquez d\'abord « Vérifier la réponse ».'
+      : (genChecked().length ? '' : 'Cochez au moins une question.');
   }
 
   function genChecked() {
@@ -1320,30 +1329,46 @@
           it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null))));
     });
     WL.show($('gen-preview'), true);
-    $('gen-save').disabled = !genChecked().length;
+    WL.show($('gen-preview-wait'), false);
+    genSaveState();
   }
 
   // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).
-  var genCreate = null;
-  function openGen(createTitle) {
+  var genCreate = null, genReplace = false;
+  function openGen(createTitle, replaceRaw) {
     genCreate = createTitle || null;
+    genReplace = typeof replaceRaw === 'string';
+    $('gen-raw').value = genReplace ? replaceRaw : $('gen-raw').value;
     genReset();
     $('gen-copied').textContent = '';
     $('gen-review-copied').textContent = '';
     WL.show($('gen-prompt'), false);
-    $('gen-title').textContent = genCreate ? 'Créer un atelier depuis un JSON' : 'Ajouter des questions depuis un JSON';
+    $('gen-title').textContent = genCreate ? 'Créer un atelier depuis un JSON'
+      : genReplace ? 'Faire relire les questions' : 'Ajouter des questions depuis un JSON';
     $('gen-for').textContent = genCreate
       ? 'Nouvel atelier « ' + genCreate + ' » : il n\'est créé qu\'au clic sur « Créer l\'atelier », après relecture de l\'aperçu. Fermer ne crée rien.'
+      : genReplace ? 'Les questions de « ' + data.title + ' » sont ci-dessous. Copiez la consigne de relecture (étape 3), collez-la dans une autre IA, '
+        + 'puis collez sa version corrigée à la place, cliquez « Vérifier la réponse » et remplacez. Fermer ne change rien.'
       : 'Les questions cochées s\'ajoutent à la fin de « ' + data.title + ' ».';
     if (genCreate) $('gen-theme').value = genCreate;
-    $('gen-save').textContent = genCreate ? 'Créer l\'atelier avec les questions cochées' : 'Ajouter les questions cochées';
+    if (genReplace) $('gen-theme').value = data.title;
+    $('gen-save').textContent = genCreate ? 'Créer l\'atelier avec les questions cochées'
+      : genReplace ? 'Remplacer les questions par les cochées' : 'Ajouter les questions cochées';
     syncGenSize();
     $('gen-dialog').showModal();
-    $('gen-theme').focus();
+    if (genReplace) genCheck(); else $('gen-theme').focus();
   }
   $('gen-btn').addEventListener('click', function () { openGen(null); });
+  // Relecture d'un atelier existant : ses questions (export .json) deviennent la réponse à vérifier.
+  $('ed-review').addEventListener('click', function () {
+    var asked = data && data.questions.some(function (q) { return q.results && q.results.total > 0; });
+    if (asked) { banner('Cet atelier a déjà des réponses : dupliquez-le (Mes ateliers) et faites relire la copie.', 'erreur'); return; }
+    fetch('api.php?action=export&format=questions&s=' + encodeURIComponent(code), { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.text(); })
+      .then(function (raw) { openGen(null, raw); }, function () { banner('Questions illisibles : réessayez.', 'erreur'); });
+  });
   $('gen-cancel').addEventListener('click', function () { $('gen-dialog').close(); });
-  $('gen-list').addEventListener('change', function () { $('gen-save').disabled = !genChecked().length; });
+  $('gen-list').addEventListener('change', genSaveState);
   $('gen-raw').addEventListener('input', genReset);
 
   /** Affiche le texte dans la zone dédiée et le copie (sinon le sélectionne). */
@@ -1482,14 +1507,16 @@
     var done = function (c, added) {
       $('gen-dialog').close();
       $('gen-raw').value = '';
-      banner(WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier.', 'ok');
+      banner(genReplace ? 'Questions remplacées par la version relue.'
+        : WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier, ou « Faire relire par une autre IA » (onglet Préparer).', 'ok');
       if (c !== code) openSession(c); else poller.refresh();
     };
     var offline = function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; };
     $('gen-save').disabled = true;
     var job;
+    if (genReplace && !confirm('Remplacer toutes les questions de « ' + data.title + ' » par les questions cochées ?')) { genSaveState(); return; }
     if (!genCreate) {
-      job = WL.api('questions_import', { body: { s: code, raw: raw, keep: keep }, headers: headers }).then(function (r) {
+      job = WL.api('questions_import', { body: { s: code, raw: raw, keep: keep, replace: genReplace }, headers: headers }).then(function (r) {
         if (!fail(r)) done(code, r.data.added);
       }, offline);
     } else {
@@ -1508,7 +1535,7 @@
         }, function () { return undo('Pas de connexion au serveur.'); });
       }, offline);
     }
-    job.then(function () { $('gen-save').disabled = !genChecked().length; });
+    job.then(genSaveState);
   });
 
   // --- Démarrage ------------------------------------------------------------------

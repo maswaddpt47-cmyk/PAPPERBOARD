@@ -656,7 +656,18 @@ function api_questions_import(array $b): void
     if (!$keep) {
         throw new WlError('Cochez au moins une question.');
     }
-    wl_update(api_code($b), function (array &$s) use ($items, $keep) {
+    $replace = !empty($b['replace']);
+    wl_update(api_code($b), function (array &$s) use ($items, $keep, $replace) {
+        // Remplacer (relecture par une autre IA) : seulement avant toute réponse, rien n'est perdu.
+        if ($replace) {
+            foreach ($s['questions'] as $q) {
+                if (!empty($q['answers']) || !empty($q['posts'])) {
+                    throw new WlError('Cet atelier a déjà des réponses : dupliquez-le et faites relire la copie.');
+                }
+            }
+            $s['questions'] = [];
+            $s['current'] = -1;
+        }
         if (count($s['questions']) + count($keep) > WL_MAX_QUESTIONS) {
             throw new WlError(WL_MAX_QUESTIONS . ' questions au plus par session.');
         }

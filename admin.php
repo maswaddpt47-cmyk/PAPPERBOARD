@@ -256,6 +256,7 @@ header('Cache-Control: no-store');
           <p class="meta">Préparez vos questions ici. Le vote se lance depuis Animer.</p></div>
         <div class="row wrap">
           <button id="gen-btn" class="btn" title="Ajouter à cet atelier des questions générées par une IA (copier-coller) ou un fichier .json" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Ajouter depuis un JSON</button>
+          <button id="ed-review" class="btn" title="Copier une consigne pour faire relire les questions de cet atelier par une autre IA, puis remplacer les questions par la version corrigée" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Faire relire par une autre IA</button>
           <button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter une question</button>
         </div>
       </div>
@@ -608,6 +609,11 @@ header('Cache-Control: no-store');
         <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
         <p><button id="gen-check" class="btn" title="Contrôle la réponse de l'IA et affiche l'aperçu des questions" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Vérifier la réponse</button></p>
       </section>
+      <section id="gen-preview-wait" class="gen-step gen-step-wait">
+        <h3><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
+        <p class="meta">S'affiche après « Vérifier la réponse » : l'aperçu des questions, les bonnes réponses à contrôler
+          et la consigne pour faire relire par une autre IA.</p>
+      </section>
       <section id="gen-preview" class="gen-step" hidden>
         <h3><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
         <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong>
@@ -627,6 +633,7 @@ header('Cache-Control: no-store');
       <p id="gen-error" class="error" role="alert"></p>
       </div>
 <div class="row wrap modal-actions">
+        <span id="gen-save-hint" class="meta">Cliquez d'abord « Vérifier la réponse ».</span>
         <button class="btn btn-primary" id="gen-save" type="submit" disabled>Ajouter les questions cochées</button>
         <button class="btn" id="gen-cancel" type="button">Fermer</button>
       </div>
