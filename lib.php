@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots', 'steps'];
+const WL_TYPES = ['yesno', 'truefalse', 'mcq', 'poll', 'wordcloud', 'text', 'scale', 'points', 'wall', 'postit', 'dots', 'steps', 'info'];
 const WL_WRITTEN_TYPES = ['text', 'wall', 'postit']; // texte libre : relu avant d'être montré, jamais en affichage automatique
 const WL_COMPARE_TYPES = ['yesno', 'truefalse', 'mcq', 'scale']; // avant / après : une valeur chiffrée par passage
 const WL_POST_TYPES = ['wall', 'postit']; // contributions multiples (posts), pas une réponse unique
@@ -122,6 +122,8 @@ function wl_json(array $data, int $status = 200): never
 /** Réponse conditionnelle : 304 sans corps si le client a déjà cette version. */
 function wl_json_etag(string $etag, callable $build): never
 {
+    $etag .= wl_info_client() ? '-info1' : '-info0';
+    header('Vary: X-WL-Features');
     $etag = '"' . $etag . '"';
     header('ETag: ' . $etag);
     if (trim($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) {
@@ -130,6 +132,57 @@ function wl_json_etag(string $etag, callable $build): never
         exit;
     }
     wl_json($build());
+}
+
+/** Un ancien écran ne sait pas afficher une diapositive : lui demander de recharger. */
+function wl_info_client(): bool
+{
+    return in_array('info-v1', array_map('trim', explode(',', (string)($_SERVER['HTTP_X_WL_FEATURES'] ?? ''))), true);
+}
+
+function wl_require_info_client(): void
+{
+    if (!wl_info_client()) {
+        throw new WlError('Actualisez cette page pour utiliser les diapositives d’information.', 409);
+    }
+}
+
+/** JPEG issu du réencodage local, jamais SVG, HTML ou adresse distante.
+ *  Taille et dimensions bornées ; les métadonnées APP/EXIF et commentaires sont retirés. */
+function wl_clean_illustration(mixed $value): string
+{
+    if ($value === '' || $value === null) return '';
+    $prefix = 'data:image/jpeg;base64,';
+    if (!is_string($value) || strlen($value) > 40030 || !str_starts_with($value, $prefix)) {
+        throw new WlError('Illustration : utilisez le bouton de choix d’image (JPEG préparé, 30 Ko au plus).');
+    }
+    $raw = base64_decode(substr($value, strlen($prefix)), true);
+    $size = $raw !== false ? @getimagesizefromstring($raw) : false;
+    if ($raw === false || strlen($raw) > 30000 || !$size || $size[2] !== IMAGETYPE_JPEG
+        || $size[0] !== 640 || $size[1] !== 480 || !str_starts_with($raw, "\xff\xd8") || !str_ends_with($raw, "\xff\xd9")) {
+        throw new WlError('Illustration illisible : choisissez de nouveau l’image pour la préparer.');
+    }
+    $clean = "\xff\xd8";
+    for ($p = 2, $n = strlen($raw); $p + 4 <= $n;) {
+        if ($raw[$p] !== "\xff") throw new WlError('JPEG invalide.');
+        $marker = ord($raw[$p + 1]);
+        if ($marker === 0xda) return $prefix . base64_encode($clean . substr($raw, $p));
+        $length = unpack('n', substr($raw, $p + 2, 2))[1];
+        if ($length < 2 || $p + 2 + $length > $n) throw new WlError('JPEG incomplet.');
+        if (!(($marker >= 0xe0 && $marker <= 0xef) || $marker === 0xfe)) $clean .= substr($raw, $p, $length + 2);
+        $p += $length + 2;
+    }
+    throw new WlError('JPEG sans image.');
+}
+
+function wl_illustration_budget(array $questions): void
+{
+    $bytes = 0;
+    foreach ($questions as $q) {
+        $image = (string)($q['illustration'] ?? '');
+        if ($image !== '') $bytes += strlen((string)base64_decode(substr($image, strlen('data:image/jpeg;base64,')), true));
+    }
+    if ($bytes > 200000) throw new WlError('Les illustrations de cet atelier dépassent 200 Ko : retirez quelques images.');
 }
 
 function wl_h(string $s): string
@@ -366,6 +419,8 @@ function wl_list_sessions(): array
                 // Dernière action de l'animateur : point de départ de la purge.
                 'activity' => wl_retention_start($s),
                 'questions' => count($s['questions']), 'participants' => count($s['participants']),
+                'hasInfo' => in_array('info', array_column($s['questions'], 'type'), true),
+                'votingQuestions' => count(array_filter($s['questions'], fn($q) => $q['type'] !== 'info')),
                 'ended' => $s['ended'], 'demo' => !empty($s['demo']),
                 'partner' => $s['partner'] ?? '', 'filed' => (int)($s['filed'] ?? 0), 'expires' => wl_retention_start($s) + 86400 * max(1, (int)wl_config()['purge_days']),
                 // Questions ayant reçu au moins une réponse ou contribution (« Votre progression »).
@@ -527,6 +582,9 @@ function wl_archive_session(array $s, ?array $partner = null): string
 {
     $questions = array_map(function ($q) use ($s) {
         $r = wl_results($q, false, $s);
+        if ($q['type'] === 'info') {
+            return array_intersect_key($q, array_flip(['type', 'text', 'content', 'illustration', 'options', 'correct'])) + ['results' => ['total' => 0]];
+        }
         // Moins de WL_ARCHIVE_MIN réponses : le détail par choix révélerait la réponse de chacun.
         if ($r['total'] < WL_ARCHIVE_MIN) {
             return array_intersect_key($q, array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
@@ -578,6 +636,7 @@ function wl_list_archives(): array
         if (is_array($a)) {
             $list[] = ['id' => $a['id'], 'title' => $a['title'], 'created' => $a['created'], 'archived' => $a['archived'],
                 'questions' => count($a['questions']), 'participants' => $a['participants'], 'partner' => $a['partner'] ?? '',
+                'hasInfo' => in_array('info', array_column($a['questions'], 'type'), true),
                 'partnerId' => $a['partnerId'] ?? '', 'cycle' => (int)($a['cycle'] ?? 0)];
         }
     }
@@ -737,6 +796,13 @@ function wl_clean_question(array $in, ?array $old = null): array
         'posts' => $old['posts'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
+    if ($type === 'info') {
+        $q['content'] = wl_clean_multiline($in['content'] ?? '', 3000, 'Diapositive');
+        $q['illustration'] = wl_clean_illustration($in['illustration'] ?? '');
+        if ($q['content'] === '' && $q['illustration'] === '') throw new WlError('Ajoutez du texte ou une illustration à la diapositive.');
+        [$q['duration'], $q['closesAt'], $q['reveal'], $q['allowChange'], $q['showResults']] = [0, null, 'manual', false, false];
+        $q['link'] = $q['explain'] = '';
+    }
     $q['variants'] = $type === 'steps' ? wl_clean_variants($in['variants'] ?? [], count($q['options'])) : [];
     if ($type === 'steps') {
         [$q['allowChange'], $q['reveal']] = [true, 'manual']; // on coche et décoche tant que le défi est ouvert
@@ -762,6 +828,7 @@ function wl_clean_question(array $in, ?array $old = null): array
         }
         unset($p);
     }
+    if ($type === 'info' && $q['state'] !== 'draft') $q['state'] = 'closed';
     return $q;
 }
 
@@ -1103,11 +1170,19 @@ function wl_theme_clean(array $in, array $list): array
     };
     $theme = ['id' => bin2hex(random_bytes(4)), 'title' => $field('title', 120, true), 'public' => $field('public', 160),
         'duree' => $field('duree', 60), 'prerequis' => $field('prerequis', 160), 'objectif' => $field('objectif', 200)];
+    $cleanQuestions = [];
     foreach (wl_import_parse(json_encode($list, JSON_UNESCAPED_UNICODE)) as $i => $it) {
         if (isset($it['error'])) {
             throw new WlError('Question ' . ($i + 1) . ' : ' . $it['error']);
         }
+        if (isset($it['q'])) $cleanQuestions[] = $it['q'];
+        if (($it['q']['type'] ?? '') === 'info') {
+            wl_require_info_client();
+            $list[$i]['content'] = $it['q']['content'];
+            $list[$i]['illustration'] = $it['q']['illustration'];
+        }
     }
+    wl_illustration_budget($cleanQuestions);
     return $theme + ['items' => $list];
 }
 
@@ -1158,7 +1233,7 @@ function wl_import_input(array $in): array
         'budget' => $in['budget'] ?? null,
         // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
         'variants' => $in['variants'] ?? [],
-    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live', 'link']));
+    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live', 'link', 'content', 'illustration']));
 }
 
 /** Questions d'une session au format de l'import (wl_import_parse) : réponses
@@ -1169,6 +1244,7 @@ function wl_export_questions(array $s): array
     $conclusion = ($s['conclusion'] ?? '') !== '' ? [['type' => 'conclusion', 'text' => $s['conclusion']]] : [];
     return [...array_map(function ($q) use ($pos, $s) {
         $out = ['type' => $q['type'], 'text' => $q['text']];
+        if ($q['type'] === 'info') return $out + ['content' => $q['content'] ?? '', 'illustration' => $q['illustration'] ?? ''];
         if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit', 'steps'], true)) {
             $out['options'] = $q['options'];
         }
@@ -1301,6 +1377,7 @@ function wl_vote(array &$s, string $pkey, string $qid, mixed $value): mixed
     }
     $i = wl_question_index($s, $qid);
     $q = &$s['questions'][$i];
+    if ($q['type'] === 'info') throw new WlError('Cette diapositive d’information ne demande aucune réponse.', 409);
     if ($i !== $s['current'] || wl_effective_state($q) !== 'open') {
         throw new WlError('Le vote est fermé pour cette question.', 409);
     }
@@ -1425,6 +1502,8 @@ function wl_results_base(array $q, bool $admin = false, ?array $s = null): array
     $answers = array_column($q['answers'], 'v');
     $r = ['total' => count($answers)];
     switch ($q['type']) {
+        case 'info':
+            return ['total' => 0];
         case 'wall':
             return ['total' => count($q['posts'])] + ['posts' => wl_wall_results($q, $admin)];
         case 'postit':
@@ -1533,11 +1612,16 @@ function wl_plural(int $n, string $word): string
  *  à la ligne sont gardés (paragraphes, listes). 6000 caractères. */
 function wl_clean_synthesis(mixed $text): string
 {
+    return wl_clean_multiline($text, 6000, 'Synthèse');
+}
+
+function wl_clean_multiline(mixed $text, int $max, string $label): string
+{
     $text = is_string($text) && preg_match('//u', $text) ? str_replace(["\r\n", "\r"], "\n", $text) : '';
     $text = preg_replace('/[^\P{Cc}\n\t]+|\p{Cf}+/u', '', $text);
     $text = trim(preg_replace("/\n{3,}/", "\n\n", preg_replace('/[ \t]+/u', ' ', $text)));
-    if (wl_strlen($text) > 6000) {
-        throw new WlError('Synthèse : 6000 caractères au plus.');
+    if (wl_strlen($text) > $max) {
+        throw new WlError($label . ' : ' . $max . ' caractères au plus.');
     }
     return $text;
 }
@@ -1618,6 +1702,10 @@ function wl_points_results(array $answers, int $n): array
  *  correction tant que l'animateur n'affiche pas les résultats. */
 function wl_public_question(array $q): array
 {
+    if ($q['type'] === 'info' && !wl_info_client()) {
+        return wl_public_question(array_replace($q, ['type' => 'text', 'text' => 'Actualisez cette page pour lire la diapositive d’information.',
+            'state' => 'closed', 'showResults' => false, 'duration' => 0, 'closesAt' => null, 'allowChange' => false, 'explain' => '', 'link' => '']));
+    }
     $show = wl_shown($q);
     return [
         'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'], 'variants' => $q['variants'] ?? [],
@@ -1630,7 +1718,7 @@ function wl_public_question(array $q): array
         'correct' => $show ? $q['correct'] : [],
         'explain' => $show ? ($q['explain'] ?? '') : '', // jamais avant la correction
         'link' => $q['link'] ?? '',
-    ];
+    ] + ($q['type'] === 'info' ? ['content' => $q['content'] ?? '', 'illustration' => $q['illustration'] ?? ''] : []);
 }
 
 function wl_current_question(array $s): ?array
@@ -1648,6 +1736,7 @@ function wl_screen_view(array $s): array
         // Bouton « Questions » du pilotage : nombre de questions publiées seulement.
         'asksOpen' => !empty($s['asksOpen']), 'asksCount' => count(wl_asks_view($s, '')),
         'position' => $q ? $s['current'] + 1 : 0, 'count' => count($s['questions']),
+        'hasInfo' => in_array('info', array_column($s['questions'], 'type'), true),
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
         'answered' => $q ? (in_array($q['type'], WL_POST_TYPES, true) ? count($q['posts']) : count($q['answers'])) : 0,
@@ -2432,6 +2521,7 @@ function wl_demo_pick(array $weights): int
  *  le mur et le post-it (il faudrait inventer des textes). */
 function wl_demo_simulate(array $s, array &$q): void
 {
+    if ($q['type'] === 'info') return;
     $fake = wl_demo_fake($s);
     if (!$fake || $q['answers'] || $q['posts']) {
         return;

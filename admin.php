@@ -274,6 +274,7 @@ header('Cache-Control: no-store');
           <p class="meta">Préparez vos questions ici. Le vote se lance depuis Animer.</p></div>
         <div class="row wrap">
           <button id="gen-btn" class="btn" title="Ajouter à cet atelier des questions générées par une IA (copier-coller) ou un fichier .json" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Ajouter depuis un JSON</button>
+          <button id="import-pdf-btn" class="btn" type="button" title="Relire des questions et des pages d’information d’un PDF, puis les ajouter à cet atelier">Ajouter depuis un PDF</button>
           <button id="ed-review" class="btn" title="Copier une consigne pour faire relire les questions de cet atelier par une autre IA, puis remplacer les questions par la version corrigée" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Faire relire par une autre IA</button>
           <button id="add-q-btn" class="btn btn-primary" title="Créer une question à la main" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ajouter une question</button>
         </div>
@@ -555,7 +556,7 @@ header('Cache-Control: no-store');
       <header class="modal-head"><div><p class="eyebrow">Créer un atelier</p><h2 id="menti-title">Importer un PDF de questions</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="menti-cancel" aria-label="Fermer l'import">×</button></header>
       <div class="modal-body">
         <p id="menti-for"></p>
-        <p class="meta">Le PDF est lu sur cet appareil, sans envoi du fichier à un serveur ou à une IA. Seuls les intitulés et les choix que vous aurez relus seront enregistrés dans l'atelier. Les images, votes, pourcentages et réponses libres de la séance d'origine ne sont pas importés.</p>
+        <p class="meta">Le PDF est lu sur cet appareil, sans envoi du fichier à un serveur ou à une IA. Seuls les textes relus et les illustrations que vous choisissez seront envoyés à la validation puis enregistrés dans l'atelier. Les anciens votes, pourcentages et réponses libres ne sont pas importés.</p>
         <p class="meta">Mentimeter, Pix ou un autre outil : importez un document contenant les questions. Un bilan ne contenant que des scores ne permet pas de retrouver les questions absentes. Une page peut en contenir plusieurs ; ajoutez-les séparément. Les types particuliers sont à adapter aux types proposés ci-dessous.</p>
         <label for="menti-file">PDF du questionnaire (20 Mo et 50 pages au plus)</label>
         <input id="menti-file" type="file" accept=".pdf,application/pdf">
@@ -575,14 +576,20 @@ header('Cache-Control: no-store');
               <label for="menti-question">Question préparée sur cette page</label><select id="menti-question"></select>
               <button id="menti-add" class="btn btn-small" type="button" title="Préparer une autre question lorsqu'il y en a plusieurs sur la même page">+ Une autre question sur cette page</button>
               <label for="menti-type">Utiliser cette page comme</label>
-              <select id="menti-type"><option value="skip">Ne pas importer cette page</option><option value="yesno">Oui / Non</option><option value="truefalse">Vrai / Faux</option><option value="poll">Sondage — un choix</option><option value="mcq">QCM — un ou plusieurs choix</option><option value="wordcloud">Nuage de mots</option><option value="text">Réponse libre</option><option value="scale">Échelle</option><option value="conclusion">Conclusion de l'atelier</option></select>
+              <select id="menti-type"><option value="skip">Ne pas importer cette page</option><option value="info">Diapositive d’information — sans vote</option><option value="yesno">Oui / Non</option><option value="truefalse">Vrai / Faux</option><option value="poll">Sondage — un choix</option><option value="mcq">QCM — un ou plusieurs choix</option><option value="wordcloud">Nuage de mots</option><option value="text">Réponse libre</option><option value="scale">Échelle</option><option value="conclusion">Conclusion de l'atelier</option></select>
               <div id="menti-question-fields">
                 <label for="menti-text">Intitulé de la question</label><textarea id="menti-text" rows="3"></textarea>
+                <div id="menti-info-box" hidden>
+                  <label for="menti-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="menti-content" rows="8" maxlength="3000"></textarea>
+                  <label for="menti-image">Illustration facultative (JPEG, PNG ou WebP, 8 Mo au plus)</label><input id="menti-image" type="file" accept="image/jpeg,image/png,image/webp">
+                  <p class="meta">L’image est redimensionnée et réencodée sur cet appareil. Seule l’illustration choisie sera envoyée avec le contenu relu. Aucun nom ni donnée personnelle.</p>
+                  <img id="menti-image-preview" class="info-illustration" alt="Illustration choisie pour la diapositive" hidden><button id="menti-image-remove" class="btn btn-small" type="button" hidden>Retirer l’illustration</button>
+                </div>
                 <div id="menti-options-box"><label for="menti-options">Choix proposés, un par ligne (2 à 10, 80 caractères chacun)</label><textarea id="menti-options" rows="5"></textarea></div>
                 <label id="menti-multi-box" class="check"><input id="menti-multi" type="checkbox"> Plusieurs réponses possibles</label>
                 <div id="menti-scale-box"><label for="menti-scale">Valeur maximale de l'échelle (de 1 à…)</label><select id="menti-scale"><option value="5">5</option><option value="10">10</option></select></div>
                 <p class="meta">Pour ajouter une correction à un quiz, utilisez Modifier dans Préparer après la création.</p>
-                <label class="check"><input id="menti-reviewed" type="checkbox"> J'ai comparé cette question et ses choix avec la page et je veux les garder.</label>
+                <label class="check"><input id="menti-reviewed" type="checkbox"><span id="menti-reviewed-text">J'ai comparé cette question et ses choix avec la page et je veux les garder.</span></label>
               </div>
             </fieldset>
           </div>
@@ -683,7 +690,7 @@ header('Cache-Control: no-store');
         <p><label for="gen-file" class="btn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Importer un fichier .json</label>
           <input id="gen-file" class="sr-only" type="file" accept=".json,.txt,application/json,text/plain"></p>
         <label for="gen-raw" class="sr-only">Réponse de l'IA ou contenu du fichier</label>
-        <textarea id="gen-raw" rows="5" maxlength="60000"></textarea>
+        <textarea id="gen-raw" rows="5" maxlength="600000"></textarea>
         <p><button id="gen-check" class="btn" title="Contrôle la réponse de l'IA et affiche l'aperçu des questions" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Vérifier la réponse</button></p>
       </section>
       <section id="gen-preview-wait" class="gen-step gen-step-wait">
@@ -723,6 +730,7 @@ header('Cache-Control: no-store');
 <div class="modal-body">
         <label for="qf-type">Type</label>
         <select id="qf-type">
+          <option value="info">Diapositive d’information — sans vote</option>
           <option value="yesno">Oui / Non</option>
           <option value="truefalse">Vrai / Faux</option>
           <option value="mcq">QCM (quiz)</option>
@@ -738,6 +746,12 @@ header('Cache-Control: no-store');
         </select>
         <label for="qf-text">Intitulé</label>
         <textarea id="qf-text" rows="2" maxlength="200" required></textarea>
+        <div id="qf-info-box" hidden>
+          <label for="qf-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="qf-content" rows="8" maxlength="3000"></textarea>
+          <label for="qf-image">Illustration facultative (JPEG, PNG ou WebP, 8 Mo au plus)</label><input id="qf-image" type="file" accept="image/jpeg,image/png,image/webp">
+          <p class="meta">L’image est redimensionnée sur cet appareil, sans service externe. Texte et illustration sont visibles du groupe et conservés avec l’atelier et son archive : aucun nom ni donnée personnelle.</p>
+          <img id="qf-image-preview" class="info-illustration" alt="Illustration de la diapositive" hidden><button id="qf-image-remove" class="btn btn-small" type="button" hidden>Retirer l’illustration</button>
+        </div>
         <div id="qf-variants-box" hidden><label for="qf-variants" title="Les mêmes étapes, détaillées pour chaque système : le participant choisit le sien une fois">Variantes par appareil (facultatif)</label>
           <textarea id="qf-variants" rows="8" placeholder="[Windows]&#10;Ouvre les Paramètres.&#10;Va dans Système puis Notifications.&#10;&#10;[Mac]&#10;Ouvre Réglages Système.&#10;Va dans Notifications."></textarea>
           <p class="meta">Une ligne « [Nom] » ouvre une variante (2 à 4 : Windows, Mac, iPhone, Android…), suivie d'une ligne par étape. Même nombre d'étapes que la liste des titres, 160 caractères au plus par étape.</p></div>

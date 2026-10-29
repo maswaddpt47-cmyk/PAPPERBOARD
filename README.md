@@ -39,9 +39,16 @@ La lecture et la reconnaissance du texte des pages images se font sur votre
 appareil, sans envoi du PDF à un service externe. Corrigez les intitulés et les
 choix, sélectionnez le type et confirmez chaque question à garder ; une même page
 peut fournir plusieurs questions. Vérifiez l'aperçu avant de créer l'atelier.
-Les anciens votes, mots des nuages, illustrations et bonnes réponses ne sont pas
-repris. Ajoutez les corrections des quiz dans **Préparer → Modifier**. Limites :
-20 Mo, 50 pages et 50 questions/conclusion au total ; PDF sans mot de passe.
+Les pages de contenu peuvent devenir des **Diapositives d'information**, avec
+le texte et la charte WoocLight, sans vote. Une illustration facultative peut être
+choisie depuis un fichier JPEG, PNG ou WebP ; elle est préparée localement, sans
+service externe (640 × 480, JPEG de 30 Ko au plus, 200 Ko d'illustrations par atelier).
+Les anciens votes, mots des nuages et bonnes réponses ne sont pas repris ; les
+illustrations du PDF ne sont pas extraites automatiquement. Ajoutez les corrections
+des quiz dans **Préparer → Modifier**. Pour compléter un atelier existant :
+**Préparer → Ajouter depuis un PDF**. Limites : 20 Mo, 50 pages et 50 étapes/conclusion
+au total ; PDF sans mot de passe. Les exports JSON peuvent contenir les illustrations
+(600 Ko au plus à l'import). Texte et illustrations sont conservés dans les archives.
 
 Mur et post-it : les participants ne voient que leurs propres contributions
 tant que l'animateur n'a pas cliqué **Publier** (le temps de relire et de

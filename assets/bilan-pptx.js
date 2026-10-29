@@ -181,8 +181,14 @@
   function questionSlide(pptx, q, i, d) {
     var slide = pptx.addSlide({ masterName: 'WL' });
     var r = q.results, post = q.type === 'wall' || q.type === 'postit';
-    text(slide, 'Question ' + (i + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q), { x: 0.5, y: 0.3, w: W - 1, h: 0.4, fontSize: 14, color: C.doux });
+    text(slide, (d.questions.some(function (item) { return item.type === 'info'; }) ? 'Étape ' : 'Question ') + (i + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q), { x: 0.5, y: 0.3, w: W - 1, h: 0.4, fontSize: 14, color: C.doux });
     text(slide, q.text, { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink', fontFace: TITRE });
+    if (q.type === 'info') {
+      text(slide, q.content || '', { x: 0.6, y: 1.9, w: q.illustration ? 7.8 : W - 1.2, h: 4.7, fontSize: 24, fit: 'shrink' });
+      if (q.illustration) slide.addImage({ data: q.illustration, x: 8.7, y: 2.3, w: 4, h: 3 });
+      text(slide, 'Diapositive d’information · aucune réponse demandée', { x: 0.5, y: 6.85, w: W - 1, h: 0.4, fontSize: 13, color: C.doux });
+      return;
+    }
     var h = q.explain ? 3.5 : 4.5, box = { x: 0.5, y: 1.9, w: W - 1, h: h };
     var visible = function (list) { return (list || []).filter(function (x) { return !x.hidden; }); };
     var gone = !r.counts && !r.words && !r.texts && !r.posts && !r.items; // archive : textes non conservés

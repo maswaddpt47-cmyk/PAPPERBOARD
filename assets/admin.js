@@ -134,7 +134,7 @@
         lists[tabOf(s)].appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, s.ended ? 'Démo terminée' : 'Démo') : null,
-            el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + lastAction(s))),
+            el('p', { class: 'muted' }, WL.plural(s.questions, s.hasInfo ? 'étape' : 'question') + ' · ' + lastAction(s))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
             rowButton('Renommer', 'edit', '', 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', function () {
@@ -203,7 +203,7 @@
           return el('div', { class: 'prep-item workshop-row' },
             el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
             el('div', { class: 'grow' }, el('h3', null, s.title),
-              el('p', { class: 'muted' }, WL.plural(s.questions, 'question') + ' · ' + WL.plural(s.participants, 'participant') + ' · rangé le ' + day(s.filed))),
+              el('p', { class: 'muted' }, WL.plural(s.questions, s.hasInfo ? 'étape' : 'question') + ' · ' + WL.plural(s.participants, 'participant') + ' · rangé le ' + day(s.filed))),
             el('div', { class: 'workshop-row-actions' },
               rowButton('Voir le bilan', 'chart', '', 'Résultats complets de cet atelier', function () { openSession(s.code, 'bilan'); }),
               rowButton('Sortir du partenaire', 'arrow-left', '', 'Remet l\'atelier dans « Terminés » (purge normale)', function () {
@@ -257,9 +257,9 @@
     $('ov-name').textContent = s.title;
     $('ov-meta').textContent = 'Code ' + s.code + ' · modifié le ' + new Date(s.updated * 1000).toLocaleString('fr-FR');
     $('ov-participants').textContent = ' ' + WL.plural(s.participants, 'participant');
-    $('ov-questions').textContent = ' ' + WL.plural(s.questions, 'question');
+    $('ov-questions').textContent = ' ' + WL.plural(s.questions, s.hasInfo ? 'étape' : 'question');
     $('ov-explored').textContent = String(s.explored || 0);
-    $('ov-total').textContent = ' / ' + s.questions;
+    $('ov-total').textContent = ' / ' + (s.votingQuestions === undefined ? s.questions : s.votingQuestions);
   }
   $('ov-open').addEventListener('click', function () { if (sessionsList[0]) openSession(sessionsList[0].code); });
   $('ov-resume').addEventListener('click', function () { if (sessionsList[0]) openSession(sessionsList[0].code); });
@@ -280,7 +280,7 @@
         list.appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, a.title),
-            el('p', { class: 'muted' }, WL.plural(a.questions, 'question') + ' · Archivé')),
+            el('p', { class: 'muted' }, WL.plural(a.questions, a.hasInfo ? 'étape' : 'question') + ' · Archivé')),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Voir le bilan', 'chart', '', null, function () { openArchive(a.id); }),
             rowButton('Réutiliser les questions', 'copy', '', 'Nouvelle session avec les mêmes questions et la même conclusion, sans résultats', function () {
@@ -299,7 +299,7 @@
       archive = r.data;
       view('archive-view');
       $('ar-title').textContent = archive.title;
-      $('ar-meta').textContent = WL.plural(archive.participants, 'participant') + ' — ' + WL.plural(archive.questions.length, 'question')
+      $('ar-meta').textContent = WL.plural(archive.participants, 'participant') + ' — ' + WL.plural(archive.questions.length, archive.questions.some(function (q) { return q.type === 'info'; }) ? 'étape' : 'question')
         + (archive.created ? ' — atelier du ' + new Date(archive.created * 1000).toLocaleDateString('fr-FR') : '')
         + ' — archivée le ' + new Date(archive.archived * 1000).toLocaleDateString('fr-FR');
       $('ar-status').textContent = '';
@@ -418,7 +418,7 @@
     return el('article', { class: 'card content-card' },
       el('div', { class: 'question-topline' }, el('span', { class: 'badge ' + (isCustom(t.id) ? 'green' : 'blue') }, isCustom(t.id) ? 'Mon thème' : 'Brouillon à relire')),
       el('h2', null, t.title), el('p', { class: 'muted' }, t.objectif || t.public || ''),
-      el('div', { class: 'library-meta' }, el('span', null, ico('clock'), ' ' + (t.duree || 'Durée libre')), el('span', null, ico('list'), ' ' + WL.plural(n, 'question'))),
+      el('div', { class: 'library-meta' }, el('span', null, ico('clock'), ' ' + (t.duree || 'Durée libre')), el('span', null, ico('list'), ' ' + WL.plural(n, t.items.some(function (it) { return it.type === 'info'; }) ? 'étape' : 'question'))),
       el('button', { type: 'button', class: 'btn', onclick: function () { createFromSeance(t); } }, ico('plus'), 'Essayer cette séance'));
   }
   function renderLibraryCards() {
@@ -627,6 +627,7 @@
       'Résultats, question par question :'
     ];
     data.questions.forEach(function (q, i) {
+      if (q.type === 'info') { lines.push('', (i + 1) + '. ' + q.text + ' [Information de l’animateur, sans vote]', q.content || ''); return; }
       lines.push('', (i + 1) + '. ' + q.text + ' [' + WL.typeLabel(q) + '] — '
         + (q.type === 'wall' || q.type === 'postit' ? WL.plural(q.results.total, 'contribution') : WL.plural(q.results.total, 'réponse')));
       bilanLines(q, withTexts).forEach(function (l) { lines.push(l); });
@@ -668,6 +669,7 @@
     d.questions.forEach(function (q) { total += q.results.total; });
     $('recap-participants').textContent = String(d.participants);
     $('recap-questions').textContent = String(d.questions.length);
+    $('recap-questions').nextElementSibling.textContent = d.questions.some(function (q) { return q.type === 'info'; }) ? 'étapes préparées (questions et informations)' : 'questions préparées';
     $('recap-total').textContent = String(total);
     while (board.children.length > d.questions.length) board.removeChild(board.lastChild);
     d.questions.forEach(function (q, i) {
@@ -677,10 +679,11 @@
           el('div', { class: 'question-topline' }, el('span', { class: 'badge neutral' }), el('span', { class: 'muted' })),
           el('h3'), el('div', { class: 'recap-results' })));
       }
-      card.querySelector('.badge').textContent = 'Question ' + (i + 1);
-      card.querySelector('.muted').textContent = WL.plural(q.results.total, post ? 'contribution' : 'réponse');
+      card.querySelector('.badge').textContent = (q.type === 'info' ? 'Information ' : 'Question ') + (i + 1);
+      card.querySelector('.muted').textContent = q.type === 'info' ? 'Sans vote' : WL.plural(q.results.total, post ? 'contribution' : 'réponse');
       card.querySelector('h3').textContent = q.text;
       var res = card.querySelector('.recap-results');
+      if (q.type === 'info') { WL.renderInformation(res, q); return; }
       if (!q.results.total) { WL.clear(res).appendChild(el('p', { class: 'muted' }, 'Cette question n’a pas encore reçu de réponse.')); return; }
       if (res.firstChild && res.firstChild.classList && res.firstChild.classList.contains('muted')) WL.clear(res);
       WL.renderResults(res, Object.assign({}, q, { showResults: true }), q.results, { participants: post ? 0 : d.active });
@@ -932,11 +935,11 @@
       renderMetric(d, null);
       return;
     }
-    $('live-pos').textContent = 'Question ' + (d.current + 1) + ' / ' + d.questions.length;
-    badges.appendChild(badge(guide.open ? 'Réponses ouvertes' : q.state === 'draft' ? 'Question à venir' : 'Réponses closes', guide.open ? 'ok' : null));
+    $('live-pos').textContent = (d.questions.some(function (item) { return item.type === 'info'; }) ? 'Étape ' : 'Question ') + (d.current + 1) + ' / ' + d.questions.length;
+    badges.appendChild(badge(q.type === 'info' ? 'Information · sans vote' : guide.open ? 'Réponses ouvertes' : q.state === 'draft' ? 'Question à venir' : 'Réponses closes', guide.open ? 'ok' : null));
     badges.appendChild(el('span', { class: 'question-type' }, WL.typeLabel(q)));
     $('live-text').textContent = q.text;
-    $('live-state').textContent = (guide.post ? WL.plural(q.results.total, 'contribution') : q.results.total + ' / ' + d.active + ' ont répondu')
+    $('live-state').textContent = q.type === 'info' ? 'Ce contenu est affiché au groupe. Aucune réponse demandée.' : (guide.post ? WL.plural(q.results.total, 'contribution') : q.results.total + ' / ' + d.active + ' ont répondu')
       + ' · Vue animateur : les réponses ci-dessous peuvent être encore masquées au groupe.';
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
     WL.renderResults($('live-results'), q, q.results, {
@@ -949,6 +952,8 @@
 
   /** Carte « Participation » : réponses reçues sur les participants actifs. */
   function renderMetric(d, q) {
+    WL.show($('metric-answered').closest('.metric-card'), !q || q.type !== 'info');
+    document.querySelector('#tab-live [data-op="reset"]').disabled = !q || q.type === 'info';
     var posts = q && (q.type === 'wall' || q.type === 'postit'), n = q ? q.results.total : 0, of = d.active;
     $('metric-answered').textContent = String(n);
     $('metric-total').textContent = posts ? '' : ' / ' + of;
@@ -1022,7 +1027,7 @@
       list.appendChild(el('li', { class: 'list-item prep-item' + (i === d.current ? ' is-current' : '') },
         el('span', { class: 'number-bubble' }, String(n)),
         el('div', { class: 'grow' }, el('h3', null, q.text),
-          el('p', { class: 'meta muted' }, WL.typeLabel(q) + ' · ' + WL.plural(q.results.total, 'réponse')
+          el('p', { class: 'meta muted' }, WL.typeLabel(q) + ' · ' + (q.type === 'info' ? 'sans vote' : WL.plural(q.results.total, 'réponse'))
             + (q.duration ? ' · ' + q.duration + ' s' : '') + (i === d.current ? ' · projetée' : ''))),
         el('div', { class: 'prep-actions' },
           el('button', { type: 'button', class: 'btn btn-ghost btn-icon icon-btn', 'aria-label': 'Monter la question ' + n, title: 'Monter d\'un rang', disabled: i === 0,
@@ -1039,6 +1044,7 @@
   // --- Formulaire de question -----------------------------------------------------
 
   var FIXED = { yesno: ['Oui', 'Non'], truefalse: ['Vrai', 'Faux'] };
+  var qIllustration = '', qImageGeneration = 0;
   var LIVE = ['poll', 'wordcloud', 'scale', 'points', 'steps']; // même liste que WL_LIVE_TYPES (lib.php)
 
   function optionLines() {
@@ -1068,6 +1074,12 @@
   /** Affiche les champs utiles au type choisi, et les cases « bonne réponse ». */
   function syncForm(correct) {
     var type = $('qf-type').value;
+    WL.show($('qf-info-box'), type === 'info');
+    ['qf-duration', 'qf-reveal', 'qf-explain', 'qf-link'].forEach(function (id) {
+      WL.show($(id), type !== 'info');
+      WL.show(document.querySelector('label[for="' + id + '"]'), type !== 'info');
+    });
+    WL.show($('qf-change').closest('label'), type !== 'info');
     WL.show($('qf-options-box'), ['mcq', 'poll', 'points', 'postit', 'steps'].indexOf(type) !== -1);
     $('qf-options-label').textContent = type === 'postit' ? 'Colonnes (une par ligne, 6 au plus ; vide = une seule colonne « Idées »)'
       : type === 'steps' ? 'Titres des étapes (un par ligne, 2 à 10 ; ils s\'affichent aussi sur la projection)' : 'Choix (un par ligne, 2 à 10)';
@@ -1095,6 +1107,12 @@
   }
 
   function openDialog(q) {
+    qImageGeneration++;
+    $('qf-save').disabled = false;
+    qIllustration = q && q.illustration || '';
+    $('qf-content').value = q && q.content || '';
+    $('qf-image').value = '';
+    renderQImage();
     editing = q || null;
     applyBeta();
     if (q && q.type === 'steps') { $('qf-type-steps').hidden = false; $('qf-type-steps').disabled = false; }
@@ -1135,12 +1153,27 @@
   });
   $('qf-options').addEventListener('input', function () { syncForm(); });
   $('qf-scale').addEventListener('change', fillCompare);
-  $('qf-cancel').addEventListener('click', function () { $('q-dialog').close(); });
+  $('qf-cancel').addEventListener('click', function () { qImageGeneration++; $('q-dialog').close(); });
+
+  function renderQImage() {
+    WL.show($('qf-image-preview'), !!qIllustration); WL.show($('qf-image-remove'), !!qIllustration);
+    if (qIllustration) $('qf-image-preview').src = qIllustration; else $('qf-image-preview').removeAttribute('src');
+  }
+  $('qf-image-remove').addEventListener('click', function () { qIllustration = ''; renderQImage(); });
+  $('qf-image').addEventListener('change', async function () {
+    var file = this.files[0], token = qImageGeneration; this.value = '';
+    if (!file) return;
+    $('qf-save').disabled = true;
+    try { var image = await WL.Mentimeter.prepareImage(file); if (token === qImageGeneration) { qIllustration = image; renderQImage(); } }
+    catch (e) { if (token === qImageGeneration) $('qf-error').textContent = e.message; }
+    finally { if (token === qImageGeneration) $('qf-save').disabled = false; }
+  });
 
   $('q-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var question = {
       type: $('qf-type').value, text: $('qf-text').value, explain: $('qf-explain').value, options: optionLines(),
+      content: $('qf-type').value === 'info' ? $('qf-content').value : '', illustration: $('qf-type').value === 'info' ? qIllustration : '',
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
@@ -1405,6 +1438,7 @@
 
   /** Détail d'une question de l'aperçu : choix (bonne réponse marquée ✓), échelle, source. */
   function genDetail(q) {
+    if (q.type === 'info') return q.content || 'Illustration';
     if (q.type === 'scale') return 'De 1 à ' + q.scaleMax;
     if (q.type === 'dots') return WL.plural(q.budget, 'gommette') + ' sur les idées de la question ' + (Number(q.source.slice(1)) + 1);
     var opts = q.options.map(function (o, i) { return (q.correct.indexOf(i) !== -1 ? '✓ ' : '') + o; });
@@ -1434,6 +1468,7 @@
         el('span', null, el('strong', null, it.text),
           el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
           detail ? el('span', { class: 'meta gen-detail' }, detail) : null,
+          it.type === 'info' && it.illustration ? el('img', { class: 'info-illustration', src: it.illustration, alt: 'Illustration à relire avec la diapositive' }) : null,
           it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null))));
     });
     WL.show($('gen-preview'), true);
@@ -1458,7 +1493,7 @@
     WL.show($('gen-generation'), !fromPdf);
     WL.show($('gen-input'), !fromPdf);
     $('gen-form').classList.toggle('menti-preview', fromPdf);
-    $('gen-title').textContent = fromPdf ? 'Créer un atelier depuis un PDF' : genCreate ? 'Créer un atelier depuis un JSON'
+    $('gen-title').textContent = fromPdf ? (genCreate ? 'Créer un atelier depuis un PDF' : 'Ajouter des étapes depuis un PDF') : genCreate ? 'Créer un atelier depuis un JSON'
       : genReplace ? 'Faire relire les questions' : 'Ajouter des questions depuis un JSON';
     $('gen-for').textContent = genCreate
       ? 'Nouvel atelier « ' + genCreate + ' » : il n\'est créé qu\'au clic sur « Créer l\'atelier », après relecture de l\'aperçu. Fermer ne crée rien.'
@@ -1474,6 +1509,9 @@
     if (genReplace) genCheck(); else if (!fromPdf) $('gen-theme').focus();
   }
   $('gen-btn').addEventListener('click', function () { openGen(null); });
+  $('import-pdf-btn').addEventListener('click', function () {
+    WL.Mentimeter.open(data.title, function (raw) { $('gen-raw').value = raw; openGen(null, undefined, 'mentimeter'); genCheck(); }, true);
+  });
   // Relecture d'un atelier existant : ses questions (export .json) deviennent la réponse à vérifier.
   $('ed-review').addEventListener('click', function () {
     var asked = data && data.questions.some(function (q) { return q.results && q.results.total > 0; });
@@ -1599,7 +1637,7 @@
     var file = $('gen-file').files[0];
     $('gen-file').value = ''; // permet de réimporter le même fichier
     if (!file) return;
-    if (file.size > 60000) { $('gen-error').textContent = 'Fichier trop gros (60 Ko au plus).'; return; }
+    if (file.size > 600000) { $('gen-error').textContent = 'Fichier trop gros (600 Ko au plus, illustrations comprises).'; return; }
     var reader = new FileReader();
     reader.onload = function () { $('gen-raw').value = String(reader.result); genCheck(); };
     reader.onerror = function () { $('gen-error').textContent = 'Fichier illisible.'; };
@@ -1631,7 +1669,7 @@
       $('gen-dialog').close();
       $('gen-raw').value = '';
       banner(genReplace ? 'Questions remplacées par la version relue.'
-        : WL.plural(added, 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier, ou « Faire relire par une autre IA » (onglet Préparer).', 'ok');
+        : WL.plural(added, genItems.some(function (it) { return it.type === 'info'; }) ? 'étape' : 'question') + ' ajoutée' + (added > 1 ? 's' : '') + ' : relisez-les avant l\'atelier, ou « Faire relire par une autre IA » (onglet Préparer).', 'ok');
       if (c !== code) openSession(c); else poller.refresh();
     };
     var offline = function () { $('gen-error').textContent = 'Pas de connexion au serveur.'; };

@@ -36,7 +36,7 @@ var WL = (function () {
   function api(action, opts) {
     opts = opts || {};
     var url = 'api.php?action=' + encodeURIComponent(action) + (opts.query ? '&' + opts.query : '');
-    var headers = Object.assign({ 'X-WL': '1' }, opts.headers || {});
+    var headers = Object.assign({ 'X-WL': '1', 'X-WL-Features': 'info-v1' }, opts.headers || {});
     if (opts.etag) headers['If-None-Match'] = opts.etag;
     var init = { method: opts.method || 'GET', headers: headers, credentials: 'same-origin', cache: 'no-store' };
     if (opts.body) {
@@ -130,7 +130,7 @@ var WL = (function () {
   var TYPES = {
     yesno: 'Oui / Non', truefalse: 'Vrai / Faux', mcq: 'QCM', poll: 'Sondage',
     wordcloud: 'Nuage de mots', text: 'Réponse libre', scale: 'Échelle', points: 'Classement par points',
-    wall: 'Mur collaboratif', postit: 'Post-it collectif', dots: 'Vote par gommettes', steps: 'Défi à étapes'
+    wall: 'Mur collaboratif', postit: 'Post-it collectif', dots: 'Vote par gommettes', steps: 'Défi à étapes', info: 'Diapositive d’information'
   };
 
   function plural(n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); }
@@ -145,6 +145,7 @@ var WL = (function () {
     var live = !!q && ['poll', 'wordcloud', 'scale', 'points', 'steps'].indexOf(q.type) !== -1
       && q.live !== false && q.state !== 'draft';
     var projected = state.projected === undefined ? published || live : state.projected;
+    var information = !!q && q.type === 'info';
     var op, label, hint, stage;
     if (state.board || state.show) {
       op = state.board ? 'board_off' : 'show_off'; label = 'Revenir à la question'; stage = 'Affichage spécial';
@@ -152,6 +153,10 @@ var WL = (function () {
     } else if (state.ended) {
       op = ''; label = 'Atelier terminé'; stage = 'Atelier terminé';
       hint = 'La conclusion est affichée. Le bilan et les exports restent disponibles.';
+    } else if (information) {
+      op = state.position >= state.count ? 'end' : 'next';
+      label = op === 'end' ? 'Terminer l’atelier' : 'Étape suivante'; stage = 'Diapositive d’information';
+      hint = 'Le groupe lit ce contenu. Aucune réponse ni publication de résultat n’est nécessaire.';
     } else if (!q) {
       op = state.count ? 'next' : ''; label = 'Démarrer l’atelier'; stage = 'Accueil du groupe';
       hint = state.count ? 'Affiche la première question et permet aux participants de répondre.' : 'Ajoutez une question dans Préparer pour démarrer.';
@@ -177,12 +182,13 @@ var WL = (function () {
       : state.ended ? 'Conclusion' : !q ? 'Accueil et code' : projected ? 'Résultats visibles' : 'Résultats masqués';
     var participant = state.ended ? 'Atelier terminé' : !q ? 'Accueil' : published ? 'Résultats visibles'
       : open ? 'Répondre · résultats masqués' : 'En attente des résultats';
+    if (information && !state.ended && !state.board && !state.show) { projection = 'Information affichée'; participant = 'Lecture · aucune réponse demandée'; }
     return { op: op, label: label, hint: hint, stage: stage, open: open, post: post, published: published,
       projection: projection, participant: participant,
       visibility: published ? (live && state.projected !== false ? 'Masquer sur les appareils' : 'Masquer les résultats')
         : post ? 'Publier les contributions' : 'Afficher les résultats',
-      canToggle: !!q && !state.ended && (published || (op !== 'show' && !q.graded)),
-      canReopen: !!q && !state.ended && !open && q.state !== 'draft' };
+      canToggle: !!q && !information && !state.ended && (published || (op !== 'show' && !q.graded)),
+      canReopen: !!q && !information && !state.ended && !open && q.state !== 'draft' };
   }
 
   /** État visible dans les deux écrans, sans reconstruire le DOM au polling. */
@@ -486,6 +492,7 @@ var WL = (function () {
    *  participants (projection : décompte « 3 / 5 »). Une
    *  fonction seule vaut onHide. */
   function renderResults(container, q, res, opts) {
+    if (q.type === 'info') { renderInformation(container, q); return; }
     opts = typeof opts === 'function' ? { onHide: opts } : (opts || {});
     var onHide = opts.onHide;
     if (!res) { clear(container); return; }
@@ -532,6 +539,18 @@ var WL = (function () {
     if (before && WL.playFlip) WL.playFlip(container, before);
   }
 
+  /** Contenu de l'animateur : texte sans HTML, sans compteur de votes. */
+  function renderInformation(container, q) {
+    var previous = container.wlInformation;
+    if (previous && previous.id === q.id && previous.content === q.content && previous.image === q.illustration
+      && container.firstElementChild && container.firstElementChild.classList.contains('information-slide')) return;
+    container.wlInformation = { id: q.id, content: q.content, image: q.illustration };
+    var box = el('section', { class: 'information-slide' + (q.illustration ? ' has-illustration' : '') });
+    if (q.content) box.appendChild(el('div', { class: 'info-content' }, q.content));
+    if (q.illustration) box.appendChild(el('img', { class: 'info-illustration', src: q.illustration, alt: 'Illustration de la diapositive « ' + q.text + ' »', width: 640, height: 480 }));
+    clear(container).appendChild(box);
+  }
+
   /** Avant / après, en une ligne (même texte que `wl_compare_text` côté PHP). */
   function compareText(c) {
     var fmt = function (v) { return String(v).replace('.', ','); };
@@ -554,7 +573,7 @@ var WL = (function () {
 
   return {
     el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
-    TYPES: TYPES, plural: plural, renderResults: renderResults, compareText: compareText, linkHost: linkHost,
+    TYPES: TYPES, plural: plural, renderResults: renderResults, renderInformation: renderInformation, compareText: compareText, linkHost: linkHost,
     remaining: remaining, formatTime: formatTime, animationGuide: animationGuide, renderAnimationGuide: renderAnimationGuide
   };
 }());

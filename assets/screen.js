@@ -129,11 +129,12 @@
       $('s-code-big').textContent = d.code;
       return;
     }
-    $('s-meta').textContent = 'Question ' + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
+    $('s-meta').textContent = (d.hasInfo ? 'Étape ' : 'Question ') + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
     $('s-text').style.fontSize = '';
     linkFor(q);
     timerFor(q);
+    if (q.type === 'info') { WL.renderInformation($('s-results'), q); scheduleFit(); return; }
     if (d.results) {
       WL.renderResults($('s-results'), q, d.results, { participants: d.present });
       if (q.type === 'wall' && q.state === 'open') {
@@ -220,6 +221,7 @@
     WL.show($('s-link'), false); // pas de QR d'exercice dans le bilan
     $('s-meta').textContent = 'Bilan — ' + d.board.position + ' / ' + d.board.count + ' — ' + WL.typeLabel(q);
     $('s-text').textContent = q.text;
+    if (q.type === 'info') { WL.renderInformation($('s-results'), q); scheduleFit(); return; }
     if (!d.results) {
       WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
         el('p', null, 'Résultats non affichés pendant l\'atelier.')));

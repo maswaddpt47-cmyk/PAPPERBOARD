@@ -14,7 +14,7 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
-   - import PDF (29/10) : Créer un atelier → Importer un PDF de questions ; OCR à relire, plusieurs questions possibles par page ; PDF Pix réel non fourni, mise en page à vérifier ; registre actualisé à relire ;
+   - import PDF (29/10) : Créer un atelier → Importer un PDF de questions, ou Préparer → Ajouter depuis un PDF ; essayer les pages d'information 9–11 et une illustration facultative ; OCR à relire ; PDF Pix réel non fourni ; registre actualisé à relire ;
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
      un mur / post-it avec relecture avant publication ;
@@ -93,7 +93,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
-- Import PDF (29/10/2026, AG-008 ouvert) : PDF.js / OCR français Tesseract.js locaux ; PDF de l'utilisateur jamais stocké ou commité. Relecture obligatoire, plusieurs questions par page, aucun ancien vote ou correction déduit ; création par l'import JSON existant. Mesuré en local : 12 pages images fournies lues ; libellés minuscules parfois à corriger ; suite complète verte, puis 26 contrôles PDF verts (CSP des workers comprise), sans appel externe ; largeurs 390 et 1280 px sans débordement.
+- Import PDF (29/10/2026, AG-008/009 ouverts) : lecture/OCR locaux, relecture obligatoire, création ou ajout à l'atelier ; aucun vote ancien ni correction déduit, PDF jamais stocké ou commité. Type `info` : texte avec charte, sans vote/score ; illustration facultative depuis un fichier, JPEG local 640 × 480, 30 Ko/image et 200 Ko/atelier ; contenu gardé dans les exports et archives, anciens clients protégés par `info-v1`. Mesuré en local : 12 pages images lues, dont 9–11 reconnues `info` ; petits libellés à corriger ; suite complète verte puis 33 contrôles ciblés verts après derniers ajustements, 26 contrôles PDF ; aucun appel externe ; rendu à 390 et 1280 px ; atelier de 193 077 octets JPEG, 30 × 304 sans corps en 121 ms. Coût Alwaysdata et lisibilité en salle non mesurés.
 - Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
   jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
   prolongé (`filed` immuable, e2e) ; archive au nom et au cycle du partenaire ; bilan du

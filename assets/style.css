@@ -1,3 +1,10 @@
+.information-slide { padding: 1rem; border: var(--wl-bord-fin); border-radius: 12px; }
+.information-slide.has-illustration { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 1.25rem; align-items: center; }
+.info-content { white-space: pre-line; overflow-wrap: anywhere; font-size: 1.1rem; line-height: 1.6; }
+.info-illustration { display: block; width: 100%; max-width: 480px; height: auto; aspect-ratio: 4/3; object-fit: contain; border-radius: 10px; }
+.s-results .info-content { font-size: clamp(20px,2.1vw,32px); }
+@media(max-width:639px) { .information-slide.has-illustration { grid-template-columns: 1fr; } }
+
 /* WoocLight — feuille unique pour les trois écrans et la version imprimable.
  * Charte « Papier & Terre » v2 (palette validée le 18/10/2026 comme base provisoire,
  * branche test/nouvelle-charte) : ivoire, terracotta, bleu pétrole pour la projection.

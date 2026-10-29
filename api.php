@@ -24,8 +24,10 @@ try {
         $action === 'me' || api_require_admin();
         ('api_' . $action)();
     } elseif ($method === 'POST' && in_array($action, [...WL_PUBLIC_POST, ...WL_ADMIN_POST], true)) {
-        $body = api_body();
-        in_array($action, WL_ADMIN_POST, true) && $action !== 'login' && api_require_admin(true);
+        $largeImport = in_array($action, ['questions_import', 'seance_save'], true);
+        if ($largeImport) api_require_admin(true); // avant de lire un import pouvant contenir des illustrations
+        $body = api_body($largeImport ? 1300000 : 65536);
+        !$largeImport && in_array($action, WL_ADMIN_POST, true) && $action !== 'login' && api_require_admin(true);
         ('api_' . $action)($body);
     } else {
         throw new WlError('Action inconnue.', 404);
@@ -41,10 +43,11 @@ try {
 // Outils
 // ---------------------------------------------------------------------------
 
-/** Corps JSON d'une requête POST, limité à 64 Ko. */
-function api_body(): array
+/** Corps JSON borné : 64 Ko ; imports avec illustrations plus larges, après authentification. */
+function api_body(int $max = 65536): array
 {
-    $raw = file_get_contents('php://input', false, null, 0, 65536);
+    $raw = file_get_contents('php://input', false, null, 0, $max + 1);
+    if (strlen((string)$raw) > $max) throw new WlError('Requête trop volumineuse.', 413);
     $body = json_decode((string)$raw, true);
     if (!is_array($body)) {
         throw new WlError('Requête invalide.');
@@ -363,6 +366,7 @@ function api_sessions(): void
 function api_admin_state(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
+    if (in_array('info', array_column($s['questions'], 'type'), true)) wl_require_info_client();
     // Signaux en cours : l'ETag change toutes les 10 s pour que les compteurs
     // s'effacent d'eux-mêmes (sinon 304 jusqu'à la prochaine écriture).
     $live = array_filter($s['signals'] ?? [], fn($x) => time() - $x['t'] < WL_SIGNAL_TTL + 15);
@@ -577,6 +581,7 @@ function api_archive(): void
 {
     $file = wl_archive_file((string)($_GET['id'] ?? ''));
     $a = is_file($file) ? json_decode((string)file_get_contents($file), true) : null;
+    if (is_array($a) && in_array('info', array_column($a['questions'], 'type'), true)) wl_require_info_client();
     is_array($a) ? wl_json(['ok' => true] + $a) : throw new WlError('Archive introuvable.', 404);
 }
 
@@ -645,18 +650,21 @@ function api_session_synthesis(array $b): void
 function api_question_save(array $b): void
 {
     $in = is_array($b['question'] ?? null) ? $b['question'] : throw new WlError('Question manquante.');
+    if (($in['type'] ?? '') === 'info') wl_require_info_client();
     $id = wl_update(api_code($b), function (array &$s) use ($in, $b) {
         if (($in['type'] ?? '') === 'dots') {
             api_check_source($s, (string)($in['source'] ?? ''), (string)($in['id'] ?? ''), is_numeric($in['column'] ?? null) ? (int)$in['column'] : -1);
         }
         if (!empty($in['id'])) {
             $i = wl_question_index($s, $in['id']);
+            if ($s['questions'][$i]['type'] === 'info') wl_require_info_client();
             $q = wl_clean_question($in, $s['questions'][$i]);
             api_check_compare($s, $q, $i);
             if (!empty($s['demo'])) {
                 wl_demo_simulate($s, $q); // démo : une question remise à zéro par la modification se repeuple
             }
             $s['questions'][$i] = $q;
+            wl_illustration_budget($s['questions']);
             return $q['id'];
         }
         if (count($s['questions']) >= WL_MAX_QUESTIONS) {
@@ -675,6 +683,7 @@ function api_question_save(array $b): void
             api_check_compare($s, $q, count($s['questions']));
             $s['questions'][] = $q;
         }
+        wl_illustration_budget($s['questions']);
         return $q['id'];
     });
     wl_json(['ok' => true, 'id' => $id]);
@@ -705,6 +714,7 @@ function api_questions_duration(array $b): void
     $duration = wl_clean_duration($b['duration'] ?? 0);
     wl_update(api_code($b), function (array &$s) use ($duration) {
         foreach ($s['questions'] as &$q) {
+            if ($q['type'] === 'info') continue;
             $q['duration'] = $duration;
             if (!$duration && ($q['reveal'] ?? 'manual') === 'end') {
                 $q['reveal'] = 'manual';
@@ -720,9 +730,10 @@ function api_questions_duration(array $b): void
 function api_questions_import(array $b): void
 {
     $items = wl_import_parse((string)($b['raw'] ?? ''));
+    if (array_filter($items, fn($it) => ($it['q']['type'] ?? '') === 'info')) wl_require_info_client();
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare', 'variants', 'link']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare', 'variants', 'link', 'content', 'illustration']))
                 + (isset($it['warning']) ? ['warning' => $it['warning']] : [])
             : $it, $items)]);
     }
@@ -750,6 +761,7 @@ function api_questions_import(array $b): void
     wl_update(api_code($b), function (array &$s) use ($items, $keep, $replace) {
         // Remplacer (relecture par une autre IA) : seulement avant toute réponse, rien n'est perdu.
         if ($replace) {
+            if (in_array('info', array_column($s['questions'], 'type'), true)) wl_require_info_client();
             foreach ($s['questions'] as $q) {
                 if (!empty($q['answers']) || !empty($q['posts'])) {
                     throw new WlError('Cet atelier a déjà des réponses : dupliquez-le et faites relire la copie.');
@@ -780,6 +792,7 @@ function api_questions_import(array $b): void
             $ids[$i] = $q['id'];
             $s['questions'][] = $q;
         }
+        wl_illustration_budget($s['questions']);
     });
     wl_json(['ok' => true, 'added' => count(array_filter($keep, fn($i) => isset($items[$i]['q'])))]);
 }
@@ -927,6 +940,10 @@ function api_control(array $b): void
 
 function api_apply_op(array &$q, string $op): void
 {
+    if ($q['type'] === 'info') {
+        if (in_array($op, ['open', 'close'], true)) { $q['state'] = 'closed'; $q['closesAt'] = null; return; }
+        throw new WlError('Diapositive d’information : aucune collecte ni résultat à piloter.');
+    }
     switch ($op) {
         case 'open':
             $q['state'] = 'open';
@@ -1002,6 +1019,10 @@ function api_export_rows(array $s, bool $all): array
 {
     $rows = [];
     foreach ($s['questions'] as $n => $q) {
+        if ($q['type'] === 'info') {
+            $rows[] = [$n + 1, $q['text'], api_type_label('info'), $q['content'] ?? '', '', ''];
+            continue;
+        }
         $res = wl_results($q, $all, $s);
         foreach (api_result_lines($q, $res) as [$label, $value]) {
             $rows[] = [$n + 1, $q['text'], api_type_label($q['type']), $label, $value, $res['total']];
@@ -1041,7 +1062,7 @@ function api_type_label(string $type): string
     return ['yesno' => 'Oui / Non', 'truefalse' => 'Vrai / Faux', 'mcq' => 'QCM', 'poll' => 'Sondage',
         'wordcloud' => 'Nuage de mots', 'text' => 'Réponse libre', 'scale' => 'Échelle',
         'points' => 'Classement par points', 'wall' => 'Mur collaboratif', 'postit' => 'Post-it collectif',
-        'dots' => 'Vote par gommettes', 'steps' => 'Défi à étapes'][$type] ?? $type;
+        'dots' => 'Vote par gommettes', 'steps' => 'Défi à étapes', 'info' => 'Diapositive d’information'][$type] ?? $type;
 }
 
 /** Neutralise les formules dans Excel (cellule commençant par = + - @). */
@@ -1119,7 +1140,9 @@ function api_archive_rows(array $a): array
     foreach ($a['questions'] as $n => $q) {
         $r = $q['results'] ?? [];
         $base = [$n + 1, $q['text'], api_type_label($q['type'])];
-        if (!empty($r['few'])) {
+        if ($q['type'] === 'info') {
+            $rows[] = [...$base, $q['content'] ?? '', '', ''];
+        } elseif (!empty($r['few'])) {
             $rows[] = [...$base, 'Moins de 3 réponses (détail non conservé)', '', $r['total'] ?? 0];
         } elseif (!empty($r['counts']) && is_array($r['counts'])) {
             foreach ($r['counts'] as $i => $c) {
@@ -1152,6 +1175,11 @@ function api_export_memo(array $s): never
     $seen = '';
     $todo = '';
     foreach ($s['questions'] as $q) {
+        if ($q['type'] === 'info') {
+            $seen .= '<li><strong>' . wl_h($q['text']) . '</strong><p>' . nl2br(wl_h($q['content'] ?? '')) . '</p>'
+                . (!empty($q['illustration']) ? '<img class="info-illustration" src="' . wl_h($q['illustration']) . '" alt="Illustration de la diapositive">' : '') . '</li>';
+            continue;
+        }
         $good = $q['correct'] ? implode(' ; ', array_map(fn($i) => $q['options'][$i], $q['correct'])) : '';
         if ($good !== '' || trim((string)($q['explain'] ?? '')) !== '') {
             $seen .= '<li><strong>' . wl_h($q['text']) . '</strong>'
@@ -1201,6 +1229,12 @@ function api_export_print(array $s, bool $all): never
         $byQuestion[$r[0]][] = $r;
     }
     foreach ($byQuestion as $n => $rows) {
+        $q = $s['questions'][$n - 1];
+        if ($q['type'] === 'info') {
+            echo '<section><h2>' . $n . '. ' . wl_h($q['text']) . '</h2><p class="info-content">' . nl2br(wl_h($q['content'] ?? '')) . '</p>'
+                . (!empty($q['illustration']) ? '<img class="info-illustration" src="' . wl_h($q['illustration']) . '" alt="Illustration de la diapositive">' : '') . '</section>';
+            continue;
+        }
         echo '<section><h2>' . $n . '. ' . wl_h($rows[0][1]) . '</h2><p>' . wl_h($rows[0][2])
             . ' — ' . $rows[0][5] . ' réponse(s)</p><table><tbody>';
         foreach ($rows as $r) {

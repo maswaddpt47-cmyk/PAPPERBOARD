@@ -238,6 +238,13 @@
     $('q-meta').textContent = WL.typeLabel(q);
     $('q-text').textContent = q.text;
     var form = WL.clear($('answer-form'));
+    if (q.type === 'info') {
+      WL.renderInformation(form, q);
+      $('answer-status').textContent = 'À lire ensemble. Aucune réponse demandée.';
+      renderMyResult(q, null);
+      startTimer(q);
+      return;
+    }
     var open = isOpen(q);
     var locked = !open || (mine !== null && !q.allowChange);
     var builder = { yesno: choices, truefalse: choices, poll: choices, mcq: q.multi ? checkboxes : choices,

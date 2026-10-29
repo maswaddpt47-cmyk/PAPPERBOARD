@@ -7,6 +7,7 @@
   var vendor = new URL('vendor/mentimeter/', document.currentScript.src);
   var pdfLibrary, ocrLibrary, docTask, pdf, ocr, ocrPromise, renderTask;
   var pages = [], pageIndex = 0, generation = 0, loading = false, onReady;
+  var imagesLoading = 0;
 
   function clean(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
   function fold(s) { return clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
@@ -25,11 +26,12 @@
       return l.y >= 0.065 && l.y < 0.865 && l.x < 0.94 && !(mentimeter && l.x > 0.80 && l.y > 0.82)
         && !chromeText(l.text) && !resultText(l.text) && /[\p{L}]{2}/u.test(l.text);
     });
-    var top = usable.filter(function (l) { return l.y < 0.34; }).sort(function (a, b) { return a.y - b.y || a.x - b.x; });
-    var title = top.length ? clean(top[0].text) : '';
-    for (var i = 1; i < top.length && i < 4; i++) {
-      if (top[i].y - top[i - 1].y > 0.055 || top[i].x > top[0].x + 0.12 || title.indexOf('?') !== -1) break;
+    var top = usable.filter(function (l) { return l.y < 0.44; }).sort(function (a, b) { return a.y - b.y || a.x - b.x; });
+    var title = top.length ? clean(top[0].text) : '', titleLines = top.length ? [top[0]] : [];
+    for (var i = 1; i < top.length && i < 6; i++) {
+      if (top[i].y - top[i - 1].y > 0.085 || top[i].h < top[0].h * 0.7 || top[i].x > top[0].x + 0.12 || title.indexOf('?') !== -1) break;
       title += ' ' + clean(top[i].text);
+      titleLines.push(top[i]);
     }
     var q = fold(title), isQuestion = /\?|^(quels?|quelles?|combien|comment|pourquoi|possede|as.tu|avez.vous|dis.moi|selon|sur une echelle|en un mot)\b/.test(q);
     if (!isQuestion && !mentimeter) {
@@ -65,7 +67,11 @@
     // Une question numérique à réponse libre ne devient pas un sondage dont
     // les choix seraient les nombres déjà répondus par l'ancien groupe.
     if (/tape.*(nombre|chiffre)|saisis.*(nombre|chiffre)/.test(q)) { type = 'text'; options = []; }
-    return { type: type, text: title, options: options, multi: multi, scaleMax: 5, reviewed: false };
+    var body = usable.filter(function (l) { return titleLines.indexOf(l) === -1; }).map(function (l) { return clean(l.text); }).join('\n');
+    var informative = !isQuestion && title && body && (/consequences|solutions|conseils|a retenir|bienvenue|objectifs|presentation|information/.test(q)
+      || usable.filter(function (l) { return l.text.length > 40; }).length >= 2);
+    if (informative) type = 'info';
+    return { type: type, text: title, content: informative ? body : '', illustration: '', options: options, multi: multi, scaleMax: 5, reviewed: false };
   }
 
   function question(entry, number) {
@@ -74,6 +80,10 @@
     var text = clean(entry.text), max = entry.type === 'conclusion' ? 600 : 200;
     if (!text || Array.from(text).length > max) throw new Error('Page ' + number + ' : un intitulé de 1 à ' + max + ' caractères est nécessaire.');
     var q = { type: entry.type, text: text };
+    if (q.type === 'info') {
+      q.content = String(entry.content || '').trim(); q.illustration = entry.illustration || '';
+      if ((!q.content && !q.illustration) || Array.from(q.content).length > 3000) throw new Error('Page ' + number + ' : ajoutez du texte (3 000 caractères au plus) ou une illustration.');
+    }
     if (['poll', 'mcq'].indexOf(q.type) !== -1) {
       var options = entry.options.map(clean).filter(Boolean);
       if (options.length < 2 || options.length > 10 || options.some(function (s) { return Array.from(s).length > 80; })) {
@@ -86,7 +96,7 @@
     if (q.type === 'scale') q.scaleMax = entry.scaleMax === 10 ? 10 : 5;
     // Liste fermée : aucune réponse, statistique, correction, image, URL,
     // instruction ou attribut arbitraire issu du PDF ne peut passer ici.
-    if (['poll', 'mcq', 'yesno', 'truefalse', 'wordcloud', 'text', 'scale', 'conclusion'].indexOf(q.type) === -1) throw new Error('Type de question inconnu.');
+    if (['poll', 'mcq', 'yesno', 'truefalse', 'wordcloud', 'text', 'scale', 'conclusion', 'info'].indexOf(q.type) === -1) throw new Error('Type de question inconnu.');
     return q;
   }
 
@@ -101,8 +111,10 @@
     if (!list.some(function (q) { return q.type !== 'conclusion'; })) throw new Error('Gardez au moins une question relue.');
     if (list.filter(function (q) { return q.type === 'conclusion'; }).length > 1) throw new Error('Gardez une seule conclusion pour l’atelier.');
     if (list.length > 50) throw new Error('Gardez 50 éléments au plus, conclusion comprise.');
+    var imageBytes = list.reduce(function (sum, q) { return sum + (q.illustration ? atob(q.illustration.split(',')[1]).length : 0); }, 0);
+    if (imageBytes > 200000) throw new Error('Les illustrations dépassent 200 Ko : retirez quelques images en gardant leurs textes.');
     var raw = JSON.stringify(list);
-    if (new TextEncoder().encode(raw).length > 60000) throw new Error('Les questions dépassent 60 Ko : gardez moins de pages.');
+    if (new TextEncoder().encode(raw).length > 600000) throw new Error('Le contenu dépasse 600 Ko : gardez moins de pages ou d’illustrations.');
     return raw;
   }
 
@@ -111,10 +123,12 @@
     var kept = values.filter(function (q) { return q.type !== 'skip'; }).length;
     var checked = values.filter(function (q) { return q.type !== 'skip' && q.reviewed; }).length;
     var unseen = pages.filter(function (p) { return !p; }).length;
-    $('menti-summary').textContent = kept + ' question(s) retenue(s), dont ' + checked + ' relue(s)' + (unseen ? ' · ' + unseen + ' page(s) non examinée(s), non importée(s).' : '.');
+    $('menti-summary').textContent = kept + ' élément(s) retenu(s), dont ' + checked + ' relu(s)' + (unseen ? ' · ' + unseen + ' page(s) non examinée(s), non importée(s).' : '.');
     var valid = false;
-    try { rawQuestions(); valid = true; } catch (_) {}
-    $('menti-continue').disabled = loading || !valid;
+    try { rawQuestions(); valid = true; } catch (e) {
+      if (kept > 0 && kept === checked && !loading && !imagesLoading) $('menti-error').textContent = e.message;
+    }
+    $('menti-continue').disabled = loading || imagesLoading > 0 || !valid;
     $('menti-prev').disabled = loading || pageIndex === 0;
     $('menti-next').disabled = loading || pageIndex === pages.length - 1;
     $('menti-page').disabled = loading;
@@ -127,6 +141,8 @@
     WL.show($('menti-options-box'), type === 'poll' || type === 'mcq');
     WL.show($('menti-multi-box'), type === 'mcq');
     WL.show($('menti-scale-box'), type === 'scale');
+    WL.show($('menti-info-box'), type === 'info');
+    $('menti-reviewed-text').textContent = type === 'info' ? 'J’ai relu le contenu et l’illustration éventuelle ; je souhaite garder cette diapositive.' : 'J’ai comparé la question et ses choix avec la page ; je souhaite les garder.';
     $('menti-text').maxLength = type === 'conclusion' ? 600 : 200;
     $('menti-text').previousElementSibling.textContent = type === 'conclusion' ? 'Conclusion (600 caractères au plus)' : 'Intitulé de la question (200 caractères au plus)';
   }
@@ -138,7 +154,8 @@
     entry.value = {
       type: $('menti-type').value, text: $('menti-text').value,
       options: $('menti-options').value.split('\n').map(clean).filter(Boolean),
-      multi: $('menti-multi').checked, scaleMax: Number($('menti-scale').value), reviewed: $('menti-reviewed').checked
+      multi: $('menti-multi').checked, scaleMax: Number($('menti-scale').value), reviewed: $('menti-reviewed').checked,
+      content: $('menti-content').value, illustration: entry.value.illustration || ''
     };
     syncFields();
     $('menti-error').textContent = '';
@@ -156,6 +173,10 @@
     $('menti-question').value = String(entry.selected);
     $('menti-type').value = entry.value.type;
     $('menti-text').value = entry.value.text;
+    $('menti-content').value = entry.value.content || '';
+    WL.show($('menti-image-preview'), !!entry.value.illustration);
+    WL.show($('menti-image-remove'), !!entry.value.illustration);
+    if (entry.value.illustration) $('menti-image-preview').src = entry.value.illustration; else $('menti-image-preview').removeAttribute('src');
     $('menti-options').value = entry.value.options.join('\n');
     $('menti-multi').checked = entry.value.multi;
     $('menti-scale').value = String(entry.value.scaleMax);
@@ -318,10 +339,11 @@
     if (renderTask) { renderTask.cancel(); renderTask = null; }
     if (docTask) { docTask.destroy().catch(function () {}); docTask = null; }
     if (ocr) { ocr.terminate(); ocr = null; }
-    ocrPromise = null; pdf = null; pages = []; loading = false;
+    ocrPromise = null; pdf = null; pages = []; loading = false; imagesLoading = 0;
     var canvas = $('menti-canvas'); canvas.width = canvas.height = 0;
     $('menti-recognized').textContent = '';
     $('menti-text').value = $('menti-options').value = $('menti-file').value = '';
+    $('menti-content').value = ''; $('menti-image-preview').removeAttribute('src');
   }
 
   $('menti-file').addEventListener('change', async function () {
@@ -378,10 +400,27 @@
   $('menti-next').addEventListener('click', function () { if (!loading && pageIndex < pages.length - 1) showPage(pageIndex + 1); });
   $('menti-page').addEventListener('change', function () { if (!loading) showPage(Number(this.value)); });
   $('menti-cancel').addEventListener('click', function () { $('menti-dialog').close(); });
+  $('menti-image').addEventListener('change', async function () {
+    var file = this.files[0], entry = pages[pageIndex], selected = entry && entry.selected, token = generation;
+    this.value = '';
+    if (!file || !entry) return;
+    imagesLoading++; updateSummary();
+    try {
+      var image = await prepareImage(file);
+      if (token !== generation) return;
+      entry.questions[selected].illustration = image; entry.questions[selected].reviewed = false;
+      if (pages[pageIndex] === entry && entry.selected === selected) renderFields(entry);
+    } catch (e) { if (token === generation) $('menti-error').textContent = e.message; }
+    finally { if (token === generation) { imagesLoading--; updateSummary(); } }
+  });
+  $('menti-image-remove').addEventListener('click', function () {
+    var entry = pages[pageIndex];
+    entry.value.illustration = ''; entry.value.reviewed = false; renderFields(entry); updateSummary();
+  });
   $('menti-dialog').addEventListener('close', dispose);
   $('menti-form').addEventListener('submit', function (event) {
     event.preventDefault();
-    if (loading) return;
+    if (loading || imagesLoading) return;
     try {
       var raw = rawQuestions(), unseen = pages.filter(function (p) { return !p; }).length;
       if (unseen && !confirm(unseen + ' page(s) n’ont pas été examinée(s) et ne seront pas importée(s). Continuer avec les questions relues ?')) return;
@@ -389,16 +428,35 @@
       onReady(raw);
     } catch (e) { $('menti-error').textContent = e.message; }
   });
+  async function prepareImage(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 8 * 1024 * 1024) throw new Error('Choisissez une image JPEG, PNG ou WebP de 8 Mo au plus.');
+    var image;
+    try { image = await createImageBitmap(file); } catch (_) { throw new Error('Image illisible. Choisissez un autre fichier.'); }
+    var canvas = document.createElement('canvas'); canvas.width = 640; canvas.height = 480;
+    try {
+      var ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 640, 480);
+      var ratio = Math.min(640 / image.width, 480 / image.height), w = image.width * ratio, h = image.height * ratio;
+      ctx.drawImage(image, (640 - w) / 2, (480 - h) / 2, w, h);
+      for (var quality of [0.85, 0.7, 0.5, 0.3, 0.15, 0.05]) {
+        var data = canvas.toDataURL('image/jpeg', quality);
+        if (atob(data.split(',')[1]).length <= 30000) return data;
+      }
+      throw new Error('Cette image reste trop lourde : choisissez une illustration plus simple.');
+    } finally { image.close(); canvas.width = canvas.height = 0; }
+  }
+
   WL.Mentimeter = {
-    open: function (title, ready) {
+    open: function (title, ready, adding) {
       dispose(); onReady = ready;
-      $('menti-for').textContent = 'Nouvel atelier « ' + title + ' » : choisissez le PDF, puis les pages à transformer en questions. Fermer ne crée rien.';
+      $('menti-for').textContent = (adding ? 'Dans l’atelier « ' : 'Nouvel atelier « ') + title
+        + ' » : choisissez le PDF, puis relisez les questions et les pages d’information à garder. '
+        + (adding ? 'Les étapes sélectionnées seront ajoutées à la fin. Fermer ne modifie rien.' : 'Fermer ne crée rien.');
       $('menti-error').textContent = $('menti-status').textContent = '';
       WL.show($('menti-review'), false);
       $('menti-continue').disabled = true;
       $('menti-dialog').showModal(); $('menti-file').focus();
     },
     // Fonctions pures, également utilisées par les contrôles sur des exemples fictifs.
-    suggest: suggest, question: question
+    suggest: suggest, question: question, prepareImage: prepareImage
   };
 }());

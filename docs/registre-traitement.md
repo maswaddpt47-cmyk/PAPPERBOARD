@@ -10,11 +10,18 @@ public) : ils sont dans `config.php` et affichés aux participants
 Ajout du 29/10/2026, à relire par le responsable : import d'un PDF de questionnaire
 (Mentimeter, Pix ou autre). Lecture et reconnaissance de texte sur l'appareil de
 l'animateur, avec des bibliothèques et un modèle de langue hébergés sur le site,
-sans appel à un tiers. Le PDF, ses images et son texte brut ne sont pas envoyés
-au serveur ni gardés dans le stockage local du navigateur ; ils sont libérés à la
-fermeture de l'import. Seules les questions et les options sélectionnées et relues
-rejoignent l'atelier par l'import habituel, sans résultats ni réponses de la séance
-d'origine. L'animateur vérifie qu'aucune donnée personnelle ne figure dans ces textes.
+sans appel à un tiers. Le PDF et les pages brutes ne sont pas envoyés au serveur
+ni gardés dans le stockage local du navigateur ; ils sont libérés à la fermeture
+de l'import. Seuls les textes sélectionnés et relus rejoignent l'atelier, sans les
+résultats ni les réponses de la séance d'origine. Les pages d'information peuvent
+être gardées comme contenu pédagogique. Illustration facultative choisie par
+l'animateur : JPEG, PNG ou WebP réencodé localement en JPEG (640 × 480, 30 Ko au plus ;
+200 Ko d'illustrations au plus par atelier), métadonnées retirées, transmis avec le
+contenu sélectionné pour validation puis enregistrement. Le fichier image d'origine
+n'est pas conservé. Texte et illustrations de l'animateur suivent la conservation
+de l'atelier, puis restent dans son archive et ses exports pédagogiques, sans limite
+sur le serveur pour l'archive, comme les questions et conclusions. L'animateur vérifie
+qu'aucun nom, visage identifiable ou autre donnée personnelle ne figure dans ces contenus.
 
 | Rubrique | Contenu |
 |---|---|

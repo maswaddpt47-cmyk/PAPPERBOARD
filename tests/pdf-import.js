@@ -67,7 +67,8 @@ function check(test, label) { if (!test) throw new Error(label); ok++; }
     await page.selectOption('#menti-question', '0');
     check((await page.inputValue('#menti-text')).includes('activites') && await page.isChecked('#menti-reviewed'), 'plusieurs questions sur une page : brouillons conservés');
     await page.selectOption('#menti-page', '2'); await waitPage(3);
-    check((await page.inputValue('#menti-type')) === 'skip', 'diapositive de présentation écartée par défaut');
+    check((await page.inputValue('#menti-type')) === 'info' && (await page.inputValue('#menti-content')).includes('presentation'), 'page de présentation proposée comme information relue');
+    await page.check('#menti-reviewed');
     await page.selectOption('#menti-page', '3'); await waitPage(4);
     check((await page.inputValue('#menti-type')) === 'wordcloud' && (await page.inputValue('#menti-options')) === '', 'nuage : les anciens mots ne deviennent pas des choix');
     await page.check('#menti-reviewed');
@@ -89,7 +90,7 @@ function check(test, label) { if (!test) throw new Error(label); ok++; }
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.click('#menti-continue');
     await page.waitForSelector('#gen-preview:not([hidden])');
-    check((await page.locator('#gen-list input:checked').count()) === 4, 'aperçu serveur : quatre questions et aucune diapositive');
+    check((await page.locator('#gen-list input:checked').count()) === 5, 'aperçu serveur : quatre questions et une diapositive d’information');
     check(await page.isHidden('#gen-generation') && (await page.textContent('#gen-title')).includes('PDF'), 'aperçu dédié au PDF');
     await page.click('#gen-cancel');
     check(await sessions() === before, 'annuler après la relecture ne crée rien');

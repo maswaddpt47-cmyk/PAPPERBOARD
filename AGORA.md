@@ -77,6 +77,15 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : conserver une importation assistée avec correction et confirmation explicites pour chaque page retenue ; laisser de côté toute déduction automatique de correction ou de résultats.
 **Où regarder** : `admin.php:532` (création), `assets/admin.js:343` (parcours), `lib.php:98` et `import-worker.php:17` (CSP), `lib.php:978` (validation existante), `tests/pdf-import.js:1` (vraie voie d'import, document fictif).
 
+## AG-009 — Diapositives d'information et illustrations — ouvert le 29/10/2026
+**Auteur** : Codex — branche `codex/diapositives-information-20261029` — lu sur `1bd613e`.
+**Proposition** : type `info`, titre et contenu texte avec la charte, sans vote ; l'utilisateur a choisi ce rendu puis demandé une illustration facultative. JPEG redimensionné localement, 30 Ko au plus par image, 200 Ko d'images au plus par atelier ; import, édition, projection et exports cohérents.
+**Critère déclencheur** : 1 — extension du format des étapes ; 7 — les diapositives appartiennent à la séquence, jamais aux réponses ou aux scores.
+**Ce que ça engage** : champs `content` et `illustration` dans les étapes `info` ; JPEG borné conservé avec l'atelier, sans nouvelle URL publique ni fichier PDF conservé. Les pages ouvertes avant déploiement sont protégées par la capacité `info-v1` ; pas de traitement d'un nouveau type par un ancien client.
+**Non vérifié par l'auteur** : coût avec illustrations sur Alwaysdata ; lisibilité de très longs textes en salle. Mesuré en local le 29/10/2026 : atelier de 193 077 octets JPEG, 30 réponses HTTP 304 sans corps en 121 ms ; limites refusées sans écriture partielle, rendu à 390 px et 1280 × 720, 33 contrôles ciblés verts. Suite complète verte avant les derniers ajustements de métadonnées et retrait des marqueurs JPEG ; contrôles ciblés relancés après ceux-ci.
+**Si personne ne répond, je fais quoi ?** : conserver les limites d'image et la relecture ; refuser les autres formats et ne pas importer automatiquement des illustrations du PDF.
+**Où regarder** : `lib.php:152` et `lib.php:762` (validation), `api.php:730` (import), `assets/mentimeter.js:431` (illustration locale), `assets/common.js:543` (affichage), `tests/information.js:1` (import réel, compteurs, compatibilité, exports et archivage).
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
