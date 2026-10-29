@@ -67,6 +67,20 @@ html { font-size: 16px; }
 @media(max-width:639px) { .admin main.workspace { padding: 22px 14px 24px; } .admin .shell-topbar { min-height: 64px; padding: 10px 14px; } .admin .sidebar { width: 240px; align-items: stretch; } .admin .session-controls { grid-template-columns: 1fr; } .admin .current-panel .live-results { padding-inline: 18px; } .admin .current-panel .live-state { padding-inline: 18px; font-size: 12px; }  .admin .workshop-item { padding: 15px 12px; } .admin dialog.modal { padding: 0; } .admin .gen-step { padding: 18px; } .admin .page-heading h1 { font-size: 25px; } }
 
 .admin #gen-form #gen-preview { grid-column: 1/-1; }
+.admin #gen-form.menti-preview .generator-body { grid-template-columns: 1fr; }
+.admin #menti-dialog { width: min(1440px,calc(100% - 28px)); }
+.admin .menti-navigation { margin: 16px 0; }
+.admin .menti-navigation select { width: auto; }
+.admin .menti-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 24px; align-items: start; }
+.admin .menti-source { margin: 0; min-width: 0; }
+.admin .menti-source figcaption { margin-bottom: 12px; color: var(--muted); font-size: .8rem; }
+.admin #menti-canvas { display: block; width: 100%; height: auto; border: 1px solid var(--border); background: white; }
+.admin .menti-fields { min-width: 0; margin: 0; padding: 18px; border: 1px solid var(--border); border-radius: 12px; }
+.admin .menti-fields label { display: block; margin: 12px 0 6px; }
+.admin .menti-fields .check { display: flex; gap: 10px; align-items: flex-start; }
+.admin .menti-recognized { white-space: pre-wrap; overflow-wrap: anywhere; font: .8rem/1.5 var(--wl-police); max-height: 15rem; overflow-y: auto; }
+.admin #menti-dialog .modal-actions .error { flex-basis: 100%; margin: 0; }
+@media(max-width:959px) { .admin .menti-grid { grid-template-columns: 1fr; } }
 
 .admin #qr-dialog.modal, .admin #help-dialog.modal { padding: 26px; overflow-y: auto; }
 .admin .rail-item .number-bubble { border-radius: 7px; width: 27px; height: 27px; flex: none; font-size: 11px; }

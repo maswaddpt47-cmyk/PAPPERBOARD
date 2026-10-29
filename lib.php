@@ -95,10 +95,11 @@ function wl_https(): bool
 
 /** En-têtes de sécurité communs à toutes les réponses. CSP stricte : aucun
  *  script ni style en ligne, aucune ressource externe. */
-function wl_security_headers(): void
+function wl_security_headers(bool $importWorkers = false): void
 {
     header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; "
-        . "img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+        . "img-src 'self' data:; connect-src 'self'; " . ($importWorkers ? "worker-src 'self'; " : '')
+        . "base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: no-referrer');
     header('X-Frame-Options: DENY');

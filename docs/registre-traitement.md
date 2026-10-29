@@ -7,6 +7,15 @@ responsable. Son nom et son adresse de contact ne figurent pas ici (dépôt
 public) : ils sont dans `config.php` et affichés aux participants
 (« Confidentialité »). Version V1 (16/10/2026), validée par le responsable de traitement ; ajout du 16/10/2026 : heure du dernier signe de vie du téléphone (décompte des présents).
 
+Ajout du 29/10/2026, à relire par le responsable : import d'un PDF de questionnaire
+(Mentimeter, Pix ou autre). Lecture et reconnaissance de texte sur l'appareil de
+l'animateur, avec des bibliothèques et un modèle de langue hébergés sur le site,
+sans appel à un tiers. Le PDF, ses images et son texte brut ne sont pas envoyés
+au serveur ni gardés dans le stockage local du navigateur ; ils sont libérés à la
+fermeture de l'import. Seules les questions et les options sélectionnées et relues
+rejoignent l'atelier par l'import habituel, sans résultats ni réponses de la séance
+d'origine. L'animateur vérifie qu'aucune donnée personnelle ne figure dans ces textes.
+
 | Rubrique | Contenu |
 |---|---|
 | Nom du traitement | WoocLight — participation en direct à des ateliers de médiation numérique |

@@ -249,7 +249,7 @@
     WL.show($('ov-resume'), !!s);
     $('ov-title').textContent = s ? 'Un atelier, des échanges.' : 'Aucun atelier pour le moment';
     $('ov-subtitle').textContent = s ? 'Préparez simplement. Gardez le contact avec votre groupe.'
-      : 'Créez un atelier vide, générez ou importez un JSON, ou partez d’un modèle.';
+      : 'Créez un atelier vide, importez un JSON ou un PDF de questions, ou partez d’un modèle.';
     if (!s) return;
     $('ov-state').textContent = s.ended ? 'Terminé' : 'Ouvert aux réponses';
     $('ov-state').className = 'badge ' + (s.ended ? 'neutral' : 'green');
@@ -340,10 +340,10 @@
 
   // --- Créer un atelier : vide, ou depuis un JSON (créé seulement à la validation de l'aperçu) ---
 
-  function createMode() { return $('create-json').checked ? 'json' : $('create-demo').checked ? 'demo' : 'empty'; }
+  function createMode() { return $('create-mentimeter').checked ? 'mentimeter' : $('create-json').checked ? 'json' : $('create-demo').checked ? 'demo' : 'empty'; }
   function syncCreate() {
     var m = createMode();
-    $('create-ok').textContent = m === 'json' ? 'Continuer' : m === 'demo' ? 'Créer la démonstration' : 'Créer l\'atelier';
+    $('create-ok').textContent = m === 'json' || m === 'mentimeter' ? 'Continuer' : m === 'demo' ? 'Créer la démonstration' : 'Créer l\'atelier';
     $('new-title').required = m !== 'demo';
   }
   $('create-btn').addEventListener('click', function () {
@@ -357,6 +357,7 @@
   $('create-empty').addEventListener('change', syncCreate);
   $('create-json').addEventListener('change', syncCreate);
   $('create-demo').addEventListener('change', syncCreate);
+  $('create-mentimeter').addEventListener('change', syncCreate);
   $('create-cancel').addEventListener('click', function () { $('create-dialog').close(); });
 
   $('create-form').addEventListener('submit', function (e) {
@@ -364,6 +365,15 @@
     var title = $('new-title').value.trim();
     if (createMode() === 'demo') { $('create-dialog').close(); createDemo(); return; }
     if (!title) { $('create-error').textContent = 'Donnez un nom à l\'atelier.'; $('new-title').focus(); return; }
+    if (createMode() === 'mentimeter') {
+      $('create-dialog').close();
+      WL.Mentimeter.open(title, function (raw) {
+        $('gen-raw').value = raw;
+        openGen(title, undefined, 'mentimeter');
+        genCheck();
+      });
+      return;
+    }
     if (createMode() === 'json') {
       $('create-dialog').close();
       openGen(title);
@@ -1436,7 +1446,7 @@
 
   // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).
   var genCreate = null, genReplace = false;
-  function openGen(createTitle, replaceRaw) {
+  function openGen(createTitle, replaceRaw, source) {
     genCreate = createTitle || null;
     genReplace = typeof replaceRaw === 'string';
     $('gen-raw').value = genReplace ? replaceRaw : $('gen-raw').value;
@@ -1444,7 +1454,11 @@
     $('gen-copied').textContent = '';
     $('gen-review-copied').textContent = '';
     WL.show($('gen-prompt'), false);
-    $('gen-title').textContent = genCreate ? 'Créer un atelier depuis un JSON'
+    var fromPdf = source === 'mentimeter';
+    WL.show($('gen-generation'), !fromPdf);
+    WL.show($('gen-input'), !fromPdf);
+    $('gen-form').classList.toggle('menti-preview', fromPdf);
+    $('gen-title').textContent = fromPdf ? 'Créer un atelier depuis un PDF' : genCreate ? 'Créer un atelier depuis un JSON'
       : genReplace ? 'Faire relire les questions' : 'Ajouter des questions depuis un JSON';
     $('gen-for').textContent = genCreate
       ? 'Nouvel atelier « ' + genCreate + ' » : il n\'est créé qu\'au clic sur « Créer l\'atelier », après relecture de l\'aperçu. Fermer ne crée rien.'
@@ -1457,7 +1471,7 @@
       : genReplace ? 'Remplacer les questions par les cochées' : 'Ajouter les questions cochées';
     syncGenSize();
     $('gen-dialog').showModal();
-    if (genReplace) genCheck(); else $('gen-theme').focus();
+    if (genReplace) genCheck(); else if (!fromPdf) $('gen-theme').focus();
   }
   $('gen-btn').addEventListener('click', function () { openGen(null); });
   // Relecture d'un atelier existant : ses questions (export .json) deviennent la réponse à vérifier.

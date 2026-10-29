@@ -47,6 +47,7 @@ php tests/charte.php || fail=1
 echo "=== Navigateur ==="
 export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
 if node -e "require('playwright')" 2>/dev/null; then
+  node tests/pdf-import.js || fail=1
   node tests/navigateur.js || fail=1
   echo "=== Fidélité de l'interface ==="
   node tests/interface.js || fail=1

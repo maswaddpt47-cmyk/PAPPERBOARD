@@ -1,11 +1,10 @@
 # CHANTIERS — WoocLight
 
-État au **26/10/2026** — commit de référence : voir `git log -1 main`.
+État au **29/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
-Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus bas.
 
 ## Restant, par priorité — tout côté utilisateur
 
@@ -15,6 +14,7 @@ Récits des chantiers terminés : `git log -p CHANTIERS.md` ; invariants plus ba
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
+   - import PDF (29/10) : Créer un atelier → Importer un PDF de questions ; OCR à relire, plusieurs questions possibles par page ; PDF Pix réel non fourni, mise en page à vérifier ; registre actualisé à relire ;
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
      un mur / post-it avec relecture avant publication ;
@@ -51,7 +51,6 @@ Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une c
 
 - **Durée de purge** : 30 jours sans action de l'animateur (défaut,
   `purge_days`). C'est à l'utilisateur, responsable de traitement, de la fixer.
-
 - **Mode « non anonyme »** du cahier des charges : non codé. Il supposerait de
   demander un nom ou un pseudo, contraire à « aucune donnée personnelle ».
   Toutes les réponses sont anonymes. À rouvrir seulement sur besoin réel.
@@ -94,6 +93,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
+- Import PDF (29/10/2026, AG-008 ouvert) : PDF.js / OCR français Tesseract.js locaux ; PDF de l'utilisateur jamais stocké ou commité. Relecture obligatoire, plusieurs questions par page, aucun ancien vote ou correction déduit ; création par l'import JSON existant. Mesuré en local : 12 pages images fournies lues ; libellés minuscules parfois à corriger ; suite complète verte, puis 26 contrôles PDF verts (CSP des workers comprise), sans appel externe ; largeurs 390 et 1280 px sans débordement.
 - Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
   jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
   prolongé (`filed` immuable, e2e) ; archive au nom et au cycle du partenaire ; bilan du

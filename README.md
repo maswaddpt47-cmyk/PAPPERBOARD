@@ -32,6 +32,17 @@ réponses des quiz avant l'atelier. Pour un nouveau thème, **Copier la consigne
 de relecture** prépare un texte pour faire relire les questions par une *autre*
 IA, sources exigées : ouvrez chaque lien avant de vous y fier.
 
+**Importer un PDF de questions** : espace animateur → **Créer un atelier** →
+**Importer un PDF de questions** (Mentimeter, Pix ou autre outil). Le document doit
+contenir les questions ; un relevé de scores seul ne permet pas de les retrouver.
+La lecture et la reconnaissance du texte des pages images se font sur votre
+appareil, sans envoi du PDF à un service externe. Corrigez les intitulés et les
+choix, sélectionnez le type et confirmez chaque question à garder ; une même page
+peut fournir plusieurs questions. Vérifiez l'aperçu avant de créer l'atelier.
+Les anciens votes, mots des nuages, illustrations et bonnes réponses ne sont pas
+repris. Ajoutez les corrections des quiz dans **Préparer → Modifier**. Limites :
+20 Mo, 50 pages et 50 questions/conclusion au total ; PDF sans mot de passe.
+
 Mur et post-it : les participants ne voient que leurs propres contributions
 tant que l'animateur n'a pas cliqué **Publier** (le temps de relire et de
 masquer un nom ou une donnée personnelle).

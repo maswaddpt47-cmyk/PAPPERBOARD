@@ -1,0 +1,36 @@
+Composants de l'import PDF local — 29/10/2026
+
+Chargés seulement à l'ouverture d'un PDF ; aucun CDN, OCR distant ou appel IA.
+Fichiers extraits des paquets npm épinglés ci-dessous, sans exécuter leurs scripts
+d'installation. Ne pas remplacer une version sans rejouer tests/pdf-import.js.
+
+pdfjs-dist 6.4.299 (Mozilla, Apache-2.0)
+https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz
+sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==
+Copie : legacy/build/pdf.mjs et pdf.worker.mjs, cmaps, standard_fonts, wasm, iccs.
+Licence : pdfjs/LICENSE, licences des polices et tables dans leurs dossiers.
+
+tesseract.js 7.0.0 (Apache-2.0)
+https://registry.npmjs.org/tesseract.js/-/tesseract.js-7.0.0.tgz
+sha512-exPBkd+z+wM1BuMkx/Bjv43OeLBxhL5kKWsz/9JY+DXcXdiBjiAch0V49QR3oAJqCaL5qURE0vx9Eo+G5YE7mA==
+Copie : dist/tesseract.min.js et worker.min.js, licences embarquées.
+Licence : tesseract/LICENSE.txt.
+
+tesseract.js-core 7.0.0 (Apache-2.0)
+https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-7.0.0.tgz
+sha512-WnNH518NzmbSq9zgTPeoF8c+xmilS8rFIl1YKbk/ptuuc7p6cLNELNuPAzcmsYw450ca6bLa8j3t0VAtq435Vw==
+Copie : tesseract-core-lstm.wasm.js (WebAssembly embarqué, sans exigence SIMD).
+Licence : core/LICENSE.
+
+@tesseract.js-data/fra 1.0.0 (paquet déclaré MIT ; modèle tessdata Apache-2.0)
+https://registry.npmjs.org/@tesseract.js-data/fra/-/fra-1.0.0.tgz
+sha512-pp58gMaoyidoBBLd5y5rnf0WW0Y1994QrGqZrYatITqIU/AReUJMykD+YY3JDgvnmgz7uAx1UmhjjuyEmV8JEA==
+Copie : 4.0.0_best_int/fra.traineddata.gz, modèle de langue française.
+Origine : https://github.com/naptha/tessdata et https://github.com/tesseract-ocr/tessdata_best.
+
+La politique worker-src 'self' est limitée à admin.php. import-worker.php sert
+les deux fichiers de worker (choix fermé pdf/ocr) avec connect-src 'self', aucun
+worker enfant ; wasm-unsafe-eval dans le worker OCR seulement. La politique des
+pages participant et projection ne change pas. Aucun script en ligne ou eval
+ajouté à la page ; PDF.js utilise isEvalSupported:false, disableFontFace:true.
+Les PDF ne sont jamais conservés ou servis par l'application.

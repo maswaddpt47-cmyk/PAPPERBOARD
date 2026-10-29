@@ -161,11 +161,24 @@ jobs:
           fi
           # Confirme les octets réellement servis pour les nouveaux composants.
           # Le SHA évite une réponse d'un cache de la version précédente.
-          for asset in assets/common.js assets/admin.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js; do
+          for asset in assets/common.js assets/admin.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js \
+            assets/mentimeter.js assets/vendor/mentimeter/pdfjs/pdf.mjs assets/vendor/mentimeter/pdfjs/pdf.worker.mjs \
+            assets/vendor/mentimeter/tesseract/dist/tesseract.min.js assets/vendor/mentimeter/tesseract/dist/worker.min.js \
+            assets/vendor/mentimeter/core/tesseract-core-lstm.wasm.js assets/vendor/mentimeter/lang/fra.traineddata.gz; do
             curl --fail --silent --show-error --max-time 20 "$URL/$asset?verification=$GITHUB_SHA" -o "$RUNNER_TEMP/wooclight-asset-verifie"
             cmp -s "$asset" "$RUNNER_TEMP/wooclight-asset-verifie" \
               || { echo "::error::$asset diffère du commit déployé"; exit 1; }
             echo "$asset → contenu du commit vérifié"
+          done
+          # Les workers PHP ont leur propre CSP : pas de connexion externe.
+          for moteur in pdf ocr; do
+            curl --fail --silent --show-error --max-time 20 -D "$RUNNER_TEMP/wooclight-worker-entetes" \
+              "$URL/import-worker.php?engine=$moteur&verification=$GITHUB_SHA" -o "$RUNNER_TEMP/wooclight-worker"
+            if [ "$moteur" = pdf ]; then original=assets/vendor/mentimeter/pdfjs/pdf.worker.mjs
+            else original=assets/vendor/mentimeter/tesseract/dist/worker.min.js; fi
+            cmp -s "$original" "$RUNNER_TEMP/wooclight-worker" || { echo '::error::Worker différent du commit'; exit 1; }
+            grep -qi "connect-src 'self'; worker-src 'none'" "$RUNNER_TEMP/wooclight-worker-entetes" \
+              || { echo '::error::CSP du worker absente'; exit 1; }
           done
           # HTTP doit renvoyer vers HTTPS (mots de passe et jetons).
           code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/index.php")

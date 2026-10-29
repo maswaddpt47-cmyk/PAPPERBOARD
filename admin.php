@@ -4,7 +4,7 @@
 declare(strict_types=1);
 require __DIR__ . '/lib.php';
 wl_config();
-wl_security_headers();
+wl_security_headers(true); // PDF et OCR locaux : workers de même origine, espace animateur seulement.
 header('Cache-Control: no-store');
 ?>
 <!doctype html>
@@ -537,6 +537,8 @@ header('Cache-Control: no-store');
           <span><strong>Générer ou importer un JSON</strong><span class="meta">Consigne pour une IA, réponse collée ou fichier ; rien n'est créé avant votre validation.</span></span></label>
         <label class="choice-card"><input type="radio" name="create-mode" id="create-demo" value="demo">
           <span><strong>Démonstration avec participants fictifs</strong><span class="meta">12 participants fictifs, une question de chaque type et des réponses pour tout essayer seul ; le nom ci-dessus n'est pas utilisé. À supprimer ensuite.</span></span></label>
+        <label class="choice-card"><input type="radio" name="create-mode" id="create-mentimeter" value="mentimeter">
+          <span><strong>Importer un PDF de questions</strong><span class="meta">Mentimeter, Pix ou un autre questionnaire : retrouvez les questions, corrigez et sélectionnez ce que vous gardez. Les anciens résultats ne sont pas repris.</span></span></label>
       </fieldset>
       <p id="create-error" class="error" role="alert"></p>
       </div>
@@ -548,6 +550,48 @@ header('Cache-Control: no-store');
 </dialog>
 
   <dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Préparer et animer votre atelier</h2><ol><li>Créez un atelier ou importez un JSON, puis relisez les questions.</li><li>Dans Participants, partagez le code et ouvrez les inscriptions.</li><li>Ouvrez la projection dans un nouvel onglet et placez-la sur l’écran du groupe.</li><li>Dans Animer ou sur l’écran du groupe, suivez le bouton principal : clore les réponses, afficher les résultats, puis question suivante. Les quiz restent masqués jusqu’à votre clic ; relisez les contributions avant publication.</li><li>Terminez la session, puis retrouvez la synthèse et les exports dans Bilan.</li></ol><p>Pour tester seul, choisissez « Démonstration » dans Créer un atelier.</p><button id="help-close" class="btn btn-primary" type="button">Fermer</button></dialog>
+  <dialog id="menti-dialog" aria-labelledby="menti-title">
+    <form id="menti-form" novalidate>
+      <header class="modal-head"><div><p class="eyebrow">Créer un atelier</p><h2 id="menti-title">Importer un PDF de questions</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="menti-cancel" aria-label="Fermer l'import">×</button></header>
+      <div class="modal-body">
+        <p id="menti-for"></p>
+        <p class="meta">Le PDF est lu sur cet appareil, sans envoi du fichier à un serveur ou à une IA. Seuls les intitulés et les choix que vous aurez relus seront enregistrés dans l'atelier. Les images, votes, pourcentages et réponses libres de la séance d'origine ne sont pas importés.</p>
+        <p class="meta">Mentimeter, Pix ou un autre outil : importez un document contenant les questions. Un bilan ne contenant que des scores ne permet pas de retrouver les questions absentes. Une page peut en contenir plusieurs ; ajoutez-les séparément. Les types particuliers sont à adapter aux types proposés ci-dessous.</p>
+        <label for="menti-file">PDF du questionnaire (20 Mo et 50 pages au plus)</label>
+        <input id="menti-file" type="file" accept=".pdf,application/pdf">
+        <p id="menti-status" class="meta" role="status" aria-live="polite"></p>
+        <div id="menti-review" hidden>
+          <nav class="row wrap menti-navigation" aria-label="Pages du PDF">
+            <button id="menti-prev" class="btn" type="button" title="Relire la page précédente">← Précédente</button>
+            <label for="menti-page">Page</label><select id="menti-page"></select>
+            <button id="menti-next" class="btn" type="button" title="Relire la page suivante">Suivante →</button>
+          </nav>
+          <p id="menti-summary" class="meta" aria-live="polite"></p>
+          <div class="menti-grid">
+            <figure class="menti-source"><figcaption>Page d'origine — les résultats restent dans cet aperçu</figcaption><canvas id="menti-canvas" aria-label="Page du PDF à comparer avec la question reconnue"></canvas></figure>
+            <fieldset id="menti-fields" class="menti-fields">
+              <legend>Question à préparer</legend>
+              <p class="meta">La reconnaissance peut se tromper. Vérifiez le type, l'intitulé et chaque choix à côté de la page d'origine ; saisissez les choix manquants. Ne gardez aucun nom ni donnée personnelle. Aucune bonne réponse n'est déduite d'un graphe.</p>
+              <label for="menti-question">Question préparée sur cette page</label><select id="menti-question"></select>
+              <button id="menti-add" class="btn btn-small" type="button" title="Préparer une autre question lorsqu'il y en a plusieurs sur la même page">+ Une autre question sur cette page</button>
+              <label for="menti-type">Utiliser cette page comme</label>
+              <select id="menti-type"><option value="skip">Ne pas importer cette page</option><option value="yesno">Oui / Non</option><option value="truefalse">Vrai / Faux</option><option value="poll">Sondage — un choix</option><option value="mcq">QCM — un ou plusieurs choix</option><option value="wordcloud">Nuage de mots</option><option value="text">Réponse libre</option><option value="scale">Échelle</option><option value="conclusion">Conclusion de l'atelier</option></select>
+              <div id="menti-question-fields">
+                <label for="menti-text">Intitulé de la question</label><textarea id="menti-text" rows="3"></textarea>
+                <div id="menti-options-box"><label for="menti-options">Choix proposés, un par ligne (2 à 10, 80 caractères chacun)</label><textarea id="menti-options" rows="5"></textarea></div>
+                <label id="menti-multi-box" class="check"><input id="menti-multi" type="checkbox"> Plusieurs réponses possibles</label>
+                <div id="menti-scale-box"><label for="menti-scale">Valeur maximale de l'échelle (de 1 à…)</label><select id="menti-scale"><option value="5">5</option><option value="10">10</option></select></div>
+                <p class="meta">Pour ajouter une correction à un quiz, utilisez Modifier dans Préparer après la création.</p>
+                <label class="check"><input id="menti-reviewed" type="checkbox"> J'ai comparé cette question et ses choix avec la page et je veux les garder.</label>
+              </div>
+            </fieldset>
+          </div>
+          <details><summary>Consulter le texte reconnu sur cette page</summary><p class="meta">Ce texte brut peut contenir les anciens résultats. Il n'est pas ajouté à l'atelier.</p><pre id="menti-recognized" class="menti-recognized"></pre></details>
+        </div>
+      </div>
+      <footer class="row wrap modal-actions"><p id="menti-error" class="error" role="alert"></p><button id="menti-cancel" class="btn" type="button">Annuler l'import</button><button id="menti-continue" class="btn btn-primary" type="submit" disabled>Vérifier les questions retenues</button></footer>
+    </form>
+  </dialog>
   <dialog id="rename-dialog" aria-labelledby="rename-title">
     <form id="rename-form" novalidate>
 <header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="rename-title">Renommer un atelier</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="rename-cancel" aria-label="Fermer la fenêtre">×</button></header>
@@ -589,7 +633,7 @@ header('Cache-Control: no-store');
 <header class="modal-head"><div><p class="eyebrow">Votre espace animateur</p><h2 id="gen-title">Générer ou importer des questions</h2></div><button class="btn btn-ghost icon-btn" type="button" data-dialog-cancel="gen-cancel" aria-label="Fermer la fenêtre">×</button></header>
 <div class="modal-body generator-body">
       <p id="gen-for" class="meta"></p>
-      <section class="gen-step">
+      <section id="gen-generation" class="gen-step">
         <h3><span class="number-bubble">1</span>Préparer une consigne pour une IA</h3>
         <p class="meta">Facultatif si vous avez déjà un fichier. Copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
           N'y mettez aucun nom ni donnée personnelle.</p>
@@ -633,7 +677,7 @@ header('Cache-Control: no-store');
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>
         <textarea id="gen-prompt" rows="4" readonly aria-label="Texte à coller dans l'IA" hidden></textarea>
       </section>
-      <section class="gen-step">
+      <section id="gen-input" class="gen-step">
         <h3><span class="number-bubble">2</span>Coller la réponse ou importer un fichier</h3>
         <p class="meta">Collez toute la réponse de l'IA, ou importez un fichier JSON au même format, puis vérifiez.</p>
         <p><label for="gen-file" class="btn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Importer un fichier .json</label>
@@ -649,7 +693,7 @@ header('Cache-Control: no-store');
       </section>
       <section id="gen-preview" class="gen-step" hidden>
         <h3 id="gen-preview-title" tabindex="-1"><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
-        <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les bonnes réponses des quiz : une IA peut se tromper.</strong>
+        <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les intitulés, les choix et les bonnes réponses des quiz.</strong>
           L'aperçu ne prouve pas que le contenu est juste.</p>
         <ol id="gen-list" class="list gen-list"></ol>
         <div class="info-note">
@@ -746,6 +790,7 @@ header('Cache-Control: no-store');
 <script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('seances.js') ?>"></script>
+<script src="<?= wl_asset('mentimeter.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 <script src="<?= wl_asset('shell.js') ?>"></script>
 <script src="<?= wl_asset('interface.js') ?>"></script>

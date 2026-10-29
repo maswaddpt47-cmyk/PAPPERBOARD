@@ -68,7 +68,14 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 
 ## Blocs ouverts
 
-*(aucun)*
+## AG-008 — Import d'un PDF de questions — ouvert le 29/10/2026
+**Auteur** : Codex — branche `codex/import-mentimeter-20261029` — lu sur `eab67c6`.
+**Proposition** : lecture d'un PDF (Mentimeter, Pix ou autre questionnaire) et OCR français dans le navigateur, bibliothèques PDF.js et Tesseract.js hébergées avec l'application. Relecture page par page, plusieurs questions possibles par page, puis validation par l'import JSON existant avant création. Aucun vote ancien ni bonne réponse déduite des résultats.
+**Critère déclencheur** : 1 — nouvelles dépendances de lecture PDF et d'OCR.
+**Ce que ça engage** : fichiers tiers à maintenir ; workers autorisés sur l'espace animateur seulement, servis avec une CSP propre limitée au même site (WebAssembly dans le worker OCR seulement), sans CDN, sans OCR distant, sans changer le format stocké.
+**Non vérifié par l'auteur** : précision de l'OCR selon la qualité et la disposition des exports ; autres présentations que l'exemple fourni. Le PDF fourni n'est ni commité ni conservé par l'application.
+**Si personne ne répond, je fais quoi ?** : conserver une importation assistée avec correction et confirmation explicites pour chaque page retenue ; laisser de côté toute déduction automatique de correction ou de résultats.
+**Où regarder** : `admin.php:532` (création), `assets/admin.js:343` (parcours), `lib.php:98` et `import-worker.php:17` (CSP), `lib.php:978` (validation existante), `tests/pdf-import.js:1` (vraie voie d'import, document fictif).
 
 ## Blocs tranchés
 
