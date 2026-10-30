@@ -49,7 +49,9 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   durée attendue, surveiller en arrière-plan, répondre tout de suite, revenir
   quand c'est fini. Jamais une boucle d'attente de plusieurs minutes au premier plan.
 - Dates explicites, jamais « hier » / « demain ». Heures en heure de Paris (GitHub et les
-  API affichent l'UTC).
+  API affichent l'UTC), converties **par commande** (`TZ=Europe/Paris date`),
+  jamais de tête : le décalage change deux fois par an (30/10/2026, +2 h écrit
+  au lieu de +1 h).
 - `CHANTIERS.md` tenu à jour à chaque étape, pas en fin de session : tâche
   finie = descriptif retiré, l'invariant remonte dans « Points à ne pas
   défaire ». `scripts/check-chantiers.sh` signale un fichier à nettoyer.
@@ -120,6 +122,26 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   et annule explicitement le précédent. Constat du 27/10/2026 (GDINV2) :
   rectificatif, synthèse puis note consolidée sur le même sujet, l'utilisateur
   a dû demander « on a besoin de tous ces justificatifs ? ».
+- **Un test de sécurité emprunte la vraie voie d'entrée et prouve qu'il est
+  arrivé à l'endroit testé** (MD-LIB `collaboration.md`, règle 53) : importer
+  par le même chemin que l'utilisateur, choisir des valeurs réellement proposées
+  par l'interface, et ajouter une assertion de garde (l'écran visé est ouvert,
+  le texte attendu est affiché) ; sans elle, un test qui sort en silence valide
+  du code vulnérable. Vaut pour le test « hostile » de ce dépôt. Constat du
+  29/10/2026 (GDINV2) : trois injections sont passées derrière un test qui
+  n'ouvrait pas l'écran visé, relevées ensuite par l'audit Codex.
+- **Un test ajouté se vérifie par mutation** (règle 55) : le casser
+  volontairement et constater qu'il échoue ; pour un test écrit par script,
+  relire la ligne produite avant de lancer ; pour tout test de calcul, une
+  mutation du code (ou du dénominateur) doit le faire échouer. Constat du
+  30/10/2026 (sms-mail-multi) : un `//` de fin de ligne a rendu inertes huit
+  assertions pendant cinq commits, la suite restant verte (relevé par Codex).
+- **Après des modifications hors session, « pull » déclenche la mise à jour de
+  `CHANTIERS.md`** (règle 56) : `git pull`, lire `git log` et le diff arrivés
+  depuis la base notée dans l'en-tête, mettre le fichier à jour (en-tête
+  compris) avant toute autre tâche ; ne pas supposer qu'une entrée datée est
+  encore vraie. L'utilisateur dit en une ligne ce qui reste hors dépôt
+  (réglage, donnée, jeton).
 - **Prendre l'initiative de propositions d'amélioration et de nouveautés**
   (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
   demande, lors d'une revue et après une livraison validée, proposer sans
