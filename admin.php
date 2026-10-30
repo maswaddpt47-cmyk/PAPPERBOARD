@@ -342,7 +342,7 @@ header('Cache-Control: no-store');
       <p class="meta muted">Affichée avec le récap de l'atelier quand vous cliquez « Terminer l’atelier » (projection et appareils des participants). Également reprise dans la fiche mémo.</p></div>
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg></div>
       <label for="conclusion" class="field-label">À retenir</label>
-      <textarea id="conclusion" rows="4" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
+      <textarea id="conclusion" data-rich-editor rows="4" maxlength="600" placeholder="Ex. : À retenir : couper les écrans 1 h avant de dormir…"></textarea>
       <p class="conclusion-actions"><button id="conclusion-btn" class="btn btn-primary" type="button" title="Enregistrer la conclusion de cette session"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Enregistrer la conclusion</button>
         <span class="meta">600 caractères au plus</span>
         <span id="conclusion-saved" class="meta" aria-live="polite"></span></p>
@@ -486,7 +486,7 @@ header('Cache-Control: no-store');
         <span id="bilan-copied" class="meta" aria-live="polite"></span></p>
       <textarea id="bilan-prompt" class="gen-prompt" rows="6" readonly hidden aria-label="Bilan à copier"></textarea>
       <label for="synthesis">Synthèse et recommandations de l'IA (relues ; visibles de vous seul et dans l'export PowerPoint)</label>
-      <textarea id="synthesis" rows="8" maxlength="6000" placeholder="Collez ici la réponse de l'IA, après relecture."></textarea>
+      <textarea id="synthesis" data-rich-editor rows="8" maxlength="6000" placeholder="Collez ici la réponse de l'IA, après relecture."></textarea>
       <p class="row wrap"><button id="synthesis-btn" class="btn" type="button" title="Enregistrer la synthèse avec la session (effacée avec elle par la purge)">Enregistrer la synthèse</button>
         <span id="synthesis-saved" class="meta" aria-live="polite"></span></p>
       <p class="meta">Collez la conclusion proposée par l'IA dans la carte « Conclusion » de l'onglet Préparer, après l'avoir relue.</p>
@@ -575,17 +575,19 @@ header('Cache-Control: no-store');
               <p class="meta">La reconnaissance peut se tromper. Vérifiez le type, l'intitulé et chaque choix à côté de la page d'origine ; saisissez les choix manquants. Ne gardez aucun nom ni donnée personnelle. Aucune bonne réponse n'est déduite d'un graphe.</p>
               <label for="menti-question">Étape de l’atelier préparée sur cette page</label><select id="menti-question" title="Numéro dans l’ordre des étapes retenues du PDF ; les éléments écartés et la conclusion ne sont pas comptés."></select>
               <button id="menti-add" class="btn btn-small" type="button" title="Préparer une autre question lorsqu'il y en a plusieurs sur la même page">+ Une autre question sur cette page</button>
+              <button id="menti-delete" class="btn btn-small btn-danger" type="button" title="Retirer de l’import uniquement la question ou la diapositive sélectionnée">Supprimer de l’import</button>
+              <p id="menti-empty" class="meta" hidden>Aucun élément retenu sur cette page. Vous pouvez ajouter une question ou passer à la page suivante.</p>
               <label for="menti-type">Utiliser cette page comme</label>
               <select id="menti-type"><option value="skip">Ne pas importer cette page</option><option value="info">Diapositive d’information — sans vote</option><option value="yesno">Oui / Non</option><option value="truefalse">Vrai / Faux</option><option value="poll">Sondage — un choix</option><option value="mcq">QCM — un ou plusieurs choix</option><option value="wordcloud">Nuage de mots</option><option value="text">Réponse libre</option><option value="scale">Échelle</option><option value="conclusion">Conclusion de l'atelier</option></select>
               <div id="menti-question-fields">
-                <label for="menti-text">Intitulé de la question</label><textarea id="menti-text" rows="3"></textarea>
+                <label for="menti-text">Intitulé de la question</label><textarea id="menti-text" data-rich-editor rows="3"></textarea>
                 <div id="menti-info-box" hidden>
-                  <label for="menti-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="menti-content" rows="8" maxlength="3000"></textarea>
+                  <label for="menti-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="menti-content" data-rich-editor rows="8" maxlength="3000"></textarea>
                   <label for="menti-image">Illustration facultative (JPEG, PNG ou WebP, 8 Mo au plus)</label><input id="menti-image" type="file" accept="image/jpeg,image/png,image/webp">
                   <p class="meta">L’image est redimensionnée et réencodée sur cet appareil. Seule l’illustration choisie sera envoyée avec le contenu relu. Aucun nom ni donnée personnelle.</p>
                   <img id="menti-image-preview" class="info-illustration" alt="Illustration choisie pour la diapositive" hidden><button id="menti-image-remove" class="btn btn-small" type="button" hidden>Retirer l’illustration</button>
                 </div>
-                <div id="menti-options-box"><label for="menti-options">Choix proposés, un par ligne (2 à 10, 80 caractères chacun)</label><textarea id="menti-options" rows="5"></textarea></div>
+                <div id="menti-options-box"><label for="menti-options">Choix proposés, un par ligne (2 à 10, 80 caractères chacun)</label><textarea id="menti-options" data-rich-editor rows="5"></textarea></div>
                 <label id="menti-multi-box" class="check"><input id="menti-multi" type="checkbox"> Plusieurs réponses possibles</label>
                 <div id="menti-scale-box"><label for="menti-scale">Valeur maximale de l'échelle (de 1 à…)</label><select id="menti-scale"><option value="5">5</option><option value="10">10</option></select></div>
                 <p class="meta">Pour ajouter une correction à un quiz, utilisez Modifier dans Préparer après la création.</p>
@@ -745,19 +747,19 @@ header('Cache-Control: no-store');
           <option value="steps" id="qf-type-steps" hidden disabled>Défi à étapes (essai)</option>
         </select>
         <label for="qf-text">Intitulé</label>
-        <textarea id="qf-text" rows="2" maxlength="200" required></textarea>
+        <textarea id="qf-text" data-rich-editor rows="2" maxlength="200" required></textarea>
         <div id="qf-info-box" hidden>
-          <label for="qf-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="qf-content" rows="8" maxlength="3000"></textarea>
+          <label for="qf-content">Texte de la diapositive (3 000 caractères au plus)</label><textarea id="qf-content" data-rich-editor rows="8" maxlength="3000"></textarea>
           <label for="qf-image">Illustration facultative (JPEG, PNG ou WebP, 8 Mo au plus)</label><input id="qf-image" type="file" accept="image/jpeg,image/png,image/webp">
           <p class="meta">L’image est redimensionnée sur cet appareil, sans service externe. Texte et illustration sont visibles du groupe et conservés avec l’atelier et son archive : aucun nom ni donnée personnelle.</p>
           <img id="qf-image-preview" class="info-illustration" alt="Illustration de la diapositive" hidden><button id="qf-image-remove" class="btn btn-small" type="button" hidden>Retirer l’illustration</button>
         </div>
         <div id="qf-variants-box" hidden><label for="qf-variants" title="Les mêmes étapes, détaillées pour chaque système : le participant choisit le sien une fois">Variantes par appareil (facultatif)</label>
-          <textarea id="qf-variants" rows="8" placeholder="[Windows]&#10;Ouvre les Paramètres.&#10;Va dans Système puis Notifications.&#10;&#10;[Mac]&#10;Ouvre Réglages Système.&#10;Va dans Notifications."></textarea>
+          <textarea id="qf-variants" data-rich-editor rows="8" maxlength="16000" placeholder="[Windows]&#10;Ouvre les Paramètres.&#10;Va dans Système puis Notifications.&#10;&#10;[Mac]&#10;Ouvre Réglages Système.&#10;Va dans Notifications."></textarea>
           <p class="meta">Une ligne « [Nom] » ouvre une variante (2 à 4 : Windows, Mac, iPhone, Android…), suivie d'une ligne par étape. Même nombre d'étapes que la liste des titres, 160 caractères au plus par étape.</p></div>
         <div id="qf-options-box">
           <label for="qf-options" id="qf-options-label">Choix (un par ligne, 2 à 10)</label>
-          <textarea id="qf-options" rows="4"></textarea>
+          <textarea id="qf-options" data-rich-editor rows="4"></textarea>
         </div>
         <label id="qf-multi-box" class="check" title="Le participant peut cocher plusieurs choix"><input id="qf-multi" type="checkbox"> Plusieurs réponses possibles</label>
         <fieldset id="qf-correct-box"><legend>Bonne(s) réponse(s) (optionnel, pour un quiz)</legend><div id="qf-correct"></div></fieldset>
@@ -773,7 +775,7 @@ header('Cache-Control: no-store');
         <div id="qf-compare-box" hidden><label for="qf-compare" title="Même question posée plus tôt : l'écart (bonnes réponses ou moyenne) s'affiche avec les résultats, dans le bilan et le PowerPoint">Comparer avec une question précédente (avant / après)</label>
           <select id="qf-compare"></select></div>
         <label for="qf-explain" title="Encadré affiché sous les résultats, sur la projection et les téléphones, jamais avant">Explication affichée avec les résultats (facultatif, 400 caractères)</label>
-        <textarea id="qf-explain" rows="3" maxlength="400" placeholder="Ex. : Vrai — la lumière bleue freine la mélatonine. Source : …"></textarea>
+        <textarea id="qf-explain" data-rich-editor rows="3" maxlength="400" placeholder="Ex. : Vrai — la lumière bleue freine la mélatonine. Source : …"></textarea>
         <label for="qf-link" title="Les participants ouvrent le lien depuis la question ; la projection affiche un QR code pour le scanner. Vérifie l'adresse avant l'atelier.">Lien d'un exercice (facultatif, https://…)</label>
         <input id="qf-link" type="text" inputmode="url" maxlength="300" autocomplete="off" placeholder="https://…">
         <label for="qf-duration" title="Compte à rebours du vote ; 0 = pas de limite">Durée en secondes (0 = sans limite)</label>
@@ -801,6 +803,7 @@ header('Cache-Control: no-store');
 </div>
 <script src="<?= wl_asset('qrcode.js') ?>"></script>
 <script src="<?= wl_asset('common.js') ?>"></script>
+<script src="<?= wl_asset('editor.js') ?>"></script>
 <script src="<?= wl_asset('charts.js') ?>"></script>
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('seances.js') ?>"></script>

@@ -52,6 +52,23 @@ des quiz dans **Préparer → Modifier**. Pour compléter un atelier existant :
 au total ; PDF sans mot de passe. Les exports JSON peuvent contenir les illustrations
 (600 Ko au plus à l'import). Texte et illustrations sont conservés dans les archives.
 
+**Relire et mettre en forme** : dans l'import PDF, **Supprimer de l’import** retire
+uniquement l'élément sélectionné ; une page sans élément est écartée et les étapes
+sont renumérotées. Après création : **Préparer → Supprimer**.
+Le mini-éditeur accompagne tous les textes pédagogiques : intitulés, diapositives,
+choix, explications, variantes par appareil, conclusion et synthèse. Sélectionnez
+du texte pour le **gras**, puis choisissez **Texte / Titre / Sous-titre**, **•** ou
+**1.** pour les listes. Dans les choix, gardez une réponse par ligne ; les libellés
+Oui/Non et Vrai/Faux gardent leur texte fixe, avec une mise en forme modifiable.
+Le collage récupère le texte ; appliquez ensuite sa mise en forme avec la barre.
+Chaque changement dans l'import demande une nouvelle confirmation de relecture.
+Les styles sont conservés sur la projection, côté participant, dans le JSON, les
+versions imprimables et les archives. Le PowerPoint garde les styles des textes ;
+ses graphiques natifs conservent leur police standard pour les libellés.
+La mise en forme reste dans la charte ; aucun service externe n'est appelé.
+Limites techniques : 80 blocs et 600 segments par champ, 300 Ko de mise en forme
+par atelier ; les limites de caractères des textes restent inchangées.
+
 Mur et post-it : les participants ne voient que leurs propres contributions
 tant que l'animateur n'a pas cliqué **Publier** (le temps de relire et de
 masquer un nom ou une donnée personnelle).

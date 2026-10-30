@@ -25,7 +25,7 @@ function zipEntries(bytes) {
   await admin.goto(BASE+'admin.php'); await admin.fill('#password',process.env.WL_PASSWORD); await admin.click('#login-form button');
   await admin.waitForSelector('#sessions:not([hidden])');
   const request=admin.context().request, csrf=(await(await request.get(BASE+'api.php?action=me')).json()).csrf;
-  const headers={'X-WL':'1','X-CSRF-Token':csrf,'X-WL-Features':'info-v1'};
+  const headers={'X-WL':'1','X-CSRF-Token':csrf,'X-WL-Features':'info-v1, rich-v1'};
   const post=async(action,data)=>(await request.post(BASE+'api.php?action='+action,{headers,data}));
   await admin.click('#create-btn'); await admin.fill('#new-title','Informations fictives'); await admin.check('#create-mentimeter'); await admin.click('#create-ok');
   await admin.setInputFiles('#menti-file',path.join(__dirname,'fixtures/questionnaire.pdf'));
@@ -42,7 +42,7 @@ function zipEntries(bytes) {
   await admin.setInputFiles('#menti-image',{name:'actif.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg onload="alert(1)"></svg>')});
   await admin.waitForFunction(()=>document.querySelector('#menti-error').textContent.length>0);
   check(await admin.getAttribute('#menti-image-preview','src')===illustration,'SVG refusé sans remplacer l’illustration');
-  await admin.fill('#menti-text','Conseils à retenir'); await admin.fill('#menti-content','Faire une pause.\n\nChoisir une activité sans écran.'); await admin.check('#menti-reviewed');
+  await admin.fill('[data-rich-input="menti-text"]','Conseils à retenir'); await admin.fill('[data-rich-input="menti-content"]','Faire une pause.\n\nChoisir une activité sans écran.'); await admin.check('#menti-reviewed');
   admin.once('dialog',d=>d.accept()); await admin.click('#menti-continue');
   await admin.waitForSelector('#gen-preview:not([hidden])'); await admin.click('#gen-save'); await admin.waitForSelector('#editor:not([hidden])');
   const code=(await admin.textContent('#ed-code')).trim();
@@ -90,8 +90,8 @@ function zipEntries(bytes) {
   await post('control',{s:code,op:'prev'}); await projection.bringToFront(); await projection.waitForSelector('.information-slide');
   check((await projection.textContent('#s-results')).includes('Faire une pause.'),'retour depuis une question : contenu d’information réaffiché');
   await admin.bringToFront();await admin.click('#t-prep');await admin.locator('#q-list .list-item').first().getByRole('button',{name:'Modifier',exact:true}).click();
-  check(await admin.isVisible('#qf-content')&&await admin.isHidden('#qf-reveal'),'édition : champs de contenu et d’illustration, aucune correction de vote');
-  await admin.fill('#qf-content','Une information corrigée.');await admin.click('#qf-save'); await admin.waitForSelector('#q-dialog:not([open])',{state:'attached'});
+  check(await admin.isVisible('[data-rich-input="qf-content"]')&&await admin.isHidden('#qf-reveal'),'édition : champs de contenu et d’illustration, aucune correction de vote');
+  await admin.fill('[data-rich-input="qf-content"]','Une information corrigée.');await admin.click('#qf-save'); await admin.waitForSelector('#q-dialog:not([open])',{state:'attached'});
   q=(await state()).questions[0];check(q.content==='Une information corrigée.'&&q.illustration===illustration,'modifier le texte conserve l’illustration');
   const attack=await post('question_save',{s:code,question:{...q,illustration:'data:image/svg+xml;base64,PHN2Zy8+'}});
   check(attack.status()===400&&(await state()).questions[0].illustration===illustration,'validation serveur : autre format refusé, atelier intact');

@@ -304,7 +304,7 @@
         + ' — archivée le ' + new Date(archive.archived * 1000).toLocaleDateString('fr-FR');
       $('ar-status').textContent = '';
       WL.renderRecap($('ar-recap'), archive);
-      $('ar-synthesis').textContent = archive.synthesis || '';
+      WL.renderText($('ar-synthesis'), archive.synthesis || '', archive.synthesisRich);
       WL.show($('ar-synthesis-box'), !!archive.synthesis);
       var board = WL.clear($('ar-board'));
       archive.questions.forEach(function (q, i) {
@@ -579,13 +579,13 @@
   $('qf-source').addEventListener('change', function () { fillColumns(-1); });
 
   $('synthesis-btn').addEventListener('click', function () {
-    act('session_synthesis', { synthesis: $('synthesis').value }).then(function () {
+    act('session_synthesis', { synthesis: $('synthesis').value, rich: WL.Editor.get('synthesis') }).then(function () {
       $('synthesis-saved').textContent = 'Synthèse enregistrée.';
     });
   });
 
   $('conclusion-btn').addEventListener('click', function () {
-    act('session_conclusion', { conclusion: $('conclusion').value }).then(function () {
+    act('session_conclusion', { conclusion: $('conclusion').value, rich: WL.Editor.get('conclusion') }).then(function () {
       $('conclusion-saved').textContent = 'Conclusion enregistrée.';
     });
   });
@@ -681,7 +681,7 @@
       }
       card.querySelector('.badge').textContent = (q.type === 'info' ? 'Information ' : 'Question ') + (i + 1);
       card.querySelector('.muted').textContent = q.type === 'info' ? 'Sans vote' : WL.plural(q.results.total, post ? 'contribution' : 'réponse');
-      card.querySelector('h3').textContent = q.text;
+      WL.renderText(card.querySelector('h3'), q.text, q.rich && q.rich.text);
       var res = card.querySelector('.recap-results');
       if (q.type === 'info') { WL.renderInformation(res, q); return; }
       if (!q.results.total) { WL.clear(res).appendChild(el('p', { class: 'muted' }, 'Cette question n’a pas encore reçu de réponse.')); return; }
@@ -700,13 +700,13 @@
     data = d;
     $('ed-title').textContent = d.title;
     // Ne pas écraser une conclusion en cours de saisie à chaque rafraîchissement.
-    if (document.activeElement !== $('conclusion') && conclusionFor !== d.code + '|' + d.conclusion) {
-      $('conclusion').value = d.conclusion || '';
-      conclusionFor = d.code + '|' + d.conclusion;
+    if (!WL.Editor.active('conclusion') && conclusionFor !== d.code + '|' + d.conclusion + JSON.stringify(d.conclusionRich || [])) {
+      WL.Editor.set('conclusion', d.conclusion || '', d.conclusionRich);
+      conclusionFor = d.code + '|' + d.conclusion + JSON.stringify(d.conclusionRich || []);
     }
-    if (document.activeElement !== $('synthesis') && synthesisFor !== d.code + '|' + d.synthesis) {
-      $('synthesis').value = d.synthesis || '';
-      synthesisFor = d.code + '|' + d.synthesis;
+    if (!WL.Editor.active('synthesis') && synthesisFor !== d.code + '|' + d.synthesis + JSON.stringify(d.synthesisRich || [])) {
+      WL.Editor.set('synthesis', d.synthesis || '', d.synthesisRich);
+      synthesisFor = d.code + '|' + d.synthesis + JSON.stringify(d.synthesisRich || []);
     }
     $('ed-code').textContent = d.code;
     $('ed-url').textContent = d.joinUrl;
@@ -938,7 +938,7 @@
     $('live-pos').textContent = (d.questions.some(function (item) { return item.type === 'info'; }) ? 'Étape ' : 'Question ') + (d.current + 1) + ' / ' + d.questions.length;
     badges.appendChild(badge(q.type === 'info' ? 'Information · sans vote' : guide.open ? 'Réponses ouvertes' : q.state === 'draft' ? 'Question à venir' : 'Réponses closes', guide.open ? 'ok' : null));
     badges.appendChild(el('span', { class: 'question-type' }, WL.typeLabel(q)));
-    $('live-text').textContent = q.text;
+    WL.renderText($('live-text'), q.text, q.rich && q.rich.text);
     $('live-state').textContent = q.type === 'info' ? 'Ce contenu est affiché au groupe. Aucune réponse demandée.' : (guide.post ? WL.plural(q.results.total, 'contribution') : q.results.total + ' / ' + d.active + ' ont répondu')
       + ' · Vue animateur : les réponses ci-dessous peuvent être encore masquées au groupe.';
     var moderated = ['text', 'wall', 'postit'].indexOf(q.type) !== -1;
@@ -1080,8 +1080,10 @@
       WL.show(document.querySelector('label[for="' + id + '"]'), type !== 'info');
     });
     WL.show($('qf-change').closest('label'), type !== 'info');
-    WL.show($('qf-options-box'), ['mcq', 'poll', 'points', 'postit', 'steps'].indexOf(type) !== -1);
-    $('qf-options-label').textContent = type === 'postit' ? 'Colonnes (une par ligne, 6 au plus ; vide = une seule colonne « Idées »)'
+    if (FIXED[type] && $('qf-options').value !== FIXED[type].join('\n')) WL.Editor.setLines('qf-options', FIXED[type]);
+    WL.Editor.lock('qf-options', FIXED[type] ? FIXED[type].join('\n') : null);
+    WL.show($('qf-options-box'), ['yesno', 'truefalse', 'mcq', 'poll', 'points', 'postit', 'steps'].indexOf(type) !== -1);
+    $('qf-options-label').textContent = FIXED[type] ? 'Choix fixes — mise en forme modifiable' : type === 'postit' ? 'Colonnes (une par ligne, 6 au plus ; vide = une seule colonne « Idées »)'
       : type === 'steps' ? 'Titres des étapes (un par ligne, 2 à 10 ; ils s\'affichent aussi sur la projection)' : 'Choix (un par ligne, 2 à 10)';
     WL.show($('qf-variants-box'), type === 'steps');
     WL.show($('qf-source-box'), type === 'dots');
@@ -1110,7 +1112,7 @@
     qImageGeneration++;
     $('qf-save').disabled = false;
     qIllustration = q && q.illustration || '';
-    $('qf-content').value = q && q.content || '';
+    WL.Editor.set('qf-content', q && q.content || '', q && q.rich && q.rich.content);
     $('qf-image').value = '';
     renderQImage();
     editing = q || null;
@@ -1118,11 +1120,11 @@
     if (q && q.type === 'steps') { $('qf-type-steps').hidden = false; $('qf-type-steps').disabled = false; }
     $('qd-title').textContent = q ? 'Modifier la question' : 'Nouvelle question';
     $('qf-type').value = q ? q.type : 'yesno';
-    $('qf-text').value = q ? q.text : '';
-    $('qf-explain').value = q ? (q.explain || '') : '';
+    WL.Editor.set('qf-text', q ? q.text : '', q && q.rich && q.rich.text);
+    WL.Editor.set('qf-explain', q ? (q.explain || '') : '', q && q.rich && q.rich.explain);
     $('qf-link').value = q ? (q.link || '') : '';
-    $('qf-variants').value = q ? variantsToText(q.variants) : '';
-    $('qf-options').value = q && !FIXED[q.type] ? q.options.join('\n') : '';
+    WL.Editor.set('qf-variants', q ? variantsToText(q.variants) : '', q && q.rich && q.rich.variants);
+    WL.Editor.setLines('qf-options', q ? q.options : [], q && q.rich && q.rich.options);
     $('qf-multi').checked = !!(q && q.multi);
     $('qf-scale').value = q ? String(q.scaleMax) : '5';
     $('qf-budget').value = q ? q.budget : 10;
@@ -1143,7 +1145,7 @@
     compareWanted = q ? (q.compare || '') : '';
     syncForm(q ? q.correct : []);
     $('q-dialog').showModal();
-    $('qf-text').focus();
+    WL.Editor.focus('qf-text');
   }
 
   $('add-q-btn').addEventListener('click', function () { openDialog(null); });
@@ -1174,6 +1176,7 @@
     var question = {
       type: $('qf-type').value, text: $('qf-text').value, explain: $('qf-explain').value, options: optionLines(),
       content: $('qf-type').value === 'info' ? $('qf-content').value : '', illustration: $('qf-type').value === 'info' ? qIllustration : '',
+      rich: { text: WL.Editor.get('qf-text'), explain: $('qf-type').value === 'info' ? [] : WL.Editor.get('qf-explain') },
       multi: $('qf-multi').checked, scaleMax: Number($('qf-scale').value), budget: Number($('qf-budget').value),
       source: $('qf-source').value, column: Number($('qf-column').value || -1),
       duration: Number($('qf-duration').value), allowChange: $('qf-change').checked,
@@ -1181,6 +1184,9 @@
       variants: $('qf-type').value === 'steps' ? textToVariants($('qf-variants').value) : [],
       correct: [].map.call($('qf-correct').querySelectorAll('input:checked'), function (c) { return Number(c.value); })
     };
+    if (question.type === 'info') question.rich.content = WL.Editor.get('qf-content');
+    if (question.type === 'steps') question.rich.variants = WL.Editor.get('qf-variants');
+    if (['yesno', 'truefalse', 'mcq', 'poll', 'points', 'postit', 'steps'].indexOf(question.type) !== -1 && question.options.length) question.rich.options = WL.Editor.lines('qf-options');
     if (editing) {
       question.id = editing.id;
       // Même règle que wl_structure_changed() côté serveur.
@@ -1459,15 +1465,16 @@
       if (it.conclusion !== undefined) {
         list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
           el('input', { type: 'checkbox', value: i, checked: true }),
-          el('span', null, el('strong', null, 'Conclusion de l\'atelier'), el('span', { class: 'meta gen-detail' }, it.conclusion)))));
+          el('span', null, el('strong', null, 'Conclusion de l\'atelier'), el('span', { class: 'meta gen-detail' }, WL.richText(it.conclusion, it.conclusionRich))))));
         return;
       }
       var detail = genDetail(it);
       list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
         el('input', { type: 'checkbox', value: i, checked: true }),
-        el('span', null, el('strong', null, it.text),
+        el('span', null, el('strong', null, WL.richText(it.text, it.rich && it.rich.text)),
           el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
-          detail ? el('span', { class: 'meta gen-detail' }, detail) : null,
+          detail ? el('span', { class: 'meta gen-detail' }, genFormattedDetail(it, detail)) : null,
+          it.explain ? el('span', { class: 'meta gen-detail' }, WL.richText(it.explain, it.rich && it.rich.explain)) : null,
           it.type === 'info' && it.illustration ? el('img', { class: 'info-illustration', src: it.illustration, alt: 'Illustration à relire avec la diapositive' }) : null,
           it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null))));
     });
@@ -1477,6 +1484,15 @@
     // Les coches sont sous la réponse collée : la fenêtre y descend seule, sans défilement à faire.
     $('gen-preview-title').scrollIntoView({ block: 'start', behavior: 'smooth' });
     $('gen-preview-title').focus({ preventScroll: true });
+  }
+
+  function genFormattedDetail(q, detail) {
+    if (q.type === 'info') return WL.richText(detail, q.rich && q.rich.content);
+    if (!q.rich || !q.rich.options) return detail;
+    var box = el('span');
+    if (q.type === 'points') box.appendChild(el('span', { class: 'gen-choice' }, q.budget + ' points :'));
+    q.options.forEach(function (o, i) { box.appendChild(el('span', { class: 'gen-choice' }, q.correct.indexOf(i) !== -1 ? '✓ ' : '', WL.richText(o, q.rich.options[i], WL.richOffset(q.rich.options, i)))); });
+    return box;
   }
 
   // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).
@@ -1552,7 +1568,9 @@
   var LIMITS = 'Limites de la version corrigée, en caractères au plus : intitulé ("text") 200 ; chaque choix ("options") 80, de 2 à 10 choix ; '
     + 'explication ("explain") 300, source comprise (cite l\'organisme et le titre, sans lien long) ; '
     + 'défi "steps" : titres d\'étapes ("options") 80, chaque étape détaillée des "variants" 160, autant d\'étapes par appareil que de titres ; '
-    + 'conclusion 600.';
+    + 'diapositive "info" : contenu ("content") 3000, sans choix ni vote ; conclusion 600. '
+    + 'Conserve les champs facultatifs "rich" de mise en forme : si tu corriges un texte, corrige aussi le texte de ses segments pour qu’ils correspondent exactement. '
+    + 'N’ajoute pas de HTML ni de style libre ; garde seulement les types de blocs et le gras déjà autorisés.';
 
   function reviewText(theme, publicLabel, questions, withReply) {
     return [

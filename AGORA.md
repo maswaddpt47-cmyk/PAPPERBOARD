@@ -95,6 +95,15 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : garder le choix par page et la confirmation humaine ; numéroter uniquement les étapes déjà retenues, sans inventer le contenu des pages non examinées.
 **Où regarder** : `assets/mentimeter.js:141` (ordre recalculé), `assets/admin.js:1513` (étapes existantes), `tests/pdf-import.js:61` et `tests/information.js:64` (vrais parcours).
 
+## AG-011 — Suppression et mise en forme à l'import — ouvert le 30/10/2026
+**Auteur** : Codex — branche `codex/edition-import-pdf-20261030` — lu sur `6f13ee4`.
+**Proposition** : retirer individuellement une question pendant la relecture du PDF ; mini-éditeur visuel pour gras, titre, sous-titre et listes. Texte brut conservé, mise en forme décrite par des blocs et segments autorisés, rendus sans HTML provenant des saisies.
+**Critère déclencheur** : 1 — extension facultative du format pédagogique ; 7 — suppression dans la séquence et numéros affichés.
+**Ce que ça engage** : l'utilisateur a choisi tous les textes pédagogiques le 30/10/2026 : intitulés, diapositives, choix, explications, variantes, conclusion et synthèse. Relecture, validation serveur, protection des anciens écrans, projection, participant, exports et archives doivent conserver le même contenu. Les libellés des graphiques PowerPoint natifs restent soumis aux possibilités de leur moteur.
+**Non vérifié par l'auteur** : retour utilisateur et charge maximale en production. Mesuré en local le 30/10/2026 : PDF 38, informations/illustrations 34, éditeur 36 et navigation 117 contrôles verts ; interface PHP 307, galerie 768 cas sans échec. La première suite a révélé un sélecteur de test visant le libellé imbriqué plutôt que le bouton de réponse ; sélection réelle confirmée, sélecteur corrigé et parcours complet de navigation rejoué. Suppression/reprise, relecture révoquée, formatage des choix/variantes/conclusion, rendu 390/1280 px, collage/JSON hostiles, correction cachée et exports/archives vérifiés ; 30 réponses HTTP 304 sans corps, vote conservé après changement de style.
+**Si personne ne répond, je fais quoi ?** : conserver les limites de texte, refuser les formats inconnus ; ne pas publier un éditeur qui perd sa mise en forme à l'enregistrement ou dans les exports.
+**Où regarder** : `assets/mentimeter.js:429` (suppression sélectionnée), `assets/editor.js:58` (éditeur), `lib.php:189` (validation structurée), `assets/common.js:562` (rendu), `assets/bilan-pptx.js:31` (export).
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |

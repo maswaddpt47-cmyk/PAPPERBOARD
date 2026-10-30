@@ -28,6 +28,20 @@
     slide.addText(value, Object.assign({ fontFace: FONT, color: C.texte, valign: 'top', margin: 0 }, o));
   }
 
+  function richRuns(plain, blocks, size, font) {
+    if (!blocks || !blocks.length) return plain;
+    var runs = [], number = 0;
+    blocks.forEach(function (block, i) {
+      if (i) runs.push({ text: '\n', options: {} });
+      number = block.type === 'number' ? number + 1 : 0;
+      var heading = block.type === 'title' || block.type === 'subtitle';
+      var options = { fontSize: size * (block.type === 'title' ? 1.3 : block.type === 'subtitle' ? 1.15 : 1), fontFace: heading ? TITRE : (font || FONT), bold: heading };
+      if (block.type === 'bullet' || block.type === 'number') runs.push({ text: block.type === 'bullet' ? '• ' : number + '. ', options: options });
+      block.runs.forEach(function (run) { runs.push({ text: run.text, options: Object.assign({}, options, { bold: run.bold === undefined ? heading : run.bold }) }); });
+    });
+    return runs;
+  }
+
   // Une couleur par réponse (--wl-b1 à b7), la bonne réponse en vert : comme la projection.
   var PAL = ['B74322', '3D7D3D', 'B18400', '943D78', '1F6F6B', '2F5E9E', '8A7A6A'];
   var NOTES = ['FFF1A8', 'D6EEF6', 'EEF3C9', 'F9DCC8', 'F3DDEB', 'E4EEDB']; // .note.board-c0 à c5
@@ -182,9 +196,9 @@
     var slide = pptx.addSlide({ masterName: 'WL' });
     var r = q.results, post = q.type === 'wall' || q.type === 'postit';
     text(slide, (d.questions.some(function (item) { return item.type === 'info'; }) ? 'Étape ' : 'Question ') + (i + 1) + ' / ' + d.questions.length + ' — ' + WL.typeLabel(q), { x: 0.5, y: 0.3, w: W - 1, h: 0.4, fontSize: 14, color: C.doux });
-    text(slide, q.text, { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink', fontFace: TITRE });
+    text(slide, richRuns(q.text, q.rich && q.rich.text, 24, TITRE), { x: 0.5, y: 0.7, w: W - 1, h: 1.1, fontSize: 24, bold: true, fit: 'shrink', fontFace: TITRE });
     if (q.type === 'info') {
-      text(slide, q.content || '', { x: 0.6, y: 1.9, w: q.illustration ? 7.8 : W - 1.2, h: 4.7, fontSize: 24, fit: 'shrink' });
+      text(slide, richRuns(q.content || '', q.rich && q.rich.content, 24), { x: 0.6, y: 1.9, w: q.illustration ? 7.8 : W - 1.2, h: 4.7, fontSize: 24, fit: 'shrink' });
       if (q.illustration) slide.addImage({ data: q.illustration, x: 8.7, y: 2.3, w: 4, h: 3 });
       text(slide, 'Diapositive d’information · aucune réponse demandée', { x: 0.5, y: 6.85, w: W - 1, h: 0.4, fontSize: 13, color: C.doux });
       return;
@@ -222,7 +236,7 @@
     if (r.compare) foot += ' — ' + WL.compareText(r.compare);
     if (q.explain) {
       // Encadré comme sur la projection : carte claire, filet vert à gauche.
-      text(slide, q.explain, { x: 0.5, y: 5.5, w: W - 1, h: 1.2, fontSize: 15, fit: 'shrink', fill: { color: C.carte }, margin: 10,
+      text(slide, richRuns(q.explain, q.rich && q.rich.explain, 15), { x: 0.5, y: 5.5, w: W - 1, h: 1.2, fontSize: 15, fit: 'shrink', fill: { color: C.carte }, margin: 10,
         line: { color: C.bord, width: 1 } });
       slide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 5.5, w: 0.08, h: 1.2, fill: { color: C.ok }, line: { color: C.ok, width: 0 } });
     }
@@ -257,16 +271,21 @@
     }
     if (d.synthesis) {
       // Une diapositive par tranche de ~1200 caractères, coupée entre deux paragraphes.
-      var parts = [], cur = '';
-      d.synthesis.split(/\n\n+/).forEach(function (para) {
-        if (cur && (cur + '\n\n' + para).length > 1200) { parts.push(cur); cur = para; } else { cur = cur ? cur + '\n\n' + para : para; }
+      var parts = [], cur = '', docs = [];
+      var paragraphs = d.synthesisRich && d.synthesisRich.length ? d.synthesisRich.map(function (block) {
+        return { text: block.runs.map(function (run) { return run.text; }).join(''), rich: block };
+      }) : d.synthesis.split(/\n\n+/).map(function (para) { return { text: para }; });
+      paragraphs.forEach(function (para) {
+        if (cur && (cur + '\n\n' + para.text).length > 1200) { parts.push({ text: cur, rich: docs }); cur = ''; docs = []; }
+        cur = cur ? cur + '\n\n' + para.text : para.text;
+        if (para.rich) docs.push(para.rich);
       });
-      if (cur) parts.push(cur);
+      if (cur) parts.push({ text: cur, rich: docs });
       parts.forEach(function (part, k) {
         s = pptx.addSlide({ masterName: 'WL' });
         text(s, 'Synthèse et recommandations' + (parts.length > 1 ? ' (' + (k + 1) + '/' + parts.length + ')' : ''),
           { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 28, bold: true, color: C.primaire, fontFace: TITRE });
-        text(s, part, { x: 0.5, y: 1.4, w: W - 1, h: 5.7, fontSize: 16, fit: 'shrink' });
+        text(s, richRuns(part.text, part.rich, 16), { x: 0.5, y: 1.4, w: W - 1, h: 5.7, fontSize: 16, fit: 'shrink' });
       });
     }
     if (d.conclusion) {
@@ -274,7 +293,7 @@
       text(s, 'À retenir', { x: 0.5, y: 0.4, w: W - 1, h: 0.8, fontSize: 30, bold: true, color: C.primaire, fontFace: TITRE });
       // Même texte que la projection : « À retenir : » en tête retiré (c'est le titre).
       var concl = d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '');
-      text(s, concl.charAt(0).toUpperCase() + concl.slice(1), { x: 0.8, y: 1.5, w: W - 1.6, h: 4.8, fontSize: 24, fit: 'shrink', valign: 'middle' });
+      text(s, d.conclusionRich && d.conclusionRich.length ? richRuns(d.conclusion, d.conclusionRich, 24) : concl.charAt(0).toUpperCase() + concl.slice(1), { x: 0.8, y: 1.5, w: W - 1.6, h: 4.8, fontSize: 24, fit: 'shrink', valign: 'middle' });
     }
     var name = 'bilan-' + d.title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pptx';
     return pptx.writeFile({ fileName: name });

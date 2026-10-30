@@ -23,6 +23,15 @@ de l'atelier, puis restent dans son archive et ses exports pédagogiques, sans l
 sur le serveur pour l'archive, comme les questions et conclusions. L'animateur vérifie
 qu'aucun nom, visage identifiable ou autre donnée personnelle ne figure dans ces contenus.
 
+Ajout du 30/10/2026, à relire par le responsable : le mini-éditeur garde le texte
+et une description limitée de sa mise en forme (gras, titres, listes), sans HTML
+fourni par la saisie ni service externe. Intitulés, choix, explications et variantes
+par appareil suivent la conservation de l'atelier puis de son archive pédagogique ;
+conclusion et synthèse gardent leurs règles existantes. La synthèse et sa mise en
+forme restent réservées à l'animateur et à ses exports. Retirer un élément pendant
+la relecture du PDF l'exclut des éléments envoyés à l'enregistrement ; le PDF
+d'origine reste sur l'appareil de l'animateur.
+
 | Rubrique | Contenu |
 |---|---|
 | Nom du traitement | WoocLight — participation en direct à des ateliers de médiation numérique |

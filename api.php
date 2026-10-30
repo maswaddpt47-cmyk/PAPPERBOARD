@@ -24,9 +24,9 @@ try {
         $action === 'me' || api_require_admin();
         ('api_' . $action)();
     } elseif ($method === 'POST' && in_array($action, [...WL_PUBLIC_POST, ...WL_ADMIN_POST], true)) {
-        $largeImport = in_array($action, ['questions_import', 'seance_save'], true);
+        $largeImport = in_array($action, ['questions_import', 'seance_save', 'question_save'], true);
         if ($largeImport) api_require_admin(true); // avant de lire un import pouvant contenir des illustrations
-        $body = api_body($largeImport ? 1300000 : 65536);
+        $body = api_body($action === 'question_save' ? 250000 : ($largeImport ? 1300000 : 65536));
         !$largeImport && in_array($action, WL_ADMIN_POST, true) && $action !== 'login' && api_require_admin(true);
         ('api_' . $action)($body);
     } else {
@@ -91,6 +91,7 @@ function api_ended_view(array $s): array
 {
     return ['ok' => true, 'title' => $s['title'], 'ended' => true, 'question' => null,
         'conclusion' => $s['conclusion'] ?? '',
+        'conclusionRich' => wl_rich_client() ? ($s['conclusionRich'] ?? []) : [],
         'code' => $s['code'], 'joinUrl' => wl_join_url($s['code']), 'participants' => count($s['participants']),
         'qrHidden' => !empty($s['qrHidden']),
         'pollMs' => (int)wl_config()['poll_ms'], 'now' => time()];
@@ -366,7 +367,8 @@ function api_sessions(): void
 function api_admin_state(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
-    if (in_array('info', array_column($s['questions'], 'type'), true)) wl_require_info_client();
+    wl_require_question_features($s['questions']);
+    if (!empty($s['conclusionRich']) || !empty($s['synthesisRich'])) wl_require_rich_client();
     // Signaux en cours : l'ETag change toutes les 10 s pour que les compteurs
     // s'effacent d'eux-mêmes (sinon 304 jusqu'à la prochaine écriture).
     $live = array_filter($s['signals'] ?? [], fn($x) => time() - $x['t'] < WL_SIGNAL_TTL + 15);
@@ -376,6 +378,7 @@ function api_admin_state(): void
             'showResults' => wl_shown($q), 'results' => wl_results($q, true, $s), 'live' => $q['live'] ?? true, 'compare' => $q['compare'] ?? '',
         ]), $s['questions']);
         return ['ok' => true, 'code' => $s['code'], 'title' => $s['title'], 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '', 'ended' => $s['ended'], 'locked' => !empty($s['locked']),
+            'conclusionRich' => $s['conclusionRich'] ?? [], 'synthesisRich' => $s['synthesisRich'] ?? [],
             'board' => ($s['board'] ?? -1) >= 0, 'qrHidden' => !empty($s['qrHidden']), 'show' => $s['show'] ?? '',
             'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'purgeFailures' => wl_purge_failures(), 'demo' => !empty($s['demo']),
             'signals' => wl_signal_counts($s), 'helpSteps' => wl_signal_steps($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
@@ -435,7 +438,7 @@ function api_session_duplicate(array $b): void
         return $q;
     }, $src['questions']);
     $title = preg_replace('/^(.{0,120}).*$/us', '$1', 'Copie de ' . $src['title']);
-    $s = wl_create_session($title, $questions);
+    $s = wl_create_session($title, $questions, $src);
     wl_json(['ok' => true, 'code' => $s['code']]);
 }
 
@@ -581,7 +584,8 @@ function api_archive(): void
 {
     $file = wl_archive_file((string)($_GET['id'] ?? ''));
     $a = is_file($file) ? json_decode((string)file_get_contents($file), true) : null;
-    if (is_array($a) && in_array('info', array_column($a['questions'], 'type'), true)) wl_require_info_client();
+    if (is_array($a)) wl_require_question_features($a['questions']);
+    if (is_array($a) && (!empty($a['conclusionRich']) || !empty($a['synthesisRich']))) wl_require_rich_client();
     is_array($a) ? wl_json(['ok' => true] + $a) : throw new WlError('Archive introuvable.', 404);
 }
 
@@ -605,10 +609,7 @@ function api_archive_reuse(array $b): void
         // Gommettes : la source n'est pas conservée dans l'archive, à rechoisir.
         return $q;
     }, array_values(array_filter($a['questions'], fn($q) => $q['type'] !== 'dots')));
-    $s = wl_create_session(preg_replace('/^(.{0,120}).*$/us', '$1', $a['title']), $questions);
-    wl_update($s['code'], function (array &$s) use ($a) {
-        $s['conclusion'] = $a['conclusion'] ?? '';
-    });
+    $s = wl_create_session(preg_replace('/^(.{0,120}).*$/us', '$1', $a['title']), $questions, $a);
     wl_json(['ok' => true, 'code' => $s['code']]);
 }
 
@@ -630,8 +631,11 @@ function api_session_rename(array $b): void
 function api_session_conclusion(array $b): void
 {
     $text = wl_clean_conclusion($b['conclusion'] ?? '');
-    wl_update(api_code($b), function (array &$s) use ($text) {
+    $rich = wl_clean_rich_doc($b['rich'] ?? [], $text, 600);
+    wl_update(api_code($b), function (array &$s) use ($text, $rich) {
+        if (!empty($s['conclusionRich'])) wl_require_rich_client();
         $s['conclusion'] = $text;
+        $s['conclusionRich'] = $rich;
     });
     wl_json(['ok' => true]);
 }
@@ -639,9 +643,12 @@ function api_session_conclusion(array $b): void
 function api_session_synthesis(array $b): void
 {
     $text = wl_clean_synthesis($b['synthesis'] ?? '');
+    $rich = wl_clean_rich_doc($b['rich'] ?? [], $text, 6000, true);
     // Animateur seulement : les téléphones n'ont pas à se rafraîchir.
-    wl_update(api_code($b), function (array &$s) use ($text) {
+    wl_update(api_code($b), function (array &$s) use ($text, $rich) {
+        if (!empty($s['synthesisRich'])) wl_require_rich_client();
         $s['synthesis'] = $text;
+        $s['synthesisRich'] = $rich;
     }, false);
     wl_json(['ok' => true]);
 }
@@ -658,6 +665,7 @@ function api_question_save(array $b): void
         if (!empty($in['id'])) {
             $i = wl_question_index($s, $in['id']);
             if ($s['questions'][$i]['type'] === 'info') wl_require_info_client();
+            if (!empty($s['questions'][$i]['rich'])) wl_require_rich_client();
             $q = wl_clean_question($in, $s['questions'][$i]);
             api_check_compare($s, $q, $i);
             if (!empty($s['demo'])) {
@@ -733,7 +741,7 @@ function api_questions_import(array $b): void
     if (array_filter($items, fn($it) => ($it['q']['type'] ?? '') === 'info')) wl_require_info_client();
     if (!empty($b['preview'])) {
         wl_json(['ok' => true, 'items' => array_map(fn($it) => isset($it['q'])
-            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare', 'variants', 'link', 'content', 'illustration']))
+            ? array_intersect_key($it['q'], array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'source', 'column', 'explain', 'compare', 'variants', 'link', 'content', 'illustration', 'rich']))
                 + (isset($it['warning']) ? ['warning' => $it['warning']] : [])
             : $it, $items)]);
     }
@@ -761,7 +769,7 @@ function api_questions_import(array $b): void
     wl_update(api_code($b), function (array &$s) use ($items, $keep, $replace) {
         // Remplacer (relecture par une autre IA) : seulement avant toute réponse, rien n'est perdu.
         if ($replace) {
-            if (in_array('info', array_column($s['questions'], 'type'), true)) wl_require_info_client();
+            wl_require_question_features($s['questions']);
             foreach ($s['questions'] as $q) {
                 if (!empty($q['answers']) || !empty($q['posts'])) {
                     throw new WlError('Cet atelier a déjà des réponses : dupliquez-le et faites relire la copie.');
@@ -777,6 +785,8 @@ function api_questions_import(array $b): void
         foreach ($keep as $i) {
             if (isset($items[$i]['conclusion'])) {
                 $s['conclusion'] = $items[$i]['conclusion'];
+                if (!empty($s['conclusionRich'])) wl_require_rich_client();
+                $s['conclusionRich'] = $items[$i]['conclusionRich'] ?? [];
                 continue;
             }
             $q = $items[$i]['q'];
@@ -1170,32 +1180,33 @@ function api_export_memo(array $s): never
         . '<link rel="stylesheet" href="' . wl_asset('style.css') . '"></head><body class="print memo">'
         . "<h1>$title</h1><p>Fiche mémo$when</p>";
     if (trim((string)($s['conclusion'] ?? '')) !== '') {
-        echo '<section><h2>À retenir</h2><p>' . nl2br(wl_h($s['conclusion'])) . '</p></section>';
+        echo '<section><h2>À retenir</h2><p>' . wl_rich_html($s['conclusion'], $s['conclusionRich'] ?? []) . '</p></section>';
     }
     $seen = '';
     $todo = '';
     foreach ($s['questions'] as $q) {
         if ($q['type'] === 'info') {
-            $seen .= '<li><strong>' . wl_h($q['text']) . '</strong><p>' . nl2br(wl_h($q['content'] ?? '')) . '</p>'
+            $seen .= '<li><strong>' . wl_rich_html($q['text'], $q['rich']['text'] ?? []) . '</strong><p>' . wl_rich_html($q['content'] ?? '', $q['rich']['content'] ?? []) . '</p>'
                 . (!empty($q['illustration']) ? '<img class="info-illustration" src="' . wl_h($q['illustration']) . '" alt="Illustration de la diapositive">' : '') . '</li>';
             continue;
         }
-        $good = $q['correct'] ? implode(' ; ', array_map(fn($i) => $q['options'][$i], $q['correct'])) : '';
+        $good = $q['correct'] ? implode(' ; ', array_map(fn($i) => wl_rich_html($q['options'][$i], $q['rich']['options'][$i] ?? [], wl_rich_offset($q['rich']['options'] ?? [], $i)), $q['correct'])) : '';
         if ($good !== '' || trim((string)($q['explain'] ?? '')) !== '') {
-            $seen .= '<li><strong>' . wl_h($q['text']) . '</strong>'
-                . ($good !== '' ? '<br>Bonne réponse : ' . wl_h($good) : '')
-                . (trim((string)($q['explain'] ?? '')) !== '' ? '<br>' . wl_h($q['explain']) : '') . '</li>';
+            $seen .= '<li><strong>' . wl_rich_html($q['text'], $q['rich']['text'] ?? []) . '</strong>'
+                . ($good !== '' ? '<br>Bonne réponse : ' . $good : '')
+                . (trim((string)($q['explain'] ?? '')) !== '' ? '<br>' . wl_rich_html($q['explain'], $q['rich']['explain'] ?? []) : '') . '</li>';
         }
         if ($q['type'] === 'steps' || ($q['link'] ?? '') !== '') {
-            $todo .= '<li><strong>' . wl_h($q['text']) . '</strong>';
+            $todo .= '<li><strong>' . wl_rich_html($q['text'], $q['rich']['text'] ?? []) . '</strong>';
             if (($q['link'] ?? '') !== '') {
                 $todo .= '<br>Adresse : <a href="' . wl_h($q['link']) . '" rel="noopener noreferrer">' . wl_h($q['link']) . '</a>';
             }
             if ($q['type'] === 'steps') {
-                $todo .= '<ol>' . implode('', array_map(fn($o) => '<li>' . wl_h($o) . '</li>', $q['options'])) . '</ol>';
+                $todo .= '<ol>' . implode('', array_map(fn($o, $i) => '<li>' . wl_rich_html($o, $q['rich']['options'][$i] ?? [], wl_rich_offset($q['rich']['options'] ?? [], $i)) . '</li>', $q['options'], array_keys($q['options']))) . '</ol>';
+                $variantDocs = wl_variant_docs($q);
                 foreach ($q['variants'] ?? [] as $v) {
-                    $todo .= '<p><em>' . wl_h($v['name']) . '</em></p><ol>'
-                        . implode('', array_map(fn($t) => '<li>' . wl_h($t) . '</li>', $v['steps'])) . '</ol>';
+                    $todo .= '<p><em>' . wl_rich_html($v['name'], $variantDocs[$v['name']]['title'] ?? []) . '</em></p><ol>'
+                        . implode('', array_map(fn($t, $i) => '<li>' . wl_rich_html($t, $variantDocs[$v['name']]['steps'][$i] ?? [], wl_rich_offset($variantDocs[$v['name']]['steps'] ?? [], $i)) . '</li>', $v['steps'], array_keys($v['steps']))) . '</ol>';
                 }
             }
             $todo .= '</li>';
@@ -1231,17 +1242,23 @@ function api_export_print(array $s, bool $all): never
     foreach ($byQuestion as $n => $rows) {
         $q = $s['questions'][$n - 1];
         if ($q['type'] === 'info') {
-            echo '<section><h2>' . $n . '. ' . wl_h($q['text']) . '</h2><p class="info-content">' . nl2br(wl_h($q['content'] ?? '')) . '</p>'
+            echo '<section><h2>' . $n . '. ' . wl_rich_html($q['text'], $q['rich']['text'] ?? []) . '</h2><p class="info-content">' . wl_rich_html($q['content'] ?? '', $q['rich']['content'] ?? []) . '</p>'
                 . (!empty($q['illustration']) ? '<img class="info-illustration" src="' . wl_h($q['illustration']) . '" alt="Illustration de la diapositive">' : '') . '</section>';
             continue;
         }
-        echo '<section><h2>' . $n . '. ' . wl_h($rows[0][1]) . '</h2><p>' . wl_h($rows[0][2])
+        echo '<section><h2>' . $n . '. ' . wl_rich_html($rows[0][1], $q['rich']['text'] ?? []) . '</h2><p>' . wl_h($rows[0][2])
             . ' — ' . $rows[0][5] . ' réponse(s)</p><table><tbody>';
         foreach ($rows as $r) {
-            echo '<tr><td>' . wl_h((string)$r[3]) . '</td><td>' . wl_h((string)$r[4]) . '</td></tr>';
+            $label = wl_h((string)$r[3]);
+            foreach ($q['options'] as $i => $opt) {
+                $suffix = in_array($i, $q['correct'], true) ? ' (bonne réponse)' : '';
+                if ($r[3] === $opt . $suffix) { $label = wl_rich_html($opt, $q['rich']['options'][$i] ?? [], wl_rich_offset($q['rich']['options'] ?? [], $i)) . wl_h($suffix); break; }
+            }
+            echo '<tr><td>' . $label . '</td><td>' . wl_h((string)$r[4]) . '</td></tr>';
         }
         echo '</tbody></table></section>';
     }
+    if (!empty($s['conclusion'])) echo '<section><h2>À retenir</h2><p>' . wl_rich_html($s['conclusion'], $s['conclusionRich'] ?? []) . '</p></section>';
     echo '<p class="no-print"><button type="button" id="print-btn" class="btn">Imprimer</button></p>'
         . '<script src="' . wl_asset('print.js') . '"></script></body></html>';
     exit;

@@ -95,20 +95,20 @@ function check(cond, label) {
   check(await admin.locator('#ed-qr img').count() === 1, 'QR code animateur');
 
   await admin.click('#add-q-btn');
-  await admin.fill('#qf-text', 'Utilisez-vous internet ?');
+  await admin.fill('[data-rich-input="qf-text"]', 'Utilisez-vous internet ?');
   await admin.check('#qf-correct input[value="0"]');
   await admin.uncheck('#qf-change'); // réponse figée : un appui ne vote pas, « Envoyer » vote
   await admin.click('#qf-save');
   await admin.waitForSelector('#q-list .list-item');
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'truefalse');
-  await admin.fill('#qf-text', 'Vrai ou faux ?');
+  await admin.fill('[data-rich-input="qf-text"]', 'Vrai ou faux ?');
   await admin.check('#qf-correct input[value="0"]');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'wordcloud');
-  await admin.fill('#qf-text', 'Un mot ?');
+  await admin.fill('[data-rich-input="qf-text"]', 'Un mot ?');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 3);
   check(await admin.locator('#tab-live').isHidden(), 'onglets : un seul panneau visible');
@@ -164,7 +164,8 @@ function check(cond, label) {
   await phone.click('#answer-form button[type="submit"]');
   await phone.waitForFunction(() => /Réponse enregistrée/.test(document.getElementById('answer-status').textContent));
   check(votes.length === 1, 'vote envoyé par le bouton « Envoyer »');
-  check(await phone.getAttribute('.btn-choice >> text=Oui', 'aria-pressed') === 'true', 'choix marqué');
+  // Le texte peut être imbriqué et la correction ajoute un repère accessible : on contrôle le bouton.
+  check(await phone.locator('.btn-choice').filter({ hasText: /^Oui$/ }).getAttribute('aria-pressed') === 'true', 'choix marqué');
 
   // Pilote sur téléphone : vote et affichage restent des boutons ; le glisser remplace Précédente / Suivante.
   const mob = await (await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true,
@@ -257,7 +258,7 @@ function check(cond, label) {
 
   // Session terminée, avec une conclusion.
   await admin.click('#t-prep');
-  await admin.fill('#conclusion', 'Conclusion de test');
+  await admin.fill('[data-rich-input="conclusion"]', 'Conclusion de test');
   await admin.click('#conclusion-btn');
   await admin.waitForFunction(() => document.getElementById('conclusion-saved').textContent !== '');
   admin.once('dialog', d => d.accept());

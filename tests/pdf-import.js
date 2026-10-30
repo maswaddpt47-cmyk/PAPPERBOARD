@@ -51,22 +51,33 @@ function check(test, label) { if (!test) throw new Error(label); ok++; }
     check((await page.inputValue('#menti-text')).includes('ordinateur') && (await page.inputValue('#menti-options')).includes('Oui'),
       'page image passée par PDF.js et OCR français : ' + JSON.stringify({ text: await page.inputValue('#menti-text'), type: await page.inputValue('#menti-type'), options: await page.inputValue('#menti-options') }));
     await page.selectOption('#menti-type', 'yesno'); // confirmation humaine du type, l'OCR reste une proposition
+    await page.locator('[data-rich-input="menti-options"]').fill('Libellé modifié');
+    check(await page.inputValue('#menti-options') === 'Oui\nNon', 'choix fixes : mise en forme disponible sans renommer Oui et Non');
+    await page.locator('[data-rich-input="menti-options"]').press('ControlOrMeta+A');
+    await page.locator('[data-rich-input="menti-options"]').locator('..').getByRole('button', {name:'Mettre la sélection en gras',exact:true}).click();
     check(await page.isDisabled('#menti-continue'), 'relecture obligatoire avant l’aperçu');
     await page.check('#menti-reviewed');
     check(!await page.isDisabled('#menti-continue'), 'question relue utilisable');
-    await page.fill('#menti-text', 'Avez-vous un ordinateur personnel ?');
+    await page.fill('[data-rich-input="menti-text"]', 'Avez-vous un ordinateur personnel ?');
     check(!await page.isChecked('#menti-reviewed') && await page.isDisabled('#menti-continue'), 'modifier une question invalide sa confirmation');
     await page.check('#menti-reviewed');
     await page.selectOption('#menti-page', '1'); await waitPage(2);
     check(await page.locator('#menti-question option:checked').textContent() === 'Étape 2 — À relire', 'navigation PDF : numéro de l’atelier, sans repartir à 1 sur chaque page');
     check((await page.inputValue('#menti-type')) === 'mcq' && await page.isChecked('#menti-multi'), 'PDF texte : plusieurs choix reconnus');
     check((await page.inputValue('#menti-options')).split('\n').length === 3, 'PDF texte : trois libellés conservés, sans résultat');
+    await page.locator('[data-rich-input="menti-options"]').press('ControlOrMeta+A');
+    await page.locator('[data-rich-input="menti-options"]').locator('..').getByRole('button', {name:'Mettre la sélection en gras',exact:true}).click();
     await page.check('#menti-reviewed');
     await page.click('#menti-add');
     check(await page.locator('#menti-question option:checked').textContent() === 'Étape 3 — À relire', 'ajout sur la même page : étape suivante, sans confirmation automatique');
-    await page.fill('#menti-text', 'Une seconde question sur la même page ?');
+    await page.fill('[data-rich-input="menti-text"]', 'Une seconde question sur la même page ?');
     await page.check('#menti-reviewed');
     check(await page.locator('#menti-question option:checked').textContent() === 'Étape 3 — Relue', 'confirmation : état de relecture mis à jour immédiatement');
+    page.once('dialog', d => d.dismiss()); await page.click('#menti-delete');
+    check(await page.locator('#menti-question option').count() === 2, 'annuler la suppression conserve les deux questions de la page');
+    page.once('dialog', d => d.accept()); await page.click('#menti-delete');
+    check(await page.locator('#menti-question option').count() === 1 && (await page.inputValue('#menti-text')).includes('activites'), 'supprimer la sélection conserve la première question et sa relecture');
+    await page.click('#menti-add'); await page.fill('[data-rich-input="menti-text"]', 'Une seconde question sur la même page ?'); await page.check('#menti-reviewed');
     await page.selectOption('#menti-question', '0');
     check((await page.inputValue('#menti-text')).includes('activites') && await page.isChecked('#menti-reviewed'), 'plusieurs questions sur une page : brouillons conservés');
     await page.click('#menti-prev'); await waitPage(1);
@@ -107,12 +118,16 @@ function check(test, label) { if (!test) throw new Error(label); ok++; }
     await page.click('#menti-continue');
     await page.waitForSelector('#gen-preview:not([hidden])');
     check((await page.locator('#gen-list input:checked').count()) === 5, 'aperçu serveur : quatre questions et une diapositive d’information');
+    check(await page.locator('#gen-list .gen-choice strong').count() === 5, 'relecture finale : mise en forme des deux choix fixes et des trois choix QCM');
     check(await page.isHidden('#gen-generation') && (await page.textContent('#gen-title')).includes('PDF'), 'aperçu dédié au PDF');
     await page.click('#gen-cancel');
     check(await sessions() === before, 'annuler après la relecture ne crée rien');
     // Un second passage par le vrai fichier vérifie la libération puis la reprise.
     await open();
     await page.setInputFiles('#menti-file', fixture); await waitPage(1);
+    page.once('dialog', d => d.accept()); await page.click('#menti-delete');
+    check(await page.isVisible('#menti-empty') && await page.isDisabled('#menti-continue'), 'supprimer le dernier élément écarte la page et bloque l’import vide');
+    await page.click('#menti-add'); await page.fill('[data-rich-input="menti-text"]', 'Avez-vous un ordinateur personnel ?');
     await page.selectOption('#menti-type', 'yesno');
     await page.check('#menti-reviewed');
     page.once('dialog', dialog => dialog.accept()); // trois pages non examinées explicitement ignorées

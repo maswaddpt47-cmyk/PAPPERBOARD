@@ -236,7 +236,7 @@
 
   function renderQuestion(q, mine) {
     $('q-meta').textContent = WL.typeLabel(q);
-    $('q-text').textContent = q.text;
+    WL.renderText($('q-text'), q.text, q.rich && q.rich.text);
     var form = WL.clear($('answer-form'));
     if (q.type === 'info') {
       WL.renderInformation(form, q);
@@ -281,6 +281,7 @@
     redrawSteps = function () {
       if (state && state.question && state.question.id === q.id) renderQuestion(state.question, state.mine === undefined ? null : state.mine);
     };
+    var variantRich = WL.variantDocs(q);
     var variants = q.variants || [];
     var name = store.get('variant');
     var chosen = variants.filter(function (v) { return v.name === name; })[0] || null;
@@ -290,21 +291,21 @@
       var picker = el('div', { class: 'choices' });
       variants.forEach(function (v) {
         picker.appendChild(el('button', { type: 'button', class: 'btn btn-choice',
-          onclick: function () { store.set('variant', v.name); redraw(); } }, v.name));
+          onclick: function () { store.set('variant', v.name); redraw(); } }, WL.richText(v.name, variantRich[v.name] && variantRich[v.name].title)));
       });
       form.appendChild(picker);
       return;
     }
     if (chosen) {
-      form.appendChild(el('p', { class: 'meta device-line' }, 'Appareil : ' + chosen.name + ' ',
+      form.appendChild(el('p', { class: 'meta device-line' }, 'Appareil : ', WL.richText(chosen.name, variantRich[chosen.name] && variantRich[chosen.name].title), ' ',
         el('button', { type: 'button', class: 'btn btn-small', onclick: function () { store.del('variant'); redraw(); } }, 'Changer')));
     }
     var list = el('ol', { class: 'steps' });
     q.options.forEach(function (title, i) {
       var on = done.indexOf(i) !== -1;
       list.appendChild(el('li', { class: 'step' + (on ? ' is-done' : '') },
-        el('span', { class: 'step-text' }, el('strong', null, title),
-          chosen ? el('span', { class: 'step-detail' }, chosen.steps[i]) : null),
+        el('span', { class: 'step-text' }, el('strong', null, WL.richText(title, q.rich && q.rich.options && q.rich.options[i], WL.richOffset(q.rich && q.rich.options, i))),
+          chosen ? el('span', { class: 'step-detail' }, WL.richText(chosen.steps[i], variantRich[chosen.name] && variantRich[chosen.name].steps[i], WL.richOffset(variantRich[chosen.name] && variantRich[chosen.name].steps, i))) : null),
         el('span', { class: 'step-actions' },
           el('button', { type: 'button', class: 'btn btn-fait', 'aria-pressed': String(on), disabled: locked,
             onclick: function () {
@@ -347,7 +348,7 @@
           // Sur téléphone le bouton peut être sous le pli : on l'amène à l'écran.
           if (button) button.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
-      }, it.label);
+      }, WL.richText(it.label, q.rich && q.rich.options && q.rich.options[it.value], WL.richOffset(q.rich && q.rich.options, it.value)));
     });
     buttons.forEach(function (b) { grid.appendChild(b); });
     form.appendChild(grid);
@@ -373,7 +374,7 @@
     form.appendChild(el('p', { class: 'meta' }, 'Plusieurs réponses possibles : cochez toutes celles qui conviennent.'));
     q.options.forEach(function (label, i) {
       var input = el('input', { type: 'checkbox', value: i, disabled: locked, checked: Array.isArray(mine) && mine.indexOf(i) !== -1 });
-      box.appendChild(el('label', { class: 'check-big' + markClass(q, i) }, input, el('span', null, label)));
+      box.appendChild(el('label', { class: 'check-big' + markClass(q, i) }, input, WL.richText(label, q.rich && q.rich.options && q.rich.options[i], WL.richOffset(q.rich && q.rich.options, i))));
     });
     form.appendChild(box);
     submit(form, locked, function () {
@@ -422,7 +423,7 @@
   /** Classement par points : répartir le budget entre les choix. */
   function points(form, q, mine, locked) {
     var values = Array.isArray(mine) ? mine.slice() : q.options.map(function () { return 0; });
-    stepper(form, q.options, values, q.budget, locked, 'point', function () { send(q, values); });
+    stepper(form, q.options, values, q.budget, locked, 'point', function () { send(q, values); }, q.rich && q.rich.options);
   }
 
   /** Gommettes : coller N gommettes sur les idées (plusieurs sur une même idée possible). */
@@ -444,7 +445,7 @@
   }
 
   /** Boutons − / + pour répartir un budget ; values est modifié sur place. */
-  function stepper(form, labels, values, budget, locked, unit, onSend) {
+  function stepper(form, labels, values, budget, locked, unit, onSend, formats) {
     var left = el('p', { class: 'points-left', 'aria-live': 'polite' });
     var rows = [];
     function refresh() {
@@ -470,7 +471,7 @@
       };
       rows.push(row);
       form.appendChild(el('div', { class: 'points-row' },
-        el('span', { class: 'points-label' }, label, row.pills), row.minus, row.value, row.plus));
+        el('span', { class: 'points-label' }, WL.richText(label, formats && formats[i], WL.richOffset(formats, i)), row.pills), row.minus, row.value, row.plus));
     });
     refresh();
     submit(form, locked, function () {
@@ -561,7 +562,7 @@
     columns.forEach(function (name, c) {
       var mineHere = posts.filter(function (p) { return q.type !== 'postit' || p.col === c; });
       if (!mineHere.length) return;
-      if (name && columns.length > 1) box.appendChild(el('h3', { class: 'board-title' }, name));
+      if (name && columns.length > 1) box.appendChild(el('h3', { class: 'board-title' }, WL.richText(name, q.rich && q.rich.options && q.rich.options[c], WL.richOffset(q.rich && q.rich.options, c))));
       var list = el('ul', { class: 'wall' });
       mineHere.forEach(function (p) {
         var item = el('li', { class: 'wall-item' + (q.type === 'postit' ? ' note ' + WL.noteColor(p.id) : '') }, el('span', { class: 'post-text' }, p.text));
@@ -657,7 +658,7 @@
     if (q.correct.length) {
       box.appendChild(el('p', null, 'Bonne réponse : ' + q.correct.map(function (i) { return q.options[i]; }).join(', ')));
     }
-    if (q.explain) box.appendChild(el('p', { class: 'explain' }, q.explain));
+    if (q.explain) box.appendChild(el('p', { class: 'explain' }, WL.richText(q.explain, q.rich && q.rich.explain)));
     if (state.result) {
       var res = el('div');
       WL.renderResults(res, q, state.result);

@@ -119,7 +119,7 @@
     }
     if (d.ended) {
       // Conclusion seule : le détail par question passe par le bilan projeté (B).
-      WL.renderRecap($('s-recap'), { conclusion: d.conclusion });
+      WL.renderRecap($('s-recap'), { conclusion: d.conclusion, conclusionRich: d.conclusionRich });
       fitRecap();
       rollIn(d.conclusion);
       return;
@@ -130,7 +130,7 @@
       return;
     }
     $('s-meta').textContent = (d.hasInfo ? 'Étape ' : 'Question ') + d.position + ' / ' + d.count + ' — ' + WL.typeLabel(q);
-    $('s-text').textContent = q.text;
+    WL.renderText($('s-text'), q.text, q.rich && q.rich.text);
     $('s-text').style.fontSize = '';
     linkFor(q);
     timerFor(q);
@@ -140,7 +140,7 @@
       if (q.type === 'wall' && q.state === 'open') {
         $('s-results').appendChild(el('p', { class: 's-hint' }, 'Aimez les idées des autres sur votre appareil : touchez ♥.'));
       }
-      if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
+      if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, WL.richText(q.explain, q.rich && q.rich.explain)));
       scheduleFit();
     } else {
       var msg = q.state === 'draft' ? 'Les votes vont bientôt s\'ouvrir.'
@@ -220,7 +220,7 @@
     }
     WL.show($('s-link'), false); // pas de QR d'exercice dans le bilan
     $('s-meta').textContent = 'Bilan — ' + d.board.position + ' / ' + d.board.count + ' — ' + WL.typeLabel(q);
-    $('s-text').textContent = q.text;
+    WL.renderText($('s-text'), q.text, q.rich && q.rich.text);
     if (q.type === 'info') { WL.renderInformation($('s-results'), q); scheduleFit(); return; }
     if (!d.results) {
       WL.clear($('s-results')).appendChild(el('div', { class: 's-waiting' },
@@ -229,7 +229,7 @@
       return;
     }
     WL.renderResults($('s-results'), q, d.results, { participants: d.present });
-    if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, q.explain));
+    if (q.explain) $('s-results').appendChild(el('p', { class: 's-explain' }, WL.richText(q.explain, q.rich && q.rich.explain)));
     scheduleFit();
   }
 

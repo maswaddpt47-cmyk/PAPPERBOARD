@@ -36,7 +36,7 @@ var WL = (function () {
   function api(action, opts) {
     opts = opts || {};
     var url = 'api.php?action=' + encodeURIComponent(action) + (opts.query ? '&' + opts.query : '');
-    var headers = Object.assign({ 'X-WL': '1', 'X-WL-Features': 'info-v1' }, opts.headers || {});
+    var headers = Object.assign({ 'X-WL': '1', 'X-WL-Features': 'info-v1, rich-v1' }, opts.headers || {});
     if (opts.etag) headers['If-None-Match'] = opts.etag;
     var init = { method: opts.method || 'GET', headers: headers, credentials: 'same-origin', cache: 'no-store' };
     if (opts.body) {
@@ -239,7 +239,8 @@ var WL = (function () {
         : (res.total ? Math.round(100 * n / res.total) : 0);
       var li = items[i];
       li.className = 'bar' + (good ? ' bar-good' : '');
-      li.children[0].textContent = (good ? '✓ ' : '') + label;
+      renderText(li.children[0], label, q.rich && q.rich.options && q.rich.options[i], richOffset(q.rich && q.rich.options, i));
+      if (good) li.children[0].insertBefore(document.createTextNode('✓ '), li.children[0].firstChild);
       li.children[2].textContent = columns ? String(n) : q.type === 'points' ? plural(n, 'point') : n + ' (' + pct + ' %)';
       var fill = li.children[1].firstChild;
       var size = Math.round(100 * n / max) + '%';
@@ -310,7 +311,8 @@ var WL = (function () {
       // Titre « À retenir » ; le même début dans le texte est retiré (pas de doublon).
       container.appendChild(el('h2', { class: 'recap-title' }, 'À retenir'));
       var text = d.conclusion.replace(/^\s*(?:[àa]\s+)?retenir\s*:\s*/i, '');
-      container.appendChild(el('p', { class: 'explain recap-conclusion' }, text.charAt(0).toUpperCase() + text.slice(1)));
+      container.appendChild(el('p', { class: 'explain recap-conclusion' }, d.conclusionRich && d.conclusionRich.length
+        ? richText(d.conclusion, d.conclusionRich) : text.charAt(0).toUpperCase() + text.slice(1)));
     }
   }
 
@@ -430,7 +432,7 @@ var WL = (function () {
     var grid = el('div', { class: 'board' });
     grid.style.gridTemplateColumns = 'repeat(' + res.columns.length + ', minmax(10rem, 1fr))';
     res.columns.forEach(function (name, c) {
-      var col = el('section', { class: 'board-col' }, el('h3', { class: 'board-title' }, name));
+      var col = el('section', { class: 'board-col' }, el('h3', { class: 'board-title' }, richText(name, q.rich && q.rich.options && q.rich.options[c], richOffset(q.rich && q.rich.options, c))));
       top.filter(function (p) { return p.col === c; }).forEach(function (p) {
         var note = keep(nodes, p.id, function () { return el('div', { class: 'note ' + noteColor(p.id) }); });
         clear(note).appendChild(el('p', { class: 'note-text' }, p.text));
@@ -540,13 +542,59 @@ var WL = (function () {
   }
 
   /** Contenu de l'animateur : texte sans HTML, sans compteur de votes. */
+  function renderText(container, plain, blocks, start) {
+    if (!blocks || !blocks.length) { container.textContent = plain || ''; return; }
+    var key = JSON.stringify([blocks, start || 0]);
+    if (container.wlRichKey === key && container.firstChild && container.firstChild.nodeType === 1 && container.firstChild.classList.contains('wl-rich-text')) return;
+    container.wlRichKey = key;
+    var box = el('span', { class: 'wl-rich-text' }), number = start || 0;
+    blocks.forEach(function (block) {
+      var type = ['title', 'subtitle', 'bullet', 'number'].indexOf(block.type) !== -1 ? block.type : 'p';
+      number = type === 'number' ? number + 1 : 0;
+      var line = el('span', { class: 'wl-rich-block wl-rich-' + type });
+      if (type === 'bullet' || type === 'number') line.appendChild(document.createTextNode(type === 'bullet' ? '• ' : number + '. '));
+      (block.runs || []).forEach(function (run) { line.appendChild(run.bold ? el('strong', null, run.text) : run.bold === false ? el('span', { class: 'wl-rich-normal' }, run.text) : document.createTextNode(run.text)); });
+      box.appendChild(line);
+    });
+    clear(container).appendChild(box);
+  }
+
+  function richText(plain, blocks, start) { var node = el('span'); renderText(node, plain, blocks, start); return node; }
+
+  function richOffset(docs, index) {
+    if (!docs || !docs[index] || !docs[index][0] || docs[index][0].type !== 'number') return 0;
+    var offset = 0;
+    for (var i = index - 1; i >= 0 && docs[i] && docs[i][0] && docs[i][0].type === 'number'; i--) offset++;
+    return offset;
+  }
+
+  function variantDocs(q) {
+    var out = Object.create(null), name = '';
+    ((q.rich && q.rich.variants) || []).forEach(function (block) {
+      var line = block.runs.map(function (r) { return r.text; }).join('').trim(), match = /^\[(.+)\]$/.exec(line);
+      if (match) {
+        name = match[1].trim().replace(/\s+/g, ' ');
+        var full = block.runs.map(function (r) { return r.text; }).join(''), start = full.indexOf('[') + 1, end = full.lastIndexOf(']'), offset = 0, parts = [];
+        block.runs.forEach(function (r) {
+          var text = r.text.slice(Math.max(0, start - offset), Math.max(0, Math.min(r.text.length, end - offset)));
+          if (text) parts.push(Object.assign({}, r, { text: text }));
+          offset += r.text.length;
+        });
+        out[name] = { title: [{ type: block.type, runs: parts }], steps: [] };
+      } else if (line && name) out[name].steps.push([block]);
+    });
+    return out;
+  }
+
   function renderInformation(container, q) {
     var previous = container.wlInformation;
+    var richKey = JSON.stringify(q.rich || {});
     if (previous && previous.id === q.id && previous.content === q.content && previous.image === q.illustration
+      && previous.rich === richKey
       && container.firstElementChild && container.firstElementChild.classList.contains('information-slide')) return;
-    container.wlInformation = { id: q.id, content: q.content, image: q.illustration };
+    container.wlInformation = { id: q.id, content: q.content, image: q.illustration, rich: richKey };
     var box = el('section', { class: 'information-slide' + (q.illustration ? ' has-illustration' : '') });
-    if (q.content) box.appendChild(el('div', { class: 'info-content' }, q.content));
+    if (q.content) { var body = el('div', { class: 'info-content' }); renderText(body, q.content, q.rich && q.rich.content); box.appendChild(body); }
     if (q.illustration) box.appendChild(el('img', { class: 'info-illustration', src: q.illustration, alt: 'Illustration de la diapositive « ' + q.text + ' »', width: 640, height: 480 }));
     clear(container).appendChild(box);
   }
@@ -573,7 +621,7 @@ var WL = (function () {
 
   return {
     el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
-    TYPES: TYPES, plural: plural, renderResults: renderResults, renderInformation: renderInformation, compareText: compareText, linkHost: linkHost,
+    TYPES: TYPES, plural: plural, renderResults: renderResults, renderInformation: renderInformation, renderText: renderText, richText: richText, richOffset: richOffset, variantDocs: variantDocs, compareText: compareText, linkHost: linkHost,
     remaining: remaining, formatTime: formatTime, animationGuide: animationGuide, renderAnimationGuide: renderAnimationGuide
   };
 }());

@@ -80,6 +80,11 @@
     var text = clean(entry.text), max = entry.type === 'conclusion' ? 600 : 200;
     if (!text || Array.from(text).length > max) throw new Error('Page ' + number + ' : un intitulé de 1 à ' + max + ' caractères est nécessaire.');
     var q = { type: entry.type, text: text };
+    if (entry.rich) {
+      q.rich = { text: entry.rich.text || [] };
+      if (entry.type === 'info') q.rich.content = entry.rich.content || [];
+      if (['poll', 'mcq', 'yesno', 'truefalse'].indexOf(entry.type) !== -1 && entry.rich.options && entry.rich.options.some(function (d) { return d.length; })) q.rich.options = entry.rich.options;
+    }
     if (q.type === 'info') {
       q.content = String(entry.content || '').trim(); q.illustration = entry.illustration || '';
       if ((!q.content && !q.illustration) || Array.from(q.content).length > 3000) throw new Error('Page ' + number + ' : ajoutez du texte (3 000 caractères au plus) ou une illustration.');
@@ -133,6 +138,10 @@
     $('menti-next').disabled = loading || pageIndex === pages.length - 1;
     $('menti-page').disabled = loading;
     $('menti-fields').disabled = loading || !pages[pageIndex];
+    var entry = pages[pageIndex];
+    var empty = entry && entry.questions.length === 1 && entry.value.type === 'skip' && !entry.value.text;
+    WL.show($('menti-empty'), !!empty);
+    $('menti-delete').disabled = loading || imagesLoading > 0 || !entry || !!empty;
     renderQuestionChoices();
   }
 
@@ -156,8 +165,12 @@
 
   function syncFields() {
     var type = $('menti-type').value;
+    var fixed = type === 'yesno' ? ['Oui', 'Non'] : type === 'truefalse' ? ['Vrai', 'Faux'] : null;
+    if (fixed && $('menti-options').value !== fixed.join('\n')) WL.Editor.setLines('menti-options', fixed);
+    WL.Editor.lock('menti-options', fixed ? fixed.join('\n') : null);
     WL.show($('menti-question-fields'), type !== 'skip');
-    WL.show($('menti-options-box'), type === 'poll' || type === 'mcq');
+    WL.show($('menti-options-box'), !!fixed || type === 'poll' || type === 'mcq');
+    document.querySelector('#menti-options-box label').textContent = fixed ? 'Choix fixes — mise en forme modifiable' : 'Choix proposés, un par ligne (2 à 10, 80 caractères chacun)';
     WL.show($('menti-multi-box'), type === 'mcq');
     WL.show($('menti-scale-box'), type === 'scale');
     WL.show($('menti-info-box'), type === 'info');
@@ -176,6 +189,7 @@
       multi: $('menti-multi').checked, scaleMax: Number($('menti-scale').value), reviewed: $('menti-reviewed').checked,
       content: $('menti-content').value, illustration: entry.value.illustration || ''
     };
+    entry.value.rich = { text: WL.Editor.get('menti-text'), content: WL.Editor.get('menti-content'), options: WL.Editor.lines('menti-options') };
     syncFields();
     $('menti-error').textContent = '';
     if ($('menti-reviewed').checked && entry.value.type !== 'skip') {
@@ -186,12 +200,12 @@
 
   function renderFields(entry) {
     $('menti-type').value = entry.value.type;
-    $('menti-text').value = entry.value.text;
-    $('menti-content').value = entry.value.content || '';
+    WL.Editor.set('menti-text', entry.value.text, entry.value.rich && entry.value.rich.text);
+    WL.Editor.set('menti-content', entry.value.content || '', entry.value.rich && entry.value.rich.content);
     WL.show($('menti-image-preview'), !!entry.value.illustration);
     WL.show($('menti-image-remove'), !!entry.value.illustration);
     if (entry.value.illustration) $('menti-image-preview').src = entry.value.illustration; else $('menti-image-preview').removeAttribute('src');
-    $('menti-options').value = entry.value.options.join('\n');
+    WL.Editor.setLines('menti-options', entry.value.options, entry.value.rich && entry.value.rich.options);
     $('menti-multi').checked = entry.value.multi;
     $('menti-scale').value = String(entry.value.scaleMax);
     $('menti-reviewed').checked = entry.value.reviewed;
@@ -356,8 +370,9 @@
     ocrPromise = null; pdf = null; pages = []; loading = false; imagesLoading = 0;
     var canvas = $('menti-canvas'); canvas.width = canvas.height = 0;
     $('menti-recognized').textContent = '';
-    $('menti-text').value = $('menti-options').value = $('menti-file').value = '';
-    $('menti-content').value = ''; $('menti-image-preview').removeAttribute('src');
+    $('menti-file').value = '';
+    ['menti-text', 'menti-options', 'menti-content'].forEach(function (id) { WL.Editor.set(id, ''); });
+    $('menti-image-preview').removeAttribute('src');
   }
 
   $('menti-file').addEventListener('change', async function () {
@@ -406,9 +421,19 @@
   $('menti-add').addEventListener('click', function () {
     var entry = pages[pageIndex];
     if (!entry || loading) return;
+    if (entry.questions.length === 1 && entry.value.type === 'skip' && !entry.value.text) entry.questions = [];
     entry.questions.push({ type: 'text', text: '', options: [], multi: false, scaleMax: 5, reviewed: false });
     entry.selected = entry.questions.length - 1;
-    renderFields(entry); updateSummary(); $('menti-text').focus();
+    renderFields(entry); updateSummary(); WL.Editor.focus('menti-text');
+  });
+  $('menti-delete').addEventListener('click', function () {
+    var entry = pages[pageIndex];
+    if (!entry || loading || imagesLoading) return;
+    if (!confirm('Supprimer cet élément de l’import : « ' + (entry.value.text || 'Sans intitulé') + ' » ? Le PDF d’origine est conservé.')) return;
+    entry.questions.splice(entry.selected, 1);
+    if (!entry.questions.length) entry.questions.push({ type: 'skip', text: '', options: [], multi: false, scaleMax: 5, reviewed: false });
+    entry.selected = Math.min(entry.selected, entry.questions.length - 1);
+    renderFields(entry); updateSummary(); $('menti-add').focus();
   });
   $('menti-prev').addEventListener('click', function () { if (!loading && pageIndex > 0) showPage(pageIndex - 1); });
   $('menti-next').addEventListener('click', function () { if (!loading && pageIndex < pages.length - 1) showPage(pageIndex + 1); });

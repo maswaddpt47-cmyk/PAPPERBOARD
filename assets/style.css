@@ -1,3 +1,23 @@
+.wl-editor-source { display: none !important; }
+.gen-choice { display: block; }
+.wl-editor { border: 1px solid var(--wl-champ); border-radius: var(--wl-rayon-s); background: var(--wl-champ-fond); min-width: 0; margin-bottom: 1rem; }
+.wl-editor-toolbar { display: flex; flex-wrap: wrap; gap: .25rem; padding: .4rem; border-bottom: var(--wl-bord-fin); }
+.wl-editor-toolbar select { width: auto; max-width: 100%; min-height: var(--wl-cible); }
+.wl-editor-toolbar .btn:first-child { font-weight: bold; }
+.wl-editor-input { position: relative; padding: .8rem; min-height: 6rem; max-height: 24rem; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-wrap; color: var(--wl-texte); }
+.wl-editor-input.wl-editor-short { min-height: 4.5rem; }
+.wl-editor-input[data-long-placeholder] { min-height: 12rem; }
+.wl-editor-input.is-empty::before { content: attr(data-placeholder); position: absolute; top: .8rem; left: .8rem; right: .8rem; white-space: pre-line; color: var(--wl-texte-doux); pointer-events: none; }
+.wl-editor-input:focus { outline: 3px solid var(--wl-focus); outline-offset: -3px; border-radius: var(--wl-rayon-s); }
+.wl-editor-input p, .wl-editor-input h2, .wl-editor-input h3 { margin: 0 0 .4em; }
+.wl-editor-input h2, .wl-rich-title { font-size: 1.3em; font-family: var(--wl-police-titre); font-weight: 700; }
+.wl-editor-input h3, .wl-rich-subtitle { font-size: 1.15em; font-family: var(--wl-police-titre); font-weight: 600; }
+.wl-editor-count { padding: 0 .8rem; margin: 0; }
+.wl-editor-count:empty { display: none; }
+.wl-rich-text { font-weight: 400; }
+.wl-rich-normal { font-weight: 400; }
+.wl-rich-block { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wl-rich-block + .wl-rich-block { margin-top: .3em; }
 .information-slide { padding: 1rem; border: var(--wl-bord-fin); border-radius: 12px; }
 .information-slide.has-illustration { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 1.25rem; align-items: center; }
 .info-content { white-space: pre-line; overflow-wrap: anywhere; font-size: 1.1rem; line-height: 1.6; }

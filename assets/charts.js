@@ -62,7 +62,9 @@
       });
       var li = box.querySelector('.donut-legend').children[i];
       li.className = good ? 'is-good' : '';
-      li.children[1].textContent = (good ? '✓ ' : '') + n + ' · ' + pct + ' %' + (good ? ' · Bonne réponse' : '');
+      WL.clear(li.children[1]).appendChild(WL.richText(n, q.rich && q.rich.options && q.rich.options[i], WL.richOffset(q.rich && q.rich.options, i)));
+      if (good) li.children[1].insertBefore(document.createTextNode('✓ '), li.children[1].firstChild);
+      li.children[1].appendChild(document.createTextNode(' · ' + pct + ' %' + (good ? ' · Bonne réponse' : '')));
       li.children[2].textContent = String(count);
     });
     box.querySelector('.donut-total').textContent = String(total);

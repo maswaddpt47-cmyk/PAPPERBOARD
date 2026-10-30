@@ -161,7 +161,7 @@ jobs:
           fi
           # Confirme les octets réellement servis pour les nouveaux composants.
           # Le SHA évite une réponse d'un cache de la version précédente.
-          for asset in assets/common.js assets/admin.js assets/app.js assets/style.css assets/bilan-pptx.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js \
+          for asset in assets/common.js assets/admin.js assets/app.js assets/style.css assets/bilan-pptx.js assets/charts.js assets/editor.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js \
             assets/mentimeter.js assets/vendor/mentimeter/pdfjs/pdf.mjs assets/vendor/mentimeter/pdfjs/pdf.worker.mjs \
             assets/vendor/mentimeter/tesseract/dist/tesseract.min.js assets/vendor/mentimeter/tesseract/dist/worker.min.js \
             assets/vendor/mentimeter/core/tesseract-core-lstm.wasm.js assets/vendor/mentimeter/lang/fra.traineddata.gz; do

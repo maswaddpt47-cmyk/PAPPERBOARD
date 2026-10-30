@@ -123,6 +123,7 @@ function wl_json(array $data, int $status = 200): never
 function wl_json_etag(string $etag, callable $build): never
 {
     $etag .= wl_info_client() ? '-info1' : '-info0';
+    $etag .= wl_rich_client() ? '-rich1' : '-rich0';
     header('Vary: X-WL-Features');
     $etag = '"' . $etag . '"';
     header('ETag: ' . $etag);
@@ -138,6 +139,125 @@ function wl_json_etag(string $etag, callable $build): never
 function wl_info_client(): bool
 {
     return in_array('info-v1', array_map('trim', explode(',', (string)($_SERVER['HTTP_X_WL_FEATURES'] ?? ''))), true);
+}
+
+function wl_rich_client(): bool
+{
+    return in_array('rich-v1', array_map('trim', explode(',', (string)($_SERVER['HTTP_X_WL_FEATURES'] ?? ''))), true);
+}
+
+function wl_require_rich_client(): void
+{
+    if (!wl_rich_client()) throw new WlError('Actualisez cette page pour conserver la mise en forme des textes.', 409);
+}
+
+function wl_require_question_features(array $questions): void
+{
+    foreach ($questions as $q) {
+        if ($q['type'] === 'info') wl_require_info_client();
+        if (!empty($q['rich'])) wl_require_rich_client();
+    }
+}
+
+/** Mise en forme pédagogique, jamais du HTML : blocs et segments de texte bornés. */
+function wl_clean_rich(mixed $rich, array $q): array
+{
+    if ($rich === null || $rich === []) return [];
+    if (!is_array($rich) || array_diff(array_keys($rich), ['text', 'content', 'explain', 'options', 'variants'])) throw new WlError('Mise en forme inconnue.');
+    $out = [];
+    foreach ($rich as $field => $blocks) {
+        if ($field === 'content' && $q['type'] !== 'info') throw new WlError('Le contenu mis en forme est réservé aux diapositives.');
+        if ($field === 'options') {
+            if (!is_array($blocks) || !array_is_list($blocks) || count($blocks) !== count($q['options'])) throw new WlError('La mise en forme des choix ne correspond pas à leur nombre.');
+            foreach ($blocks as $doc) if (!is_array($doc) || count($doc) > 1) throw new WlError('Un choix correspond à un seul paragraphe.');
+            $docs = array_map(fn($doc, $i) => wl_clean_rich_doc($doc, $q['options'][$i], $q['type'] === 'steps' ? 160 : 80), $blocks, array_keys($blocks));
+            if (array_filter($docs)) $out['options'] = $docs;
+            continue;
+        }
+        if ($field === 'variants') {
+            $expected = implode("\n\n", array_map(fn($v) => '[' . $v['name'] . "]\n" . implode("\n", $v['steps']), $q['variants'] ?? []));
+            $doc = wl_clean_rich_doc($blocks, $expected, 16000);
+            if ($doc) $out[$field] = $doc;
+            continue;
+        }
+        $doc = wl_clean_rich_doc($blocks, $q[$field] ?? '', $field === 'text' ? 200 : ($field === 'content' ? 3000 : 400), $field === 'content');
+        if ($doc) $out[$field] = $doc;
+    }
+    return $out;
+}
+
+function wl_clean_rich_doc(mixed $blocks, string $expected, int $max, bool $multiline = false): array
+{
+        if (!is_array($blocks) || !array_is_list($blocks) || count($blocks) > 80) throw new WlError('Mise en forme : 80 paragraphes au plus.');
+        if (!$blocks) return [];
+        $clean = []; $lines = []; $runs = 0; $styled = count($blocks) > 1;
+        foreach ($blocks as $block) {
+            if (!is_array($block) || array_diff(array_keys($block), ['type', 'runs'])
+                || !in_array($block['type'] ?? '', ['p', 'title', 'subtitle', 'bullet', 'number'], true)
+                || !is_array($block['runs'] ?? null) || !array_is_list($block['runs'])) throw new WlError('Paragraphe mis en forme invalide.');
+            $parts = []; $line = ''; $styled = $styled || $block['type'] !== 'p';
+            foreach ($block['runs'] as $run) {
+                if (++$runs > 600 || !is_array($run) || array_diff(array_keys($run), ['text', 'bold'])
+                    || !is_string($run['text'] ?? null) || !preg_match('//u', $run['text'])
+                    || (array_key_exists('bold', $run) && !is_bool($run['bold']))) throw new WlError('Segment de texte invalide.');
+                $t = $multiline ? preg_replace('/\p{Cf}+/u', '', $run['text']) : $run['text'];
+                $t = preg_replace($multiline ? '/\p{Cc}+/u' : '/[\p{Cc}\p{Cf}]+/u', ' ', $t);
+                if ($t === '') continue;
+                $part = ['text' => $t];
+                if (array_key_exists('bold', $run)) { $part['bold'] = $run['bold']; $styled = true; }
+                $parts[] = $part; $line .= $t;
+            }
+            $clean[] = ['type' => $block['type'], 'runs' => $parts]; $lines[] = $line;
+        }
+        $plain = implode("\n", $lines);
+        if (wl_strlen($plain) > $max || wl_clean_text($plain) !== wl_clean_text($expected)) throw new WlError('La mise en forme ne correspond pas au texte : relisez le champ.');
+        if (!$styled || wl_clean_text($plain) === '') return [];
+        wl_require_rich_client();
+        return $clean;
+}
+
+/** Export imprimable : classes fermées et texte échappé, aucun attribut fourni. */
+function wl_rich_html(string $plain, array $blocks = [], int $start = 0): string
+{
+    if (!$blocks) return nl2br(wl_h($plain));
+    $html = '<span class="wl-rich-text">'; $number = $start;
+    foreach ($blocks as $block) {
+        $type = in_array($block['type'] ?? '', ['title', 'subtitle', 'bullet', 'number'], true) ? $block['type'] : 'p';
+        $number = $type === 'number' ? $number + 1 : 0;
+        $html .= '<span class="wl-rich-block wl-rich-' . $type . '">'
+            . ($type === 'bullet' ? '• ' : ($type === 'number' ? $number . '. ' : ''));
+        foreach ($block['runs'] ?? [] as $run) $html .= !empty($run['bold']) ? '<strong>' . wl_h($run['text']) . '</strong>'
+            : (array_key_exists('bold', $run) ? '<span class="wl-rich-normal">' . wl_h($run['text']) . '</span>' : wl_h($run['text']));
+        $html .= '</span>';
+    }
+    return $html . '</span>';
+}
+
+function wl_rich_offset(array $docs, int $index): int
+{
+    if (($docs[$index][0]['type'] ?? '') !== 'number') return 0;
+    $offset = 0;
+    for ($i = $index - 1; $i >= 0 && ($docs[$i][0]['type'] ?? '') === 'number'; $i--) $offset++;
+    return $offset;
+}
+
+function wl_variant_docs(array $q): array
+{
+    $out = []; $name = '';
+    foreach ($q['rich']['variants'] ?? [] as $block) {
+        $line = implode('', array_column($block['runs'], 'text'));
+        if (preg_match('/^\[(.+)\]$/u', trim($line), $m)) {
+            $name = wl_clean_text($m[1]); $start = strpos($line, '[') + 1; $end = strrpos($line, ']'); $offset = 0; $parts = [];
+            foreach ($block['runs'] as $run) {
+                $length = strlen($run['text']);
+                $text = substr($run['text'], max(0, min($length, $start - $offset)), max(0, min($offset + $length, $end) - max($offset, $start)));
+                if ($text !== '') $parts[] = array_replace($run, ['text' => $text]);
+                $offset += $length;
+            }
+            $out[$name] = ['title' => [['type' => $block['type'], 'runs' => $parts]], 'steps' => []];
+        } elseif (trim($line) !== '' && $name !== '') $out[$name]['steps'][] = [$block];
+    }
+    return $out;
 }
 
 function wl_require_info_client(): void
@@ -178,11 +298,14 @@ function wl_clean_illustration(mixed $value): string
 function wl_illustration_budget(array $questions): void
 {
     $bytes = 0;
+    $formats = 0;
     foreach ($questions as $q) {
         $image = (string)($q['illustration'] ?? '');
         if ($image !== '') $bytes += strlen((string)base64_decode(substr($image, strlen('data:image/jpeg;base64,')), true));
+        $formats += strlen((string)json_encode($q['rich'] ?? [], JSON_UNESCAPED_UNICODE));
     }
     if ($bytes > 200000) throw new WlError('Les illustrations de cet atelier dépassent 200 Ko : retirez quelques images.');
+    if ($formats > 300000) throw new WlError('La mise en forme de cet atelier dépasse 300 Ko : simplifiez quelques textes avec « Effacer le style ».');
 }
 
 function wl_h(string $s): string
@@ -387,7 +510,7 @@ function wl_new_code(): string
     throw new WlError('Impossible de générer un code.', 500);
 }
 
-function wl_create_session(string $title, array $questions = []): array
+function wl_create_session(string $title, array $questions = [], array $pedagogy = []): array
 {
     // Réservation exclusive : deux créations simultanées ne prennent pas le même code.
     for ($try = 0; ($reserved = @fopen(wl_session_file($code = wl_new_code()), 'x')) === false; $try++) {
@@ -403,7 +526,7 @@ function wl_create_session(string $title, array $questions = []): array
         'version' => 1, 'pversion' => 1, 'current' => -1, 'ended' => false, 'locked' => false,
         'activity' => $now,
         'participants' => [], 'questions' => $questions,
-    ];
+    ] + array_intersect_key($pedagogy, array_flip(['conclusion', 'conclusionRich']));
     wl_write_atomic(wl_session_file($code), $s);
     return $s;
 }
@@ -583,18 +706,18 @@ function wl_archive_session(array $s, ?array $partner = null): string
     $questions = array_map(function ($q) use ($s) {
         $r = wl_results($q, false, $s);
         if ($q['type'] === 'info') {
-            return array_intersect_key($q, array_flip(['type', 'text', 'content', 'illustration', 'options', 'correct'])) + ['results' => ['total' => 0]];
+            return array_intersect_key($q, array_flip(['type', 'text', 'content', 'illustration', 'rich', 'variants', 'options', 'correct'])) + ['results' => ['total' => 0]];
         }
         // Moins de WL_ARCHIVE_MIN réponses : le détail par choix révélerait la réponse de chacun.
         if ($r['total'] < WL_ARCHIVE_MIN) {
-            return array_intersect_key($q, array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
+            return array_intersect_key($q, array_flip(['type', 'text', 'rich', 'variants', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
                 + ['results' => ['total' => $r['total'], 'few' => true]];
         }
         $kept = ['total' => $r['total']] + array_intersect_key($r, array_flip(['counts', 'average', 'compare']));
         if ($q['type'] === 'postit') {
             $kept['columns'] = $q['options'];
         }
-        return array_intersect_key($q, array_flip(['type', 'text', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
+        return array_intersect_key($q, array_flip(['type', 'text', 'rich', 'variants', 'options', 'multi', 'correct', 'scaleMax', 'budget', 'explain']))
             + ['results' => $kept];
     }, $s['questions']);
     $id = gmdate('Ymd', $s['created'] ?? time()) . '-' . bin2hex(random_bytes(4));
@@ -602,6 +725,7 @@ function wl_archive_session(array $s, ?array $partner = null): string
         'id' => $id, 'title' => $s['title'], 'created' => $s['created'] ?? null, 'archived' => time(),
         'participants' => count($s['participants']), 'questions' => $questions,
         'recap' => wl_recap($s, true), 'conclusion' => $s['conclusion'] ?? '', 'synthesis' => $s['synthesis'] ?? '',
+        'conclusionRich' => $s['conclusionRich'] ?? [], 'synthesisRich' => $s['synthesisRich'] ?? [],
         'partner' => '',
     ];
     // Atelier d'un partenaire : l'archive garde son cycle, pour le bilan du cycle (AG-007).
@@ -804,6 +928,8 @@ function wl_clean_question(array $in, ?array $old = null): array
         $q['link'] = $q['explain'] = '';
     }
     $q['variants'] = $type === 'steps' ? wl_clean_variants($in['variants'] ?? [], count($q['options'])) : [];
+    $rich = wl_clean_rich($in['rich'] ?? [], $q);
+    if ($rich) $q['rich'] = $rich;
     if ($type === 'steps') {
         [$q['allowChange'], $q['reveal']] = [true, 'manual']; // on coche et décoche tant que le défi est ouvert
     }
@@ -1081,7 +1207,8 @@ function wl_import_parse(string $raw): array
             }
             // Dernier élément possible : la conclusion de l'atelier (pas une question).
             if (is_array($in) && ($in['type'] ?? '') === 'conclusion') {
-                $items[] = ['conclusion' => wl_clean_conclusion($in['text'] ?? '')];
+                $conclusion = wl_clean_conclusion($in['text'] ?? '');
+                $items[] = ['conclusion' => $conclusion, 'conclusionRich' => wl_clean_rich_doc($in['rich']['text'] ?? [], $conclusion, 600)];
                 continue;
             }
             $q = wl_clean_question(wl_import_input(is_array($in) ? $in : []));
@@ -1176,6 +1303,8 @@ function wl_theme_clean(array $in, array $list): array
             throw new WlError('Question ' . ($i + 1) . ' : ' . $it['error']);
         }
         if (isset($it['q'])) $cleanQuestions[] = $it['q'];
+        if (isset($it['conclusion'])) { if (!empty($it['conclusionRich'])) $list[$i]['rich'] = ['text' => $it['conclusionRich']]; else unset($list[$i]['rich']); continue; }
+        if (!empty($it['q']['rich'])) $list[$i]['rich'] = $it['q']['rich']; else unset($list[$i]['rich']);
         if (($it['q']['type'] ?? '') === 'info') {
             wl_require_info_client();
             $list[$i]['content'] = $it['q']['content'];
@@ -1233,7 +1362,7 @@ function wl_import_input(array $in): array
         'budget' => $in['budget'] ?? null,
         // Réglages présents dans un fichier exporté par WoocLight (absents d'une réponse d'IA).
         'variants' => $in['variants'] ?? [],
-    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live', 'link', 'content', 'illustration']));
+    ] + array_intersect_key($in, array_flip(['explain', 'duration', 'reveal', 'allowChange', 'live', 'link', 'content', 'illustration', 'rich']));
 }
 
 /** Questions d'une session au format de l'import (wl_import_parse) : réponses
@@ -1241,9 +1370,11 @@ function wl_import_input(array $in): array
 function wl_export_questions(array $s): array
 {
     $pos = array_flip(array_column($s['questions'], 'id'));
-    $conclusion = ($s['conclusion'] ?? '') !== '' ? [['type' => 'conclusion', 'text' => $s['conclusion']]] : [];
+    $conclusion = ($s['conclusion'] ?? '') !== '' ? [['type' => 'conclusion', 'text' => $s['conclusion']]
+        + (!empty($s['conclusionRich']) ? ['rich' => ['text' => $s['conclusionRich']]] : [])] : [];
     return [...array_map(function ($q) use ($pos, $s) {
         $out = ['type' => $q['type'], 'text' => $q['text']];
+        if (!empty($q['rich'])) $out['rich'] = $q['rich'];
         if ($q['type'] === 'info') return $out + ['content' => $q['content'] ?? '', 'illustration' => $q['illustration'] ?? ''];
         if (in_array($q['type'], ['mcq', 'poll', 'points', 'postit', 'steps'], true)) {
             $out['options'] = $q['options'];
@@ -1704,9 +1835,11 @@ function wl_public_question(array $q): array
 {
     if ($q['type'] === 'info' && !wl_info_client()) {
         return wl_public_question(array_replace($q, ['type' => 'text', 'text' => 'Actualisez cette page pour lire la diapositive d’information.',
-            'state' => 'closed', 'showResults' => false, 'duration' => 0, 'closesAt' => null, 'allowChange' => false, 'explain' => '', 'link' => '']));
+            'state' => 'closed', 'showResults' => false, 'duration' => 0, 'closesAt' => null, 'allowChange' => false, 'explain' => '', 'link' => '', 'rich' => []]));
     }
     $show = wl_shown($q);
+    $rich = $q['rich'] ?? [];
+    if (!$show) unset($rich['explain']);
     return [
         'id' => $q['id'], 'type' => $q['type'], 'text' => $q['text'], 'options' => $q['options'], 'variants' => $q['variants'] ?? [],
         'multi' => $q['multi'], 'scaleMax' => $q['scaleMax'], 'budget' => $q['budget'],
@@ -1718,7 +1851,8 @@ function wl_public_question(array $q): array
         'correct' => $show ? $q['correct'] : [],
         'explain' => $show ? ($q['explain'] ?? '') : '', // jamais avant la correction
         'link' => $q['link'] ?? '',
-    ] + ($q['type'] === 'info' ? ['content' => $q['content'] ?? '', 'illustration' => $q['illustration'] ?? ''] : []);
+    ] + ($q['type'] === 'info' ? ['content' => $q['content'] ?? '', 'illustration' => $q['illustration'] ?? ''] : [])
+        + (wl_rich_client() && $rich ? ['rich' => $rich] : []);
 }
 
 function wl_current_question(array $s): ?array
