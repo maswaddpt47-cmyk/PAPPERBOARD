@@ -1510,7 +1510,7 @@
   }
   $('gen-btn').addEventListener('click', function () { openGen(null); });
   $('import-pdf-btn').addEventListener('click', function () {
-    WL.Mentimeter.open(data.title, function (raw) { $('gen-raw').value = raw; openGen(null, undefined, 'mentimeter'); genCheck(); }, true);
+    WL.Mentimeter.open(data.title, function (raw) { $('gen-raw').value = raw; openGen(null, undefined, 'mentimeter'); genCheck(); }, true, data.questions.length);
   });
   // Relecture d'un atelier existant : ses questions (export .json) deviennent la réponse à vérifier.
   $('ed-review').addEventListener('click', function () {

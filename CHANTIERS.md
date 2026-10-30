@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **29/10/2026** — commit de référence : voir `git log -1 main`.
+État au **30/10/2026** — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -14,7 +14,7 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
-   - import PDF (29/10) : Créer un atelier → Importer un PDF de questions, ou Préparer → Ajouter depuis un PDF ; essayer les pages d'information 9–11 et une illustration facultative ; OCR à relire ; PDF Pix réel non fourni ; registre actualisé à relire ;
+   - import PDF (30/10) : Créer un atelier → Importer un PDF de questions, ou Préparer → Ajouter depuis un PDF ; vérifier la numérotation des étapes et leur état de relecture, les pages d'information 9–11 et une illustration ; OCR à relire ; PDF Pix réel non fourni ; registre actualisé à relire ;
    - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
      inscriptions), un quiz piloté depuis Animer puis depuis la projection,
      un mur / post-it avec relecture avant publication ;
@@ -93,7 +93,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
-- Import PDF (29/10/2026, AG-008/009 ouverts) : lecture/OCR locaux, relecture obligatoire, création ou ajout à l'atelier ; aucun vote ancien ni correction déduit, PDF jamais stocké ou commité. Type `info` : texte avec charte, sans vote/score ; illustration facultative depuis un fichier, JPEG local 640 × 480, 30 Ko/image et 200 Ko/atelier ; contenu gardé dans les exports et archives, anciens clients protégés par `info-v1`. Mesuré en local : 12 pages images lues, dont 9–11 reconnues `info` ; petits libellés à corriger ; suite complète verte puis 33 contrôles ciblés verts après derniers ajustements, 26 contrôles PDF ; aucun appel externe ; rendu à 390 et 1280 px ; atelier de 193 077 octets JPEG, 30 × 304 sans corps en 121 ms. Coût Alwaysdata et lisibilité en salle non mesurés.
+- Import PDF (29–30/10/2026, AG-008/009/010 ouverts) : lecture/OCR locaux, relecture obligatoire, création ou ajout à l'atelier ; aucun vote ancien ni correction déduit, PDF jamais stocké ou commité. Type `info` : texte avec charte, sans vote/score ; illustration facultative depuis un fichier, JPEG local 640 × 480, 30 Ko/image et 200 Ko/atelier ; exports et archives conservés, anciens clients protégés par `info-v1`. Numéros des étapes retenues recalculés par ordre du PDF, après les étapes existantes ; exclusions et conclusion non comptées, état de relecture actualisé. Mesuré en local : 12 pages images lues, dont 9–11 `info` ; petits libellés à corriger ; suite verte le 29/10, 33 contrôles PDF et 34 informations/illustrations le 30/10 ; aucun appel externe ; rendu à 390 et 1280 px ; atelier de 193 077 octets JPEG, 30 × 304 sans corps en 121 ms le 29/10. Coût Alwaysdata et lisibilité en salle non mesurés.
 - Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
   jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
   prolongé (`filed` immuable, e2e) ; archive au nom et au cycle du partenaire ; bilan du

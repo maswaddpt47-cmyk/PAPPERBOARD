@@ -86,6 +86,15 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : conserver les limites d'image et la relecture ; refuser les autres formats et ne pas importer automatiquement des illustrations du PDF.
 **Où regarder** : `lib.php:152` et `lib.php:762` (validation), `api.php:730` (import), `assets/mentimeter.js:431` (illustration locale), `assets/common.js:543` (affichage), `tests/information.js:1` (import réel, compteurs, compatibilité, exports et archivage).
 
+## AG-010 — Numérotation des étapes à l'import PDF — ouvert le 30/10/2026
+**Auteur** : Codex — branche `codex/numerotation-import-pdf-20261030` — lu sur `2c39a5a`.
+**Proposition** : remplacer le numéro local à chaque page par l'ordre des étapes retenues dans l'atelier ; recalcul au changement de page, ajout, exclusion et confirmation de relecture. État « À relire » ou « Relue » explicite, conclusion identifiée séparément.
+**Critère déclencheur** : 7 — numéro affiché ; il doit correspondre à l'ordre final des questions et informations, sans compter les pages non examinées ni les éléments écartés.
+**Ce que ça engage** : repère visible dans l'import seulement ; aucune renumérotation des identifiants stockés, aucun vote ni validation automatique.
+**Non vérifié par l'auteur** : retour utilisateur après livraison. Mesuré en local le 30/10/2026 : défaut reproduit sur la deuxième page avant correction, puis 33 contrôles PDF et 34 contrôles informations/illustrations verts ; navigation avant/arrière, validation, ajout sur une même page, exclusion, conclusion et reprise après les étapes d'un atelier existant.
+**Si personne ne répond, je fais quoi ?** : garder le choix par page et la confirmation humaine ; numéroter uniquement les étapes déjà retenues, sans inventer le contenu des pages non examinées.
+**Où regarder** : `assets/mentimeter.js:141` (ordre recalculé), `assets/admin.js:1513` (étapes existantes), `tests/pdf-import.js:61` et `tests/information.js:64` (vrais parcours).
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |

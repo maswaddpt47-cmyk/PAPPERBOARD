@@ -60,7 +60,9 @@ function zipEntries(bytes) {
   check(oldWrite.status()===409,'ancien client refusé pour le nouveau format');
   await admin.click('#import-pdf-btn');await admin.setInputFiles('#menti-file',path.join(__dirname,'fixtures/questionnaire.pdf'));
   await admin.waitForFunction(()=>!document.querySelector('#menti-fields').disabled&&document.querySelector('#menti-status').textContent.includes('Page 1 sur'),null,{timeout:120000});
-  await admin.selectOption('#menti-type','yesno');await admin.check('#menti-reviewed');admin.once('dialog',d=>d.accept());await admin.click('#menti-continue');
+  await admin.selectOption('#menti-type','yesno');
+  check(await admin.locator('#menti-question option:checked').textContent()==='Étape 2 — À relire','ajout PDF : la numérotation commence après les étapes déjà présentes dans l’atelier');
+  await admin.check('#menti-reviewed');admin.once('dialog',d=>d.accept());await admin.click('#menti-continue');
   await admin.waitForSelector('#gen-preview:not([hidden])');await admin.click('#gen-save');await admin.waitForSelector('#gen-dialog:not([open])',{state:'attached'});
   check((await state()).questions.length===2,'ajout depuis un PDF dans l’atelier existant');
   await admin.click('#t-live'); await post('control',{s:code,op:'next'});

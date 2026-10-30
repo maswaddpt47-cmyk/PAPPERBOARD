@@ -38,7 +38,9 @@ contenir les questions ; un relevé de scores seul ne permet pas de les retrouve
 La lecture et la reconnaissance du texte des pages images se font sur votre
 appareil, sans envoi du PDF à un service externe. Corrigez les intitulés et les
 choix, sélectionnez le type et confirmez chaque question à garder ; une même page
-peut fournir plusieurs questions. Vérifiez l'aperçu avant de créer l'atelier.
+peut fournir plusieurs questions. Le menu indique le numéro de l'étape dans l'atelier
+et son état de relecture ; les éléments écartés ne comptent pas. Vérifiez l'aperçu
+avant de créer l'atelier.
 Les pages de contenu peuvent devenir des **Diapositives d'information**, avec
 le texte et la charte WoocLight, sans vote. Une illustration facultative peut être
 choisie depuis un fichier JPEG, PNG ou WebP ; elle est préparée localement, sans

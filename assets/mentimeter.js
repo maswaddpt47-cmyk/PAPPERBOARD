@@ -7,7 +7,7 @@
   var vendor = new URL('vendor/mentimeter/', document.currentScript.src);
   var pdfLibrary, ocrLibrary, docTask, pdf, ocr, ocrPromise, renderTask;
   var pages = [], pageIndex = 0, generation = 0, loading = false, onReady;
-  var imagesLoading = 0;
+  var imagesLoading = 0, stepOffset = 0;
 
   function clean(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
   function fold(s) { return clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
@@ -133,6 +133,25 @@
     $('menti-next').disabled = loading || pageIndex === pages.length - 1;
     $('menti-page').disabled = loading;
     $('menti-fields').disabled = loading || !pages[pageIndex];
+    renderQuestionChoices();
+  }
+
+  // Même ordre que l'import final : pages puis éléments retenus. La conclusion
+  // rejoint le champ de fin d'atelier et n'est pas une étape de questions.
+  function renderQuestionChoices() {
+    var entry = pages[pageIndex], number = stepOffset;
+    WL.clear($('menti-question'));
+    if (!entry) return;
+    pages.slice(0, pageIndex).forEach(function (p) {
+      if (p) p.questions.forEach(function (q) { if (q.type !== 'skip' && q.type !== 'conclusion') number++; });
+    });
+    entry.questions.forEach(function (q, i) {
+      var label = q.type === 'skip' ? 'Élément écarté sur cette page (' + (i + 1) + ')'
+        : q.type === 'conclusion' ? 'Conclusion de l’atelier' : 'Étape ' + (++number);
+      if (q.type !== 'skip') label += ' — ' + (q.reviewed ? 'Relue' : 'À relire');
+      $('menti-question').appendChild(el('option', { value: i }, label));
+    });
+    $('menti-question').value = String(entry.selected);
   }
 
   function syncFields() {
@@ -166,11 +185,6 @@
   }
 
   function renderFields(entry) {
-    WL.clear($('menti-question'));
-    entry.questions.forEach(function (q, i) {
-      $('menti-question').appendChild(el('option', { value: i }, 'Question ' + (i + 1) + (q.type === 'skip' ? ' — écartée' : '')));
-    });
-    $('menti-question').value = String(entry.selected);
     $('menti-type').value = entry.value.type;
     $('menti-text').value = entry.value.text;
     $('menti-content').value = entry.value.content || '';
@@ -446,8 +460,9 @@
   }
 
   WL.Mentimeter = {
-    open: function (title, ready, adding) {
+    open: function (title, ready, adding, existingCount) {
       dispose(); onReady = ready;
+      stepOffset = adding ? Math.max(0, Number(existingCount) || 0) : 0;
       $('menti-for').textContent = (adding ? 'Dans l’atelier « ' : 'Nouvel atelier « ') + title
         + ' » : choisissez le PDF, puis relisez les questions et les pages d’information à garder. '
         + (adding ? 'Les étapes sélectionnées seront ajoutées à la fin. Fermer ne modifie rien.' : 'Fermer ne crée rien.');

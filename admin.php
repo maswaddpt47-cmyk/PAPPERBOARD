@@ -573,7 +573,7 @@ header('Cache-Control: no-store');
             <fieldset id="menti-fields" class="menti-fields">
               <legend>Question à préparer</legend>
               <p class="meta">La reconnaissance peut se tromper. Vérifiez le type, l'intitulé et chaque choix à côté de la page d'origine ; saisissez les choix manquants. Ne gardez aucun nom ni donnée personnelle. Aucune bonne réponse n'est déduite d'un graphe.</p>
-              <label for="menti-question">Question préparée sur cette page</label><select id="menti-question"></select>
+              <label for="menti-question">Étape de l’atelier préparée sur cette page</label><select id="menti-question" title="Numéro dans l’ordre des étapes retenues du PDF ; les éléments écartés et la conclusion ne sont pas comptés."></select>
               <button id="menti-add" class="btn btn-small" type="button" title="Préparer une autre question lorsqu'il y en a plusieurs sur la même page">+ Une autre question sur cette page</button>
               <label for="menti-type">Utiliser cette page comme</label>
               <select id="menti-type"><option value="skip">Ne pas importer cette page</option><option value="info">Diapositive d’information — sans vote</option><option value="yesno">Oui / Non</option><option value="truefalse">Vrai / Faux</option><option value="poll">Sondage — un choix</option><option value="mcq">QCM — un ou plusieurs choix</option><option value="wordcloud">Nuage de mots</option><option value="text">Réponse libre</option><option value="scale">Échelle</option><option value="conclusion">Conclusion de l'atelier</option></select>
