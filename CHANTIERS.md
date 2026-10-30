@@ -13,17 +13,10 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    audit Codex rendu le 26/10/2026 sur `d70a931`, 7 points vérifiés et corrigés le
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
-1. **Essayer sur PC** les nouveautés en ligne non encore essayées :
-   - import PDF et éditeur (30/10) : Créer un atelier → Importer un PDF de questions, ou Préparer → Ajouter depuis un PDF ; essayer Supprimer de l’import, gras/titres/listes, la numérotation et la relecture, les pages d'information 9–11 et une illustration ; vérifier aussi choix, explication et conclusion sur la projection et l'appareil participant ; PDF Pix réel non fourni ; registre actualisé les 29–30/10 à relire ;
-   - animation guidée (21/10, `7ffa824`) : Animer → Participants (QR,
-     inscriptions), un quiz piloté depuis Animer puis depuis la projection,
-     un mur / post-it avec relecture avant publication ;
-   - interface reprise de la simulation (19/10) : création vide et par JSON,
-     Mon espace, Pilotage, Réglages, Bilan, projection ;
-   - fonctions des 15 au 18/10 jamais vues sur PC (liste : `git log -p CHANTIERS.md`,
-     version du 25/10/2026) ; téléphone : projection, nuage et démo validés.
-   Le plus simple : **Créer une session de démonstration**, puis un **atelier
-   réel** à 10 participants ou plus.
+1. **Essai sur PC fait** (déclaré par l'utilisateur le 30/10/2026, sans défaut
+   signalé) : import PDF et éditeur, animation guidée, interface reprise, fonctions
+   des 15 au 18/10. Restent : un vrai PDF Pix (non fourni), le registre actualisé
+   les 29 et 30/10 à relire (point 0), un **atelier réel** à 10 participants ou plus.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
