@@ -41,6 +41,13 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 - Changement de session annoncé : relever les règles de collaboration nées
   pendant la session et absentes des `.md`, les présenter à l'utilisateur, puis
   les inscrire (MD-LIB `collaboration.md`, règle 32).
+- **Pas plus de 60 secondes sans nouvelles pendant une tâche** (MD-LIB
+  `collaboration.md`, règle 51, 19/10/2026) : un point utile (acquis, obstacle,
+  prochaine action) au moins toutes les minutes, même quand rien ne bloque.
+- **Une attente longue se fait en arrière-plan, la main rendue à
+  l'utilisateur** (règle 52) : CI, déploiement, file d'attente — annoncer la
+  durée attendue, surveiller en arrière-plan, répondre tout de suite, revenir
+  quand c'est fini. Jamais une boucle d'attente de plusieurs minutes au premier plan.
 - Dates explicites, jamais « hier » / « demain ». Heures en heure de Paris (GitHub et les
   API affichent l'UTC).
 - `CHANTIERS.md` tenu à jour à chaque étape, pas en fin de session : tâche
