@@ -142,6 +142,19 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   compris) avant toute autre tâche ; ne pas supposer qu'une entrée datée est
   encore vraie. L'utilisateur dit en une ligne ce qui reste hors dépôt
   (réglage, donnée, jeton).
+- **Nouvelle donnée enregistrée : penser ses chiffres avant de la figer**
+  (MD-LIB `collaboration.md`, règle 57, 31/10/2026) : avant d'ajouter un import,
+  un statut, un type de fiche ou un champ, définir ce qui sera compté (faits,
+  unités, population, date de référence, traitement des inconnus), une identité
+  stable, la validation à l'écriture et la gestion des échecs d'enregistrement ;
+  un seul format de date enregistré (date civile en heure de Paris, instant en
+  ISO avec fuseau ; jamais `toLocaleString` ni `toISOString().slice(0,10)` pour
+  une date du jour) ; conclusion consignée dans `CHANTIERS.md`. Dispositif
+  proportionné : pas de collecte « au cas où », aucune reconstruction des
+  données anciennes. Constats : sms-mail-multi (`ts` en texte français, dates du
+  jour en UTC, déploiement sans test), GDINV2 (14 défauts de calcul malgré 251
+  tests verts). `tests/run.sh` bloque déjà le déploiement (contrôle `tests`) :
+  un nouveau calcul y ajoute le sien.
 - **Prendre l'initiative de propositions d'amélioration et de nouveautés**
   (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
   demande, lors d'une revue et après une livraison validée, proposer sans
