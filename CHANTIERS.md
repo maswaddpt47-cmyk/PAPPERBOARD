@@ -218,6 +218,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - PowerPoint : barres dessinées en formes, anneau et jauge en graphiques natifs.
 - Projection sur écran étroit : rien ne dépasse la largeur (gommettes : grille à 3
   colonnes fixes = 509 px sur 390, corrigé le 16/10/2026 ; nav, 390 px).
+- Validé par l'utilisateur le 02/11/2026 : « Rouvrir les réponses » visible sur la projection, hors
+  d'« Autres actions » (nav) ; info-bulle sans `pointer-events` (elle bloquait l'appui voisin au
+  toucher) ; lignes de Mes ateliers : « Ouvrir » + menu « Actions ▾ » (interface.js).
 - Projection pilotée (20/10/2026, demande de l'utilisateur) : les mêmes commandes que l'onglet Animer,
   libellés courts — Précédente | Lancer / Ouvrir / Fermer / Rouvrir le vote | Afficher / Masquer (Publier) |
   Suivante (« Récap et conclusion » à la dernière question). Espace garde l'étape logique. Au téléphone,
@@ -287,11 +290,9 @@ Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans f
 (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
 « Clore le cycle ».
-*Retenue le 02/11/2026, à essayer* : « ✨ Défi sur mesure » dans Défi à étapes (fonctions en essai) :
-consigne pour une IA sur le thème de l'atelier, un seul défi, aucune donnée personnelle réelle,
-même vérification que les questions (nav). Constat : les 2 défis fixes ne collaient pas à
-« Comment gérer son Espace Santé ». *Proposée, en attente* : défis prêts par thème récurrent
-(Mon espace santé, Ameli…), menus à valider par l'utilisateur sur les vrais sites.
+*En ligne le 02/11/2026 (`5a0d268`)* : « ✨ Défi sur mesure » (Défi à étapes, fonctions en essai), consigne
+IA sur le thème, aucune donnée personnelle réelle (nav). *Proposée, en attente* : défis prêts par thème
+récurrent (Mon espace santé, Ameli…), menus à valider par l'utilisateur sur les vrais sites.
 *Écartées :* 02/11/2026 — filtrer les défis prêts selon le thème : inutile avec deux défis.
 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
