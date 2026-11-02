@@ -37,10 +37,12 @@ wl_security_headers();
   <button id="p-hide" class="btn" type="button" hidden>Afficher</button>
   <strong id="p-count" class="s-pcount" aria-live="polite"></strong>
   <button id="p-next" class="btn" type="button" title="Question suivante, son vote s'ouvre (flèche droite)">Suivante ▶</button>
+  <!-- Visible à côté des commandes, comme dans Animer (demande du 02/11/2026) : rangé dans
+       « Autres actions », il passait inaperçu. -->
+  <button id="p-reopen" class="btn" type="button" hidden>Rouvrir les réponses</button>
   <details id="p-options" class="animation-options">
   <summary>Autres actions</summary>
   <div class="animation-options-body">
-  <button id="p-reopen" class="btn" type="button" hidden>Rouvrir les réponses</button>
   <button id="p-welcome" class="btn" type="button">Revenir à l’accueil</button>
   <a id="p-participants" class="btn" target="_blank" rel="noopener">Participants et accueil ↗</a>
   <button id="p-asks" class="btn" type="button" title="Projette les questions « Oser demander » publiées, les plus votées d'abord" hidden></button>

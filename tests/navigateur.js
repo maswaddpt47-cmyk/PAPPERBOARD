@@ -207,7 +207,8 @@ function check(cond, label) {
   check((await admin.textContent('#live-guide')).includes('Écran du groupe : Résultats masqués'), 'masquer depuis la projection est reflété dans Animer');
   await admin.click('#open-btn');
   await mob.waitForFunction(() => document.getElementById('p-step').textContent === 'Question suivante');
-  await mob.click('#p-options > summary');
+  check(await mob.isVisible('#p-reopen') && !(await mob.locator('#p-options').getAttribute('open') !== null),
+    'projection : « Rouvrir les réponses » visible sans ouvrir « Autres actions »');
   await mob.click('#p-reopen');
   await admin.waitForFunction(() => document.getElementById('open-btn').textContent === 'Clore les réponses');
   await phone.waitForSelector('#my-result', { state: 'hidden' });
