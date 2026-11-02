@@ -90,6 +90,23 @@
     b.addEventListener('click', function () { WL.spaceView(b.dataset.space); });
   });
 
+  /** Menu « Actions ▾ » d'une ligne d'atelier : les actions secondaires, pour que le titre
+   *  garde sa place (six boutons l'écrasaient, 02/11/2026). Un clic sur une action le referme. */
+  function rowMenu() {
+    var body = el('div', { class: 'row-menu-body', role: 'menu' });
+    [].forEach.call(arguments, function (b) { if (b) { b.setAttribute('role', 'menuitem'); body.appendChild(b); } });
+    var menu = el('details', { class: 'row-menu' }, el('summary', { class: 'btn btn-small', title: 'Renommer, dupliquer, archiver, supprimer…' }, 'Actions ▾'), body);
+    body.addEventListener('click', function () { menu.open = false; });
+    return menu;
+  }
+  // Un seul menu ouvert à la fois ; un clic ailleurs ou Échap le referme.
+  document.addEventListener('click', function (e) {
+    [].forEach.call(document.querySelectorAll('details.row-menu[open]'), function (m) { if (!m.contains(e.target)) m.open = false; });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') [].forEach.call(document.querySelectorAll('details.row-menu[open]'), function (m) { m.open = false; m.querySelector('summary').focus(); });
+  });
+
   function rowButton(label, icon, cls, title, onclick) {
     return el('button', { type: 'button', class: 'btn btn-small' + (cls ? ' ' + cls : ''), title: title || null, onclick: onclick }, ico(icon), label);
   }
@@ -137,6 +154,7 @@
             el('p', { class: 'muted' }, WL.plural(s.questions, s.hasInfo ? 'étape' : 'question') + ' · ' + lastAction(s))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Ouvrir', 'arrow-right', '', null, function () { openSession(s.code); }),
+            rowMenu(
             rowButton('Renommer', 'edit', '', 'Changer le nom de cet atelier sans toucher aux questions ni aux réponses', function () {
               openRename(s.code, s.title, true);
             }),
@@ -155,7 +173,7 @@
               if (confirm('Supprimer définitivement « ' + s.title + ' » et toutes ses réponses ?')) {
                 post('session_delete', { s: s.code }).then(showSessions);
               }
-            }))));
+            })))));
       });
     });
   }

@@ -238,3 +238,12 @@ body.admin .partner-closed { margin: .5rem 0 0; padding-left: 1.5rem; }
 body.admin .workshop-row { flex-wrap: wrap; }
 body.admin .workshop-row > .grow { flex: 1 1 16rem; min-width: min(16rem, 100%); }
 body.admin .workshop-row-actions { flex: 0 1 auto; }
+
+/* Menu « Actions ▾ » des lignes d'atelier : ouvert sous son bouton, par-dessus la liste. */
+body.admin .row-menu { position: relative; }
+body.admin .row-menu > summary { list-style: none; cursor: pointer; min-height: 44px; }
+body.admin .row-menu > summary::-webkit-details-marker { display: none; }
+body.admin .row-menu-body { position: absolute; right: 0; top: calc(100% + .35rem); z-index: 20; display: grid; gap: .35rem;
+  min-width: 15rem; padding: .5rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
+body.admin .row-menu-body .btn { justify-content: flex-start; width: 100%; }
+@media (max-width: 959px) { body.admin .row-menu-body { left: 0; right: auto; max-width: calc(100vw - 2rem); } }

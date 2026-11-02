@@ -111,7 +111,9 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#back-btn').click();
     await admin.locator('#ht-demo').click(); // les démos ont leur onglet dans Mes ateliers
     const row = admin.locator('#demo-list .workshop-row').filter({hasText:'Démo'}).first();
-    await row.getByRole('button',{name:'Renommer',exact:true}).click();
+    check(!(await row.getByRole('menuitem',{name:'Renommer'}).isVisible()), 'Menu Actions : fermé au départ');
+    await row.locator('.row-menu > summary').click(); // actions secondaires dans « Actions ▾ »
+    await row.getByRole('menuitem',{name:'Renommer'}).click();
     await admin.locator('#rename-title-input').fill('  Atelier renommé  ');
     await admin.locator('#rename-save').click();
     await admin.locator('#demo-list h3').filter({hasText:'Atelier renommé'}).waitFor();
