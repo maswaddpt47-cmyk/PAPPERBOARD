@@ -232,3 +232,9 @@ body.admin .participants-body .session-controls { align-items: start; }
 body.admin .partner-note { margin: 0; padding: 0 20px 14px; }
 body.admin .partner-workshops { padding: 10px 0 0 1.5rem; }
 body.admin .partner-closed { margin: .5rem 0 0; padding-left: 1.5rem; }
+
+/* Ligne d'atelier : le titre garde 16rem au moins ; trop de boutons (six dans « Terminés »)
+   passent sur la ligne suivante au lieu d'écraser le titre lettre par lettre (02/11/2026). */
+body.admin .workshop-row { flex-wrap: wrap; }
+body.admin .workshop-row > .grow { flex: 1 1 16rem; min-width: min(16rem, 100%); }
+body.admin .workshop-row-actions { flex: 0 1 auto; }
