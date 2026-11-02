@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **30/10/2026** — commit de référence : voir `git log -1 main`.
+État au **02/11/2026** (relu après pull sur `34689f4`) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -287,7 +287,13 @@ Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans f
 (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
 « Clore le cycle ».
-*Écartées :* 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
+*Retenue le 02/11/2026, à essayer* : « ✨ Défi sur mesure » dans Défi à étapes (fonctions en essai) :
+consigne pour une IA sur le thème de l'atelier, un seul défi, aucune donnée personnelle réelle,
+même vérification que les questions (nav). Constat : les 2 défis fixes ne collaient pas à
+« Comment gérer son Espace Santé ». *Proposée, en attente* : défis prêts par thème récurrent
+(Mon espace santé, Ameli…), menus à valider par l'utilisateur sur les vrais sites.
+*Écartées :* 02/11/2026 — filtrer les défis prêts selon le thème : inutile avec deux défis.
+17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
 y renonce, le copier-coller suffit.

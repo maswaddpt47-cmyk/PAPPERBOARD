@@ -329,6 +329,7 @@ header('Cache-Control: no-store');
         <label for="challenge-select" class="sr-only">Défi</label>
         <select id="challenge-select" title="Un défi pratique à étapes prêt à l'emploi, modifiable ensuite (essai)">
           <option value="">Choisir…</option>
+          <option value="ia">✨ Défi sur mesure pour le thème de cet atelier (avec une IA)</option>
           <option value="notifs">🔕 Couper les notifications inutiles (Windows, Mac, iPhone, Android)</option>
           <option value="temps">⏱️ Regarder son temps d'écran (iPhone, Android)</option>
         </select>
@@ -670,7 +671,7 @@ header('Cache-Control: no-store');
           <label for="gen-public-other">Précisez le public</label>
           <input id="gen-public-other" maxlength="160" placeholder="ex. demandeurs d'emploi accompagnés par une association">
         </div>
-        <fieldset class="gen-size">
+        <fieldset id="gen-size" class="gen-size">
           <legend>Dimensionner l'atelier</legend>
           <label class="check"><input type="radio" name="gen-mode" id="gen-mode-count" value="count" checked> Fixer le nombre de questions</label>
           <label class="check"><input type="radio" name="gen-mode" id="gen-mode-duration" value="duration"> Fixer la durée de l'atelier</label>
@@ -680,7 +681,7 @@ header('Cache-Control: no-store');
             <input id="gen-duration" type="number" min="15" max="180" step="5" value="60"></div>
           <p id="gen-estimate" class="meta" aria-live="polite"></p>
         </fieldset>
-        <label class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
+        <label id="gen-qcm-box" class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
         <label id="gen-defi-box" class="check" hidden><input id="gen-defi" type="checkbox"> Ajouter un défi pratique à étapes après les quiz (essai)</label>
         <p class="row wrap"><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier le texte pour l'IA</button>
           <span id="gen-copied" class="meta" aria-live="polite"></span></p>

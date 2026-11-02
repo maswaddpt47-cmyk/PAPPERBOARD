@@ -345,6 +345,26 @@ function check(cond, label) {
   await demoPage.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 11);
   const lastDemo = demoPage.locator('#q-list .list-item').last();
   check(/Défi à étapes [—·] [1-9]\d* réponses?/.test(await lastDemo.textContent()), 'démo : le défi à étapes est ajouté, avec des étapes déjà cochées');
+  // Défi sur mesure : consigne sur le thème de l'atelier, réponse vérifiée puis ajoutée à la fin.
+  await demoPage.click('#t-prep');
+  await demoPage.selectOption('#challenge-select', 'ia');
+  await demoPage.click('#challenge-btn');
+  await demoPage.waitForSelector('#gen-dialog[open]');
+  const demoTitle = (await demoPage.textContent('#ed-title')).trim();
+  check((await demoPage.textContent('#gen-title')) === 'Défi sur mesure' && !(await demoPage.isVisible('#gen-size')) && (await demoPage.inputValue('#gen-theme')) === demoTitle,
+    'défi sur mesure : fenêtre dédiée, thème de l\'atelier, sans dimensionnement');
+  await demoPage.click('#gen-copy');
+  const defiText = await demoPage.inputValue('#gen-prompt');
+  check(defiText.includes('Thème de l\'atelier : ' + demoTitle) && defiText.includes('"type": "steps"') && defiText.includes('donnée personnelle réelle'),
+    'défi sur mesure : consigne sur le thème, un seul défi, aucune donnée personnelle réelle');
+  await demoPage.fill('#gen-raw', JSON.stringify([{ type: 'steps', text: 'Défi : trouver la rubrique', options: ['Ouvrir le site', 'Trouver la rubrique', 'Revenir à l\'accueil'],
+    variants: { Ordinateur: ['Ouvre le site.', 'Clique sur la rubrique.', 'Clique sur Accueil.'], 'Téléphone': ['Ouvre l\'application.', 'Touche la rubrique.', 'Touche Accueil.'] } }]));
+  await demoPage.click('#gen-check');
+  await demoPage.waitForSelector('#gen-list input');
+  check((await demoPage.textContent('#gen-save')) === 'Ajouter le défi', 'défi sur mesure : bouton « Ajouter le défi »');
+  await demoPage.click('#gen-save');
+  await demoPage.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 12);
+  check((await demoPage.locator('#q-list .list-item').last().textContent()).includes('trouver la rubrique'), 'défi sur mesure : ajouté à la fin de l\'atelier');
   await demoPage.close();
   await post('prefs_save', { beta: false });
 

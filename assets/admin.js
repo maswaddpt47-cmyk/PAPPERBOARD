@@ -1237,7 +1237,9 @@
     $('qf-type-steps').disabled = !beta;
     WL.show($('challenge-row'), beta);
     WL.show($('gen-defi-box'), beta);
+    betaOn = beta;
   }
+  var betaOn = false;
   $('beta-steps').addEventListener('change', function () {
     post('prefs_save', { beta: $('beta-steps').checked }).then(function (d) { setBeta(d.prefs); });
   });
@@ -1276,6 +1278,11 @@
       ] }
   };
   $('challenge-btn').addEventListener('click', function () {
+    if ($('challenge-select').value === 'ia') {
+      $('challenge-select').value = '';
+      openGen(null, undefined, 'defi');
+      return;
+    }
     var tpl = CHALLENGES[$('challenge-select').value];
     if (!tpl) { banner('Choisissez un défi dans la liste.', 'erreur'); return; }
     act('question_save', { question: tpl }).then(function () {
@@ -1497,8 +1504,41 @@
 
   // Création d'atelier par JSON : titre retenu ici, session créée seulement à la validation (genCreate).
   var genCreate = null, genReplace = false;
+  // Défi sur mesure (source 'defi') : même fenêtre, consigne réduite à un seul élément "steps"
+  // sur le thème de l'atelier ; l'import, l'aperçu et la relecture restent ceux des questions.
+  var genDefiOnly = false;
+
+  function defiPrompt() {
+    return [
+      'Tu prépares UN défi pratique pour un atelier de médiation numérique animé avec WoocLight : les participants le font sur leur propre appareil, étape par étape, et cochent chaque étape réussie.',
+      'Thème de l\'atelier : ' + $('gen-theme').value.trim(),
+      'Public : ' + genPublic(),
+      'Niveau du public : ' + LEVELS[$('gen-level').value][0] + '. ' + LEVELS[$('gen-level').value][1],
+      '',
+      'Règles :',
+      '- Le défi porte sur le thème : le service, le site ou l\'application dont parle l\'atelier, pas un réglage général de l\'appareil.',
+      '- "text" : la consigne du défi (200 caractères au plus) ; "options" : 3 à 6 titres courts d\'étapes (80 caractères au plus).',
+      '- "variants" (facultatif) : un objet nom → liste d\'étapes détaillées (160 caractères au plus chacune), avec EXACTEMENT autant d\'étapes que "options", '
+        + '2 à 4 variantes au nom court (20 caractères au plus) : pour un site ou une application, par exemple "Ordinateur" (site) et "Téléphone" (application) ; '
+        + 'pour un réglage de l\'appareil, "Windows", "Mac", "iPhone", "Android". Sans "variants" si les étapes sont les mêmes partout.',
+      '- Appuie-toi sur l\'aide officielle du service ou du fabricant ; écris « menu à vérifier » quand tu n\'es pas sûr d\'un intitulé : les menus changent.',
+      '- Le défi ne demande jamais de saisir, montrer ni envoyer une donnée personnelle réelle (santé, identité, identifiant, mot de passe, code reçu) : '
+        + 'on repère où se trouve une fonction, on ouvre un menu, on regarde un réglage, sans rien valider ni partager.',
+      '- Langage simple, phrases courtes, adapté au public. Aucun nom de personne réelle.',
+      '',
+      'Réponds UNIQUEMENT par une liste JSON valide contenant ce seul élément, sans texte autour. Format :',
+      '[',
+      '  {"type": "steps", "text": "Défi : …", "options": ["…", "…", "…"], "variants": {"Ordinateur": ["…", "…", "…"], "Téléphone": ["…", "…", "…"]}}',
+      ']'
+    ].join('\n');
+  }
+
   function openGen(createTitle, replaceRaw, source) {
     genCreate = createTitle || null;
+    genDefiOnly = source === 'defi';
+    WL.show($('gen-size'), !genDefiOnly);
+    WL.show($('gen-qcm-box'), !genDefiOnly);
+    WL.show($('gen-defi-box'), betaOn && !genDefiOnly);
     genReplace = typeof replaceRaw === 'string';
     $('gen-raw').value = genReplace ? replaceRaw : $('gen-raw').value;
     genReset();
@@ -1509,17 +1549,21 @@
     WL.show($('gen-generation'), !fromPdf);
     WL.show($('gen-input'), !fromPdf);
     $('gen-form').classList.toggle('menti-preview', fromPdf);
-    $('gen-title').textContent = fromPdf ? (genCreate ? 'Créer un atelier depuis un PDF' : 'Ajouter des étapes depuis un PDF') : genCreate ? 'Créer un atelier depuis un JSON'
+    $('gen-title').textContent = genDefiOnly ? 'Défi sur mesure' : fromPdf ? (genCreate ? 'Créer un atelier depuis un PDF' : 'Ajouter des étapes depuis un PDF') : genCreate ? 'Créer un atelier depuis un JSON'
       : genReplace ? 'Faire relire les questions' : 'Ajouter des questions depuis un JSON';
-    $('gen-for').textContent = genCreate
+    $('gen-for').textContent = genDefiOnly
+      ? 'Un défi à étapes sur le thème de « ' + data.title + ' » : copiez la consigne, collez-la dans une IA, collez sa réponse puis vérifiez. Le défi s\'ajoute à la fin. '
+        + 'Vérifiez les menus sur vos appareils avant l\'atelier.'
+      : genCreate
       ? 'Nouvel atelier « ' + genCreate + ' » : il n\'est créé qu\'au clic sur « Créer l\'atelier », après relecture de l\'aperçu. Fermer ne crée rien.'
       : genReplace ? 'Les questions de « ' + data.title + ' » sont ci-dessous. Copiez la consigne de relecture (étape 3), collez-la dans une autre IA, '
         + 'puis collez sa version corrigée à la place, cliquez « Vérifier la réponse » et remplacez. Fermer ne change rien.'
       : 'Les questions cochées s\'ajoutent à la fin de « ' + data.title + ' ».';
     if (genCreate) $('gen-theme').value = genCreate;
-    if (genReplace) $('gen-theme').value = data.title;
+    if (genReplace || genDefiOnly) $('gen-theme').value = data.title;
     $('gen-save').textContent = genCreate ? 'Créer l\'atelier avec les questions cochées'
-      : genReplace ? 'Remplacer les questions par les cochées' : 'Ajouter les questions cochées';
+      : genReplace ? 'Remplacer les questions par les cochées' : genDefiOnly ? 'Ajouter le défi' : 'Ajouter les questions cochées';
+    if (genDefiOnly) $('gen-raw').value = '';
     syncGenSize();
     $('gen-dialog').showModal();
     if (genReplace) genCheck(); else if (!fromPdf) $('gen-theme').focus();
@@ -1554,6 +1598,11 @@
   $('gen-copy').addEventListener('click', function () {
     if (!$('gen-theme').value.trim()) { $('gen-error').textContent = 'Indiquez un thème.'; $('gen-theme').focus(); return; }
     if (!genPublic()) { $('gen-error').textContent = 'Précisez le public concerné avant de copier la consigne.'; $('gen-public-other').focus(); return; }
+    if (genDefiOnly) {
+      $('gen-error').textContent = '';
+      copyText(defiPrompt(), $('gen-copied'));
+      return;
+    }
     var plan = genPlan();
     if (plan.error) { $('gen-error').textContent = plan.error; return; }
     $('gen-error').textContent = '';
