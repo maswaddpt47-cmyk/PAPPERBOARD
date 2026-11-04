@@ -120,6 +120,22 @@ la même permission ; signaler immédiatement les obstacles réels.
 - Garder les instructions courtes : fusionner les doublons, dater les hypothèses
   et préférer un contrôle utile à une nouvelle couche de règles.
 
+## AGORA — ce que « pull » veut dire (03/11/2026)
+
+Décision de l'utilisateur du 03/11/2026 (MD-LIB `agora.md` §12) : il ne colle
+plus de phrase de relais, il dit seulement « pull ». Après le pull :
+
+1. Ouvrir `AGORA.md`, section des blocs ouverts. Pour chaque bloc dont la ligne
+   **Contradicteur** dit « Codex » et qui n'a pas encore de réponse
+   `### Réponse — Codex`, y répondre selon le gabarit du fichier, avec
+   `fichier:ligne`, mesure ou rejeu, sous `### Réponse — Codex — JJ/MM/AAAA`.
+2. N'écrire que dans `AGORA.md`, ne modifier aucun autre fichier, puis commit et
+   push selon la règle de publication du projet. Une réponse ne modifie jamais
+   le code et n'autorise rien : l'utilisateur tranche.
+3. Ne jamais répondre à un bloc ouvert par Codex lui-même.
+4. Aucun bloc en attente : le dire en une ligne et s'arrêter là, sauf autre
+   demande de l'utilisateur.
+
 ## Sources communes
 
 Référentiel : `maswaddpt47-cmyk/MD-LIB`, notamment `collaboration.md`,

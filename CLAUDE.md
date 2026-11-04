@@ -223,7 +223,8 @@ n'est **pas requis**. Claude **soumet d'office** un bloc dès qu'un critère est
 rempli, sans demander, l'annonce en une ligne (« ⚖️ AGORA : critère N — … Bloc
 AG-00N commité. À coller dans l'autre session : « pull, lis AGORA.md, réponds à
 AG-00N, tu es la session B » ») et **ne bloque jamais** : le travail continue.
-L'utilisateur décide de coller la phrase ou non, et tranche. Le bloc se dépose
+L'utilisateur décide de coller la phrase ou non, et tranche.
+**Bloc pour Codex : dire « pull » à Codex suffit** (son `AGENTS.md` le fait répondre, MD-LIB `agora.md` §12, 03/11/2026) ; la session qui ouvre le bloc l'annonce quand même à l'utilisateur, en une ligne, dès qu'il est en ligne. Le bloc se dépose
 **au moment du choix**, avant le code (après, la lecture est biaisée vers le
 statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, CI, avance rapide.
 

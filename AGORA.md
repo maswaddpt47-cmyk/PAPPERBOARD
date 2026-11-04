@@ -49,6 +49,7 @@ compte Claude à l'autre : le relais est humain. L'AGORA ne bloque jamais le tra
 **Auteur** : session A — <8 premiers caractères du Claude-Session> — lu sur `<sha court>`
 **Proposition** : en 3 lignes maximum.
 **Critère déclencheur** : n° et lequel (CLAUDE.md §6).
+**Contradicteur** : Codex | session B (Codex répond seul au « pull » de l'utilisateur, `AGENTS.md`)
 **Ce que ça engage** : ce qui serait coûteux à défaire.
 **Non vérifié par l'auteur** : ...
 **Si personne ne répond, je fais quoi ?** : (« je continue pareil » = pas de bloc)
