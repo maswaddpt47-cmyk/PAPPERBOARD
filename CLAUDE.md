@@ -27,154 +27,19 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
 
 ## 2. Collaboration
 
-- Ne rien déclarer « testé », « réparé » ou « en ligne » sans l'avoir exécuté.
-  Sinon : « hypothèse non vérifiée ». Toute affirmation technique écrite dans
-  un `.md` porte une date (JJ/MM/AAAA) et son statut (mesuré / supposé).
-  « Validé » = seulement ce que l'utilisateur a nommé (« c'est bon » ne couvre pas le reste).
+Règles communes de collaboration : MD-LIB/collaboration.md, chargé automatiquement
+par MD-LIB/CLAUDE.md (04/11/2026). Ici, seulement ce qui est propre au projet.
+
 - Toute fonction nouvelle se montre là où l'utilisateur teste (démo comprise) ; la
   réponse dit **où cliquer** en premier, jamais une fonction cachée sans le dire.
-- **L'utilisateur décide, Claude propose** (19/10/2026) : toute déviation d'une
-  consigne ou du cahier des charges, tout choix de garder, retirer ou remplacer
-  un élément demandé, se demande **avant** d'être fait ; l'utilisateur a le
-  dernier mot. Jamais d'« écart assumé » tranché seul. Le travail qui n'en
-  dépend pas continue en attendant.
-- Changement de session annoncé : relever les règles de collaboration nées
-  pendant la session et absentes des `.md`, les présenter à l'utilisateur, puis
-  les inscrire (MD-LIB `collaboration.md`, règle 32).
-- **Pas plus de 60 secondes sans nouvelles pendant une tâche** (MD-LIB
-  `collaboration.md`, règle 51, 19/10/2026) : un point utile (acquis, obstacle,
-  prochaine action) au moins toutes les minutes, même quand rien ne bloque.
-- **Une attente longue se fait en arrière-plan, la main rendue à
-  l'utilisateur** (règle 52) : CI, déploiement, file d'attente — annoncer la
-  durée attendue, surveiller en arrière-plan, répondre tout de suite, revenir
-  quand c'est fini. Jamais une boucle d'attente de plusieurs minutes au premier plan.
-- Dates explicites, jamais « hier » / « demain ». Heures en heure de Paris (GitHub et les
-  API affichent l'UTC), converties **par commande** (`TZ=Europe/Paris date`),
-  jamais de tête : le décalage change deux fois par an (30/10/2026, +2 h écrit
-  au lieu de +1 h).
-- `CHANTIERS.md` tenu à jour à chaque étape, pas en fin de session : tâche
-  finie = descriptif retiré, l'invariant remonte dans « Points à ne pas
-  défaire ». `scripts/check-chantiers.sh` signale un fichier à nettoyer.
-- Réponses courtes et non techniques par défaut. Pas de compliment, un constat.
-- Avant de décrire un correctif, suivre la valeur sur **tout son chemin**
-  (`then`/`catch`, appelants, valeurs par défaut), pas la seule ligne à
-  changer : le 23/09/2026 un correctif annoncé comme suffisant était
-  inopérant, le `catch` écrasant la décision prise dans le `then`.
-- Un nombre annoncé se **compte par une commande**, pas à l'œil sur une liste ;
-  sinon le dire comme une estimation.
-- Fichier partagé entre sessions (`AGORA.md`, `CHANTIERS.md`, `CLAUDE.md`) :
-  refaire un `git fetch` et le relire **juste avant de rédiger**, pas seulement
-  à l'ouverture.
-- Un comportement qui change **emporte ses textes** : dans la même livraison,
-  corriger tous les textes visibles qui décrivent l'ancien comportement
-  (dialogues, aide, annonces, messages d'erreur), ou les signaler.
-- Une capture envoyée pour valider un point **se lit en entier** : toute
-  incohérence visible ailleurs se signale, en hypothèse, sans corriger
-  d'office.
-- **Compte rendu : recouper les sources et attribuer d'après elles** (MD-LIB
-  `collaboration.md`, règles 34-35). Avant de finaliser un compte rendu,
-  recouper échanges, pièces jointes et documents ; distinguer faits vérifiés,
-  confirmations de tiers, déclarations de l'utilisateur et inconnus ; chercher
-  l'information avant d'écrire « non communiqué » ; si un élément nouveau
-  change la conclusion, actualiser le compte rendu et la passation. Chaque
-  apport s'attribue à son auteur d'après la source (`AGORA.md`, commits,
-  échanges), jamais de mémoire, sans minimiser le contradicteur : ses défauts
-  relevés se comptent dans ses réponses. Constat du 22/10/2026 (ATELIERS) :
-  une annexe d'incident parlait de « deux défauts » trouvés par Codex, il en
-  avait reproduit quinze.
-- **Une tâche programmée n'est présentée comme une surveillance qu'après
-  comptage de ses passages réels** (règle 36), par une commande sur
-  l'historique des exécutions : une programmation écrite n'est pas une
-  exécution. Constat du 22/10/2026 (ATELIERS) : un contrôle « toutes les
-  heures » n'avait tourné seul qu'une fois en 7 h.
-- **Un moyen d'arrêt (annulation, coupure, désactivation) s'essaie en réel
-  avant d'être annoncé** (règle 37), comme la fonction qu'il arrête. Constat
-  du 22/10/2026 (ATELIERS) : un veilleur lançait encore son successeur quand
-  on l'annulait.
-- **Vérifier l'élément exact nommé par l'utilisateur, pas un élément voisin
-  supposé équivalent** (MD-LIB `collaboration.md`, règle 38). Deux éléments
-  qui partagent une classe, un style ou un comportement visuel proche (un
-  badge de compteur et la tuile qu'il résume) ne partagent pas forcément le
-  même correctif : une règle CSS plus spécifique peut écraser l'un sans
-  toucher l'autre. Constat du 20/10/2026 (sms-mail-multi) : clignotement
-  validé sur le badge du menu, alors que c'était la tuile qui devait
-  clignoter.
-- **Ne jamais chaîner un commit derrière un `git pull` avec `&&`, et relire
-  `git log --oneline -2` après le push** (MD-LIB `collaboration.md`, règle
-  43) : séparer les commandes par des sauts de ligne et vérifier que les
-  commits attendus sont dans `HEAD` avant d'annoncer quoi que ce soit. Constat
-  du 27/10/2026 (GDINV2) : le pull a échoué, la chaîne s'est interrompue, et
-  un test renforcé est parti sans le correctif qu'il devait valider.
-- **Un inventaire de ce qui existe ne prouve pas ce qui est impossible**
-  (règle 44) : dans un document remis à un tiers, écrire ce qui a été vérifié
-  et par quel moyen, jamais une impossibilité. Constat du 27/10/2026
-  (GDINV2) : une note à la DSI affirmait qu'« aucun code n'est capable
-  d'émettre une donnée » ; une injection HTML par un champ importé l'a
-  démentie le jour même.
-- **Faire décrire l'environnement avant d'en analyser les contraintes** (règle
-  45) : « cloud », « serveur », « hébergement », « en ligne » ne désignent pas
-  la même chose selon l'interlocuteur ; demander **comment le fichier
-  s'ouvre**, pas où il est rangé. Constat du 27/10/2026 (GDINV2) : une analyse
-  d'hébergement web entière a été jetée, le « cloud du CD47 » était un espace
-  de stockage sans serveur.
-- **Avant de produire un document de plus, demander s'il remplace ou s'il
-  s'ajoute** (règle 46) ; un document qui en remplace un autre le dit en tête
-  et annule explicitement le précédent. Constat du 27/10/2026 (GDINV2) :
-  rectificatif, synthèse puis note consolidée sur le même sujet, l'utilisateur
-  a dû demander « on a besoin de tous ces justificatifs ? ».
-- **Un test de sécurité emprunte la vraie voie d'entrée et prouve qu'il est
-  arrivé à l'endroit testé** (MD-LIB `collaboration.md`, règle 53) : importer
-  par le même chemin que l'utilisateur, choisir des valeurs réellement proposées
-  par l'interface, et ajouter une assertion de garde (l'écran visé est ouvert,
-  le texte attendu est affiché) ; sans elle, un test qui sort en silence valide
-  du code vulnérable. Vaut pour le test « hostile » de ce dépôt. Constat du
-  29/10/2026 (GDINV2) : trois injections sont passées derrière un test qui
-  n'ouvrait pas l'écran visé, relevées ensuite par l'audit Codex.
-- **Un test ajouté se vérifie par mutation** (règle 55) : le casser
-  volontairement et constater qu'il échoue ; pour un test écrit par script,
-  relire la ligne produite avant de lancer ; pour tout test de calcul, une
-  mutation du code (ou du dénominateur) doit le faire échouer. Constat du
-  30/10/2026 (sms-mail-multi) : un `//` de fin de ligne a rendu inertes huit
-  assertions pendant cinq commits, la suite restant verte (relevé par Codex).
-- **Après des modifications hors session, « pull » déclenche la mise à jour de
-  `CHANTIERS.md`** (règle 56) : `git pull`, lire `git log` et le diff arrivés
-  depuis la base notée dans l'en-tête, mettre le fichier à jour (en-tête
-  compris) avant toute autre tâche ; ne pas supposer qu'une entrée datée est
-  encore vraie. L'utilisateur dit en une ligne ce qui reste hors dépôt
-  (réglage, donnée, jeton).
-- **Nouvelle donnée enregistrée : penser ses chiffres avant de la figer**
-  (MD-LIB `collaboration.md`, règle 57, 31/10/2026) : avant d'ajouter un import,
-  un statut, un type de fiche ou un champ, définir ce qui sera compté (faits,
-  unités, population, date de référence, traitement des inconnus), une identité
-  stable, la validation à l'écriture et la gestion des échecs d'enregistrement ;
-  un seul format de date enregistré (date civile en heure de Paris, instant en
-  ISO avec fuseau ; jamais `toLocaleString` ni `toISOString().slice(0,10)` pour
-  une date du jour) ; conclusion consignée dans `CHANTIERS.md`. Dispositif
-  proportionné : pas de collecte « au cas où », aucune reconstruction des
-  données anciennes. Constats : sms-mail-multi (`ts` en texte français, dates du
-  jour en UTC, déploiement sans test), GDINV2 (14 défauts de calcul malgré 251
-  tests verts). `tests/run.sh` bloque déjà le déploiement (contrôle `tests`) :
-  un nouveau calcul y ajoute le sien.
-- **Une relance automatique s'éprouve en échec persistant avant d'être mise en service** (MD-LIB `collaboration.md`, règle 61, 04/11/2026) : tout mécanisme qui relance une tâche après un échec (veilleur, relève, reprise, nouvel essai) espace ses tentatives quand l'échec dure, y compris quand c'est la lecture de son propre état qui échoue, et cet espacement s'éprouve en réel sur un échec provoqué. Constat du 02/11/2026 (ATELIERS) : 3 603 échecs en 34 h, un toutes les 34 s.
-- **Une seule décision par question, ou des choix numérotés** (MD-LIB `collaboration.md`, règle 62) : une question qui en porte deux rend un « oui » ambigu ; devant une réponse qui peut viser deux questions, dire comment on l'a comprise avant d'agir. Constat du 02/11/2026 (ATELIERS) : « oui vas y » répondait à deux questions à la fois.
-- **Prendre l'initiative de propositions d'amélioration et de nouveautés**
-  (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
-  demande, lors d'une revue et après une livraison validée, proposer sans
-  attendre qu'on le demande **au plus 3 pistes, classées par utilité**, présentées
-  brièvement. Anticiper les besoins encore non exprimés et chercher les fonctions
-  manquantes. Examiner aussi la pertinence de l'existant : recommander de
-  simplifier, réunir ou retirer ce qui encombre, lorsqu'un constat le justifie.
-  Chercher **dans** l'outil et **autour** : tâches encore faites sur tableur,
-  par mail ou sur papier, demandes répétées de l'équipe ou de la hiérarchie.
-  Pour chaque piste, préciser le problème observé, le bénéfice attendu et
-  **le choix recommandé**, en évaluant aussi la complexité ou la charge ajoutée
-  pour l'utilisateur. Donner un avis net et argumenté, appuyé sur les usages,
-  les retours et les chantiers ; signaler les hypothèses. Éviter les idées
-  forcées pour remplir un quota et le flux permanent de suggestions.
-  L'utilisateur décide de la réalisation des changements supplémentaires.
-  Consigner chaque piste dans « Pistes » de `CHANTIERS.md` : *proposée, en
-  attente* ou *écartée*, avec date et raison ; ne pas reproposer une piste
-  écartée sans fait nouveau.
+- `CHANTIERS.md` : `scripts/check-chantiers.sh` signale un fichier à nettoyer
+  (300 lignes au plus).
+- Règle 53 (test de sécurité par la vraie voie d'entrée) : vaut pour le test
+  « hostile » de ce dépôt.
+- Règle 57 (nouvelle donnée) : `tests/run.sh` bloque déjà le déploiement
+  (contrôle `tests`) ; un nouveau calcul y ajoute le sien.
+- Règle 22 (pistes) : chaque piste va dans « Pistes d'amélioration » de
+  `CHANTIERS.md` (proposée, en attente ou écartée, avec date et raison).
 
 ## 3. Tests — dosés
 
