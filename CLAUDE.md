@@ -155,6 +155,8 @@ JS vanilla sans build, hébergée chez Alwaysdata. Règles copiées de MD-LIB
   jour en UTC, déploiement sans test), GDINV2 (14 défauts de calcul malgré 251
   tests verts). `tests/run.sh` bloque déjà le déploiement (contrôle `tests`) :
   un nouveau calcul y ajoute le sien.
+- **Une relance automatique s'éprouve en échec persistant avant d'être mise en service** (MD-LIB `collaboration.md`, règle 61, 04/11/2026) : tout mécanisme qui relance une tâche après un échec (veilleur, relève, reprise, nouvel essai) espace ses tentatives quand l'échec dure, y compris quand c'est la lecture de son propre état qui échoue, et cet espacement s'éprouve en réel sur un échec provoqué. Constat du 02/11/2026 (ATELIERS) : 3 603 échecs en 34 h, un toutes les 34 s.
+- **Une seule décision par question, ou des choix numérotés** (MD-LIB `collaboration.md`, règle 62) : une question qui en porte deux rend un « oui » ambigu ; devant une réponse qui peut viser deux questions, dire comment on l'a comprise avant d'agir. Constat du 02/11/2026 (ATELIERS) : « oui vas y » répondait à deux questions à la fois.
 - **Prendre l'initiative de propositions d'amélioration et de nouveautés**
   (MD-LIB `collaboration.md`, règle 22, demande du 03/10/2026 renforcée le 25/10/2026). Pendant l'analyse d'une
   demande, lors d'une revue et après une livraison validée, proposer sans
