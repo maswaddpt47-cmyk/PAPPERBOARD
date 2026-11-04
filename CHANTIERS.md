@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **02/11/2026** (relu après pull sur `34689f4`) — commit de référence : voir `git log -1 main`.
+État au **04/11/2026** (relu après pull sur `df3dcf6` : règles 61-62, AGORA, CLAUDE.md allégé) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
