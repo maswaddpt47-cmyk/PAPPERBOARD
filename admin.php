@@ -682,7 +682,13 @@ header('Cache-Control: no-store');
           <p id="gen-estimate" class="meta" aria-live="polite"></p>
         </fieldset>
         <label for="gen-special">Instructions spéciales pour l’IA (facultatif)</label>
-        <textarea id="gen-special" rows="5" maxlength="2000" aria-describedby="gen-special-help" placeholder="Ex. : alterner démonstrations et exercices guidés. Faire une tâche sur ordinateur ou smartphone, demander « Avez-vous réussi ? » (Oui/Non), puis « Si non, qu’est-ce qui vous a bloqué ? ». Prévoir des consignes pour Android et iPhone."></textarea>
+        <div class="row wrap" role="group" aria-label="Suggestions à ajouter aux instructions">
+          <button type="button" class="btn btn-small" data-gen-special="animation" title="Ajoute un exemple modifiable pour alterner démonstrations et exercices">+ Démonstration et pratique</button>
+          <button id="gen-suggest-retour" type="button" class="btn btn-small" data-gen-special="retour" title="Ajoute un exemple modifiable pour recueillir la réussite et les difficultés">+ Réussite et difficultés</button>
+          <button type="button" class="btn btn-small" data-gen-special="appareils" title="Ajoute un exemple modifiable pour adapter les gestes aux appareils">+ Appareils et variantes</button>
+        </div>
+        <textarea id="gen-special" rows="5" maxlength="2000" aria-describedby="gen-special-help gen-special-status" placeholder="Ajoutez une suggestion ci-dessus, puis modifiez son texte, ou écrivez directement vos instructions."></textarea>
+        <span id="gen-special-status" class="meta" role="status"></span>
         <p id="gen-special-help" class="meta">Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.</p>
         <label id="gen-qcm-box" class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
         <label id="gen-defi-box" class="check" hidden><input id="gen-defi" type="checkbox"> Ajouter un défi pratique à étapes après les quiz (essai)</label>

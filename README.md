@@ -33,7 +33,12 @@ de relecture** prépare un texte pour faire relire les questions par une *autre*
 IA, sources exigées : ouvrez chaque lien avant de vous y fier.
 
 **Instructions spéciales pour l’IA** : dans la préparation du JSON, précisez la
-méthode d’animation, les appareils ou les exercices souhaités. Ce texte est inclus
+méthode d’animation, les appareils ou les exercices souhaités. Les boutons
+**Démonstration et pratique**, **Réussite et difficultés** et **Appareils et variantes**
+ajoutent des suggestions directement dans le champ : modifiez-les librement,
+combinez-les ou supprimez-les. Le texte déjà saisi reste conservé ; un doublon ou
+un dépassement de la limite est signalé sans remplacer ni raccourcir la saisie.
+Ce texte est inclus
 dans les consignes de génération et de relecture ; il n’est pas enregistré avec
 l’atelier. Exemple : une tâche sur smartphone, puis « Avez-vous réussi ? » en
 Oui/Non sans bonne réponse, et « Si non, qu’est-ce qui vous a bloqué ? » en réponse

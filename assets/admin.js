@@ -1343,6 +1343,11 @@
   function specialInstructions(text) {
     return text ? 'Instructions spéciales de l’animateur :\n' + text + '\nFin des instructions spéciales.' : null;
   }
+  var SPECIAL_SUGGESTIONS = {
+    animation: 'Alterner de courtes démonstrations et des exercices guidés. Donner une seule consigne à la fois, laisser le temps d’essayer, puis prévoir un échange sur les difficultés.',
+    retour: 'Après chaque tâche, demander « Avez-vous réussi ? » en Oui/Non sans bonne réponse, puis « Si non, qu’est-ce qui vous a bloqué ? » en réponse libre. Les personnes ayant réussi peuvent passer cette dernière question.',
+    appareils: 'Adapter les gestes aux appareils du groupe : ordinateur (Windows ou Mac) et smartphone (Android ou iPhone). Prévoir des variantes lorsque les menus diffèrent ; indiquer « menu à vérifier » si un intitulé n’est pas certain.'
+  };
 
   /** Nombre de questions : choisi (1 à 30), ou estimé d'après la durée. { error } si impossible. */
   function genPlan() {
@@ -1577,6 +1582,9 @@
     var instructionsTarget = genCreate ? 'new:' + genCreate : code;
     if (genCreate || genInstructionsTarget !== instructionsTarget) $('gen-special').value = '';
     genInstructionsTarget = instructionsTarget;
+    $('gen-special-status').textContent = '';
+    $('gen-special-status').classList.remove('error');
+    WL.show($('gen-suggest-retour'), !genDefiOnly);
     $('gen-special-help').textContent = genDefiOnly
       ? 'Précisez l’exercice, les appareils et la progression de ce seul défi. Pour ajouter un bilan Oui/Non et une réponse libre, utilisez « Ajouter depuis un JSON ». Ces instructions ne sont pas enregistrées avec l’atelier. Aucune donnée personnelle.'
       : 'Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.';
@@ -1628,10 +1636,36 @@
   $('gen-list').addEventListener('change', genSaveState);
   $('gen-raw').addEventListener('input', genReset);
   $('gen-special').addEventListener('input', function () {
+    $('gen-special-status').textContent = '';
+    $('gen-special-status').classList.remove('error');
     $('gen-copied').textContent = '';
     $('gen-review-copied').textContent = '';
     $('gen-prompt').value = '';
     WL.show($('gen-prompt'), false);
+  });
+  document.querySelectorAll('[data-gen-special]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var input = $('gen-special'), note = $('gen-special-status'), text = SPECIAL_SUGGESTIONS[button.dataset.genSpecial];
+      if (!text) return;
+      note.classList.remove('error');
+      if (input.value.indexOf(text) !== -1) {
+        note.textContent = 'Cette suggestion est déjà présente. Vous pouvez la modifier dans le champ.';
+        input.focus();
+        return;
+      }
+      var next = input.value + (input.value ? '\n\n' : '') + text;
+      if (next.length > input.maxLength) {
+        note.textContent = 'La suggestion dépasserait la limite de 2 000 caractères. Raccourcissez le texte avant de l’ajouter.';
+        note.classList.add('error');
+        input.focus();
+        return;
+      }
+      input.value = next;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      note.textContent = 'Suggestion ajoutée. Vous pouvez modifier son texte dans le champ.';
+      input.focus();
+      input.setSelectionRange(next.length - text.length, next.length);
+    });
   });
 
   /** Affiche le texte dans la zone dédiée et le copie (sinon le sélectionne). */
