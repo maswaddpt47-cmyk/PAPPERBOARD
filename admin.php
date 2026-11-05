@@ -681,6 +681,9 @@ header('Cache-Control: no-store');
             <input id="gen-duration" type="number" min="15" max="180" step="5" value="60"></div>
           <p id="gen-estimate" class="meta" aria-live="polite"></p>
         </fieldset>
+        <label for="gen-special">Instructions spéciales pour l’IA (facultatif)</label>
+        <textarea id="gen-special" rows="5" maxlength="2000" aria-describedby="gen-special-help" placeholder="Ex. : alterner démonstrations et exercices guidés. Faire une tâche sur ordinateur ou smartphone, demander « Avez-vous réussi ? » (Oui/Non), puis « Si non, qu’est-ce qui vous a bloqué ? ». Prévoir des consignes pour Android et iPhone."></textarea>
+        <p id="gen-special-help" class="meta">Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.</p>
         <label id="gen-qcm-box" class="check"><input id="gen-qcm" type="checkbox"> Que des quiz (QCM, Vrai/Faux, Oui/Non avec bonne réponse)</label>
         <label id="gen-defi-box" class="check" hidden><input id="gen-defi" type="checkbox"> Ajouter un défi pratique à étapes après les quiz (essai)</label>
         <p class="row wrap"><button id="gen-copy" class="btn btn-primary" title="Copie la consigne à coller dans ChatGPT, Le Chat, Claude…" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copier le texte pour l'IA</button>

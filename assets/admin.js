@@ -1339,6 +1339,10 @@
     return $('gen-public').value === 'autres' ? $('gen-public-other').value.trim() : $('gen-public').value;
   }
   function genDefi() { return $('gen-defi').checked && !$('gen-defi-box').hidden; }
+  function genSpecial() { return $('gen-special').value.trim(); }
+  function specialInstructions(text) {
+    return text ? 'Instructions spéciales de l’animateur :\n' + text + '\nFin des instructions spéciales.' : null;
+  }
 
   /** Nombre de questions : choisi (1 à 30), ou estimé d'après la durée. { error } si impossible. */
   function genPlan() {
@@ -1377,12 +1381,13 @@
   ['gen-count', 'gen-duration'].forEach(function (id) { $(id).addEventListener('input', syncGenSize); });
 
   function genPrompt() {
-    var plan = genPlan();
+    var plan = genPlan(), special = genSpecial();
     return [
-      'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
+      'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur appareil).',
       'Thème : ' + $('gen-theme').value.trim(),
       'Public : ' + genPublic(),
       'Niveau du public : ' + LEVELS[$('gen-level').value][0] + '. ' + LEVELS[$('gen-level').value][1],
+      specialInstructions(special),
       'Nombre de questions : ' + plan.count,
       plan.mode === 'duration' ? 'Durée totale de l\'atelier : ' + plan.duration + ' minutes. Budget indicatif : ' + planBudget(plan)
         + ' Compte environ ' + plan.perQuestion + ' min par question, échanges compris, et garde des intitulés et des explications à la mesure de ce temps.' : null,
@@ -1394,18 +1399,31 @@
       $('gen-qcm').checked
         ? '- Uniquement des quiz à bonne réponse : "mcq" (avec "correct"), "truefalse" ou "yesno" (avec "correct"), surtout des "mcq". '
           + 'Ni sondage, ni nuage, ni mur, ni post-it, ni gommettes, ni échelle.'
+        : special ? '- Choisis les types et leur ordre selon les instructions spéciales. La variété des formats et une échelle finale sont facultatives.'
         : '- Varie les types et utilise chacun au moins une fois si le nombre le permet, dans un ordre d\'atelier : '
           + 'un nuage de mots ou un sondage pour démarrer, puis les quiz, puis les échanges (mur, post-it, gommettes), et une échelle pour finir.',
       '- Intitulé : 200 caractères au plus. Choix : 80 caractères au plus, de 2 à 10 choix.',
       '- Quiz : bonnes réponses exactes et vérifiables, recopiées mot pour mot depuis les choix.',
       '- Quiz : mauvaises réponses crédibles, qui font réfléchir, jamais absurdes ni comiques.',
       '- Une affirmation à juger est une question "truefalse" (Vrai/Faux), jamais "yesno" (Oui/Non) ; "yesno" seulement pour une vraie question à laquelle on répond par oui ou par non.',
-      $('gen-qcm').checked ? '- Pas d\'échelle.' : '- Une seule échelle (« scale »), en toute fin d\'atelier.',
-      '- Chaque question a un champ "explain" : 2 ou 3 phrases (300 caractères au plus) affichées avec les résultats '
+      $('gen-qcm').checked ? '- Pas d\'échelle.' : special ? '- Une seule échelle (« scale ») au plus, si elle est utile.' : '- Une seule échelle (« scale »), en toute fin d\'atelier.',
+      special ? '- Les instructions spéciales précisent la pédagogie et les procédés d’animation ; respecte le public, le nombre ou la durée choisis, les types autorisés et la sortie JSON. '
+        + 'Une consigne d’exercice et ses questions de retour comptent chacune dans le total annoncé, hors défi supplémentaire et conclusion.' : null,
+      special && !$('gen-qcm').checked ? '- Si un exercice sur appareil est demandé, présente une tâche concrète dans une diapositive "info" ; '
+        + 'adapte les gestes à l’ordinateur ou au smartphone indiqué et vérifie les menus dans l’aide officielle, sinon écris « menu à vérifier ». '
+        + 'Si un bilan de réussite est demandé, ajoute "yesno" (« Avez-vous réussi ? »), sans "correct" : c’est une autoévaluation, pas un quiz ; '
+        + 'puis "text" (« Si non, qu’est-ce qui vous a bloqué ? »), sans bonne réponse. Cette question distincte est affichée à tous : '
+        + 'les personnes ayant réussi peuvent la passer ; ne crée aucun champ conditionnel non pris en charge. '
+        + 'Ne demande jamais de saisir, montrer ou partager de donnée personnelle réelle, identifiant, mot de passe ou code reçu.' : null,
+      special ? '- Chaque question peut avoir un champ "explain" (300 caractères au plus) pour le débriefing. Pour un quiz ou une affirmation factuelle, '
+        + 'cite une source sûre ; sinon écris « pas de source sûre ». Pour une autoévaluation ou un retour personnel, propose une aide ou un échange, '
+        + 'sans bonne réponse ni chiffre de réussite inventé.'
+        : '- Chaque question a un champ "explain" : 2 ou 3 phrases (300 caractères au plus) affichées avec les résultats '
         + 'pour lancer l\'échange : la bonne réponse et pourquoi, ou un chiffre de repère pour un sondage, avec sa source '
         + '(organisme officiel, étude nommée). Si tu n\'as pas de source sûre, écris « pas de source sûre » plutôt qu\'en inventer une.',
       '',
       'Types possibles :',
+      '- "info" : diapositive sans vote ; "text" = titre, "content" = consigne ou explication (3000 caractères au plus).',
       '- "yesno" : question Oui/Non ; "correct" facultatif : "Oui" ou "Non".',
       '- "truefalse" : affirmation ; "correct" : "Vrai" ou "Faux".',
       '- "mcq" : quiz ; "options" : les choix ; "correct" : liste des textes des bonnes réponses ; "multi": true s\'il y en a plusieurs.',
@@ -1525,6 +1543,7 @@
   // Défi sur mesure (source 'defi') : même fenêtre, consigne réduite à un seul élément "steps"
   // sur le thème de l'atelier ; l'import, l'aperçu et la relecture restent ceux des questions.
   var genDefiOnly = false;
+  var genInstructionsTarget = null;
 
   function defiPrompt() {
     return [
@@ -1532,6 +1551,7 @@
       'Thème de l\'atelier : ' + $('gen-theme').value.trim(),
       'Public : ' + genPublic(),
       'Niveau du public : ' + LEVELS[$('gen-level').value][0] + '. ' + LEVELS[$('gen-level').value][1],
+      specialInstructions(genSpecial()),
       '',
       'Règles :',
       '- Le défi porte sur le thème : le service, le site ou l\'application dont parle l\'atelier, pas un réglage général de l\'appareil.',
@@ -1554,6 +1574,12 @@
   function openGen(createTitle, replaceRaw, source) {
     genCreate = createTitle || null;
     genDefiOnly = source === 'defi';
+    var instructionsTarget = genCreate ? 'new:' + genCreate : code;
+    if (genCreate || genInstructionsTarget !== instructionsTarget) $('gen-special').value = '';
+    genInstructionsTarget = instructionsTarget;
+    $('gen-special-help').textContent = genDefiOnly
+      ? 'Précisez l’exercice, les appareils et la progression de ce seul défi. Pour ajouter un bilan Oui/Non et une réponse libre, utilisez « Ajouter depuis un JSON ». Ces instructions ne sont pas enregistrées avec l’atelier. Aucune donnée personnelle.'
+      : 'Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.';
     WL.show($('gen-size'), !genDefiOnly);
     WL.show($('gen-qcm-box'), !genDefiOnly);
     WL.show($('gen-defi-box'), betaOn && !genDefiOnly);
@@ -1601,6 +1627,12 @@
   $('gen-cancel').addEventListener('click', function () { $('gen-dialog').close(); });
   $('gen-list').addEventListener('change', genSaveState);
   $('gen-raw').addEventListener('input', genReset);
+  $('gen-special').addEventListener('input', function () {
+    $('gen-copied').textContent = '';
+    $('gen-review-copied').textContent = '';
+    $('gen-prompt').value = '';
+    WL.show($('gen-prompt'), false);
+  });
 
   /** Affiche le texte dans la zone dédiée et le copie (sinon le sélectionne). */
   function copyText(text, note, where) {
@@ -1639,11 +1671,13 @@
     + 'Conserve les champs facultatifs "rich" de mise en forme : si tu corriges un texte, corrige aussi le texte de ses segments pour qu’ils correspondent exactement. '
     + 'N’ajoute pas de HTML ni de style libre ; garde seulement les types de blocs et le gras déjà autorisés.';
 
-  function reviewText(theme, publicLabel, questions, withReply) {
+  function reviewText(theme, publicLabel, questions, withReply, instructions) {
     return [
-      'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur téléphone).',
+      'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur appareil).',
       'Thème : ' + theme,
       'Public : ' + publicLabel,
+      specialInstructions(instructions),
+      instructions ? 'Vérifie le respect des instructions spéciales, des appareils et du déroulé demandé, sans inventer de fonctionnalité. Une autoévaluation de réussite Oui/Non et son retour libre n’ont pas de bonne réponse imposée.' : null,
       '',
       'Méthode, dans cet ordre :',
       '1. Public : chaque question s\'adresse-t-elle vraiment à ce public (ton, vocabulaire, situations de son quotidien) ? Cite les numéros qui ne vont pas.',
@@ -1673,7 +1707,7 @@
     return reviewText(($('gen-theme').value.trim() || 'à déduire des questions')
       + (plan.mode === 'duration' ? ' ; durée visée : ' + plan.duration + ' minutes (' + WL.plural(plan.count, 'question') + ' environ)' : ''),
       (genPublic() || 'non précisé') + ' ; niveau : ' + LEVELS[$('gen-level').value][0],
-      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), true);
+      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), true, genSpecial());
   }
 
   // Garder les questions de la session comme thème de la bibliothèque (sans aucune réponse).

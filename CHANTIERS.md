@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **04/11/2026** (relu après pull sur `df3dcf6` : règles 61-62, AGORA, CLAUDE.md allégé) — commit de référence : voir `git log -1 main`.
+État au **05/11/2026** (base `e906c4b` relue après actualisation ; instructions spéciales dans la préparation du JSON) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -112,7 +112,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   restent modifiables ; QCM corrigé, réponse figée, QCM multiple : Envoyer (nav).
 - « Suivante » vers une question jamais ouverte ouvre son vote.
 - Post-its colorés d'après leur id, jamais par participant (anonymat).
-- L'IA qui écrit ne relit pas ; WoocLight n'appelle aucune IA (copier-coller).
+- L'IA qui écrit ne relit pas ; WoocLight n'appelle aucune IA (copier-coller). Instructions spéciales (05/11/2026) : texte facultatif de génération/relecture et défi sur mesure, sans enregistrement avec l'atelier ; contexte séparé à la création ou au changement d'atelier. Exercice : consigne `info`, autoévaluation `yesno` sans correction, difficulté `text` distincte affichée à tous ; « Que des quiz » garde sa contrainte. Mesuré en local : 14 vérifications ciblées réussies, champ sans débordement à 390/1280 px, aucune instruction envoyée au serveur ; suite complète verte. Génération par une IA externe et retour utilisateur non vérifiés.
   ⚠️ Jamais de question d'âge légal ou de loi sans Légifrance.
 - Pseudonymes : option par session, effacés à la désactivation ; podium rangs 1-3.
 

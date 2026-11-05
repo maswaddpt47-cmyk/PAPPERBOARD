@@ -32,6 +32,15 @@ réponses des quiz avant l'atelier. Pour un nouveau thème, **Copier la consigne
 de relecture** prépare un texte pour faire relire les questions par une *autre*
 IA, sources exigées : ouvrez chaque lien avant de vous y fier.
 
+**Instructions spéciales pour l’IA** : dans la préparation du JSON, précisez la
+méthode d’animation, les appareils ou les exercices souhaités. Ce texte est inclus
+dans les consignes de génération et de relecture ; il n’est pas enregistré avec
+l’atelier. Exemple : une tâche sur smartphone, puis « Avez-vous réussi ? » en
+Oui/Non sans bonne réponse, et « Si non, qu’est-ce qui vous a bloqué ? » en réponse
+libre. Pour ce retour libre, décochez **Que des quiz**. La question de difficulté
+est affichée à tous, sans condition automatique. Aucune donnée personnelle dans
+les consignes. Le champ est également disponible pour un **Défi sur mesure**.
+
 **Importer un PDF de questions** : espace animateur → **Créer un atelier** →
 **Importer un PDF de questions** (Mentimeter, Pix ou autre outil). Le document doit
 contenir les questions ; un relevé de scores seul ne permet pas de les retrouver.
