@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **05/11/2026** (base `b926668` relue après actualisation ; suggestions insérables et modifiables dans les instructions pour l’IA) — commit de référence : voir `git log -1 main`.
+État au **05/11/2026** (base `91e3bf8` relue après actualisation ; AGENTS.md synchronisé avec MD-LIB et sa règle 18) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -117,6 +117,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Pseudonymes : option par session, effacés à la désactivation ; podium rangs 1-3.
 
 **Hébergement et outillage**
+- `AGENTS.md` synchronisé le 05/11/2026 avec MD-LIB `9c4f349` : autorisations, tests avant push, publication sur `main` selon le ruleset, et ligne finale « ✅ TÂCHE TERMINÉE » uniquement après achèvement et vérification ; jamais pendant une attente ou un blocage.
 - Coupure d'urgence depuis le téléphone : intégrée à `main` (`4e61580`), CI
   verte ; coupure et réouverture déclarées fonctionnelles par l'utilisateur
   le 21/10/2026. Accès : Actions → Coupure d'urgence. Le `.htaccess` original
@@ -142,8 +143,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
   « Fermer les inscriptions ») ; secret de projection (elle montre la salle).
 
 **Coût et robustesse**
-- Deux versions : `pversion` (téléphones) ne bouge pas quand un autre vote ;
-  30 rafraîchissements sans changement = 30 × 304 (e2e « Coût »). Contributions
+- Deux versions : `pversion` (téléphones) ne bouge pas quand un autre vote ; 30 rafraîchissements sans changement = 30 × 304 (e2e « Coût »). Contributions
   et questions publiées réveillent les téléphones : coût accepté (rares).
 - Signe de vie toutes les 60 s sans avancer de version (e2e) ; « x / n » compte
   les actifs (< 3 min, ou ayant répondu). ETag projection et animateur : + minute.
@@ -286,8 +286,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
 
-*En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets
-(Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
+*Proposée, en attente (05/11/2026)* : mode « Atelier pratique guidé » à intégrer après essai ; compter les exercices `yesno`, ajouter leurs méthodes `info` et la conclusion hors décompte ; retours libres facultatifs, décochés par défaut. Exemple reçu : 4 exercices + 4 méthodes ; cible suggérée pour 45 min : 6 à 8 exercices, à ajuster au groupe. Aucun changement de ce décompte livré ; bloc AGORA (critère 7) à ouvrir avant implémentation.
+*En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
 « Clore le cycle ».
 *En ligne le 02/11/2026 (`5a0d268`)* : « ✨ Défi sur mesure » (Défi à étapes, fonctions en essai), consigne

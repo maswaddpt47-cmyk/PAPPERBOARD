@@ -27,6 +27,10 @@ Claude, avec les règles du dépôt dans `CLAUDE.md` et l’état dans `CHANTIER
   complète opérationnelle. Annoncer uniquement les tests effectivement exécutés.
 - Terminer par le résultat accessible, les limites restantes et, si nécessaire,
   une seule prochaine action clairement formulée.
+- Fin de tâche (04/11/2026) : vérifier que les opérations et revues nécessaires
+  sont terminées, puis conclure le message final par une ligne distincte :
+  **✅ TÂCHE TERMINÉE**. Si un traitement reste en cours ou bloque la livraison,
+  préciser son état sans annoncer la tâche terminée.
 
 Ces consignes persistent avec le dépôt. Elles ne changent pas les délais ou
 les fenêtres d’autorisation imposés par la plateforme.
@@ -40,6 +44,39 @@ Cette autorisation remplace le gel précédent pour ce chantier. Ne pas redemand
 la même permission ; signaler immédiatement les obstacles réels.
 
 <!-- BEGIN MD-LIB CODEX -->
+## Autorisations — accès complet (consigne de l’utilisateur du 04/11/2026)
+
+**L’utilisateur donne toutes les autorisations pour le travail demandé** : « je
+voudrais lui donner toutes les permissions » (04/11/2026), après « Arrête de me
+demander les autorisations, je te les donnes » (31/10/2026). Codex agit, puis
+rend compte. Il ne demande jamais « je peux… ? », « veux-tu que je… ? »,
+« je continue ? » ni « tu confirmes ? ».
+
+**Sans rien demander** :
+- lire, créer, modifier et déplacer les fichiers du dépôt ; installer les
+  dépendances déclarées ;
+- lancer tests, scripts, navigateur et toute commande utile à la tâche ;
+- `git fetch`, `git merge --ff-only`, commits, push selon la politique du projet
+  (sur `main` quand le projet le prescrit) ; mettre à jour `CHANTIERS.md` ;
+  répondre dans `AGORA.md` ;
+- corriger ses propres erreurs ; après un échec, changer de méthode sans
+  redemander.
+
+**Seules exceptions, à demander avant d’agir** (une question par décision, ou
+des choix numérotés) :
+1. suppression irréversible de données (purge, archivage qui efface,
+   restauration qui écrase) ;
+2. réécriture d’historique publié (`push --force`, `reset` d’une branche
+   poussée, `filter-repo`) ;
+3. changement de format de stockage ou d’export, migration ;
+4. écart à ce que l’utilisateur a demandé : il décide du *quoi* ; le *comment*
+   est laissé à Codex, qui choisit l’option recommandée et la nomme dans son
+   compte rendu.
+
+**Jamais, même avec cette autorisation** : lire une sauvegarde réelle ou un
+fichier d’usagers ; publier une donnée personnelle ; contourner un refus de la
+plateforme (le signaler une fois, puis continuer le reste).
+
 ## Au début de chaque session
 
 1. Vérifier le dépôt, sa branche par défaut, la branche de session et l’état Git.
@@ -90,6 +127,11 @@ la même permission ; signaler immédiatement les obstacles réels.
 - Lors d’une passation, consigner code poussé, branche, tests réellement passés,
   blocages et prochaine action. Écrire aussi les nouvelles règles convenues
   au bon endroit ; ne pas dépendre de l’historique de conversation.
+- **Main toujours** (`MD-LIB/git-workflow.md` §3) : publier chaque livraison
+  vérifiée sur `main`, sans attendre la fin de session ni redemander. Ici,
+  respecter `CLAUDE.md` §1 : branche de session, contrôle `tests` vert sur le
+  commit, puis avance rapide de `main`. Actualiser par `git fetch` puis
+  `git merge --ff-only` (règle 63) ; aucune fusion implicite ni force-push.
 
 ## Vérifications et livraison
 
@@ -105,6 +147,10 @@ la même permission ; signaler immédiatement les obstacles réels.
 - Distinguer code local, code poussé, aperçu et production. Avant toute annonce
   « en ligne », vérifier le commit réellement déployé et les étapes de publication.
   Suivre `MD-LIB/deploiement.md` et son vérificateur lorsqu’ils s’appliquent.
+- **Avant de pousser, lancer tous les tests que le déploiement exécutera, dans
+  ses conditions** (chaque script listé par le workflow, chaque fuseau), pas
+  seulement ceux du changement : il casse aussi les tests de son voisinage
+  (MD-LIB `collaboration.md` règle 60, 01/11/2026).
 - Ne pas désactiver un contrôle requis pour faire passer une livraison.
 
 ## Sécurité, audit et instructions
