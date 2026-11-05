@@ -46,6 +46,24 @@ libre. Pour ce retour libre, décochez **Que des quiz**. La question de difficul
 est affichée à tous, sans condition automatique. Aucune donnée personnelle dans
 les consignes. Le champ est également disponible pour un **Défi sur mesure**.
 
+**Atelier pratique guidé** : dans la préparation du JSON, choisissez ce format.
+Renseignez le thème, le public, le niveau et les appareils, puis fixez le nombre
+d’exercices ou la durée. Le nombre porte sur les tâches Oui/Non, jamais sur leurs
+fiches méthodes. Par exemple, 8 exercices donnent 8 tâches et 8 méthodes, puis
+une conclusion ; c’est un exemple, le nombre varie selon votre choix ou la durée.
+Le retour libre sur les difficultés est facultatif et décoché par défaut. Il ajoute
+une étape après chaque méthode. En durée, l’estimation par niveau comprend essai,
+méthode et échange (écrit ou oral) : elle reste indicative, non mesurée en salle.
+La capacité restante et la limite de 50 éléments à l’import bornent la préparation.
+Copiez la consigne remplie dans l’IA, importez sa réponse, puis relisez l’aperçu :
+il distingue exercices demandés, reçus et sélectionnés, méthodes et retours.
+Le bouton indique le nombre d’exercices réellement retenus ; une réponse de l’IA
+trop courte est signalée, sans inventer les exercices manquants. Une autoévaluation
+ne doit pas avoir de bonne réponse imposée ; les quiz notés sont signalés.
+La méthode suit l’essai dans l’atelier ; « Suivante » la révèle au moment choisi.
+Les paramètres du prompt ne sont pas enregistrés avec l’atelier ; ses étapes
+utilisent les formats existants, compatibles avec projection, participant et exports.
+
 **Importer un PDF de questions** : espace animateur → **Créer un atelier** →
 **Importer un PDF de questions** (Mentimeter, Pix ou autre outil). Le document doit
 contenir les questions ; un relevé de scores seul ne permet pas de les retrouver.

@@ -647,6 +647,10 @@ header('Cache-Control: no-store');
         <h3><span class="number-bubble">1</span>Préparer une consigne pour une IA</h3>
         <p class="meta">Facultatif si vous avez déjà un fichier. Copiez le texte et collez-le dans Claude, ChatGPT ou Le Chat.
           N'y mettez aucun nom ni donnée personnelle.</p>
+        <div id="gen-format-box">
+          <label for="gen-format">Format de l’atelier</label>
+          <select id="gen-format"><option value="varied">Questions variées</option><option value="practical">Atelier pratique guidé</option></select>
+        </div>
         <label for="gen-theme">Thème</label>
         <input id="gen-theme" maxlength="200" placeholder="ex. Reconnaître un message frauduleux">
         <div class="form-grid2">
@@ -671,11 +675,21 @@ header('Cache-Control: no-store');
           <label for="gen-public-other">Précisez le public</label>
           <input id="gen-public-other" maxlength="160" placeholder="ex. demandeurs d'emploi accompagnés par une association">
         </div>
+        <fieldset id="gen-practical" data-limit="<?php echo WL_MAX_QUESTIONS; ?>" hidden>
+          <legend>Exercices pratiques</legend>
+          <label for="gen-devices">Appareils concernés</label>
+          <select id="gen-devices">
+            <option>Smartphones Android et iPhone</option><option>Smartphones Android</option><option>iPhone</option>
+            <option>Ordinateurs Windows et Mac</option><option>Ordinateurs Windows</option><option>Mac</option><option>Ordinateurs et smartphones</option>
+          </select>
+          <label class="check"><input id="gen-feedback" type="checkbox"> Ajouter un retour libre sur les difficultés après chaque méthode</label>
+          <p class="meta">Un exercice = une tâche avec Oui/Non, puis sa méthode. Les méthodes, retours éventuels et la conclusion s’ajoutent au nombre d’exercices demandé.</p>
+        </fieldset>
         <fieldset id="gen-size" class="gen-size">
           <legend>Dimensionner l'atelier</legend>
-          <label class="check"><input type="radio" name="gen-mode" id="gen-mode-count" value="count" checked> Fixer le nombre de questions</label>
+          <label class="check"><input type="radio" name="gen-mode" id="gen-mode-count" value="count" checked> <span id="gen-count-choice">Fixer le nombre de questions</span></label>
           <label class="check"><input type="radio" name="gen-mode" id="gen-mode-duration" value="duration"> Fixer la durée de l'atelier</label>
-          <div id="gen-count-box"><label for="gen-count">Nombre de questions (1 à 30)</label>
+          <div id="gen-count-box"><label id="gen-count-label" for="gen-count">Nombre de questions (1 à 30)</label>
             <input id="gen-count" type="number" min="1" max="30" value="10"></div>
           <div id="gen-duration-box" hidden><label for="gen-duration">Durée de l'atelier, en minutes (15 à 180)</label>
             <input id="gen-duration" type="number" min="15" max="180" step="5" value="60"></div>
@@ -712,6 +726,7 @@ header('Cache-Control: no-store');
       </section>
       <section id="gen-preview" class="gen-step" hidden>
         <h3 id="gen-preview-title" tabindex="-1"><span class="number-bubble">3</span>Relire avant d'ajouter</h3>
+        <p id="gen-practical-summary" class="meta" aria-live="polite" hidden></p>
         <p class="meta">Décochez ce que vous ne gardez pas. <strong>Vérifiez les intitulés, les choix et les bonnes réponses des quiz.</strong>
           L'aperçu ne prouve pas que le contenu est juste.</p>
         <ol id="gen-list" class="list gen-list"></ol>
@@ -818,6 +833,7 @@ header('Cache-Control: no-store');
 <script src="<?= wl_asset('bilan-pptx.js') ?>"></script>
 <script src="<?= wl_asset('seances.js') ?>"></script>
 <script src="<?= wl_asset('mentimeter.js') ?>"></script>
+<script src="<?= wl_asset('practical.js') ?>"></script>
 <script src="<?= wl_asset('admin.js') ?>"></script>
 <script src="<?= wl_asset('shell.js') ?>"></script>
 <script src="<?= wl_asset('interface.js') ?>"></script>

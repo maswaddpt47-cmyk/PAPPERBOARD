@@ -1254,7 +1254,7 @@
     $('qf-type-steps').hidden = !beta;
     $('qf-type-steps').disabled = !beta;
     WL.show($('challenge-row'), beta);
-    WL.show($('gen-defi-box'), beta);
+    WL.show($('gen-defi-box'), beta && !genDefiOnly && !genPractical());
     betaOn = beta;
   }
   var betaOn = false;
@@ -1333,12 +1333,21 @@
   };
   // Minutes par question, échanges compris : hypothèses de préparation de la simulation,
   // supposées le 19/10/2026, non mesurées sur le terrain. Accueil 5 min, conclusion 5 min, défi 10 min.
+  // En pratique guidée (05/11/2026), même hypothèse par exercice complet : essai, méthode et échange.
   var PER_QUESTION = { discovery: 5, beginner: 4, intermediate: 3, advanced: 4, mixed: 4 };
 
   function genPublic() {
     return $('gen-public').value === 'autres' ? $('gen-public-other').value.trim() : $('gen-public').value;
   }
   function genDefi() { return $('gen-defi').checked && !$('gen-defi-box').hidden; }
+  function genPractical() { return !genDefiOnly && !genFromPdf && $('gen-format').value === 'practical'; }
+  function genUnit() { return genPractical() ? 'exercice' : 'question'; }
+  function practicalOptions() {
+    return { feedback: $('gen-feedback').checked, limit: Number($('gen-practical').dataset.limit),
+      existing: genCreate || genReplace ? 0 : data && data.questions ? data.questions.length : 0,
+      byDuration: $('gen-mode-duration').checked, count: Number($('gen-count').value),
+      duration: Number($('gen-duration').value), per: PER_QUESTION[$('gen-level').value] || 4 };
+  }
   function genSpecial() { return $('gen-special').value.trim(); }
   function specialInstructions(text) {
     return text ? 'Instructions spéciales de l’animateur :\n' + text + '\nFin des instructions spéciales.' : null;
@@ -1351,6 +1360,7 @@
 
   /** Nombre de questions : choisi (1 à 30), ou estimé d'après la durée. { error } si impossible. */
   function genPlan() {
+    if (genPractical()) return WL.Practical.plan(practicalOptions());
     if (!$('gen-mode-duration').checked) {
       var n = Math.round(Number($('gen-count').value));
       return n >= 1 && n <= 30 ? { mode: 'count', count: n } : { error: 'Nombre de questions : de 1 à 30.' };
@@ -1363,30 +1373,54 @@
       margin: duration - 10 - defi - count * per, capped: Math.floor((duration - 10 - defi) / per) > 30 };
   }
   function planBudget(plan) {
-    return 'accueil 5 min ; questions et échanges ' + plan.count * plan.perQuestion + ' min' + (plan.defi ? ' ; défi 10 min' : '')
+    return 'accueil 5 min ; ' + (genPractical() ? 'exercices, méthodes et échanges ' : 'questions et échanges ') + plan.count * plan.perQuestion + ' min' + (plan.defi ? ' ; défi 10 min' : '')
       + ' ; conclusion 5 min ; marge ' + plan.margin + ' min.';
   }
   /** Affiche les champs utiles et l'estimation, recalculée à chaque changement de niveau, durée ou défi. */
   function syncGenSize() {
-    var other = $('gen-public').value === 'autres', byDuration = $('gen-mode-duration').checked;
+    var other = $('gen-public').value === 'autres', byDuration = $('gen-mode-duration').checked, practical = genPractical();
+    $('gen-copied').textContent = '';
+    $('gen-review-copied').textContent = '';
+    $('gen-prompt').value = '';
+    WL.show($('gen-prompt'), false);
+    if (!genDefiOnly) $('gen-special-help').textContent = practical
+      ? 'Précisez la méthode d’animation et les besoins particuliers. Les appareils et l’option de retour libre ci-dessus sont prioritaires. Ces paramètres et instructions ne sont pas enregistrés avec l’atelier. Aucune donnée personnelle.'
+      : 'Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.';
+    WL.show($('gen-practical'), practical);
+    WL.show($('gen-qcm-box'), !genDefiOnly && !practical);
+    WL.show($('gen-defi-box'), betaOn && !genDefiOnly && !practical);
+    WL.show($('gen-suggest-retour'), !genDefiOnly && !practical);
+    var options = practicalOptions(), max = practical ? Math.max(0, Math.floor((options.limit - options.existing - 1) / (options.feedback ? 3 : 2))) : 30;
+    $('gen-count').max = max;
+    $('gen-count-choice').textContent = 'Fixer le nombre ' + (practical ? 'd’exercices' : 'de questions');
+    $('gen-count-label').textContent = 'Nombre ' + (practical ? 'd’exercices' : 'de questions') + ' (1 à ' + max + ')';
     WL.show($('gen-public-other-box'), other);
     WL.show($('gen-count-box'), !byDuration);
     WL.show($('gen-duration-box'), byDuration);
     var plan = genPlan(), note = $('gen-estimate');
     note.classList.toggle('error', !!plan.error);
     note.textContent = plan.error ? plan.error : byDuration
-      ? 'Estimation : ' + WL.plural(plan.count, 'question') + (plan.capped ? ' (plafond de 30)' : '') + ', environ ' + plan.perQuestion
+      ? 'Estimation : ' + WL.plural(plan.count, genUnit()) + (plan.capped ? ' (plafond de ' + (practical ? plan.max : 30) + ')' : '') + ', environ ' + plan.perQuestion
         + ' min chacune au niveau « ' + LEVELS[$('gen-level').value][0] + ' » ; ' + planBudget(plan)
         + ' Hypothèses indicatives, non mesurées sur le terrain.'
-      : '';
+      : practical ? WL.plural(plan.count, 'exercice') + ' demandés.' : '';
+    if (practical && !plan.error) note.textContent += ' Soit ' + plan.steps + ' étapes, puis la conclusion. Le décompte porte sur les exercices ; méthodes et retours sont des étapes supplémentaires, dans la capacité disponible.';
+    genSaveState();
   }
-  ['gen-public', 'gen-level', 'gen-mode-count', 'gen-mode-duration', 'gen-defi', 'gen-qcm'].forEach(function (id) {
+  ['gen-public', 'gen-level', 'gen-mode-count', 'gen-mode-duration', 'gen-defi', 'gen-qcm', 'gen-format', 'gen-devices'].forEach(function (id) {
     $(id).addEventListener('change', syncGenSize);
+  });
+  $('gen-feedback').addEventListener('change', function () {
+    $('gen-list').querySelectorAll('input[type=checkbox]').forEach(function (input) {
+      if (genItems[input.value] && genItems[input.value].type === 'text') input.checked = $('gen-feedback').checked;
+    });
+    syncGenSize();
   });
   ['gen-count', 'gen-duration'].forEach(function (id) { $(id).addEventListener('input', syncGenSize); });
 
   function genPrompt() {
     var plan = genPlan(), special = genSpecial();
+    if (genPractical()) return practicalPrompt(plan);
     return [
       'Tu prépares les questions d\'un atelier de médiation numérique animé avec WoocLight (vote en direct sur appareil).',
       'Thème : ' + $('gen-theme').value.trim(),
@@ -1469,6 +1503,43 @@
 
   var genItems = [];
 
+  function practicalRequirements(plan) {
+    return 'Atelier pratique guidé ; appareils : ' + $('gen-devices').value + '. '
+      + (plan.error ? '' : 'Nombre demandé : ' + plan.count + ' exercices, soit ' + plan.steps + ' étapes avant la conclusion. ')
+      + 'Un exercice = une tâche "yesno" sans "correct", immédiatement suivie de sa méthode "info". '
+      + ($('gen-feedback').checked ? 'Après chaque méthode, ajouter une question "text" sur les difficultés.' : 'Aucun retour libre : ne produire aucun élément "text", même si une suggestion en mentionne un.')
+      + ' Les méthodes, retours éventuels et la conclusion sont hors décompte des exercices. Ne jamais convertir une réussite déclarée en note.';
+  }
+
+  function practicalPrompt(plan) {
+    return [
+      'Crée un atelier pratique guidé avec WoocLight.',
+      'Thème : ' + $('gen-theme').value.trim(),
+      'Public : ' + genPublic() + ' ; niveau : ' + LEVELS[$('gen-level').value][0] + '. ' + LEVELS[$('gen-level').value][1],
+      specialInstructions(genSpecial()),
+      'Paramètres à respecter, prioritaires sur les exemples :', practicalRequirements(plan),
+      plan.mode === 'duration' ? 'Durée totale : ' + plan.duration + ' minutes. Budget indicatif : ' + planBudget(plan)
+        + ' Les ' + plan.perQuestion + ' minutes par exercice incluent essai, méthode et échange, écrit ou oral ; adapte la difficulté à ce temps.' : null,
+      'Ordre à répéter pour chacun des ' + plan.count + ' exercices distincts :',
+      '1. "yesno" : le champ "text" contient une tâche concrète, puis « Avez-vous réussi ? ». Sans "correct" ni note.',
+      '2. "info" : "text" = « Une méthode possible — nom du geste », "content" = méthode courte pour les appareils indiqués. Ne montre la méthode qu’après l’essai.',
+      $('gen-feedback').checked ? '3. "text" : « Si vous n’avez pas réussi, qu’est-ce qui vous a bloqué ? ». Cette question distincte est affichée à tous ; ceux qui ont réussi peuvent la passer. Aucun branchement conditionnel.' : 'Ne crée aucune troisième étape de réponse libre.',
+      'Termine par UN élément "conclusion". N’ajoute ni quiz, ni échelle, ni mur, ni autre type.',
+      'Une consigne à la fois, langage simple et exercices progressifs. Aucun nom de personne réelle.',
+      'Vérifie les menus dans l’aide officielle ; sinon indique « menu à vérifier ». N’invente pas de parcours universel.',
+      'L’appareil peut servir à répondre à l’atelier : n’exige ni redémarrage, ni coupure du réseau. Explique comment revenir au navigateur sans fermer l’onglet.',
+      'Ne demande jamais de saisir, montrer ou transmettre une donnée personnelle réelle, un mot de passe ou un code reçu.',
+      'Limites : "text" des étapes 200 caractères, "content" 3000 caractères, conclusion 600 caractères. La réponse à une question libre est courte (80 caractères).',
+      'Renvoie uniquement une liste JSON valide, sans commentaire. Voici le format d’UN exercice : répète la structure pour produire les ' + plan.count + ' exercices demandés, puis la conclusion.',
+      '[',
+      '  {"type":"yesno","text":"Réalisez le geste demandé. Avez-vous réussi ?"},',
+      '  {"type":"info","text":"Une méthode possible","content":"Expliquez les gestes, avec les variantes utiles."},',
+      $('gen-feedback').checked ? '  {"type":"text","text":"Si vous n’avez pas réussi, qu’est-ce qui vous a bloqué ?"},' : null,
+      '  {"type":"conclusion","text":"À retenir : les gestes essentiels de cet atelier."}',
+      ']'
+    ].filter(function (line) { return line !== null; }).join('\n');
+  }
+
   function genReset() {
     genItems = [];
     WL.clear($('gen-list'));
@@ -1481,9 +1552,27 @@
   /** Bouton d'ajout inactif tant que l'aperçu n'est pas affiché : la raison est écrite à côté. */
   function genSaveState() {
     var ready = !$('gen-preview').hidden;
+    var selected = (genItems || []).filter(function (_, i) { return genChecked().indexOf(i) !== -1; });
+    var practical = genPractical(), counts = WL.Practical.counts(selected);
     $('gen-save').disabled = !ready || !genChecked().length;
+    if (practical && (!counts.exercises || counts.invalid)) $('gen-save').disabled = true;
+    $('gen-save').textContent = practical ? (genCreate ? 'Créer l’atelier' : genReplace ? 'Remplacer la sélection' : 'Ajouter la sélection') + ' (' + WL.plural(counts.exercises, 'exercice') + ')'
+      : genCreate ? 'Créer l\'atelier avec les questions cochées' : genReplace ? 'Remplacer les questions par les cochées' : genDefiOnly ? 'Ajouter le défi' : 'Ajouter les questions cochées';
     $('gen-save-hint').textContent = $('gen-error').textContent ? '' : !ready ? 'Cliquez d\'abord « Vérifier la réponse ».'
       : (genChecked().length ? '' : 'Cochez au moins une question.');
+    if (practical && ready) {
+      var received = WL.Practical.counts(genItems), plan = genPlan(), summary = $('gen-practical-summary');
+      var mismatch = !plan.error && received.exercises !== plan.count;
+      summary.textContent = (plan.error ? '' : plan.count + ' exercices demandés · ') + received.exercises + ' exercices reçus. '
+        + 'Sélection : ' + counts.exercises + ' exercices, ' + counts.methods + ' méthodes, ' + counts.feedback + ' retours libres, ' + counts.conclusions + ' conclusion(s). '
+        + (mismatch ? 'Le nombre fourni par l’IA ne correspond pas à la demande : faites compléter sa réponse ou choisissez explicitement une sélection plus courte. ' : '')
+        + (counts.methods !== counts.exercises ? 'Vérifiez que chaque exercice conserve sa méthode. ' : '')
+        + (counts.invalid ? 'Type incompatible ou Oui/Non avec correction : retirez ces éléments ou faites-les corriger. ' : '')
+        + (!$('gen-feedback').checked && received.feedback ? 'Les retours libres non demandés sont décochés initialement. ' : '')
+        + (!counts.conclusions ? 'Aucune conclusion sélectionnée.' : '');
+      summary.classList.toggle('error', mismatch || !!counts.invalid || counts.methods !== counts.exercises);
+    }
+    WL.show($('gen-practical-summary'), practical && ready);
   }
 
   function genChecked() {
@@ -1518,7 +1607,7 @@
       }
       var detail = genDetail(it);
       list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
-        el('input', { type: 'checkbox', value: i, checked: true }),
+        el('input', { type: 'checkbox', value: i, checked: !genPractical() || it.type !== 'text' || $('gen-feedback').checked }),
         el('span', null, el('strong', null, WL.richText(it.text, it.rich && it.rich.text)),
           el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
           detail ? el('span', { class: 'meta gen-detail' }, genFormattedDetail(it, detail)) : null,
@@ -1548,6 +1637,7 @@
   // Défi sur mesure (source 'defi') : même fenêtre, consigne réduite à un seul élément "steps"
   // sur le thème de l'atelier ; l'import, l'aperçu et la relecture restent ceux des questions.
   var genDefiOnly = false;
+  var genFromPdf = false;
   var genInstructionsTarget = null;
 
   function defiPrompt() {
@@ -1579,8 +1669,13 @@
   function openGen(createTitle, replaceRaw, source) {
     genCreate = createTitle || null;
     genDefiOnly = source === 'defi';
+    genFromPdf = source === 'mentimeter';
     var instructionsTarget = genCreate ? 'new:' + genCreate : code;
-    if (genCreate || genInstructionsTarget !== instructionsTarget) $('gen-special').value = '';
+    if (genCreate || genInstructionsTarget !== instructionsTarget) {
+      $('gen-special').value = '';
+      $('gen-format').value = 'varied';
+      $('gen-feedback').checked = false;
+    }
     genInstructionsTarget = instructionsTarget;
     $('gen-special-status').textContent = '';
     $('gen-special-status').classList.remove('error');
@@ -1589,6 +1684,7 @@
       ? 'Précisez l’exercice, les appareils et la progression de ce seul défi. Pour ajouter un bilan Oui/Non et une réponse libre, utilisez « Ajouter depuis un JSON ». Ces instructions ne sont pas enregistrées avec l’atelier. Aucune donnée personnelle.'
       : 'Précisez la méthode d’animation, les appareils et les exercices. Ces instructions seront copiées pour la génération et la relecture, sans être enregistrées avec l’atelier. Pour un retour libre « pourquoi ? », décochez « Que des quiz ». N’y mettez aucune donnée personnelle.';
     WL.show($('gen-size'), !genDefiOnly);
+    WL.show($('gen-format-box'), !genDefiOnly);
     WL.show($('gen-qcm-box'), !genDefiOnly);
     WL.show($('gen-defi-box'), betaOn && !genDefiOnly);
     genReplace = typeof replaceRaw === 'string';
@@ -1705,7 +1801,7 @@
     + 'Conserve les champs facultatifs "rich" de mise en forme : si tu corriges un texte, corrige aussi le texte de ses segments pour qu’ils correspondent exactement. '
     + 'N’ajoute pas de HTML ni de style libre ; garde seulement les types de blocs et le gras déjà autorisés.';
 
-  function reviewText(theme, publicLabel, questions, withReply, instructions) {
+  function reviewText(theme, publicLabel, questions, withReply, instructions, practical) {
     return [
       'Tu relis des questions écrites par une autre IA pour un atelier de médiation numérique animé avec WoocLight (vote en direct sur appareil).',
       'Thème : ' + theme,
@@ -1725,7 +1821,8 @@
         + 'mauvaise réponse absurde ou trop facile, faute de français, gommettes ("dots") dont la "source" n\'est pas un mur ou un post-it placé avant.',
       withReply
         ? '5. Termine par la liste des corrections à faire, question par question (n\'écris aucun crochet carré dans les points 1 à 5), '
-          + 'puis, tout à la fin, la VERSION CORRIGÉE : la liste complète, du « [ » au « ] », au même format que ci-dessous, mêmes types et même ordre, '
+          + 'puis, tout à la fin, la VERSION CORRIGÉE : la liste complète, du « [ » au « ] », au même format que ci-dessous, '
+          + (practical ? 'en respectant le mode pratique décrit plus haut ; signale les exercices manquants et tout ajout, retrait ou changement de type nécessaire, ' : 'mêmes types et même ordre, ')
           + 'sans adresse de site inventée. ' + LIMITS + ' '
           + 'Pas de note, pas de compliment. Si une catégorie n\'a aucun défaut, dis-le en une ligne.'
         : '5. Termine par la liste des corrections à faire, question par question. Pas de note, pas de compliment. '
@@ -1739,9 +1836,9 @@
   function reviewPrompt() {
     var plan = genPlan();
     return reviewText(($('gen-theme').value.trim() || 'à déduire des questions')
-      + (plan.mode === 'duration' ? ' ; durée visée : ' + plan.duration + ' minutes (' + WL.plural(plan.count, 'question') + ' environ)' : ''),
+      + (plan.mode === 'duration' ? ' ; durée visée : ' + plan.duration + ' minutes (' + WL.plural(plan.count, genUnit()) + ' environ)' : ''),
       (genPublic() || 'non précisé') + ' ; niveau : ' + LEVELS[$('gen-level').value][0],
-      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), true, genSpecial());
+      $('gen-raw').value.replace(/\\([\[\]])/g, '$1').trim(), true, genPractical() ? practicalRequirements(plan) + '\n' + genSpecial() : genSpecial(), genPractical());
   }
 
   // Garder les questions de la session comme thème de la bibliothèque (sans aucune réponse).

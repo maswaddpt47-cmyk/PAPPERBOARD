@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **05/11/2026** (base `91e3bf8` relue après actualisation ; AGENTS.md synchronisé avec MD-LIB et sa règle 18) — commit de référence : voir `git log -1 main`.
+État au **05/11/2026** (base `b33d8fc` relue après actualisation ; mode atelier pratique guidé, AG-012) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
@@ -86,6 +86,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 « (e2e) », « (nav) » : tenu par `tests/e2e.php`, `tests/navigateur.js`.
 
 **Décisions de l'utilisateur**
+- Atelier pratique guidé (05/11/2026, AG-012) : N exercices = N tâches `yesno` sans correction, chacune suivie d’une méthode `info` ; retours `text` facultatifs, décochés par défaut ; conclusion hors décompte. Nombre choisi ou durée indicative par niveau (essai, méthode et échanges compris), capacité restante et plafond de 50 éléments respectés ; aucun nombre 8 imposé. Aperçu : demandés/reçus/sélectionnés séparés des méthodes et retours, nombre réel dans le bouton ; quiz notés incompatibles bloqués, réponse trop courte signalée sans complément inventé. Formats stockés inchangés, aucun paramètre de préparation enregistré. Mesuré localement : 24 contrôles ciblés verts, mutations de calcul détectées, parcours réel de création avec 8 tâches et 8 méthodes, rendu à 390/1280 px. Durées en salle et retour utilisateur non vérifiés.
 - Import PDF et éditeur (29–30/10/2026, AG-008 à AG-011 ouverts) : OCR local, relecture obligatoire, aucun vote ancien ni correction déduit, PDF jamais envoyé, stocké ou commité. `info` sans vote/score ; illustration JPEG locale facultative, 640 × 480, 30 Ko/image et 200 Ko/atelier. Suppression individuelle, page vide écartée, numéros recalculés après les étapes existantes, conclusion exclue. Tous les textes pédagogiques : gras, titre/sous-titre, listes, sans HTML de saisie ; texte brut canonique, blocs `rich` autorisés (80 blocs/600 segments par champ, 300 Ko/atelier), relecture révoquée après édition. Styles conservés côté participant/projection, exports et archives ; protection `info-v1, rich-v1` contre les anciens écrans. Libellés des graphiques PowerPoint natifs : police standard. Mesuré en local le 30/10 : PDF 38, informations 34, éditeur 36, navigation 117 contrôles verts ; interface PHP 307, galerie 768 cas sans échec ; collage/JSON hostiles refusés ou rendus inertes, rendu à 390 et 1280 px, changement de style sans perte de vote, 30 × 304 sans corps. Coût Alwaysdata et lisibilité en salle non mesurés.
 - Partenaires (26/10/2026, AG-007 tranché) : atelier terminé rangé gardé **complet**
   jusqu'à « Clore le cycle », **12 mois** au plus après son **premier** rangement, jamais
@@ -286,7 +287,6 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
 
-*Proposée, en attente (05/11/2026)* : mode « Atelier pratique guidé » à intégrer après essai ; compter les exercices `yesno`, ajouter leurs méthodes `info` et la conclusion hors décompte ; retours libres facultatifs, décochés par défaut. Exemple reçu : 4 exercices + 4 méthodes ; cible suggérée pour 45 min : 6 à 8 exercices, à ajuster au groupe. Aucun changement de ce décompte livré ; bloc AGORA (critère 7) à ouvrir avant implémentation.
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
 « Clore le cycle ».

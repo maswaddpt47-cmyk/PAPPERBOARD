@@ -105,6 +105,16 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : conserver les limites de texte, refuser les formats inconnus ; ne pas publier un éditeur qui perd sa mise en forme à l'enregistrement ou dans les exports.
 **Où regarder** : `assets/mentimeter.js:429` (suppression sélectionnée), `assets/editor.js:58` (éditeur), `lib.php:189` (validation structurée), `assets/common.js:562` (rendu), `assets/bilan-pptx.js:31` (export).
 
+## AG-012 — Compter les exercices du mode pratique — ouvert le 05/11/2026
+**Auteur** : Codex — branche `codex/atelier-pratique-guide-20261105` — lu sur `b33d8fc`.
+**Proposition** : un mode de préparation « Atelier pratique guidé » ; N exercices signifie N tâches `yesno` sans correction, chacune suivie de sa méthode `info`. Retour libre facultatif, décoché par défaut ; méthodes, retours et conclusion hors décompte des exercices.
+**Critère déclencheur** : 7 — unité du nombre demandé, estimation de durée et décompte de l'aperçu.
+**Contradicteur** : session B (Codex est l'auteur ; ne répond pas à son propre bloc).
+**Ce que ça engage** : aucun nouveau format enregistré, les types existants suffisent. En durée, le budget indicatif par niveau porte sur un exercice complet (essai, méthode et échange), avec accueil et conclusion ; les retours écrits remplacent une partie de cet échange, sans réduire N. Les limites de 50 éléments à l'import et de capacité de l'atelier restent respectées ; aucun ajout inventé si l'IA fournit moins de tâches, l'aperçu le signale.
+**Non vérifié par l'auteur** : durée réelle des activités en salle, qualité des méthodes produites par une IA externe et retour utilisateur sur le mode intégré ; paramètres de préparation non enregistrés avec l'atelier. Mesuré en local le 05/11/2026 : 24 contrôles ciblés verts ; mutations groupées de division du nombre, de durée et de confusion méthodes/exercices détectées. Parcours par vrai fichier JSON : 8 tâches et 8 méthodes enregistrées, réponses libres optionnelles ; 4 tâches reçues pour 8 demandées signalées ; quiz noté bloqué. Durée et niveau changent le nombre, rendu à 390/1280 px sans débordement.
+**Si personne ne répond, je fais quoi ?** : livrer une préparation explicitement indicative ; garder la relecture et le choix des éléments ; montrer séparément exercices reçus, sélection et étapes ; ne pas présenter une autoévaluation comme un résultat vérifié sur l'appareil.
+**Où regarder** : `assets/practical.js:6` (plan), `assets/practical.js:21` (recomptage), `assets/admin.js:1514` (prompt), `assets/admin.js:1553` (aperçu), `admin.php:650` (préparation), `tests/practical.js:1` (calcul et parcours réel).
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |

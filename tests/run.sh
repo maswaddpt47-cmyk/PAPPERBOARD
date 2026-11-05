@@ -50,6 +50,7 @@ if node -e "require('playwright')" 2>/dev/null; then
   node tests/pdf-import.js || fail=1
   node tests/information.js || fail=1
   node tests/editor.js || fail=1
+  node tests/practical.js || fail=1
   node tests/navigateur.js || fail=1
   echo "=== Fidélité de l'interface ==="
   node tests/interface.js || fail=1
