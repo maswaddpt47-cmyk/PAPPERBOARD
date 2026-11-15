@@ -5,6 +5,7 @@
 (function () {
   var el = WL.el, $ = WL.$;
   var code = (new URLSearchParams(location.search).get('s') || '').toUpperCase();
+  var apercu = new URLSearchParams(location.search).get('apercu'), preview = apercu !== null;
   var qrDone = false, offset = 0, timer = null, last = null;
 
   // Même calcul que la simulation : mesurer le contenu naturel avant chaque
@@ -279,12 +280,76 @@
     error('Adresse incomplète : ouvrez la projection depuis l\'espace animateur.');
     return;
   }
-  var poller = new WL.Poller('screen', 's=' + code, render, function (kind, r) {
-    if (kind === 'offline') error('Connexion perdue. Reconnexion automatique…');
-    else if (kind === 'online') error('');
-    else if (kind === 'error') error(r.data.error || 'Erreur du serveur.');
-  });
-  poller.now();
+  var poller = null;
+  if (preview) startPreview();
+  else {
+    poller = new WL.Poller('screen', 's=' + code, render, function (kind, r) {
+      if (kind === 'offline') error('Connexion perdue. Reconnexion automatique…');
+      else if (kind === 'online') error('');
+      else if (kind === 'error') error(r.data.error || 'Erreur du serveur.');
+    });
+    poller.now();
+  }
+
+  // --- Prévisualiser (screen.php?s=CODE&apercu=I) --------------------------------
+  // L'animateur parcourt les questions pour les contrôler : chacune est calculée
+  // par api.php?action=preview sur une copie de la session (ouverte, sans
+  // réponse). Aucune commande n'est envoyée : l'atelier réel ne bouge pas. La vue
+  // participant (index.php?s=CODE&apercu=I) suit par BroadcastChannel.
+
+  function answerText(d) {
+    var q = d.screen && d.screen.question;
+    if (!q || !d.correct || !d.correct.length) return '';
+    var labels = d.correct.map(function (i) { return q.options && q.options[i] !== undefined ? q.options[i] : String(i); });
+    return 'Bonne réponse : ' + labels.join(' · ') + (d.explain ? ' — ' + d.explain : '');
+  }
+
+  function startPreview() {
+    var index = Math.max(0, parseInt(apercu, 10) || 0), count = 0;
+    var channel = 'BroadcastChannel' in window ? new BroadcastChannel('wooclight-apercu-' + code) : null;
+    document.body.classList.add('is-preview');
+    WL.show($('s-preview'), true);
+    function participantUrl() { return 'index.php?s=' + encodeURIComponent(code) + '&apercu=' + index; }
+    function load(i) {
+      WL.api('preview', { query: 's=' + code + '&i=' + i }).then(function (r) {
+        if (r.status !== 200) {
+          error(r.status === 401 ? 'Prévisualiser : connectez-vous d’abord à l’espace animateur dans ce navigateur, puis rechargez.' : (r.data.error || 'Erreur du serveur.'));
+          return;
+        }
+        index = Math.max(0, r.data.index); count = r.data.count;
+        $('pv-count').textContent = count ? 'Question ' + (index + 1) + ' / ' + count : 'Aucune question dans cet atelier.';
+        $('pv-prev').disabled = index <= 0;
+        $('pv-next').disabled = index >= count - 1;
+        $('pv-answer').textContent = answerText(r.data);
+        $('pv-participant').href = participantUrl();
+        render(r.data.screen);
+        history.replaceState(null, '', '?s=' + encodeURIComponent(code) + '&apercu=' + index);
+        if (channel) channel.postMessage({ i: index });
+      }, function () { error('Pas de connexion au serveur.'); });
+    }
+    function go(delta) {
+      var target = index + delta;
+      if (target >= 0 && target < count) load(target);
+    }
+    $('pv-prev').addEventListener('click', function () { go(-1); });
+    $('pv-next').addEventListener('click', function () { go(1); });
+    $('pv-participant').addEventListener('click', function (event) {
+      var win = window.open(participantUrl(), 'wooclight-participant-apercu', 'popup,width=480,height=820,resizable=yes,scrollbars=yes');
+      if (win) { win.opener = null; event.preventDefault(); win.focus(); }
+    });
+    // Une vue participant ouverte après coup demande où en est la prévisualisation.
+    if (channel) channel.onmessage = function (e) { if (e.data && e.data.hello) channel.postMessage({ i: index }); };
+    document.addEventListener('keydown', function (e) {
+      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey || e.target.closest('input,textarea,select')) return;
+      var k = e.key;
+      if (k === 'ArrowRight' || k === 'PageDown') go(1);
+      else if (k === 'ArrowLeft' || k === 'PageUp') go(-1);
+      else if (k === 'f' || k === 'F') toggleFullscreen();
+      else return;
+      e.preventDefault();
+    });
+    load(index);
+  }
 
   // --- Pilotage (animateur connecté dans ce navigateur) -------------------------
   // Mêmes commandes et même contrôle que admin.php (session animateur + CSRF) :
@@ -400,7 +465,7 @@
     if (document.body.classList.contains('s-qr-big') && !e.target.closest('.qr-corner')) qrBig(false);
   });
 
-  if (document.body.dataset.pilot) WL.api('me').then(function (r) {
+  if (document.body.dataset.pilot && !preview) WL.api('me').then(function (r) {
     if (!r.data || !r.data.admin) return;
     csrf = r.data.csrf;
     WL.show($('s-pilot'), true);

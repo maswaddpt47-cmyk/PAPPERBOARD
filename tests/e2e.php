@@ -70,6 +70,21 @@ expect_status($p[0]->request('POST', 'api.php?action=join', ['s' => $code]), 403
 foreach ($p as $i => $c) {
     expect_status($c->join(strtolower($code)), 200, "participant $i rejoint (code en minuscules)");
 }
+
+// --- Prévisualiser : calculé sur une copie, rien n'est ouvert ni écrit ------------
+$file = "$data/sessions/$code.json";
+$before = md5_file($file);
+expect_status($p[0]->get("api.php?action=preview&s=$code&i=0"), 401, 'prévisualiser réservé à l\'animateur');
+$pv = $admin->get("api.php?action=preview&s=$code&i=2")['json'];
+check(($pv['index'] ?? null) === 2 && ($pv['count'] ?? 0) === count($questions), 'prévisualiser : rang demandé et nombre de questions');
+check(($pv['screen']['question']['id'] ?? '') === $qid['mcq'] && ($pv['participant']['question']['id'] ?? '') === $qid['mcq'], 'prévisualiser : même question projetée et chez le participant');
+check(($pv['screen']['question']['state'] ?? '') === 'open' && ($pv['screen']['answered'] ?? -1) === 0, 'prévisualiser : question montrée ouverte, sans réponse');
+check(($pv['correct'] ?? null) === [0, 1] && ($pv['screen']['question']['correct'] ?? null) === [], 'prévisualiser : bonne réponse pour l\'animateur seulement, pas sur la projection');
+check(($admin->get("api.php?action=preview&s=$code&i=99")['json']['index'] ?? null) === count($questions) - 1, 'prévisualiser : rang borné');
+clearstatcache();
+check(md5_file($file) === $before, 'prévisualiser n\'écrit rien dans la session');
+$st = $p[0]->get("api.php?action=state&s=$code")['json'];
+check(is_array($st) && array_key_exists('question', $st) && $st['question'] === null, 'prévisualiser : les participants restent en attente');
 check($p[0]->token !== $p[1]->token, 'jetons différents par participant');
 $again = $p[0]->join($code);
 check(($again['json']['token'] ?? '') === $p[0]->token, 'même jeton en rejoignant à nouveau');
@@ -132,6 +147,8 @@ check($res['counts'] === [0, 3], 'vrai/faux : réponse modifiée prise en compte
 $res = play($admin, $p, $code, $qid['mcq'], [[0, 1], [1], [2, 0, 0]]);
 check($res['counts'] === [2, 2, 1] && $res['total'] === 3, 'QCM multiple');
 expect_status($p[0]->vote($code, $qid['mcq'], []), 409, 'QCM vide (fermé) refusé');
+$pv = $admin->get("api.php?action=preview&s=$code&i=2")['json'];
+check(($pv['screen']['answered'] ?? -1) === 0 && ($pv['screen']['question']['state'] ?? '') === 'open', 'prévisualiser après les votes : question montrée vierge et ouverte');
 
 $res = play($admin, $p, $code, $qid['poll'], [2, 2, 0]);
 check($res['counts'] === [1, 0, 2], 'sondage');

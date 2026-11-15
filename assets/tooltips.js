@@ -82,6 +82,7 @@
     'show-btn': 'Afficher ou masquer les graphes et réponses sur la projection et les appareils des participants sans les effacer.',
     'p-step': 'Lancer, ouvrir, fermer ou rouvrir le vote de la question projetée.',
     'p-hide': 'Afficher ou masquer les graphes et réponses (publier pour un mur ou un post-it) sur la projection et les appareils, sans les effacer.',
+    'ed-apercu': 'Passer les questions en revue (projection, bonne réponse, vue participant) sans rien ouvrir ni enregistrer : l’atelier et ses participants ne bougent pas.',
     'ed-preview': 'Ouvrir un écran participant synchronisé pour tester le parcours réel.',
     'ed-open-screen': 'Ouvrir la projection synchronisée dans un nouvel onglet.',
     'gen-copy': 'Copier la consigne adaptée au public, au niveau et à la durée dans une IA de votre choix.',

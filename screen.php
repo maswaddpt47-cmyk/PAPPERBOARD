@@ -31,6 +31,15 @@ wl_security_headers();
 </header>
 <!-- Commandes en haut (consigne du 19/10/2026) : la place libre pour les résultats se mesure jusqu'au bas de l'écran. -->
 <div class="screen-command-area">
+<!-- Prévisualiser (screen.php?s=CODE&apercu=I) : parcours des questions sans rien ouvrir ni enregistrer. -->
+<nav id="s-preview" class="s-preview" aria-label="Prévisualisation" hidden>
+  <p class="s-preview-note"><strong>Prévisualisation</strong> : rien n’est ouvert ni enregistré, les participants ne voient rien.</p>
+  <button id="pv-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
+  <strong id="pv-count" class="s-pcount" aria-live="polite"></strong>
+  <button id="pv-next" class="btn" type="button" title="Question suivante (flèche droite)">Suivante ▶</button>
+  <a id="pv-participant" class="btn" target="_blank" rel="noopener" title="Vue d’un participant, synchronisée avec cette prévisualisation">Vue participant</a>
+  <p id="pv-answer" class="s-preview-answer"></p>
+</nav>
 <nav id="s-pilot" class="s-pilot" aria-label="Animation guidée" hidden>
   <button id="p-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
   <button id="p-step" class="btn btn-primary" type="button" aria-describedby="s-guide"></button>

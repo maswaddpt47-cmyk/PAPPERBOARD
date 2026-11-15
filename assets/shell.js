@@ -38,6 +38,7 @@
     var code = ($('ed-code') && $('ed-code').textContent.trim()) || '';
     if (code) {
       $('ed-preview').href = 'index.php?s=' + encodeURIComponent(code);
+      $('ed-apercu').href = 'screen.php?s=' + encodeURIComponent(code) + '&apercu=0';
       $('ed-open-screen').href = 'screen.php?s=' + encodeURIComponent(code);
     }
   }

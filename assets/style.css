@@ -1163,3 +1163,19 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
   .screen-main { padding-bottom: 8rem; } /* le QR code, fixé en bas à droite, ne cache plus la dernière ligne */
 }
 .screen .qr-corner .btn.qr-close { color: var(--wl-postit-texte); border-color: var(--wl-postit-texte); background: var(--wl-qr-fond); }
+
+/* Prévisualiser (screen.php / index.php ?apercu=I) : bandeau de contrôle,
+   aucune action de participant (signaler, oser demander, quitter). */
+.s-preview { display: flex; flex-wrap: wrap; align-items: center; gap: var(--wl-esp-2); padding: .6rem .9rem; margin-bottom: .5rem;
+  background: var(--wl-alerte-fond); border: 1px solid var(--wl-alerte-bord); border-radius: 9px; color: var(--wl-alerte-texte); }
+.s-preview[hidden] { display: none; }
+.s-preview .s-pcount { color: var(--wl-alerte-texte); }
+.s-preview, .s-preview .s-pcount { font-size: 15px; }
+.screen .s-preview .btn { min-height: 44px; padding: 10px 14px; font-size: 14px; border: 1px solid var(--wl-c-brun-bord); border-radius: 9px;
+  background: var(--wl-c-carte); color: var(--wl-c-brun); }
+.screen .s-preview .btn:hover:not(:disabled), .screen .s-preview .btn:focus-visible { background: var(--wl-c-ivoire); color: var(--wl-c-brun); border-color: var(--wl-c-terracotta); }
+.screen .s-preview .btn:disabled { opacity: .55; cursor: default; }
+.is-preview #s-guide { display: none !important; }
+.s-preview-note, .s-preview-answer { margin: 0; flex-basis: 100%; }
+.s-preview-answer:empty { display: none; }
+.is-preview #signal, .is-preview #asks, .is-preview #leave-btn, .is-preview #me-card { display: none !important; }

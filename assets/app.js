@@ -34,6 +34,7 @@
 
   var code = null, csrf = store.get('csrf'), poller = null;
   var state = null, renderKey = '', offset = 0, timer = null, sending = false;
+  var previewMode = false; // index.php?s=CODE&apercu=I : voir « Prévisualiser » en bas
 
   function headers() {
     var h = {};
@@ -199,6 +200,7 @@
   var stuck = null;          // {q, i} : étape où je me suis déclaré bloqué (un défi, anonyme, 2 min)
   var redrawSteps = null;
   function askHelp(q, i) {
+    if (previewMode) { $('signal-status').textContent = 'Prévisualisation : rien n’est envoyé.'; return; }
     WL.api('signal', { body: { s: code, kind: 'help', step: { q: q.id, i: i } }, headers: headers() }).then(function (r) {
       if (r.status !== 200) { $('signal-status').textContent = r.data.error || 'Refusé.'; return; }
       stuck = r.data.signal ? { q: q.id, i: i } : null;
@@ -536,6 +538,7 @@
 
   /** Envoi direct (pas de file d'attente : le texte reste dans le champ si le réseau manque). */
   function postAction(action, body, errBox) {
+    if (previewMode) { errBox.textContent = 'Prévisualisation : rien n’est envoyé.'; return Promise.resolve(false); }
     return WL.api(action, { body: Object.assign({ s: code }, body), headers: headers() }).then(function (r) {
       if (r.status !== 200) { errBox.textContent = r.data.error || 'Refusé.'; return false; }
       errBox.textContent = '';
@@ -612,12 +615,19 @@
   }
 
   function send(q, value) {
+    if (previewMode) { // prévisualisation : la réponse s'affiche ici, rien ne part
+      state.mine = value; renderKey = '';
+      renderQuestion(q, value);
+      $('answer-status').textContent = 'Prévisualisation : réponse non envoyée.';
+      return;
+    }
     pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value, at: Date.now() }));
     $('answer-status').textContent = 'Envoi…';
     flushPending();
   }
 
   function flushPending() {
+    if (previewMode) return;
     var p = readPending();
     if (!p || sending || p.code !== code) return;
     sending = true;
@@ -704,8 +714,42 @@
 
   // --- Démarrage ---------------------------------------------------------------
 
-  var fromUrl = new URLSearchParams(location.search).get('s');
+  // --- Prévisualiser (index.php?s=CODE&apercu=I) ------------------------------
+  // Vue participant de la prévisualisation de l'animateur : rien n'est rejoint
+  // ni envoyé, cet appareil ne garde rien ; la question suit la projection en
+  // prévisualisation (BroadcastChannel). Données : api.php?action=preview,
+  // réservée à l'animateur connecté dans ce navigateur.
+  function startPreview(c, first) {
+    previewMode = true;
+    code = c;
+    document.body.classList.add('is-preview');
+    banner('Prévisualisation : vos réponses ne sont pas envoyées, l’atelier ne bouge pas.');
+    var current = null;
+    function load(i) {
+      if (i === current) return;
+      current = i;
+      WL.api('preview', { query: 's=' + c + '&i=' + i }).then(function (r) {
+        if (r.status !== 200) {
+          banner(r.status === 401 ? 'Prévisualiser : connectez-vous d’abord à l’espace animateur dans ce navigateur.' : (r.data.error || 'Erreur du serveur.'));
+          current = null;
+          return;
+        }
+        renderKey = '';
+        onState(r.data.participant);
+      }, function () { current = null; banner('Pas de connexion au serveur.'); });
+    }
+    if ('BroadcastChannel' in window) {
+      var channel = new BroadcastChannel('wooclight-apercu-' + c);
+      channel.onmessage = function (e) { if (e.data && typeof e.data.i === 'number') load(e.data.i); };
+      channel.postMessage({ hello: true });
+    }
+    load(first);
+  }
+
+  var params = new URLSearchParams(location.search);
+  var fromUrl = params.get('s');
   var start = (fromUrl || store.get('code') || '').toUpperCase();
-  if (/^[A-Z2-9]{5}$/.test(start)) join(start);
+  if (params.get('apercu') !== null && /^[A-Z2-9]{5}$/.test(start)) startPreview(start, Math.max(0, parseInt(params.get('apercu'), 10) || 0));
+  else if (/^[A-Z2-9]{5}$/.test(start)) join(start);
   else showJoin(fromUrl ? 'Ce lien ne contient pas un code valide.' : '');
 }());

@@ -10,7 +10,7 @@ wl_security_headers();
 
 const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
-const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'export', 'archives', 'archive', 'seances'];
+const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'preview', 'export', 'archives', 'archive', 'seances'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
     'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close'];
 
@@ -179,11 +179,17 @@ function api_state(): void
     }
     $token = api_token();
     $pkey = $token ? wl_participant_key($token, $code) : '';
-    $q = wl_current_question($s);
     // La version publique change avec la question ; la réponse du participant
     // n'en fait pas partie (le téléphone la connaît déjà après son vote).
+    wl_json_etag('p' . $s['pversion'] . wl_time_tag($s) . '-' . substr($pkey, 0, 6), fn() => api_participant_view($s, $pkey));
+}
+
+/** Ce que reçoit le téléphone d'un participant ($pkey) pour la question courante. */
+function api_participant_view(array $s, string $pkey): array
+{
+    $q = wl_current_question($s);
     $mine = $q['answers'][$pkey]['v'] ?? null;
-    wl_json_etag('p' . $s['pversion'] . wl_time_tag($s) . '-' . substr($pkey, 0, 6), fn() => [
+    return [
         'ok' => true, 'title' => $s['title'], 'ended' => $s['ended'],
         'joined' => isset($s['participants'][$pkey]),
         'question' => $q ? api_question_for($q, $mine) : null,
@@ -197,7 +203,30 @@ function api_state(): void
         'asksOpen' => !empty($s['asksOpen']), 'asks' => !empty($s['asksOpen']) ? wl_asks_view($s, $pkey) : [],
         'pseudo' => !empty($s['pseudo']) ? ($s['pseudos'][$pkey] ?? null) : null,
         'score' => !empty($s['pseudo']) ? ['n' => wl_scores($s)[$pkey] ?? 0, 'of' => count(wl_scored_questions($s))] : null,
-    ]);
+    ];
+}
+
+/** Prévisualiser (animateur) : la question de rang i telle que la projection et
+ *  un participant la verront, calculée sur une copie de la session. Rien n'est
+ *  ouvert, avancé ni enregistré : l'atelier réel et ses participants ne voient
+ *  rien. La question est montrée ouverte et sans aucune réponse. */
+function api_preview(): void
+{
+    $s = wl_load_or_fail(api_code($_GET));
+    $n = count($s['questions']);
+    $i = max(0, min((int)($_GET['i'] ?? 0), $n - 1));
+    $c = array_replace($s, ['current' => $n ? $i : -1, 'ended' => false, 'board' => -1, 'show' => '', 'participants' => []]);
+    $correct = [];
+    $explain = '';
+    if ($n) {
+        $correct = $s['questions'][$i]['correct'] ?? [];
+        $explain = $s['questions'][$i]['explain'] ?? '';
+        $c['questions'][$i] = array_replace($c['questions'][$i], ['state' => 'open', 'closesAt' => null, 'answers' => [], 'posts' => []]);
+    }
+    $participant = api_participant_view($c, '');
+    $participant['joined'] = true;
+    wl_json(['ok' => true, 'index' => $n ? $i : -1, 'count' => $n, 'screen' => wl_screen_view($c),
+        'participant' => $participant, 'correct' => $correct, 'explain' => $explain]);
 }
 
 /** Écriture d'un participant : CSRF, limites de taux, participant inscrit.

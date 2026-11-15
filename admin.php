@@ -258,6 +258,7 @@ header('Cache-Control: no-store');
       <div class="heading-actions">
         <button id="back-btn" class="btn btn-ghost" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Mes ateliers</button>
         <button id="participants-open" class="btn" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Participants</button>
+        <a id="ed-apercu" class="btn" target="_blank" rel="noopener" title="Passer les questions en revue, projection et vue participant, sans rien ouvrir ni enregistrer"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>Prévisualiser</a>
         <a id="ed-preview" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran d'un participant dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>Aperçu participant</a>
         <a id="ed-open-screen" class="btn" target="_blank" rel="noopener" title="Ouvre l'écran à projeter dans un nouvel onglet"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-screen"/></svg>Ouvrir l’écran du groupe<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></a>
       </div>
