@@ -209,7 +209,9 @@ function api_participant_view(array $s, string $pkey): array
 /** Prévisualiser (animateur) : la question de rang i telle que la projection et
  *  un participant la verront, calculée sur une copie de la session. Rien n'est
  *  ouvert, avancé ni enregistré : l'atelier réel et ses participants ne voient
- *  rien. La question est montrée ouverte et sans aucune réponse. */
+ *  rien. La question est montrée ouverte et sans aucune réponse ; la projection
+ *  l'affiche résultats visibles (choix à 0, bonne réponse marquée) pour le
+ *  contrôle, le participant comme pendant un vote. */
 function api_preview(): void
 {
     $s = wl_load_or_fail(api_code($_GET));
@@ -221,11 +223,13 @@ function api_preview(): void
     if ($n) {
         $correct = $s['questions'][$i]['correct'] ?? [];
         $explain = $s['questions'][$i]['explain'] ?? '';
-        $c['questions'][$i] = array_replace($c['questions'][$i], ['state' => 'open', 'closesAt' => null, 'answers' => [], 'posts' => []]);
+        $c['questions'][$i] = array_replace($c['questions'][$i], ['state' => 'open', 'closesAt' => null, 'answers' => [], 'posts' => [], 'showResults' => false]);
     }
     $participant = api_participant_view($c, '');
     $participant['joined'] = true;
-    wl_json(['ok' => true, 'index' => $n ? $i : -1, 'count' => $n, 'screen' => wl_screen_view($c),
+    $shown = $c;
+    if ($n) $shown['questions'][$i]['showResults'] = true;
+    wl_json(['ok' => true, 'index' => $n ? $i : -1, 'count' => $n, 'screen' => wl_screen_view($shown),
         'participant' => $participant, 'correct' => $correct, 'explain' => $explain]);
 }
 
