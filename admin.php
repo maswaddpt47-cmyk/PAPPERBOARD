@@ -201,24 +201,28 @@ header('Cache-Control: no-store');
       </div>
       <section id="hist-open" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-open">
         <div class="panel-head"><h2 class="panel-title">Ouverts aux réponses</h2></div>
+        <p class="meta partner-note">Ateliers en préparation ou en cours : les participants peuvent rejoindre et répondre. « Terminer l’atelier » le fait passer dans Terminés.</p>
         <div id="session-list" class="history-list"></div>
       </section>
       <section id="hist-ended" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-ended" hidden>
         <div class="panel-head"><h2 class="panel-title">Terminés</h2></div>
+        <p class="meta partner-note">Réponses closes, tout est gardé (réponses une à une, textes des participants) pour le bilan. Après 30 jours sans activité, l’atelier devient une archive. Pour le garder complet plus longtemps, rangez-le chez un partenaire.</p>
         <div id="ended-list" class="history-list"></div>
       </section>
       <section id="hist-archived" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-archived" hidden>
         <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2></div>
+        <p class="meta partner-note">Version allégée, gardée sans limite : les questions et les résultats chiffrés restent ; les réponses une à une, les textes des participants et les jetons des appareils sont effacés. Une archive peut servir de point de départ à un nouvel atelier.</p>
         <div id="archive-list" class="history-list"></div>
       </section>
       <section id="hist-partners" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-partners" hidden>
         <div class="panel-head"><h2 class="panel-title">Partenaires</h2></div>
-        <p class="meta partner-note">Un atelier terminé rangé chez un partenaire est gardé complet jusqu'à « Clore le cycle », 12 mois au plus après son premier rangement ; il devient ensuite une archive anonyme, toujours comptée (en chiffres) dans le bilan de son cycle.</p>
+        <p class="meta partner-note">Un cycle, c’est une période de travail avec une même structure (par exemple une année scolaire avec un collège) ; « Clore le cycle » en donne le bilan et en ouvre un nouveau. Un atelier terminé rangé chez un partenaire est gardé complet jusqu'à « Clore le cycle », 12 mois au plus après son premier rangement ; il devient ensuite une archive anonyme, toujours comptée (en chiffres) dans le bilan de son cycle.</p>
         <div id="partner-list" class="history-list"></div>
       </section>
       <div id="hist-demo" class="tab-panel" role="tabpanel" aria-labelledby="ht-demo" hidden>
       <section class="card panel workshop-group">
         <div class="panel-head"><h2 class="panel-title">Démos</h2></div>
+        <p class="meta partner-note">Ateliers d’essai avec des participants fictifs, pour montrer ou tester WoocLight. Jamais archivés (ils fausseraient les bilans) : supprimés après 30 jours sans activité.</p>
         <div id="demo-list" class="history-list"></div>
       </section>
       <section class="card content-card demo-controls">
@@ -230,7 +234,6 @@ header('Cache-Control: no-store');
         <p class="muted">La suppression groupée concerne uniquement les ateliers marqués « Démo ». Vos créations, imports et copies sont conservés.</p>
       </section>
       </div>
-      <p class="info-note">Archiver conserve les questions et les résultats chiffrés ; les réponses une à une, les textes des participants et les jetons des appareils sont effacés. Une session devient aussi une archive après 30 jours sans activité. Les archives se gardent sans limite.</p>
     </div>
   </section>
 
