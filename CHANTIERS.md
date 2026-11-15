@@ -288,8 +288,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
 
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
-(Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV,
-« Clore le cycle ».
+(Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV, « Clore le cycle ».
+*Livré le 15/11/2026, à essayer* : atelier → « 👁 Prévisualiser » (projection, bonne réponse, « Vue participant » synchronisée ; rien ouvert ni écrit, e2e et 4 mutations).
 *En ligne le 02/11/2026 (`5a0d268`)* : « ✨ Défi sur mesure » (Défi à étapes, fonctions en essai), consigne
 IA sur le thème, aucune donnée personnelle réelle (nav). *Proposée, en attente* : défis prêts par thème
 récurrent (Mon espace santé, Ameli…), menus à valider par l'utilisateur sur les vrais sites.
