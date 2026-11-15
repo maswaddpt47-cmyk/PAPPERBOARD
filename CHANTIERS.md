@@ -1,8 +1,8 @@
 # CHANTIERS — WoocLight
 
-État au **15/11/2026** (relu par « pull », base `55f1c27`, rien d’arrivé depuis le 05/11 ; `AGENTS.md` : règle 69 et précision « Fin de tâche » de MD-LIB) — commit de référence : voir `git log -1 main`.
-**En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
-à chaque mise à jour de `main`, vérifications après déploiement comprises).
+État au **15/11/2026, fin de session** (base `main` `cbd46e7`). Livré et vérifié en ligne ce jour, **validé par l'utilisateur** : « 👁 Prévisualiser » (taille réelle, choix et bonne réponse, vue participant, « Modifier cette question »), Partenaires repliables et « Renommer ». Livré, **pas encore essayé par lui** : connexion animateur reconnue par les gestionnaires de mots de passe (règle 69), Terminés et Archivés réunis (archives en bas, « chiffres seuls »), une phrase sous chaque onglet, numéro de cycle masqué (interne seulement ; l'utilisateur met la période dans le nom du partenaire, à renommer après chaque « Clore le cycle »).
+**CI (ne pas défaire)** : `tests` = bilan de `tests-php` + 3 groupes `tests-navigateur` en parallèle (122 s au lieu de 206 s) ; le nom `tests` est exigé par la protection de `main` ; sur `main`, un SHA déjà vert sur sa branche saute la suite (~45 s). Un nouveau `tests/*.js` doit entrer dans un groupe de la matrice (la CI échoue sinon). Exception à la règle 60 : pas de suite locale avant push (`CLAUDE.md` §3).
+**En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
