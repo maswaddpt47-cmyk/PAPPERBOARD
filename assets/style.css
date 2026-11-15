@@ -1176,6 +1176,11 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .screen .s-preview .btn:hover:not(:disabled), .screen .s-preview .btn:focus-visible { background: var(--wl-c-ivoire); color: var(--wl-c-brun); border-color: var(--wl-c-terracotta); }
 .screen .s-preview .btn:disabled { opacity: .55; cursor: default; }
 .is-preview #s-guide { display: none !important; }
-.s-preview-note, .s-preview-answer { margin: 0; flex-basis: 100%; }
+.s-preview-note, .s-preview-answer { margin: 0; }
+.s-preview-answer { flex-basis: 100%; }
+/* Prévisualiser : ni QR ni code (contrôle, pas projection), projection en taille réelle qui défile. */
+.is-preview .qr-corner { display: none !important; }
+body.is-preview .screen-main { overflow-y: auto; }
+body.is-preview .projection-fit-canvas { position: relative; }
 .s-preview-answer:empty { display: none; }
 .is-preview #signal, .is-preview #asks, .is-preview #leave-btn, .is-preview #me-card { display: none !important; }

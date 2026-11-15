@@ -18,6 +18,8 @@
   }
   function fitProjection() {
     resetCanvas();
+    // Prévisualiser : taille réelle, la page défile (lisibilité du contrôle, 15/11/2026).
+    if (preview) { canvas.dataset.fitScale = '1'; return; }
     var width = Math.max(canvas.scrollWidth, canvas.offsetWidth);
     var height = Math.max(canvas.scrollHeight, canvas.offsetHeight);
     if (!width || !height || !viewport.clientHeight) return;
