@@ -151,7 +151,9 @@ plateforme (le signaler une fois, puis continuer le reste).
 - **Avant de pousser, lancer tous les tests que le déploiement exécutera, dans
   ses conditions** (chaque script listé par le workflow, chaque fuseau), pas
   seulement ceux du changement : il casse aussi les tests de son voisinage
-  (MD-LIB `collaboration.md` règle 60, 01/11/2026).
+  (MD-LIB `collaboration.md` règle 60, 01/11/2026). **Exception propre à ce dépôt
+  (choix de l'utilisateur, 15/11/2026)** : la CI de la branche lance toute la suite
+  et `main` n'accepte que son SHA vert ; localement, syntaxe et test ciblé suffisent.
 - Ne pas désactiver un contrôle requis pour faire passer une livraison.
 
 ## Sécurité, audit et instructions
