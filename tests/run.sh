@@ -1,7 +1,10 @@
 #!/bin/bash
 # Suite complète : syntaxe PHP et JS, bout en bout, charge.
-# Usage : bash tests/run.sh   (depuis n'importe où ; port libre 8765)
+# Usage : bash tests/run.sh [tout|php|navigateur]   (depuis n'importe où ; port libre 8765)
+# La CI lance « php » et « navigateur » en parallèle (deux jobs) ; sans argument : tout.
 set -u
+PARTIE=${1:-tout}
+case "$PARTIE" in tout|php|navigateur) ;; *) echo "Partie inconnue : $PARTIE (tout, php ou navigateur)"; exit 2 ;; esac
 cd "$(dirname "$0")/.."
 
 echo "=== Syntaxe ==="
@@ -28,6 +31,7 @@ SERVER=$!
 trap 'kill $SERVER 2>/dev/null; rm -rf "$TMP"' EXIT
 for _ in $(seq 50); do curl -s -o /dev/null "$WL_BASE" && break; sleep 0.1; done
 
+if [ "$PARTIE" != navigateur ]; then
 echo "=== Bout en bout ==="
 php tests/e2e.php || fail=1
 echo "=== Charge ==="
@@ -44,6 +48,9 @@ php tests/protect.php || fail=1
 echo "=== Charte graphique (statique) ==="
 php tests/charte.php || fail=1
 
+fi
+
+if [ "$PARTIE" != php ]; then
 echo "=== Navigateur ==="
 export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
 if node -e "require('playwright')" 2>/dev/null; then
@@ -58,6 +65,8 @@ if node -e "require('playwright')" 2>/dev/null; then
   node tests/galerie.js || fail=1
 else
   echo "⏭  Playwright absent : parcours navigateur non lancé"
+  [ "$PARTIE" = navigateur ] && fail=1 # job dédié : l'absence est un échec, pas un saut
+fi
 fi
 
 [ "$fail" -eq 0 ] && echo "=== ✅ Tout passe ===" || { echo "=== ❌ Échecs ==="; tail -20 "$TMP/server.log"; }

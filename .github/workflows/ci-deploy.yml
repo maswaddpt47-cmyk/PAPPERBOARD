@@ -30,17 +30,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  tests:
+  # Sur main, le commit arrive par avance rapide depuis une branche où ce même
+  # SHA a déjà passé `tests` (exigé par la protection de main) : relancer la
+  # suite ne vérifierait rien de plus (demande de l'utilisateur, 15/11/2026).
+  # Sans `tests` réussi sur ce SHA (push direct, relance manuelle), tout tourne.
+  deja:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       checks: read
+    outputs:
+      sauter: ${{ steps.deja.outputs.sauter }}
     steps:
-      # Sur main, le commit arrive par avance rapide depuis une branche où ce même
-      # SHA a déjà passé `tests` (exigé par la protection de main) : relancer la
-      # suite ne vérifierait rien de plus et retarde la mise en ligne d'environ
-      # 4 min (demande de l'utilisateur, 15/11/2026). Sans `tests` réussi sur ce
-      # SHA (push direct, relance manuelle), la suite complète tourne.
       - name: Déjà testé sur la branche ?
         id: deja
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -54,24 +54,38 @@ jobs:
             echo "::notice::Commit déjà testé sur sa branche : suite non relancée, déploiement direct."
             echo "sauter=oui" >> "$GITHUB_OUTPUT"
           fi
+
+  # Deux moitiés de tests/run.sh en parallèle (15/11/2026) : mêmes contrôles,
+  # durée de la plus longue au lieu de la somme.
+  tests-php:
+    needs: deja
+    if: needs.deja.outputs.sauter != 'oui'
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        if: steps.deja.outputs.sauter != 'oui'
+      - name: Syntaxe, bout en bout, coût, charge
+        run: bash tests/run.sh php
+
+  tests-navigateur:
+    needs: deja
+    if: needs.deja.outputs.sauter != 'oui'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Préparer les contrôles Chrome
-        if: steps.deja.outputs.sauter != 'oui'
         run: |
           timeout 90s npm install --prefix "$RUNNER_TEMP/wooclight-ui" --no-save --package-lock=false playwright@1.62.1
           echo "NODE_PATH=$RUNNER_TEMP/wooclight-ui/node_modules" >> "$GITHUB_ENV"
           echo "WL_CHROMIUM=$(command -v google-chrome)" >> "$GITHUB_ENV"
-      - name: Syntaxe, bout en bout, coût, charge
-        if: steps.deja.outputs.sauter != 'oui'
-        run: bash tests/run.sh
+      - name: Parcours dans le navigateur
+        run: bash tests/run.sh navigateur
         env:
           WL_UI_ARTIFACTS: ${{ runner.temp }}/interface-captures
       # Captures pour relecture seulement : un envoi bloqué côté GitHub (19/10/2026,
       # étape figée 20 min après « successfully finalized ») ne doit pas retenir
       # le contrôle `tests` exigé par la protection de main.
       - name: Conserver la comparaison visuelle
-        if: always() && steps.deja.outputs.sauter != 'oui'
+        if: always()
         timeout-minutes: 3
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -81,9 +95,29 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  # Contrôle `tests` exigé par la protection de main : vert seulement si les deux
+  # moitiés ont réussi (ou si le SHA était déjà testé sur sa branche).
+  tests:
+    needs: [deja, tests-php, tests-navigateur]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bilan des tests
+        env:
+          SAUTER: ${{ needs.deja.outputs.sauter }}
+          DEJA: ${{ needs.deja.result }}
+          PHP: ${{ needs.tests-php.result }}
+          NAV: ${{ needs.tests-navigateur.result }}
+        run: |
+          echo "déjà testé : ${SAUTER:-non} ; php : $PHP ; navigateur : $NAV"
+          [ "$DEJA" = success ] || { echo "::error::Vérification préalable en échec"; exit 1; }
+          [ "$SAUTER" = oui ] && exit 0
+          [ "$PHP" = success ] && [ "$NAV" = success ] || { echo "::error::Tests en échec"; exit 1; }
+
   paquet:
     needs: tests
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # always() : un job de tests sauté (SHA déjà testé) ne doit pas sauter celui-ci ; seul le verdict de `tests` compte.
+    if: always() && needs.tests.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -104,7 +138,8 @@ jobs:
       group: wooclight-production
       cancel-in-progress: false
     needs: tests
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # always() : un job de tests sauté (SHA déjà testé) ne doit pas sauter celui-ci ; seul le verdict de `tests` compte.
+    if: always() && needs.tests.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     # Environnement GitHub « production » : y ajouter une approbation manuelle
     # (Settings > Environments) pour qu'aucun push ne déploie seul.
