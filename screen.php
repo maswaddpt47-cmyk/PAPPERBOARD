@@ -33,10 +33,11 @@ wl_security_headers();
 <div class="screen-command-area">
 <!-- Prévisualiser (screen.php?s=CODE&apercu=I) : parcours des questions sans rien ouvrir ni enregistrer. -->
 <nav id="s-preview" class="s-preview" aria-label="Prévisualisation" hidden>
-  <p class="s-preview-note"><strong>Prévisualisation</strong> : rien n’est ouvert ni enregistré, les participants ne voient rien.</p>
+  <p class="s-preview-note" title="Les participants ne voient rien"><strong>Prévisualisation</strong> : rien n’est ouvert ni enregistré.</p>
   <button id="pv-prev" class="btn" type="button" title="Question précédente (flèche gauche)">◀ Précédente</button>
   <strong id="pv-count" class="s-pcount" aria-live="polite"></strong>
   <button id="pv-next" class="btn" type="button" title="Question suivante (flèche droite)">Suivante ▶</button>
+  <a id="pv-edit" class="btn" target="wooclight-modifier" title="Ouvre cette question dans l’éditeur (même onglet à chaque fois) ; revenez ici, elle se met à jour">Modifier cette question</a>
   <a id="pv-participant" class="btn" target="_blank" rel="noopener" title="Vue d’un participant, synchronisée avec cette prévisualisation">Vue participant</a>
   <p id="pv-answer" class="s-preview-answer"></p>
 </nav>

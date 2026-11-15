@@ -743,6 +743,10 @@
       channel.onmessage = function (e) { if (e.data && typeof e.data.i === 'number') load(e.data.i); };
       channel.postMessage({ hello: true });
     }
+    // Question modifiée dans l'éditeur pendant la prévisualisation : relue au retour.
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && current !== null) { var i = current; current = null; load(i); }
+    });
     load(first);
   }
 

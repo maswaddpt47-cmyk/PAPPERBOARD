@@ -5,6 +5,7 @@
 (function () {
   var el = WL.el, $ = WL.$;
   var participantsRequested = false;
+  var questionRequested = ''; // admin.php?s=CODE&q=ID : « Modifier cette question » depuis Prévisualiser
   var csrf = '', code = null, poller = null, data = null, editing = null, qrFor = null, conclusionFor = null, synthesisFor = null;
 
   /** Libellé d'un bouton précédé de son icône, comme dans la simulation. */
@@ -765,6 +766,14 @@
     renderRecap(d);
     tips();
     if (participantsRequested) { participantsRequested = false; openParticipants(); }
+    if (questionRequested) {
+      var wanted = questionRequested;
+      questionRequested = '';
+      history.replaceState(null, '', '?s=' + encodeURIComponent(d.code)); // un rechargement ne rouvre pas la fenêtre
+      var asked = d.questions.filter(function (x) { return x.id === wanted; })[0];
+      if (asked) openDialog(asked);
+      else banner('Question introuvable : elle a peut-être été supprimée.', 'erreur');
+    }
   }
 
   /** QR agrandi (Participants) : noir sur blanc, fermé par le bouton, Échap ou un clic à côté ; le focus revient au QR. */
@@ -1955,7 +1964,8 @@
     var params = new URLSearchParams(location.search), requested = (params.get('s') || '').toUpperCase();
     if (/^[A-Z2-9]{5}$/.test(requested)) {
       participantsRequested = params.get('participants') === '1';
-      openSession(requested);
+      questionRequested = params.get('q') || '';
+      openSession(requested, questionRequested ? 'prep' : null);
     } else showSessions();
   }
 

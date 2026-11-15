@@ -324,6 +324,9 @@
         $('pv-next').disabled = index >= count - 1;
         $('pv-answer').textContent = answerText(r.data);
         $('pv-participant').href = participantUrl();
+        var shownQ = r.data.screen.question;
+        WL.show($('pv-edit'), !!shownQ);
+        if (shownQ) $('pv-edit').href = 'admin.php?s=' + encodeURIComponent(code) + '&q=' + encodeURIComponent(shownQ.id);
         render(r.data.screen);
         history.replaceState(null, '', '?s=' + encodeURIComponent(code) + '&apercu=' + index);
         if (channel) channel.postMessage({ i: index });
@@ -350,6 +353,8 @@
       else return;
       e.preventDefault();
     });
+    // Retour depuis l'éditeur : la question modifiée se recharge.
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && count) load(index); });
     load(index);
   }
 
