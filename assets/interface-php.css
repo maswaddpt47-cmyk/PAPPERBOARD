@@ -247,3 +247,9 @@ body.admin .row-menu-body { position: absolute; right: 0; top: calc(100% + .35re
   min-width: 15rem; padding: .5rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
 body.admin .row-menu-body .btn { justify-content: flex-start; width: 100%; }
 @media (max-width: 959px) { body.admin .row-menu-body { left: 0; right: auto; max-width: calc(100vw - 2rem); } }
+
+/* Partenaires repliables (15/11/2026) : le nom du partenaire est le bouton. */
+body.admin .partner-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+body.admin .partner-toggle .icon { width: 16px; height: 16px; flex: none; transition: transform .15s; }
+body.admin .partner-toggle[aria-expanded="true"] .icon { transform: rotate(90deg); }
+body.admin .partner-toggle:hover { color: var(--wl-primaire); }

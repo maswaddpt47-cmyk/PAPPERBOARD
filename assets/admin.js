@@ -189,6 +189,16 @@
 
   var partners = [], fileTarget = null;
 
+  // Partenaires repliés : choix gardé dans ce navigateur seulement (confort, rien d'essentiel).
+  function partnerFolded() {
+    try { return JSON.parse(localStorage.getItem('wl_partners_folded') || '{}') || {}; } catch (e) { return {}; }
+  }
+  function setPartnerFolded(id, folded) {
+    var all = partnerFolded();
+    if (folded) all[id] = 1; else delete all[id];
+    try { localStorage.setItem('wl_partners_folded', JSON.stringify(all)); } catch (e) { /* sans stockage : non retenu */ }
+  }
+
   function renderPartners(filed) {
     var list = WL.clear($('partner-list'));
     var used = partners.filter(function (p) {
@@ -203,10 +213,19 @@
       var until = mine.length ? Math.min.apply(null, mine.map(function (s) { return s.expires; })) : 0;
       var cycleCsv = function (n) { return 'api.php?action=export&format=cycle&partner=' + encodeURIComponent(p.id) + '&cycle=' + n; };
       var cumul = 'Somme des inscrits de chaque atelier : une personne venue à plusieurs ateliers compte plusieurs fois.';
+      var folded = !!partnerFolded()[p.id], body = el('div', { class: 'partner-body', id: 'partner-body-' + p.id });
+      body.hidden = folded;
+      var toggle = el('button', { type: 'button', class: 'partner-toggle', 'aria-expanded': String(!folded), 'aria-controls': body.id,
+        title: 'Afficher ou masquer les ateliers de ce partenaire', onclick: function () {
+          var open = toggle.getAttribute('aria-expanded') !== 'true';
+          toggle.setAttribute('aria-expanded', String(open));
+          body.hidden = !open;
+          setPartnerFolded(p.id, !open);
+        } }, ico('chevron-right'), p.name + ' — cycle ' + p.cycle);
       list.appendChild(el('section', { class: 'partner-group' },
         el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('users')),
-          el('div', { class: 'grow' }, el('h3', null, p.name + ' — cycle ' + p.cycle),
+          el('div', { class: 'grow' }, el('h3', null, toggle),
             el('p', { class: 'muted', title: cumul }, WL.plural(count, 'atelier') + (p.archived.ateliers ? ' (dont ' + p.archived.ateliers + ' déjà archivé' + (p.archived.ateliers > 1 ? 's' : '') + ', chiffres seulement)' : '')
               + ' · ' + WL.plural(people, 'participation') + ' cumulée' + (people > 1 ? 's' : '')
               + (until ? ' · archivage automatique dès le ' + day(until) : ''))),
@@ -220,11 +239,12 @@
                 post('partner_close', { id: p.id, cycle: p.cycle }).then(function (d) { banner('Cycle ' + p.cycle + ' clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
               }
             }))),
-        p.closed.length ? el.apply(null, ['p', { class: 'meta partner-closed' }, 'Cycles clos : '].concat(p.closed.slice().reverse().map(function (c, i) {
+        body));
+      if (p.closed.length) body.appendChild(el.apply(null, ['p', { class: 'meta partner-closed' }, 'Cycles clos : '].concat(p.closed.slice().reverse().map(function (c, i) {
           return el('span', null, i ? ' · ' : '', el('a', { href: cycleCsv(c.cycle), title: cumul },
             'cycle ' + c.cycle + ' (clos le ' + day(c.at) + ', ' + WL.plural(c.ateliers, 'atelier') + ', ' + WL.plural(c.participations, 'participation') + ') — CSV'));
-        }))) : null,
-        el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
+        }))));
+      body.appendChild(el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
           return el('div', { class: 'prep-item workshop-row' },
             el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
             el('div', { class: 'grow' }, el('h3', null, s.title),
@@ -234,7 +254,7 @@
               rowButton('Sortir du partenaire', 'arrow-left', '', 'Remet l\'atelier dans « Terminés » (purge normale)', function () {
                 post('session_unfile', { s: s.code }).then(showSessions);
               })));
-        })))));
+        }))));
     });
   }
 
