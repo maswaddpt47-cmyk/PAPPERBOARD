@@ -221,7 +221,7 @@
           toggle.setAttribute('aria-expanded', String(open));
           body.hidden = !open;
           setPartnerFolded(p.id, !open);
-        } }, ico('chevron-right'), p.name + ' — cycle ' + p.cycle);
+        } }, ico('chevron-right'), p.name); // numéro de cycle interne seulement, jamais affiché (choix du 15/11/2026)
       list.appendChild(el('section', { class: 'partner-group' },
         el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('users')),
@@ -238,16 +238,16 @@
             el('a', { class: 'btn btn-small', href: cycleCsv(p.cycle),
               title: 'Un tableau pour tous les ateliers du cycle, déjà archivés compris (version à diffuser)' }, ico('download'), 'Bilan du cycle (CSV)'),
             rowButton('Clore le cycle', 'book', 'btn-danger', 'Chaque atelier devient une archive anonyme au nom du partenaire', function () {
-              if (confirm('Clore le cycle ' + p.cycle + ' de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle si vous voulez le détail : les '
+              if (confirm('Clore le cycle en cours de « ' + p.name + ' » ? Exportez d\'abord le bilan du cycle si vous voulez le détail : les '
                 + WL.plural(mine.length, 'atelier') + ' deviennent des archives anonymes (réponses une à une et textes des participants effacés) ; '
                 + 'le bilan chiffré du cycle reste consultable.')) {
-                post('partner_close', { id: p.id, cycle: p.cycle }).then(function (d) { banner('Cycle ' + p.cycle + ' clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
+                post('partner_close', { id: p.id, cycle: p.cycle }).then(function (d) { banner('Cycle clos : ' + WL.plural(d.archived, 'atelier') + ' archivé' + (d.archived > 1 ? 's' : '') + '. Son bilan reste ci-dessous.', 'ok'); showSessions(); });
               }
             }))),
         body));
       if (p.closed.length) body.appendChild(el.apply(null, ['p', { class: 'meta partner-closed' }, 'Cycles clos : '].concat(p.closed.slice().reverse().map(function (c, i) {
           return el('span', null, i ? ' · ' : '', el('a', { href: cycleCsv(c.cycle), title: cumul },
-            'cycle ' + c.cycle + ' (clos le ' + day(c.at) + ', ' + WL.plural(c.ateliers, 'atelier') + ', ' + WL.plural(c.participations, 'participation') + ') — CSV'));
+            'clos le ' + day(c.at) + ' (' + WL.plural(c.ateliers, 'atelier') + ', ' + WL.plural(c.participations, 'participation') + ') — CSV'));
         }))));
       body.appendChild(el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
           return el('div', { class: 'prep-item workshop-row' },
