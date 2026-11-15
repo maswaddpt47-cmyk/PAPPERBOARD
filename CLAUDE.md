@@ -44,8 +44,11 @@ par MD-LIB/CLAUDE.md (04/11/2026). Ici, seulement ce qui est propre au projet.
 ## 3. Tests — dosés
 
 - Une contrainte formulable en test devient un test, pas un paragraphe.
-- Suite complète : `bash tests/run.sh` (lint PHP/JS, e2e, coût, charge), une
-  fois avant le commit, pas à chaque étape. La CI la relance à chaque push.
+- Suite complète : `bash tests/run.sh` (lint PHP/JS, e2e, coût, charge). **Exception
+  à la règle 60 de MD-LIB (choix de l'utilisateur, 15/11/2026)** : pas de passage
+  local avant le push ; la CI de la branche la lance en entier et `main` n'accepte
+  que son SHA vert. Localement : `node --check`/`php -l` et le test ciblé du
+  changement, quand il y en a un.
 - Le test de coût (`tests/e2e.php`, section « coût ») tient le polling : 304
   sans corps quand rien ne change. Ne pas le retirer.
 - Rendu (CSS, libellés, mise en page) : pas de test ni de capture par défaut, mais
