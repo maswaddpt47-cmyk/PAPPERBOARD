@@ -32,14 +32,38 @@ concurrency:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
     steps:
+      # Sur main, le commit arrive par avance rapide depuis une branche où ce même
+      # SHA a déjà passé `tests` (exigé par la protection de main) : relancer la
+      # suite ne vérifierait rien de plus et retarde la mise en ligne d'environ
+      # 4 min (demande de l'utilisateur, 15/11/2026). Sans `tests` réussi sur ce
+      # SHA (push direct, relance manuelle), la suite complète tourne.
+      - name: Déjà testé sur la branche ?
+        id: deja
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs?check_name=tests&status=completed" \
+            --jq '[.check_runs[] | select(.conclusion == "success")] | length' || echo 0)
+          echo "Contrôles « tests » réussis sur $GITHUB_SHA : $n"
+          if [ "${n:-0}" -gt 0 ]; then
+            echo "::notice::Commit déjà testé sur sa branche : suite non relancée, déploiement direct."
+            echo "sauter=oui" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        if: steps.deja.outputs.sauter != 'oui'
       - name: Préparer les contrôles Chrome
+        if: steps.deja.outputs.sauter != 'oui'
         run: |
           timeout 90s npm install --prefix "$RUNNER_TEMP/wooclight-ui" --no-save --package-lock=false playwright@1.62.1
           echo "NODE_PATH=$RUNNER_TEMP/wooclight-ui/node_modules" >> "$GITHUB_ENV"
           echo "WL_CHROMIUM=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Syntaxe, bout en bout, coût, charge
+        if: steps.deja.outputs.sauter != 'oui'
         run: bash tests/run.sh
         env:
           WL_UI_ARTIFACTS: ${{ runner.temp }}/interface-captures
@@ -47,7 +71,7 @@ jobs:
       # étape figée 20 min après « successfully finalized ») ne doit pas retenir
       # le contrôle `tests` exigé par la protection de main.
       - name: Conserver la comparaison visuelle
-        if: always()
+        if: always() && steps.deja.outputs.sauter != 'oui'
         timeout-minutes: 3
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
