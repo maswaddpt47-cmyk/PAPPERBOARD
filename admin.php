@@ -87,9 +87,12 @@ header('Cache-Control: no-store');
 
   <section id="login" class="card narrow" hidden>
     <h1>Connexion animateur</h1>
-    <form id="login-form">
+    <form id="login-form" autocomplete="on" action="#">
+      <!-- Identifiant fixe pour que le gestionnaire de mots de passe reconnaisse
+           le formulaire (MD-LIB règle 69) : hors écran, jamais display:none. -->
+      <input class="pm-user" type="text" name="username" autocomplete="username" value="wooclight-animateur" readonly tabindex="-1" aria-hidden="true">
       <label for="password">Mot de passe</label>
-      <input id="password" type="password" autocomplete="current-password" required>
+      <input id="password" type="password" name="password" autocomplete="current-password" required>
       <p id="login-error" class="error" role="alert"></p>
       <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
     </form>
