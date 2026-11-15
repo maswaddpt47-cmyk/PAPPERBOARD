@@ -1,6 +1,6 @@
 # CHANTIERS — WoocLight
 
-État au **05/11/2026** (base `b33d8fc` relue après actualisation ; mode atelier pratique guidé, AG-012) — commit de référence : voir `git log -1 main`.
+État au **15/11/2026** (relu par « pull », base `55f1c27`, rien d’arrivé depuis le 05/11 ; `AGENTS.md` : règle 69 et précision « Fin de tâche » de MD-LIB) — commit de référence : voir `git log -1 main`.
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert
 à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).

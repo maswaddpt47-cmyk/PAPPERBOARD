@@ -30,7 +30,8 @@ Claude, avec les règles du dépôt dans `CLAUDE.md` et l’état dans `CHANTIER
 - Fin de tâche (04/11/2026) : vérifier que les opérations et revues nécessaires
   sont terminées, puis conclure le message final par une ligne distincte :
   **✅ TÂCHE TERMINÉE**. Si un traitement reste en cours ou bloque la livraison,
-  préciser son état sans annoncer la tâche terminée.
+  préciser son état sans annoncer la tâche terminée. La tâche est le travail
+  demandé dans le message, pas l’objectif d’ensemble (13/11/2026).
 
 Ces consignes persistent avec le dépôt. Elles ne changent pas les délais ou
 les fenêtres d’autorisation imposés par la plateforme.
@@ -161,6 +162,17 @@ plateforme (le signaler une fois, puis continuer le reste).
   le code ; fournir les preuves `fichier:ligne`, scénario ou mesure.
 - Appliquer l’AGORA du projet lorsqu’elle existe ; ne pas répondre à son propre
   bloc. Les constats de sécurité suivent le circuit prévu par le projet.
+- Champ de jeton, de clé ou de mot de passe (MD-LIB `collaboration.md` règle 69,
+  13/11/2026) : dans un vrai `<form autocomplete="on" action="#">`, avec un
+  identifiant fixe `name="username"` `autocomplete="username"` `readonly`
+  `tabindex="-1"` `aria-hidden="true"` sorti de l’écran par
+  `position:absolute;left:-9999px` (jamais `display:none`), le champ en
+  `type="password"` `name="password"` `autocomplete="current-password"` avec un
+  `id` unique, et un bouton `type="submit"` ; sur `submit`, `preventDefault()`,
+  même enregistrement qu’à la frappe et message de confirmation. Sinon Proton
+  Pass ne propose pas la clé. Bouton qui lance l’application : il devient le
+  `submit`, garde son libellé, et les `onkeydown` / `onclick` d’origine sont
+  retirés (sinon l’action part deux fois).
 - Lire les instructions locales des dépôts de sauvegarde avant tout accès aux
   copies. Aucun export, déchiffrement ou changement de visibilité hors demande.
 - Garder les instructions courtes : fusionner les doublons, dater les hypothèses
