@@ -230,6 +230,11 @@
               + ' · ' + WL.plural(people, 'participation') + ' cumulée' + (people > 1 ? 's' : '')
               + (until ? ' · archivage automatique dès le ' + day(until) : ''))),
           el('div', { class: 'workshop-row-actions' },
+            rowButton('Renommer', 'edit', '', 'Changer le nom de ce partenaire (les archives déjà créées gardent l\'ancien nom)', function () {
+              var name = prompt('Nouveau nom du partenaire :', p.name);
+              if (name === null || name.trim() === '' || name.trim() === p.name) return;
+              post('partner_rename', { id: p.id, name: name.trim() }).then(function () { banner('Partenaire renommé « ' + name.trim() + ' ».', 'ok'); showSessions(); }, function () {});
+            }),
             el('a', { class: 'btn btn-small', href: cycleCsv(p.cycle),
               title: 'Un tableau pour tous les ateliers du cycle, déjà archivés compris (version à diffuser)' }, ico('download'), 'Bilan du cycle (CSV)'),
             rowButton('Clore le cycle', 'book', 'btn-danger', 'Chaque atelier devient une archive anonyme au nom du partenaire', function () {

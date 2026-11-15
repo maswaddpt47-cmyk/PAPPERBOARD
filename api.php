@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'preview', 'export', 'archives', 'archive', 'seances'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close', 'partner_rename'];
 
 try {
     wl_maybe_purge();
@@ -517,6 +517,30 @@ function api_session_unfile(array $b): void
         unset($s['partner']);
     });
     wl_json(['ok' => true]);
+}
+
+/** Renommer un partenaire (demande du 15/11/2026). Les archives déjà créées gardent le nom
+ *  qu'il portait à leur archivage ; le bilan du cycle prend le nouveau. Deux partenaires ne
+ *  peuvent pas porter le même nom : le rangement les reconnaît par leur nom. */
+function api_partner_rename(array $b): void
+{
+    $id = preg_replace('/[^0-9a-f]/', '', (string)($b['id'] ?? ''));
+    $name = wl_clean_text((string)($b['name'] ?? ''));
+    if ($name === '' || wl_strlen($name) > 80) {
+        throw new WlError('Nom du partenaire : 1 à 80 caractères.');
+    }
+    wl_locked_json(wl_partners_file(), function (array &$d) use ($id, $name) {
+        $list = is_array($d['partners'] ?? null) ? $d['partners'] : [];
+        $at = null;
+        foreach ($list as $i => $p) {
+            if ($p['id'] === $id) $at = $i;
+            elseif (wl_fold($p['name']) === wl_fold($name)) throw new WlError('Un autre partenaire porte déjà ce nom.');
+        }
+        if ($at === null) throw new WlError('Partenaire introuvable.', 404);
+        $list[$at]['name'] = $name;
+        $d['partners'] = $list;
+    });
+    wl_json(['ok' => true, 'name' => $name]);
 }
 
 /** Clore le cycle : chaque atelier du partenaire devient une archive anonyme à son nom et au

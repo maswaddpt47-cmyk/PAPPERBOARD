@@ -453,6 +453,12 @@ $pid = $admin->post('session_file', ['s' => $pa, 'name' => 'Centre Été'])['jso
 check($pid !== '' && ($admin->post('session_file', ['s' => $pb, 'name' => 'centre ete'])['json']['partner'] ?? '') === $pid, 'partenaire : même nom (casse, accents) = même partenaire');
 $sl = $admin->get('api.php?action=sessions')['json'];
 check(count(array_filter($sl['sessions'], fn($x) => $x['partner'] === $pid)) === 2 && ($sl['partners'][0]['name'] ?? '') === 'Centre Été', 'partenaire : deux ateliers rangés, nom gardé');
+// Renommer : nom vide ou inconnu refusé ; le nouveau nom s'affiche.
+expect_status($admin->post('partner_rename', ['id' => $pid, 'name' => '  ']), 400, 'renommer un partenaire : nom vide refusé');
+expect_status($admin->post('partner_rename', ['id' => 'ffffffff', 'name' => 'X']), 404, 'renommer un partenaire inconnu refusé');
+expect_status($admin->post('partner_rename', ['id' => $pid, 'name' => 'Centre Été (Agen)']), 200, 'renommer un partenaire');
+check(($admin->get('api.php?action=sessions')['json']['partners'][0]['name'] ?? '') === 'Centre Été (Agen)', 'partenaire renommé dans la liste');
+expect_status($admin->post('partner_rename', ['id' => $pid, 'name' => 'Centre Été']), 200, 'renommer à nouveau (nom d\'origine)');
 $csv = $admin->get("api.php?action=export&format=cycle&partner=$pid")['body'];
 check(str_contains($csv, 'Cycle un') && str_contains($csv, 'Cycle deux') && str_contains($csv, 'Participants inscrits'), 'bilan du cycle : un CSV pour tous les ateliers, même sans réponse');
 $pm = $admin->post('session_create', ['title' => 'Minimisé'])['json']['code'] ?? '';
