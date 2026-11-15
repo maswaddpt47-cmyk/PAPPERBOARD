@@ -174,7 +174,7 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.setViewportSize({width:1280,height:720});
     await admin.reload(); await admin.locator('#sessions:not([hidden])').waitFor();
     await admin.locator('.nav-item[data-nav="history"]').click();
-    await admin.locator('#ht-archived').click();
+    await admin.locator('#ht-ended').click(); // archives sous les terminés (fusion du 15/11/2026)
     const archived = admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'});
     await archived.waitFor();
     for (const name of ['Voir le bilan','Réutiliser les questions','Supprimer']) check(await archived.getByRole('button',{name,exact:true}).isVisible(), 'Archive : bouton « '+name+' » absent');

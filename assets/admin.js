@@ -121,6 +121,11 @@
       + ' le ' + day(s.expires) + ' si rien ne bouge';
   }
 
+  // Terminés réunit les ateliers récents (sessions) et les archives (deux appels) :
+  // le compteur de l'onglet additionne les deux (fusion du 15/11/2026).
+  var endedCount = { sessions: 0, archives: 0 };
+  function showEndedCount() { $('ended-count').textContent = '(' + (endedCount.sessions + endedCount.archives) + ')'; }
+
   function showSessions(name) {
     if (poller) poller.stop();
     code = null;
@@ -138,10 +143,11 @@
       partners = r.data.partners || [];
       renderPartners(sessionsList.filter(function (s) { return s.partner; }));
       var lists = { open: WL.clear($('session-list')), ended: WL.clear($('ended-list')), demo: WL.clear($('demo-list')) };
-      var empty = { open: 'Aucun atelier ouvert aux réponses.', ended: 'Aucun atelier terminé.', demo: 'Aucune démo : « Créer un atelier », 3ᵉ choix.' };
+      var empty = { open: 'Aucun atelier ouvert aux réponses.', ended: 'Aucun atelier terminé récemment.', demo: 'Aucune démo : « Créer un atelier », 3ᵉ choix.' };
       Object.keys(lists).forEach(function (k) {
         var n = sessionsList.filter(function (s) { return tabOf(s) === k; }).length;
-        $(k + '-count').textContent = '(' + n + ')';
+        if (k === 'ended') { endedCount.sessions = n; showEndedCount(); }
+        else $(k + '-count').textContent = '(' + n + ')';
         if (!n) lists[k].appendChild(el('p', { class: 'workshop-empty muted' }, empty[k]));
       });
       var demos = sessionsList.filter(function (s) { return s.demo; }).length;
@@ -293,13 +299,14 @@
     WL.api('archives').then(function (r) {
       var list = WL.clear($('archive-list'));
       if (r.status !== 200) return;
-      $('archived-count').textContent = '(' + r.data.archives.length + ')';
-      if (!r.data.archives.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucun atelier dans cette section.'));
+      endedCount.archives = r.data.archives.length;
+      showEndedCount();
+      if (!r.data.archives.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucune archive.'));
       r.data.archives.forEach(function (a) {
         list.appendChild(el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
-          el('div', { class: 'grow' }, el('h3', null, a.title),
-            el('p', { class: 'muted' }, WL.plural(a.questions, a.hasInfo ? 'étape' : 'question') + ' · Archivé')),
+          el('div', { class: 'grow' }, el('h3', null, a.title), el('span', { class: 'badge neutral' }, 'Archivé · chiffres seuls'),
+            el('p', { class: 'muted' }, WL.plural(a.questions, a.hasInfo ? 'étape' : 'question'))),
           el('div', { class: 'workshop-row-actions' },
             rowButton('Voir le bilan', 'chart', '', null, function () { openArchive(a.id); }),
             rowButton('Réutiliser les questions', 'copy', '', 'Nouvelle session avec les mêmes questions et la même conclusion, sans résultats', function () {

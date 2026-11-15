@@ -194,8 +194,7 @@ header('Cache-Control: no-store');
       </div>
       <div class="tabs view-tabs" id="history-tabs" role="tablist" aria-label="Classement des ateliers">
         <button class="tab" role="tab" type="button" id="ht-open" aria-controls="hist-open" data-tab="open" title="Ateliers où les participants peuvent répondre"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Ouverts <span id="open-count" class="tab-count"></span></button>
-        <button class="tab" role="tab" type="button" id="ht-ended" aria-controls="hist-ended" data-tab="ended" title="Ateliers terminés : réponses closes, résultats consultables"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Terminés <span id="ended-count" class="tab-count"></span></button>
-        <button class="tab" role="tab" type="button" id="ht-archived" aria-controls="hist-archived" data-tab="archived" title="Résultats chiffrés gardés sans limite, détail des réponses effacé"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Archivés <span id="archived-count" class="tab-count"></span></button>
+        <button class="tab" role="tab" type="button" id="ht-ended" aria-controls="hist-ended" data-tab="ended" title="Ateliers terminés : récents complets, puis archivés (chiffres seuls)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Terminés <span id="ended-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-partners" aria-controls="hist-partners" data-tab="partners" title="Ateliers terminés rangés par partenaire, pour le bilan de fin de cycle"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Partenaires <span id="partners-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-demo" aria-controls="hist-demo" data-tab="demo" title="Ateliers de démonstration avec participants fictifs"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg>Démos <span id="demo-count" class="tab-count"></span></button>
       </div>
@@ -206,11 +205,9 @@ header('Cache-Control: no-store');
       </section>
       <section id="hist-ended" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-ended" hidden>
         <div class="panel-head"><h2 class="panel-title">Terminés</h2></div>
-        <p class="meta partner-note">Réponses closes, tout est gardé (réponses une à une, textes des participants) pour le bilan. Après 30 jours sans activité, l’atelier devient une archive. Pour le garder complet plus longtemps, rangez-le chez un partenaire.</p>
+        <p class="meta partner-note">Réponses closes, tout est gardé (réponses une à une, textes des participants) pour le bilan. Après 30 jours sans activité, l’atelier passe dans « Archivés », plus bas. Pour le garder complet plus longtemps, rangez-le chez un partenaire.</p>
         <div id="ended-list" class="history-list"></div>
-      </section>
-      <section id="hist-archived" class="card panel workshop-group tab-panel" role="tabpanel" aria-labelledby="ht-archived" hidden>
-        <div class="panel-head"><h2 class="panel-title">Ateliers archivés</h2></div>
+        <div class="panel-head"><h3 class="panel-title">Archivés · chiffres seuls</h3></div>
         <p class="meta partner-note">Version allégée, gardée sans limite : les questions et les résultats chiffrés restent ; les réponses une à une, les textes des participants et les jetons des appareils sont effacés. Une archive peut servir de point de départ à un nouvel atelier.</p>
         <div id="archive-list" class="history-list"></div>
       </section>
