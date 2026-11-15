@@ -55,8 +55,10 @@ jobs:
             echo "sauter=oui" >> "$GITHUB_OUTPUT"
           fi
 
-  # Deux moitiés de tests/run.sh en parallèle (15/11/2026) : mêmes contrôles,
-  # durée de la plus longue au lieu de la somme.
+  # tests/run.sh découpé en parallèle (15/11/2026) : contrôles PHP (~15 s) et
+  # trois groupes de parcours navigateur équilibrés (~50 s chacun, mesurés en
+  # local ; 196 s quand ils s'enchaînaient). Tout parcours ajouté dans tests/
+  # doit entrer dans un groupe : le job « complet » le vérifie.
   tests-php:
     needs: deja
     if: needs.deja.outputs.sauter != 'oui'
@@ -70,6 +72,10 @@ jobs:
     needs: deja
     if: needs.deja.outputs.sauter != 'oui'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        groupe: ['navigateur', 'galerie pdf-import practical', 'interface editor information']
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Préparer les contrôles Chrome
@@ -78,7 +84,13 @@ jobs:
           echo "NODE_PATH=$RUNNER_TEMP/wooclight-ui/node_modules" >> "$GITHUB_ENV"
           echo "WL_CHROMIUM=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Parcours dans le navigateur
-        run: bash tests/run.sh navigateur
+        run: |
+          # Chaque parcours tests/*.js doit être dans un des trois groupes.
+          for f in tests/*.js; do t=$(basename "$f" .js)
+            echo " navigateur galerie pdf-import practical interface editor information " | grep -q " $t " \
+              || { echo "::error::tests/$t.js n'est dans aucun groupe de la matrice : l'ajouter"; exit 1; }
+          done
+          bash tests/run.sh navigateur ${{ matrix.groupe }}
         env:
           WL_UI_ARTIFACTS: ${{ runner.temp }}/interface-captures
       # Captures pour relecture seulement : un envoi bloqué côté GitHub (19/10/2026,
@@ -90,7 +102,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: comparaison-interface
+          name: comparaison-interface-${{ strategy.job-index }}
           path: ${{ runner.temp }}/interface-captures
           if-no-files-found: ignore
           retention-days: 7
