@@ -111,7 +111,10 @@ $legal = trim((string)wl_config()['base_legale']) ?: 'intérêt légitime de l\'
     visibles des participants ; il peut exporter les résultats pour le bilan de l'atelier.
     <strong>Liens</strong> : certaines questions proposent un lien vers un site extérieur choisi par l'animateur ; en l'ouvrant,
     vous quittez WoocLight et ce site applique ses propres règles.
-    <strong>Hébergement</strong> : Alwaysdata, en France.
+    <strong>Hébergement</strong> : Alwaysdata, en France. Si vous avez tapé l'adresse courte repondsici.fr, une page de
+    renvoi hébergée par GitHub (États-Unis) a reçu votre adresse IP, que GitHub peut garder dans ses journaux ; la page
+    n'enregistre rien d'autre. Le QR code et
+    l'adresse wooclight.alwaysdata.net évitent ce passage.
     <strong>Durée</strong> : <?= $days ?> jours après la dernière action de l'animateur, ou jusqu'à la fin du cycle
     d'ateliers d'un partenaire (structure qui accueille l'atelier), pour son bilan : 12 mois au plus après le
     rangement de l'atelier dans ce cycle, qui a lieu après l'atelier ; puis suppression de vos
