@@ -15,7 +15,7 @@
 1. **Atelier réel fait** : 2 groupes de 25 collégiens le 16/11/2026, « tout est OK » (déclaré par
    l'utilisateur ; élèves : adresse puis code, l'adresse courte pas encore essayée). Restent : un vrai PDF Pix ; `repondsici.fr` (1bis).
 1bis. **`repondsici.fr`** (16/11/2026, échéance 16/11/2027) : l'abonnement Free d'Alwaysdata refuse un domaine propre → redirection par GitHub Pages (dépôt `repondsici`, choix de l'utilisateur, IP vue par GitHub : registre et « Confidentialité » à relire).
-   À faire par l'utilisateur : Pages du dépôt (`main`, racine, domaine `repondsici.fr`, HTTPS), DNS chez Alwaysdata, puis `configurer.php` → adresse courte `https://repondsici.fr`.
+   Pages et DNS faits, redirection vers WoocLight constatée par l'utilisateur le 16/11/2026. Restent : « Enforce HTTPS » (GitHub), `configurer.php` → adresse courte `repondsici.fr` (PC avec la clé SSH).
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
