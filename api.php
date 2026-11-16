@@ -12,7 +12,7 @@ const WL_PUBLIC_GET = ['state', 'screen'];
 const WL_PUBLIC_POST = ['join', 'leave', 'vote', 'post', 'post_delete', 'like', 'signal', 'ask', 'ask_vote', 'ping'];
 const WL_ADMIN_GET = ['me', 'sessions', 'admin_state', 'preview', 'export', 'archives', 'archive', 'seances'];
 const WL_ADMIN_POST = ['login', 'logout', 'session_create', 'session_duplicate', 'session_delete',
-    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close', 'partner_rename'];
+    'session_rename', 'session_demo', 'demo_delete', 'session_conclusion', 'session_synthesis', 'session_archive', 'archive_delete', 'archive_reuse', 'question_save', 'questions_import', 'questions_duration', 'questions_lock', 'question_delete', 'question_move', 'control', 'answer_hide', 'post_admin', 'ask_admin', 'prefs_save', 'seance_save', 'seance_delete', 'session_file', 'session_unfile', 'partner_close', 'partner_rename'];
 
 try {
     wl_maybe_purge();
@@ -788,6 +788,24 @@ function api_questions_duration(array $b): void
         unset($q);
     });
     wl_json(['ok' => true]);
+}
+
+/** Fige la réponse de tous les quiz (bonne réponse cochée) d'un atelier préparé avant
+ *  que ce soit le défaut (16/11/2026). Renvoie le nombre de quiz changés. */
+function api_questions_lock(array $b): void
+{
+    $n = wl_update(api_code($b), function (array &$s) {
+        $n = 0;
+        foreach ($s['questions'] as &$q) {
+            if ($q['correct'] && !in_array($q['type'], ['info', 'steps'], true) && $q['allowChange']) {
+                $q['allowChange'] = false;
+                $n++;
+            }
+        }
+        unset($q);
+        return $n;
+    });
+    wl_json(['ok' => true, 'locked' => $n]);
 }
 
 /** Questions générées par une IA : aperçu (preview) ou ajout de celles retenues

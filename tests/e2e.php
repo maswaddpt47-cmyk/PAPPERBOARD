@@ -644,6 +644,12 @@ $admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'poll', 'te
 $admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'mcq', 'text' => 'Quiz ouvert', 'options' => ['A', 'B'], 'correct' => [0], 'allowChange' => true]]);
 $fq = array_column($admin->get("api.php?action=admin_state&s=$fig")['json']['questions'] ?? [], 'allowChange');
 check($fq === [false, true, true], 'réglage absent : quiz figé, sondage modifiable ; choix explicite gardé');
+$admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'yesno', 'text' => 'Oui/Non modifiable', 'correct' => [0], 'allowChange' => true]]);
+$lk1 = $admin->post('questions_lock', ['s' => $fig])['json']['locked'] ?? null;
+$fq = array_column($admin->get("api.php?action=admin_state&s=$fig")['json']['questions'] ?? [], 'allowChange');
+check($lk1 === 2 && $fq === [false, true, false, false], 'figer les quiz : 2 quiz figés, le sondage reste modifiable');
+check(($admin->post('questions_lock', ['s' => $fig])['json']['locked'] ?? null) === 0, 'figer les quiz : rien à changer la 2e fois (0)');
+expect_status($admin->post('questions_lock', ['s' => $fig], false), 403, 'figer les quiz : refusé sans CSRF');
 
 // --- Export des questions en JSON, réimporté à l'identique -----------------------
 $admin->post('question_save', ['s' => $gen, 'question' => ['type' => 'yesno', 'text' => 'Réglée', 'correct' => [1], 'reveal' => 'end', 'duration' => 30, 'allowChange' => false]]);

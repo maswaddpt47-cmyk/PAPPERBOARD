@@ -617,6 +617,14 @@
     act('questions_duration', { duration: n });
   });
 
+  $('lock-quiz-btn').addEventListener('click', function () {
+    post('questions_lock', { s: code }).then(function (d) {
+      banner(d.locked ? (d.locked > 1 ? d.locked + ' quiz figés' : '1 quiz figé') + ' : la réponse ne change plus après « Envoyer ».'
+        : 'Aucun quiz modifiable dans cet atelier : rien à changer.', d.locked ? 'ok' : null);
+      poller.refresh();
+    });
+  });
+
   /** Gommettes : colonnes du post-it source (« toutes » par défaut). */
   function fillColumns(selected) {
     var src = data.questions.filter(function (o) { return o.id === $('qf-source').value; })[0];
