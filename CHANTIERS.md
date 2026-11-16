@@ -291,7 +291,7 @@ Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans f
 *En ligne le 02/11/2026 (`5a0d268`)* : « ✨ Défi sur mesure » (Défi à étapes, fonctions en essai), consigne
 IA sur le thème, aucune donnée personnelle réelle (nav). *Proposée, en attente* : défis prêts par thème
 récurrent (Mon espace santé, Ameli…), menus à valider par l'utilisateur sur les vrais sites.
-*Écartées :* 15/11/2026 — dossiers dans les archives : Partenaires suffit à ranger (utilisateur) ; Terminés et Archivés réunis le même jour. 02/11/2026 — filtrer les défis prêts selon le thème : inutile avec deux défis.
+*Écartées :* 16/11/2026 — « passer / désactiver une question » en séance : une question sans réponse ne fausse aucun autre chiffre (lu dans le code : récap, podium, archives, partenaires) ; « Terminer l'atelier » suffit (utilisateur). 15/11/2026 — dossiers dans les archives : Partenaires suffit à ranger (utilisateur) ; Terminés et Archivés réunis le même jour. 02/11/2026 — filtrer les défis prêts selon le thème : inutile avec deux défis.
 17/10/2026 — notes privées de l'animateur par question (objectif, consigne, indice) :
 l'utilisateur anime seul, et un champ privé doit être exclu de la projection, de l'archive et de
 l'export (risque de fuite) ; à ne pas reproposer sans fait nouveau. 15/10/2026 — génération par API (bouton « Générer ») : l'utilisateur
