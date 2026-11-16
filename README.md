@@ -3,7 +3,8 @@
 Participation en direct pour des ateliers de médiation numérique (projet
 personnel) :
 l'animateur projette une question, les participants répondent depuis leur
-téléphone, sans compte, avec un QR code ou un code de 5 caractères.
+appareil, sans compte, avec un QR code, l'adresse courte projetée
+(`…/K7M3P`, code compris) ou un code de 5 caractères.
 
 - **Animateur** : `admin.php` (mot de passe) — sessions, questions, pilotage, export.
 - **Participant** : `index.php` (ou le QR code) — une question à la fois : on choisit, puis on appuie sur **Envoyer**.
@@ -248,6 +249,7 @@ Si le déploiement automatique est impossible :
 | « Trop de tentatives » | 5 erreurs en 15 minutes depuis cet appareil (ou cette IP pour un appareil jamais connecté) | Attendre 15 minutes, ou en SSH : `rm ~/wooclight-data/login.json` |
 | Reconnexion demandée en pleine séance | 2 h sans action, ou 12 h depuis la connexion | Se reconnecter (sécurité d'un poste partagé) |
 | « Les inscriptions sont fermées » | bouton **Fermer les inscriptions** activé | Le rouvrir dans l'espace animateur |
+| L'adresse courte (`…/K7M3P`) répond 404 | `mod_rewrite` absent ou `.htaccess` non lu | Donner le QR code ou le code ; l'étape « Vérifier la mise en ligne » de la CI le signale |
 | Le QR code mène à une mauvaise adresse | `base_url` vide ou faux | Renseigner `base_url` dans `config.php` |
 | « Connexion perdue » sur les téléphones | wifi de la salle saturé ou coupé | Les téléphones se reconnectent seuls ; les réponses en attente partent au retour du réseau |
 | « Trop de requêtes » | plus de 30 envois par minute pour un téléphone | Attendre quelques secondes |

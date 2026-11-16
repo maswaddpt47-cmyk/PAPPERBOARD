@@ -416,7 +416,7 @@ function api_admin_state(): void
             'active' => wl_active_count($s), 'lastCron' => wl_last_cron(), 'purgeFailures' => wl_purge_failures(), 'demo' => !empty($s['demo']),
             'signals' => wl_signal_counts($s), 'helpSteps' => wl_signal_steps($s), 'asksOpen' => !empty($s['asksOpen']), 'asks' => wl_asks_view($s, null),
             'pseudo' => !empty($s['pseudo']), 'ranking' => !empty($s['pseudo']) ? wl_ranking($s) : [], 'current' => $s['current'], 'participants' => count($s['participants']), 'recap' => wl_recap($s),
-            'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'now' => time(),
+            'questions' => $questions, 'joinUrl' => wl_join_url($s['code']), 'shortUrl' => wl_short_url($s['code']), 'now' => time(),
             'pollMs' => (int)wl_config()['poll_ms']];
     });
 }

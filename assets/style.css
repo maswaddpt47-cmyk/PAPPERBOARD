@@ -754,7 +754,7 @@ body.screen { background: var(--wl-fond); color: var(--wl-texte); }
 .bilan-q h3 { font-size: 1rem; margin: 0; }
 .s-pcount { font-size: 1.1rem; padding: 0 .5rem; }
 .s-welcome { text-align: center; margin-top: 3em; }
-.s-join-line { font-size: 1.8em; margin: .4em 0; }
+.s-join-line { font-size: 1.8em; margin: .4em 0; overflow-wrap: break-word; }
 .code-big { font-weight: bold; }
 .s-welcome .code-big { font-size: 1.6em; letter-spacing: .2em; color: var(--wl-primaire); }
 .qr-corner {

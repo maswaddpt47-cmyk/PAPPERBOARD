@@ -812,7 +812,7 @@
   function qrBig() {
     WL.qr($('qr-big'), data.joinUrl, 10);
     $('qr-big-code').textContent = data.code;
-    $('qr-big-url').textContent = data.joinUrl;
+    $('qr-big-url').textContent = data.shortUrl.replace(/^https?:\/\//, '');
   }
   $('ed-qr-zoom').addEventListener('click', function () {
     if (!data) return;

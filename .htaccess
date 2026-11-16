@@ -8,5 +8,17 @@ DirectoryIndex index.php
     Require all denied
 </FilesMatch>
 
+# Adresse courte : /K7M3P → /?s=K7M3P (caractères du code, sans 0/O, 1/I/L :
+# « admin », « index » ne peuvent pas en être un). Un fichier ou dossier réel
+# n'est jamais détourné. Sans mod_rewrite, l'adresse courte répond 404.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Chemin du dossier de l'appli (racine ou sous-dossier), sans RewriteBase.
+    RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
+    RewriteRule ^(([A-HJKMNP-Za-hjkmnp-z2-9]{5})/?)$ %1?s=$2 [R=302,L]
+</IfModule>
+
 # Dossiers internes (data/ si DATA_DIR est laissé vide, tests, scripts…).
 RedirectMatch 404 ^.*/(data|tests|scripts|docs|\.git|\.github|\.claude)(/.*)?$

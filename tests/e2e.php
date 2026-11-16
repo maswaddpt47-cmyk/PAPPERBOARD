@@ -96,6 +96,10 @@ $admin->post('control', ['s' => $code, 'op' => 'unlock']);
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['joined'] === true && $st['question'] === null, 'état participant : accueil, aucune question');
 check($admin->get("api.php?action=screen&s=$code")['json']['question'] === null, 'projection : accueil');
+$acc = $admin->get("api.php?action=screen&s=$code")['json'];
+check(preg_match('#^https?://[^/?]+(/[^?]*)?/' . $code . '$#', $acc['shortUrl'] ?? '') === 1
+    && substr($acc['shortUrl'], 0, -strlen($code)) . '?s=' . $code === $acc['joinUrl'],
+    'adresse courte : même dossier que le lien, code dans le chemin (servie par .htaccess)');
 expect_status($admin->post('control', ['s' => $code, 'op' => 'next']), 200, 'première question');
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['question']['id'] === $qid['yesno'] && $st['question']['state'] === 'open', 'question suivante jamais ouverte : vote ouvert automatiquement');

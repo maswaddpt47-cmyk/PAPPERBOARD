@@ -230,6 +230,14 @@ jobs:
             curl -sI "$URL/index.php" | grep -qi "content-security-policy: default-src 'none'" \
               || { echo "::error::en-tête CSP absent"; exit 1; }
           fi
+          # Adresse courte (.htaccess) : /CODE redirige vers /?s=CODE, sinon le
+          # code projeté pour les collégiens mène à une page d'erreur.
+          dest=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$URL/K7M3P")
+          echo "adresse courte → $dest"
+          case "$dest" in
+            "302 "*"/?s=K7M3P") ;;
+            *) echo "::error::adresse courte non redirigée ($dest)"; exit 1 ;;
+          esac
           # Confirme les octets réellement servis pour les nouveaux composants.
           # Le SHA évite une réponse d'un cache de la version précédente.
           for asset in assets/common.js assets/admin.js assets/practical.js assets/app.js assets/style.css assets/bilan-pptx.js assets/charts.js assets/editor.js assets/interface.css assets/interface-php.css assets/interface-screen.css assets/interface.js assets/tooltips.js assets/aides.css assets/screen.js \

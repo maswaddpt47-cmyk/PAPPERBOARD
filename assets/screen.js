@@ -128,7 +128,13 @@
       return;
     }
     if (!q) {
-      $('s-url').textContent = d.joinUrl.replace(/^https?:\/\//, '').replace(/\/\?s=.*/, '');
+      // Coupures permises après « . » et « / » seulement (écran étroit) : jamais au milieu d'un mot.
+      var url = $('s-url');
+      url.textContent = '';
+      d.shortUrl.replace(/^https?:\/\//, '').replace(/([./])/g, '$1\n').split('\n').forEach(function (part, i) {
+        if (i) url.appendChild(document.createElement('wbr'));
+        url.appendChild(document.createTextNode(part));
+      });
       $('s-code-big').textContent = d.code;
       return;
     }

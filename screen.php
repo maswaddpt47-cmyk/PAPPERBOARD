@@ -74,7 +74,7 @@ wl_security_headers();
 <div id="projection-canvas" class="projection-fit-canvas">
   <section id="s-welcome" class="s-welcome" hidden>
     <p class="s-join-line">Rejoignez sur <strong id="s-url"></strong></p>
-    <p class="s-join-line">avec le code <strong id="s-code-big" class="code-big"></strong></p>
+    <p class="s-join-line">ou entrez le code <strong id="s-code-big" class="code-big"></strong></p>
   </section>
   <section id="s-question" hidden>
     <p id="s-meta" class="s-meta"></p>

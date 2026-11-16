@@ -1877,7 +1877,7 @@ function wl_screen_view(array $s): array
         // Mur et post-it : personnes distinctes ayant publié (décompte « 2 / 3 ont participé »).
         'contributors' => $q ? count(array_unique(array_column($q['posts'], 'p'))) : 0,
         'qrHidden' => !empty($s['qrHidden']), // masqué depuis l'espace animateur (place gagnée)
-        'joinUrl' => wl_join_url($s['code']), 'now' => time(),
+        'joinUrl' => wl_join_url($s['code']), 'shortUrl' => wl_short_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
 }
@@ -1904,7 +1904,7 @@ function wl_board_view(array $s): array
         'board' => ['position' => $i + 1, 'count' => count($list)], 'qrHidden' => !empty($s['qrHidden']),
         'question' => $q ? wl_public_question($q) : null,
         'results' => $q && (wl_shown($q) || wl_live($q)) ? wl_results($q, false, $s) : null,
-        'joinUrl' => wl_join_url($s['code']), 'now' => time(),
+        'joinUrl' => wl_join_url($s['code']), 'shortUrl' => wl_short_url($s['code']), 'now' => time(),
         'pollMs' => (int)wl_config()['poll_ms'],
     ];
 }
@@ -1920,6 +1920,13 @@ function wl_live(array $q): bool
 function wl_join_url(string $code): string
 {
     return wl_base_url() . '/?s=' . $code;
+}
+
+/** Adresse à taper (collégiens sur PC) : le code dans le chemin, redirigé vers
+ *  wl_join_url() par .htaccess. Seul Apache la sert : liens et QR gardent ?s=. */
+function wl_short_url(string $code): string
+{
+    return wl_base_url() . '/' . $code;
 }
 
 // ---------------------------------------------------------------------------
@@ -2496,7 +2503,7 @@ function wl_show_view(array $s): array
 {
     $base = ['code' => $s['code'], 'title' => $s['title'], 'ended' => $s['ended'],
         'participants' => count($s['participants']), 'qrHidden' => !empty($s['qrHidden']),
-        'joinUrl' => wl_join_url($s['code']), 'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'],
+        'joinUrl' => wl_join_url($s['code']), 'shortUrl' => wl_short_url($s['code']), 'now' => time(), 'pollMs' => (int)wl_config()['poll_ms'],
         'show' => $s['show'], 'asksOpen' => !empty($s['asksOpen']), 'asksCount' => count(wl_asks_view($s, ''))];
     return $base + ($s['show'] === 'asks'
         ? ['asks' => wl_asks_view($s, '')]
