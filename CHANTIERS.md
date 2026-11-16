@@ -4,7 +4,6 @@
 **CI (ne pas défaire)** : `tests` = bilan de `tests-php` + 3 groupes `tests-navigateur` en parallèle (122 s au lieu de 206 s) ; le nom `tests` est exigé par la protection de `main` ; sur `main`, un SHA déjà vert sur sa branche saute la suite (~45 s). Un nouveau `tests/*.js` doit entrer dans un groupe de la matrice (la CI échoue sinon). Exception à la règle 60 : pas de suite locale avant push (`CLAUDE.md` §3).
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
-Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écran »).
 
 ## Restant, par priorité — tout côté utilisateur
 
@@ -13,8 +12,10 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    audit Codex rendu le 26/10/2026 sur `d70a931`, 7 points vérifiés et corrigés le
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
-1. **Essai sur PC fait** (déclaré le 30/10/2026). Restent : un vrai PDF Pix (non fourni),
-   un **atelier réel** à 10 participants ou plus ; essayer l'adresse courte projetée (16/11/2026).
+1. **Atelier réel fait** : 2 groupes de 25 collégiens le 16/11/2026, « tout est OK » (déclaré par
+   l'utilisateur). Restent : un vrai PDF Pix (non fourni) ; bascule sur `repondsici.fr` (point 1bis).
+1bis. **`repondsici.fr`** (Alwaysdata, 16/11/2026, échéance 16/11/2027 : renouvellement auto à vérifier ; adresses du site avec `www.` ; NXDOMAIN à 8 h 41).
+   Quand `https://repondsici.fr/admin.php` répond en 4G : `configurer.php` → `https://repondsici.fr`, puis étendre la vérification de mise en ligne.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -58,7 +59,7 @@ Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une c
   est installé : en CI aussi depuis le 19/10/2026 (mesuré sur `e152e44`, 103 contrôles réussis).
 - Toutes les écritures d'une session passent par un verrou de fichier :
   150 arrivées + 150 votes simultanés en 340-450 ms (mesuré en local avec
-  8 processus PHP, 09/10/2026). Non mesuré sur l'hébergement mutualisé.
+  8 processus PHP, 09/10/2026). Sur l'hébergement : 2 groupes de 25 sans incident signalé (16/11/2026, déclaré).
 - Limite par IP large (900 écritures/min) : une salle sort souvent par la même
   IP ; la vraie limite est par participant (30/min). IP lue dans `REMOTE_ADDR` :
   hypothèse non vérifiée que le proxy Alwaysdata y met l'IP du visiteur (sinon,
@@ -286,7 +287,6 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
 *Saisie de l'adresse par des collégiens (16/11/2026)* : 2 — **adresse courte** `wooclight.alwaysdata.net/K7M3P` (code dans le chemin) **retenue et faite** ; 1 — envoyer le lien par l'ENT/Pronote ou un raccourci sur les PC : rien à développer, à l'usage de l'utilisateur ; 3 — nom de domaine court personnel (~10 €/an, `wlt.fr/K7M3P`) : *proposée, en attente*, à reprendre si les ateliers avec collégiens deviennent réguliers.
-
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV, « Clore le cycle ».
 *Validé par l'utilisateur le 15/11/2026* : atelier → « 👁 Prévisualiser » (projection en taille réelle avec choix et bonne réponse, « Vue participant » synchronisée ; rien ouvert ni écrit, e2e et 4 mutations).
