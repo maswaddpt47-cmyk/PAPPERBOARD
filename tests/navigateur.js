@@ -104,6 +104,7 @@ function check(cond, label) {
   await admin.check('#qf-correct input[value="0"]'); // réponse figée : un appui ne vote pas, « Envoyer » vote
   await admin.click('#qf-save');
   await admin.waitForSelector('#q-list .list-item');
+  check(await admin.locator('#lock-quiz-btn').isHidden(), 'figer les quiz : bouton masqué, aucun quiz modifiable');
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'truefalse');
   await admin.fill('[data-rich-input="qf-text"]', 'Vrai ou faux ?');
@@ -114,6 +115,8 @@ function check(cond, label) {
   check(await admin.isChecked('#qf-change'), 'quiz : « modifiable » coché à la main reste coché');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
+  await admin.waitForSelector('#lock-quiz-btn', { state: 'visible' });
+  check(true, 'figer les quiz : bouton visible dès qu\'un quiz reste modifiable');
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'wordcloud');
   await admin.fill('[data-rich-input="qf-text"]', 'Un mot ?');

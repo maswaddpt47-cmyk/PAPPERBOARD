@@ -1087,6 +1087,10 @@
   });
 
   function renderList(d) {
+    // « Figer les réponses de tous les quiz » : visible seulement s'il reste un quiz modifiable (anciens ateliers, copies).
+    WL.show($('lock-quiz-btn').parentNode, d.questions.some(function (q) {
+      return q.correct && q.correct.length && q.type !== 'info' && q.type !== 'steps' && q.allowChange;
+    }));
     var list = WL.clear($('q-list'));
     if (!d.questions.length) list.appendChild(el('li', { class: 'meta' }, 'Votre atelier est vide : cliquez « Ajouter une question » ou « Ajouter depuis un JSON ».'));
     d.questions.forEach(function (q, i) {

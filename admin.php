@@ -290,7 +290,7 @@ header('Cache-Control: no-store');
           <input id="all-duration" type="number" min="0" max="3600" step="5" value="30">
           <button id="all-duration-btn" class="btn" type="button" title="Donne cette durée à toutes les questions de la session (un vote en cours garde son compte à rebours)">Appliquer à toutes</button>
         </div>
-        <p class="row"><button id="lock-quiz-btn" class="btn" type="button" title="Après « Envoyer », les participants ne peuvent plus changer leur réponse aux quiz (bonne réponse cochée) de cet atelier. Les sondages restent modifiables.">Figer les réponses de tous les quiz</button></p>
+        <p class="row" hidden><button id="lock-quiz-btn" class="btn" type="button" title="Après « Envoyer », les participants ne peuvent plus changer leur réponse aux quiz (bonne réponse cochée) de cet atelier. Les sondages restent modifiables.">Figer les réponses de tous les quiz</button></p>
       </div>
     </section>
 
