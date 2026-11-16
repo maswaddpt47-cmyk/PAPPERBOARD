@@ -283,7 +283,8 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 ## Pistes d'amélioration
 
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
-*Saisie de l'adresse par des collégiens (16/11/2026)* : 2 — **adresse courte** `wooclight.alwaysdata.net/K7M3P` (code dans le chemin) **retenue et faite** ; 1 — envoyer le lien par l'ENT/Pronote ou un raccourci sur les PC : rien à développer, à l'usage de l'utilisateur ; 3 — nom de domaine court personnel (~10 €/an, `wlt.fr/K7M3P`) : *proposée, en attente*, à reprendre si les ateliers avec collégiens deviennent réguliers.
+*Saisie de l'adresse par des collégiens (16/11/2026)* : 2 — **adresse courte** `wooclight.alwaysdata.net/K7M3P` (code dans le chemin) **retenue et faite** ; 1 — envoyer le lien par l'ENT/Pronote ou un raccourci sur les PC : rien à développer, à l'usage de l'utilisateur ; 3 — nom de domaine court : **fait** le 16/11/2026, `repondsici.fr` par GitHub Pages (voir « Hébergement et outillage »).
+*Proposées le 16/11/2026, en attente* : 1 — contrôle automatique quotidien de `repondsici.fr` (redirection et certificat), alerte avant un atelier ; 2 — « Code inconnu » garde le code tapé et le cite (K7M3P / K7K6Q confondus le 16/11) ; 3 — figer d'un clic les quiz d'un atelier existant (le défaut ne vaut que pour les nouvelles questions).
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV, « Clore le cycle ».
 *Validé par l'utilisateur le 15/11/2026* : atelier → « 👁 Prévisualiser » (projection en taille réelle avec choix et bonne réponse, « Vue participant » synchronisée ; rien ouvert ni écrit, e2e et 4 mutations).
