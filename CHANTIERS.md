@@ -15,7 +15,7 @@
 1. **Atelier réel fait** : 2 groupes de 25 collégiens le 16/11/2026, « tout est OK » (déclaré par
    l'utilisateur ; élèves : adresse puis code, l'adresse courte pas encore essayée). Restent : un vrai PDF Pix ; `repondsici.fr` (1bis).
 1bis. **`repondsici.fr`** (16/11/2026, échéance 16/11/2027) : l'abonnement Free d'Alwaysdata refuse un domaine propre → redirection par GitHub Pages (dépôt `repondsici`, choix de l'utilisateur, IP vue par GitHub : registre et « Confidentialité » à relire).
-   Pages et DNS faits ; `repondsici.fr/CODE` ouvre l'atelier (essayé par l'utilisateur sur un vrai code, 16/11/2026). HTTPS forcé (DNS vérifié par GitHub, 16/11/2026). Reste : `configurer.php` → adresse courte `repondsici.fr` (PC avec la clé SSH).
+   Pages et DNS faits ; `repondsici.fr/CODE` ouvre l'atelier (essayé par l'utilisateur sur un vrai code, 16/11/2026). HTTPS forcé (DNS vérifié par GitHub, 16/11/2026). Reste : **Réglages → Adresse courte** → `repondsici.fr` (navigateur, sans SSH, 16/11/2026 ; `configurer.php` le permet aussi).
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
