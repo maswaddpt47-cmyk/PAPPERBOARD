@@ -13,10 +13,8 @@ Testé de bout en bout par l'utilisateur le 15/10/2026 (atelier « Temps d'écra
    audit Codex rendu le 26/10/2026 sur `d70a931`, 7 points vérifiés et corrigés le
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
-1. **Essai sur PC fait** (déclaré par l'utilisateur le 30/10/2026, sans défaut
-   signalé) : import PDF et éditeur, animation guidée, interface reprise, fonctions
-   des 15 au 18/10. Restent : un vrai PDF Pix (non fourni), le registre actualisé
-   les 29 et 30/10 à relire (point 0), un **atelier réel** à 10 participants ou plus.
+1. **Essai sur PC fait** (déclaré le 30/10/2026). Restent : un vrai PDF Pix (non fourni),
+   un **atelier réel** à 10 participants ou plus ; essayer l'adresse courte projetée (16/11/2026).
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -118,6 +116,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Pseudonymes : option par session, effacés à la désactivation ; podium rangs 1-3.
 
 **Hébergement et outillage**
+- Adresse courte (16/11/2026, choix de l'utilisateur) : `/K7M3P` → `/?s=K7M3P` (302) par `.htaccess` (`mod_rewrite`, caractères du code seulement, fichier ou dossier réel jamais détourné) ; affichée sur la projection et le QR agrandi, le QR et l'invitation gardent `?s=` (servis partout). `php -S` ne la sert pas : vérifiée par « Vérifier la mise en ligne » (CI) ; testée sur Apache local le 16/11/2026 (racine, sous-dossier, minuscules, `/` final ; `admin`, `index`, `tests` non détournés).
 - `AGENTS.md` synchronisé le 05/11/2026 avec MD-LIB `9c4f349` : autorisations, tests avant push, publication sur `main` selon le ruleset, et ligne finale « ✅ TÂCHE TERMINÉE » uniquement après achèvement et vérification ; jamais pendant une attente ou un blocage.
 - Coupure d'urgence depuis le téléphone : intégrée à `main` (`4e61580`), CI
   verte ; coupure et réouverture déclarées fonctionnelles par l'utilisateur
@@ -286,6 +285,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 ## Pistes d'amélioration
 
 Règle 22 de MD-LIB (`CLAUDE.md`) : ne pas reproposer une piste écartée sans fait nouveau.
+*Saisie de l'adresse par des collégiens (16/11/2026)* : 2 — **adresse courte** `wooclight.alwaysdata.net/K7M3P` (code dans le chemin) **retenue et faite** ; 1 — envoyer le lien par l'ENT/Pronote ou un raccourci sur les PC : rien à développer, à l'usage de l'utilisateur ; 3 — nom de domaine court personnel (~10 €/an, `wlt.fr/K7M3P`) : *proposée, en attente*, à reprendre si les ateliers avec collégiens deviennent réguliers.
 
 *En ligne le 26/10/2026 (`875075f`), à essayer sur PC* : Mes ateliers en onglets (Ouverts, Terminés, Archivés, Partenaires, Démos) ; « Faire relire par une autre IA »
 (Préparer) ; Partenaires : « Ranger chez un partenaire » (Terminés), bilan du cycle CSV, « Clore le cycle ».
