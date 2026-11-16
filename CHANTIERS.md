@@ -14,7 +14,6 @@
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Atelier réel fait** : 2 groupes de 25 collégiens le 16/11/2026, « tout est OK » (déclaré par
    l'utilisateur ; élèves : adresse puis code, l'adresse courte pas encore essayée). Restent : un vrai PDF Pix ; `repondsici.fr` (1bis).
-1bis. **`repondsici.fr`** : registre et « Confidentialité » (IP vue par GitHub) à relire et valider ; domaine à renouveler le 16/11/2027 (vérifier le renouvellement automatique).
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
    mauvaises réponses absurdes ni de trois échelles ?
 3. **Appareils de l'atelier** : se connecter une fois à `admin.php` depuis
@@ -115,7 +114,7 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 
 **Hébergement et outillage**
 - Adresse courte (16/11/2026, choix de l'utilisateur) : `/K7M3P` → `/?s=K7M3P` (302) par `.htaccess` (`mod_rewrite`, caractères du code seulement, fichier ou dossier réel jamais détourné) ; affichée sur la projection et le QR agrandi, le QR et l'invitation gardent `?s=` (servis partout). `php -S` ne la sert pas : vérifiée par « Vérifier la mise en ligne » (CI) ; testée sur Apache local le 16/11/2026 (racine, sous-dossier, minuscules, `/` final ; `admin`, `index`, `tests` non détournés).
-- `repondsici.fr` (16/11/2026, choix de l'utilisateur ; Free d'Alwaysdata : pas de domaine propre) : GitHub Pages, dépôt `repondsici`, renvoie `/CODE` vers `?s=CODE` ; DNS chez Alwaysdata (4 `A` GitHub + `www` CNAME), HTTPS forcé. Affichée sur la projection par **Réglages → Adresse courte** (`prefs.json`, tous les ateliers ; sinon `short_url` de `config.php`) ; QR et invitation restent sur `wooclight.alwaysdata.net` (sans GitHub). Projection constatée par l'utilisateur le 16/11/2026.
+- `repondsici.fr` (16/11/2026, choix de l'utilisateur ; Free d'Alwaysdata : pas de domaine propre) : GitHub Pages, dépôt `repondsici`, renvoie `/CODE` vers `?s=CODE` ; DNS chez Alwaysdata (4 `A` GitHub + `www` CNAME), HTTPS forcé. Affichée sur la projection par **Réglages → Adresse courte** (`prefs.json`, tous les ateliers ; sinon `short_url` de `config.php`) ; QR et invitation restent sur `wooclight.alwaysdata.net` (sans GitHub). Projection constatée par l'utilisateur le 16/11/2026. Registre et « Confidentialité » (passage par GitHub) relus et validés, renouvellement automatique du domaine vérifié (déclarés par l'utilisateur, 16/11/2026 ; échéance 16/11/2027).
 - `AGENTS.md` synchronisé le 05/11/2026 avec MD-LIB `9c4f349` : autorisations, tests avant push, publication sur `main` selon le ruleset, et ligne finale « ✅ TÂCHE TERMINÉE » uniquement après achèvement et vérification ; jamais pendant une attente ou un blocage.
 - Coupure d'urgence depuis le téléphone : intégrée à `main` (`4e61580`), CI
   verte ; coupure et réouverture déclarées fonctionnelles par l'utilisateur
