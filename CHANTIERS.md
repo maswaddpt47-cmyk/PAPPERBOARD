@@ -13,7 +13,7 @@
    même jour ; reste à toi : justifier dans le registre la conservation de 12 mois
    (intérêt légitime, mineurs). Charge d'un bilan annuel non mesurée.
 1. **Atelier réel fait** : 2 groupes de 25 collégiens le 16/11/2026, « tout est OK » (déclaré par
-   l'utilisateur). Restent : un vrai PDF Pix (non fourni) ; bascule sur `repondsici.fr` (point 1bis).
+   l'utilisateur ; élèves : adresse puis code, l'adresse courte pas encore essayée). Restent : un vrai PDF Pix ; `repondsici.fr` (1bis).
 1bis. **`repondsici.fr`** (Alwaysdata, 16/11/2026, échéance 16/11/2027 : renouvellement auto à vérifier ; adresses du site avec `www.` ; NXDOMAIN à 8 h 41).
    Quand `https://repondsici.fr/admin.php` répond en 4G : `configurer.php` → `https://repondsici.fr`, puis étendre la vérification de mise en ligne.
 2. **Régénérer « temps d'écran » avec Gemini** (nouvelles consignes) : plus de
@@ -75,10 +75,6 @@ Redémarrer, puis contrôler. `integrite.yml` vert le 22/10 : n'exclut pas une c
   Un téléphone en veille n'envoie plus de signe de vie (hypothèse non vérifiée
   sur le terrain : un téléphone posé écran éteint peut sortir du décompte).
 
-- Identifiants de question tirés en hexadécimal : 1 fois sur 40 environ, tout en
-  chiffres (« 24342264 »). Jamais comme clé de tableau PHP sans le remettre en
-  chaîne (sinon entier, comparaison stricte ratée) : cause de l'échec
-  intermittent du test « direct » trouvée le 15/10/2026.
 ## Points à ne pas défaire
 
 Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
@@ -109,7 +105,9 @@ Le comment est dans le code ; ici, le pourquoi et ce qu'il ne faut pas casser.
 - Projection en direct : sondage, nuage, échelle, points dès l'ouverture du vote ;
   quiz et textes attendent le clic. Téléphones : résultats après « Afficher » (e2e).
 - Toucher ou Envoyer : sondage, échelle, Oui/Non, Vrai/Faux envoient au toucher et
-  restent modifiables ; QCM corrigé, réponse figée, QCM multiple : Envoyer (nav).
+  restent modifiables ; QCM corrigé, réponse figée, QCM multiple : Envoyer (nav). Quiz (bonne
+  réponse cochée) : réponse **figée par défaut** (16/11/2026, choix de l'utilisateur : les collégiens
+  changeaient d'après le voisin) ; case cochée à la main ou réglage importé gardés (e2e, nav).
 - « Suivante » vers une question jamais ouverte ouvre son vote.
 - Post-its colorés d'après leur id, jamais par participant (anonymat).
 - L'IA qui écrit ne relit pas ; WoocLight n'appelle aucune IA (copier-coller). Instructions spéciales (05/11/2026) : texte facultatif de génération/relecture et défi sur mesure, sans enregistrement avec l'atelier ; contexte séparé à la création ou au changement d'atelier. Trois suggestions insérables, modifiables et combinables ; texte saisi préservé, doublon et limite signalés sans troncature ; suggestion de suivi absente du parcours à un seul défi. Exercice : consigne `info`, autoévaluation `yesno` sans correction, difficulté `text` distincte affichée à tous ; « Que des quiz » garde sa contrainte. Mesuré en local : 24 vérifications ciblées réussies, champ et boutons sans débordement à 390/1280 px, aucune instruction envoyée au serveur ; suite complète verte. Génération par une IA externe et retour utilisateur sur les suggestions non vérifiés.
