@@ -150,6 +150,12 @@ function check(cond, label) {
   const phoneCtx = await browser.newContext({ viewport: { width: 375, height: 700 }, isMobile: true, hasTouch: true });
   const phone = await phoneCtx.newPage();
   watch(phone, 'participant');
+  // Code inconnu (page à part : le 404 attendu n'est pas une erreur) : le code reste dans le champ et est cité.
+  const typo = await phoneCtx.newPage();
+  await typo.goto(BASE + '?s=zzzz9');
+  await typo.waitForFunction(() => document.getElementById('join-error').textContent.length > 0);
+  check((await typo.inputValue('#code')) === 'ZZZZ9' && (await typo.textContent('#join-error')).includes('« ZZZZ9 »'), 'code inconnu : gardé dans le champ et cité dans le message');
+  await typo.close();
   await phone.goto(BASE);
   await phone.fill('#code', code.toLowerCase());
   await phone.click('#join-form button');

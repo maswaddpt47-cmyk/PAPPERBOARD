@@ -82,7 +82,9 @@
         // pour afficher le récap et la conclusion.
         if (r.status === 409 && /terminée/.test(r.data.error)) { code = c; startPolling(); return; }
         store.del('code');
-        showJoin(r.data.error);
+        showJoin(r.status === 404 ? '« ' + c + ' » : ' + r.data.error : r.data.error);
+        // Le code reste affiché : une lettre confondue (K7M3P / K7K6Q) se corrige sans tout retaper.
+        if (r.status === 404) $('code').value = c;
         return;
       }
       code = r.data.code;
