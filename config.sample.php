@@ -19,6 +19,10 @@ return [
     // Vide : déduite de la requête.
     'base_url' => '',
 
+    // Adresse courte affichée sur la projection (« repondsici.fr/CODE »), servie
+    // par une redirection hors de ce site. Vide : l'adresse publique ci-dessus.
+    'short_url' => '',
+
     'poll_ms' => 2000,          // intervalle de rafraîchissement des écrans
     'max_participants' => 150,  // par session
     'purge_days' => 30,         // sessions supprimées après N jours sans activité

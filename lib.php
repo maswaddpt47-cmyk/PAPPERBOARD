@@ -45,7 +45,7 @@ function wl_config(): array
         exit("WoocLight n'est pas encore configuré : créer config.php à partir de config.sample.php (voir README).\n");
     }
     $defaults = [
-        'data_dir' => '', 'base_url' => '', 'poll_ms' => 2000, 'max_participants' => 150,
+        'data_dir' => '', 'base_url' => '', 'short_url' => '', 'poll_ms' => 2000, 'max_participants' => 150,
         'purge_days' => 30, 'max_text' => 80, 'max_posts' => 5, 'rate_ip' => 900, 'rate_token' => 30,
         'rate_join' => 60, 'responsable' => '', 'contact' => '', 'base_legale' => '',
         'banned_words' => [],
@@ -1926,10 +1926,12 @@ function wl_join_url(string $code): string
 }
 
 /** Adresse à taper (collégiens sur PC) : le code dans le chemin, redirigé vers
- *  wl_join_url() par .htaccess. Seul Apache la sert : liens et QR gardent ?s=. */
+ *  wl_join_url() par .htaccess, ou par un domaine court servi ailleurs (`short_url`,
+ *  repondsici.fr). Liens et QR gardent ?s=, servi partout. */
 function wl_short_url(string $code): string
 {
-    return wl_base_url() . '/' . $code;
+    $short = rtrim(trim((string)wl_config()['short_url']), '/');
+    return ($short !== '' ? $short : wl_base_url()) . '/' . $code;
 }
 
 // ---------------------------------------------------------------------------

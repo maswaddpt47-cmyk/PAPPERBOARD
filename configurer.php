@@ -53,6 +53,10 @@ if ($hash === '' || strtolower(ask("Un mot de passe existe déjà. Le changer ? 
 }
 $defaultUrl = (string)($old['base_url'] ?? '') !== '' ? (string)$old['base_url'] : $defaultUrl;
 $url = ask("Adresse publique [Entrée = $defaultUrl] : ") ?: $defaultUrl;
+$oldShort = (string)($old['short_url'] ?? '');
+$short = ask('Adresse courte affichée sur la projection, « - » pour aucune [Entrée = ' . ($oldShort ?: 'aucune') . '] : ');
+$short = $short === '-' ? '' : ($short ?: $oldShort);
+if ($short !== '' && !preg_match('#^https?://#', $short)) $short = 'https://' . $short;
 $resp = ask('Responsable affiché aux participants [Entrée = ' . (($old['responsable'] ?? '') ?: 'formule générique') . '] : ')
     ?: (string)($old['responsable'] ?? '');
 $contact = ask('Adresse de contact affichée [Entrée = ' . (($old['contact'] ?? '') ?: 'formule générique') . '] : ')
@@ -64,6 +68,7 @@ $values = [
     'data_dir' => (string)($old['data_dir'] ?? '') !== '' && !str_contains((string)$old['data_dir'], 'COMPTE')
         ? $old['data_dir'] : "$home/wooclight-data",
     'base_url' => rtrim($url, '/'),
+    'short_url' => rtrim($short, '/'),
     'responsable' => $resp,
     'contact' => $contact,
 ];
