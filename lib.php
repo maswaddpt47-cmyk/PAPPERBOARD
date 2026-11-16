@@ -920,6 +920,9 @@ function wl_clean_question(array $in, ?array $old = null): array
         'posts' => $old['posts'] ?? [],
     ];
     $q['correct'] = wl_clean_correct($q, $in['correct'] ?? []);
+    // Réglage absent (import, JSON, séance) : un quiz fige la réponse, sinon on la change
+    // d'après le voisin ou la projection (choix de l'utilisateur, 16/11/2026).
+    if (!array_key_exists('allowChange', $in)) $q['allowChange'] = !$q['correct'];
     if ($type === 'info') {
         $q['content'] = wl_clean_multiline($in['content'] ?? '', 3000, 'Diapositive');
         $q['illustration'] = wl_clean_illustration($in['illustration'] ?? '');

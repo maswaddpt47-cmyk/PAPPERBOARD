@@ -96,14 +96,22 @@ function check(cond, label) {
 
   await admin.click('#add-q-btn');
   await admin.fill('[data-rich-input="qf-text"]', 'Utilisez-vous internet ?');
+  check(await admin.isChecked('#qf-change'), 'nouvelle question sans bonne réponse : modifiable par défaut');
   await admin.check('#qf-correct input[value="0"]');
-  await admin.uncheck('#qf-change'); // réponse figée : un appui ne vote pas, « Envoyer » vote
+  check(!(await admin.isChecked('#qf-change')), 'quiz : réponse figée par défaut dès la bonne réponse cochée');
+  await admin.uncheck('#qf-correct input[value="0"]');
+  check(await admin.isChecked('#qf-change'), 'bonne réponse décochée : de nouveau modifiable');
+  await admin.check('#qf-correct input[value="0"]'); // réponse figée : un appui ne vote pas, « Envoyer » vote
   await admin.click('#qf-save');
   await admin.waitForSelector('#q-list .list-item');
   await admin.click('#add-q-btn');
   await admin.selectOption('#qf-type', 'truefalse');
   await admin.fill('[data-rich-input="qf-text"]', 'Vrai ou faux ?');
   await admin.check('#qf-correct input[value="0"]');
+  await admin.check('#qf-change'); // choix à la main : il prévaut sur le défaut du quiz
+  await admin.uncheck('#qf-correct input[value="0"]');
+  await admin.check('#qf-correct input[value="0"]');
+  check(await admin.isChecked('#qf-change'), 'quiz : « modifiable » coché à la main reste coché');
   await admin.click('#qf-save');
   await admin.waitForFunction(() => document.querySelectorAll('#q-list .list-item').length === 2);
   await admin.click('#add-q-btn');

@@ -816,7 +816,7 @@ header('Cache-Control: no-store');
           <option value="instant">Immédiate : chaque participant voit la correction dès qu'il a répondu</option>
         </select>
         <label id="qf-live-box" class="check" title="Sondage, nuage, échelle, points : la projection se met à jour à chaque vote, sans clic"><input id="qf-live" type="checkbox" checked> Afficher les réponses en direct sur la projection, dès l'ouverture du vote</label>
-        <label class="check" title="Le participant peut changer son vote avant la fermeture ; ignoré si la correction est immédiate"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
+        <label class="check" title="Le participant peut changer son vote avant la fermeture. Décochée d’office pour un quiz (bonne réponse cochée) ; ignorée si la correction est immédiate"><input id="qf-change" type="checkbox" checked> Les participants peuvent modifier leur réponse tant que le vote est ouvert</label>
         <p class="meta">Aucun nom n'est demandé, mais une réponse écrite peut en contenir un : relisez avant de publier.</p>
         <p id="qf-error" class="error" role="alert"></p>
         </div>

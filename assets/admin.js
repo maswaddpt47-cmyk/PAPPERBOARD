@@ -1197,20 +1197,33 @@
     fillColumns(q ? q.column : -1);
     $('qf-duration').value = q ? q.duration : 0;
     $('qf-change').checked = q ? q.allowChange : true;
+    changeTouched = false;
     $('qf-live').checked = q ? q.live !== false : true;
     $('qf-reveal').value = q ? (q.reveal || 'manual') : 'manual';
     $('qf-error').textContent = '';
     WL.clear($('qf-compare'));
     compareWanted = q ? (q.compare || '') : '';
     syncForm(q ? q.correct : []);
+    defaultChange();
     $('q-dialog').showModal();
     WL.Editor.focus('qf-text');
   }
 
+  /** Nouvelle question : un quiz (bonne réponse cochée) fige la réponse par défaut,
+   *  sinon on la change d'après le voisin (16/11/2026). Un choix fait à la main prévaut. */
+  var changeTouched = false;
+  function defaultChange() {
+    if (editing || changeTouched) return;
+    var quiz = !$('qf-correct-box').hidden && !!$('qf-correct').querySelector('input:checked');
+    $('qf-change').checked = !quiz;
+  }
+  $('qf-change').addEventListener('change', function () { changeTouched = true; });
+  $('qf-correct').addEventListener('change', defaultChange);
   $('add-q-btn').addEventListener('click', function () { openDialog(null); });
   $('qf-type').addEventListener('change', function () {
     if ($('qf-type').value === 'dots' && !editing) $('qf-budget').value = 3;
     syncForm([]);
+    defaultChange();
   });
   $('qf-options').addEventListener('input', function () { syncForm(); });
   $('qf-scale').addEventListener('change', fillCompare);

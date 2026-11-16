@@ -637,6 +637,14 @@ expect_status($r, 200, 'import : ajout');
 $gq = $admin->get("api.php?action=admin_state&s=$gen")['json']['questions'] ?? [];
 check(count($gq) === 6 && ($gq[4]['source'] ?? '') === ($gq[3]['id'] ?? '-') && ($gq[5]['scaleMax'] ?? 0) === 10, 'import : 6 questions, gommettes reliées au post-it importé');
 
+// --- Réglage absent : quiz figé, sondage modifiable (16/11/2026) ----------------
+$fig = $admin->post('session_create', ['title' => 'Réponse figée'])['json']['code'] ?? '';
+$admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'mcq', 'text' => 'Quiz', 'options' => ['A', 'B'], 'correct' => [1]]]);
+$admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'poll', 'text' => 'Sondage', 'options' => ['A', 'B']]]);
+$admin->post('question_save', ['s' => $fig, 'question' => ['type' => 'mcq', 'text' => 'Quiz ouvert', 'options' => ['A', 'B'], 'correct' => [0], 'allowChange' => true]]);
+$fq = array_column($admin->get("api.php?action=admin_state&s=$fig")['json']['questions'] ?? [], 'allowChange');
+check($fq === [false, true, true], 'réglage absent : quiz figé, sondage modifiable ; choix explicite gardé');
+
 // --- Export des questions en JSON, réimporté à l'identique -----------------------
 $admin->post('question_save', ['s' => $gen, 'question' => ['type' => 'yesno', 'text' => 'Réglée', 'correct' => [1], 'reveal' => 'end', 'duration' => 30, 'allowChange' => false]]);
 $exp = $admin->get("api.php?action=export&format=questions&s=$gen");
