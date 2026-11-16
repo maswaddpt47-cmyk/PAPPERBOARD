@@ -1930,7 +1930,8 @@ function wl_join_url(string $code): string
  *  repondsici.fr). Liens et QR gardent ?s=, servi partout. */
 function wl_short_url(string $code): string
 {
-    $short = rtrim(trim((string)wl_config()['short_url']), '/');
+    // Réglages (navigateur) d'abord, puis config.php (configurer.php).
+    $short = wl_prefs()['shortUrl'] ?: rtrim(trim((string)wl_config()['short_url']), '/');
     return ($short !== '' ? $short : wl_base_url()) . '/' . $code;
 }
 
@@ -2519,23 +2520,37 @@ function wl_show_view(array $s): array
 // Tâche planifiée : preuve de passage
 // ---------------------------------------------------------------------------
 
-/** Réglages de l'animateur communs à tous ses appareils : fonctions en essai
- *  (fichier prefs.json dans les données, jamais effacé par la purge). */
+/** Réglages de l'animateur communs à tous ses appareils : fonctions en essai,
+ *  adresse courte affichée (fichier prefs.json dans les données, jamais effacé par la purge). */
 function wl_prefs(): array
 {
     $f = wl_data_dir() . '/prefs.json';
     $p = is_file($f) ? json_decode((string)file_get_contents($f), true) : null;
-    return ['beta' => is_array($p) && !empty($p['beta'])];
+    return ['beta' => is_array($p) && !empty($p['beta']), 'shortUrl' => is_array($p) && is_string($p['shortUrl'] ?? null) ? $p['shortUrl'] : ''];
 }
 
+/** Seuls les réglages envoyés changent : la case « essai » ne touche pas l'adresse courte. */
 function wl_prefs_save(array $in): array
 {
-    $prefs = ['beta' => !empty($in['beta'])];
+    $set = [];
+    if (array_key_exists('beta', $in)) $set['beta'] = !empty($in['beta']);
+    if (array_key_exists('shortUrl', $in)) $set['shortUrl'] = wl_clean_short_url($in['shortUrl']);
     // Verrou + écriture atomique : deux appareils à la fois, ou un dossier non inscriptible, donnent une erreur et non un faux « enregistré ».
-    wl_locked_json(wl_data_dir() . '/prefs.json', function (array &$d) use ($prefs) {
-        $d = $prefs;
+    wl_locked_json(wl_data_dir() . '/prefs.json', function (array &$d) use ($set) {
+        $d = $set + $d;
     });
-    return $prefs;
+    return wl_prefs();
+}
+
+/** « repondsici.fr » ou « https://repondsici.fr/ » → « https://repondsici.fr » ; vide : aucune. */
+function wl_clean_short_url(mixed $v): string
+{
+    $url = is_string($v) ? trim($v) : '';
+    if ($url === '') return '';
+    if (!preg_match('#^[a-z][a-z0-9+.-]*://#i', $url)) $url = 'https://' . $url;
+    $url = rtrim(wl_clean_link($url), '/');
+    if (strpbrk($url, '?#') !== false) throw new WlError('Adresse courte : sans « ? » ni « # » (exemple : repondsici.fr).');
+    return $url;
 }
 
 /** Dernier passage de purge.php lancé par la tâche planifiée (null : jamais).

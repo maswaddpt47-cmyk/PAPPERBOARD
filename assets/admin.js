@@ -1302,7 +1302,7 @@
   // --- Fonctions en essai : défi à étapes ----------------------------------------
   // Réglage commun à tous les appareils de l'animateur (prefs.json) ; le serveur accepte le type dans tous les cas.
   var beta = false;
-  function setBeta(prefs) { beta = !!(prefs && prefs.beta); applyBeta(); }
+  function setBeta(prefs) { beta = !!(prefs && prefs.beta); applyBeta(); $('short-url').value = (prefs && prefs.shortUrl || '').replace(/^https:\/\//, ''); }
   function applyBeta() {
     $('beta-steps').checked = beta;
     $('qf-type-steps').hidden = !beta;
@@ -1312,6 +1312,14 @@
     betaOn = beta;
   }
   var betaOn = false;
+  $('short-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('short-ok').textContent = '';
+    post('prefs_save', { shortUrl: $('short-url').value }).then(function (d) {
+      setBeta(d.prefs);
+      $('short-ok').textContent = d.prefs.shortUrl ? '✓ Enregistrée.' : '✓ Retirée : la projection affiche l’adresse du site.';
+    });
+  });
   $('beta-steps').addEventListener('change', function () {
     post('prefs_save', { beta: $('beta-steps').checked }).then(function (d) { setBeta(d.prefs); });
   });

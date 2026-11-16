@@ -872,6 +872,23 @@ $ol = $other->post('login', ['password' => getenv('WL_PASSWORD')]);
 check(($ol['json']['prefs']['beta'] ?? null) === true && ($other->get('api.php?action=me')['json']['prefs']['beta'] ?? null) === true, 'essai : vu par un autre appareil (réglage serveur)');
 $admin->post('prefs_save', ['beta' => false]);
 
+// --- Adresse courte réglée depuis Réglages (16/11/2026) : projection seulement ---
+$sk = $admin->post('session_create', ['title' => 'Adresse courte'])['json']['code'] ?? '';
+$skv = fn() => $admin->get("api.php?action=screen&s=$sk")['json'];
+$before = $skv();
+check(($admin->post('prefs_save', ['shortUrl' => ' repondsici.fr/ '])['json']['prefs']['shortUrl'] ?? '') === 'https://repondsici.fr', 'adresse courte : https ajouté, / et espaces retirés');
+$after = $skv();
+check(($after['shortUrl'] ?? '') === "https://repondsici.fr/$sk" && $after['joinUrl'] === $before['joinUrl'], 'adresse courte : projection sur repondsici.fr, QR et invitation inchangés');
+$admin->post('prefs_save', ['beta' => true]);
+check(($admin->get('api.php?action=me')['json']['prefs']['shortUrl'] ?? '') === 'https://repondsici.fr', 'adresse courte : gardée quand on change les fonctions en essai');
+$admin->post('prefs_save', ['beta' => false]);
+foreach (['http://repondsici.fr', '192.168.1.10', 'repondsici.fr/?x=1', 'a b.fr', 'repondsici'] as $bad) {
+    expect_status($admin->post('prefs_save', ['shortUrl' => $bad]), 400, "adresse courte refusée : $bad");
+}
+check(in_array($dc[0]->post('prefs_save', ['shortUrl' => 'piege.fr'])['status'], [401, 403], true), 'adresse courte : réglage refusé à un participant');
+$admin->post('prefs_save', ['shortUrl' => '']);
+check(($skv()['shortUrl'] ?? '') === $before['shortUrl'], 'adresse courte vidée : retour à l\'adresse du site');
+
 // --- Signaler une difficulté, Oser demander, pseudonymes et classement -----------
 $ws = $admin->post('session_create', ['title' => 'Atelier élèves'])['json']['code'] ?? '';
 $el = [new Client($base), new Client($base), new Client($base)];

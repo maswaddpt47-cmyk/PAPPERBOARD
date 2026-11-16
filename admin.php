@@ -518,6 +518,15 @@ header('Cache-Control: no-store');
       <button class="btn" type="button" data-space="history"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Gérer mes ateliers et mes démos</button>
     </section>
     <section class="card content-card settings-card">
+      <h2>Adresse courte</h2>
+      <form id="short-form" novalidate>
+        <label for="short-url">Adresse affichée sur la projection, devant le code (tous les ateliers)</label>
+        <input id="short-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" maxlength="300" placeholder="repondsici.fr">
+        <p class="muted">Exemple : repondsici.fr → la projection affiche « repondsici.fr/ » suivi du code de l’atelier. Vide : l’adresse du site. Le QR code et l’invitation ne changent pas. Rechargez une projection déjà ouverte.</p>
+        <button class="btn" type="submit">Enregistrer l’adresse</button> <span id="short-ok" class="meta" role="status"></span>
+      </form>
+    </section>
+    <section class="card content-card settings-card">
       <h2>Cette session</h2>
       <div class="session-actions"><button id="rename-btn" class="btn btn-small" title="Changer le titre de la session (affiché sur la projection)" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>Renommer</button>
         <button id="end-btn" class="btn btn-small" type="button"></button>
