@@ -89,10 +89,11 @@ vérifié AA (4,5:1), éléments graphiques 3:1.
 Créée le 17/10/2026. `AGORA.md` (racine) suffit pour répondre ; `MD-LIB/agora.md`
 n'est **pas requis**. Claude **soumet d'office** un bloc dès qu'un critère est
 rempli, sans demander, l'annonce en une ligne (« ⚖️ AGORA : critère N — … Bloc
-AG-00N commité. À coller dans l'autre session : « pull, lis AGORA.md, réponds à
-AG-00N, tu es la session B » ») et **ne bloque jamais** : le travail continue.
+AG-00N publié dans maswaddpt47-cmyk/PAPPERBOARD. À coller dans l'autre session : « pull
+maswaddpt47-cmyk/PAPPERBOARD, lis son AGORA.md, réponds à AG-00N, tu es la session B » »)
+et **ne bloque jamais** : le travail continue.
 L'utilisateur décide de coller la phrase ou non, et tranche.
-**Bloc pour Codex : dire « pull » à Codex suffit** (son `AGENTS.md` le fait répondre, MD-LIB `agora.md` §12, 03/11/2026) ; la session qui ouvre le bloc l'annonce quand même à l'utilisateur dès qu'il est en ligne, **sur une ligne à part en tête du message, 🔴 et en gras** : `🔴 **⚖️ AGORA : critère N — <sujet>. Bloc AG-00N commité. → Dis « pull » à Codex.**` (MD-LIB `agora.md` §4, 04/11/2026 : un « pull » noyé dans un compte rendu n'a pas été vu). Le bloc se dépose
+**Bloc pour Codex : dire « pull » à Codex suffit** (son `AGENTS.md` le fait répondre, MD-LIB `agora.md` §12, 03/11/2026) ; la session qui ouvre le bloc l'annonce quand même à l'utilisateur dès qu'il est en ligne, **sur une ligne à part en tête du message, 🔴 et en gras** : `🔴 **⚖️ AGORA : critère N — <sujet>. Bloc AG-00N publié dans maswaddpt47-cmyk/PAPPERBOARD. → Dis « pull » à <Codex ou Claude>.**` (MD-LIB `agora.md` §4, 04/11/2026 : un « pull » noyé dans un compte rendu n'a pas été vu ; dépôt nommé, 16/11/2026). **Sens inverse** (§12, 16/11/2026) : un bloc ouvert par Codex a pour contradicteur Claude ; au « pull » de l'utilisateur, Claude répond aux blocs ouverts dont la ligne **Contradicteur** dit « Claude », jamais aux siens. Le bloc se dépose
 **au moment du choix**, avant le code (après, la lecture est biaisée vers le
 statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, CI, avance rapide.
 
@@ -107,7 +108,7 @@ statu quo). `main` étant protégée, il se pousse comme tout (§1) : branche, C
 7. Le changement touche un calcul ou un chiffre affiché (résultats d'un vote,
    pourcentages, nuage de mots, bilan PowerPoint, export) — **systématique,
    quelle que soit sa taille** (MD-LIB `agora.md` critère 7, 26/10/2026).
-   Contradicteur : Codex. Bloc ouvert avant la correction, définitions séparées
+   Contradicteur : l'IA de l'autre éditeur (Codex si Claude écrit, Claude si Codex écrit). Bloc ouvert avant la correction, définitions séparées
    des défauts démontrés et tranchées par l'utilisateur.
 
 Toute entrée « décision à trancher » de `CHANTIERS.md` est candidate : dire à

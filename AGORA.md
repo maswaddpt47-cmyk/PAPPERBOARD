@@ -37,7 +37,8 @@ objectif** : le verdict découle de la contrainte 1, jamais du total.
 ## Cycle de relais
 
 Dépôt du bloc → l'utilisateur colle la phrase de relais dans l'autre session
-(« pull, lis AGORA.md, réponds à AG-00N, tu es la session B ») → la réponse arrive
+(« pull maswaddpt47-cmyk/PAPPERBOARD, lis son AGORA.md, réponds à AG-00N, tu es la session B »,
+ou « pull » seul pour Codex ou Claude contradicteur) → la réponse arrive
 dans le fichier → **l'utilisateur tranche**. Aucune notification ne passe d'un
 compte Claude à l'autre : le relais est humain. L'AGORA ne bloque jamais le travail.
 *Supposé, pas mesuré (17/10/2026).*
@@ -49,7 +50,7 @@ compte Claude à l'autre : le relais est humain. L'AGORA ne bloque jamais le tra
 **Auteur** : session A — <8 premiers caractères du Claude-Session> — lu sur `<sha court>`
 **Proposition** : en 3 lignes maximum.
 **Critère déclencheur** : n° et lequel (CLAUDE.md §6).
-**Contradicteur** : Codex | session B (Codex répond seul au « pull » de l'utilisateur, `AGENTS.md`)
+**Contradicteur** : Codex | Claude | session B (l'IA de l'autre éditeur que l'auteur ; Codex et Claude répondent seuls au « pull » de l'utilisateur)
 **Ce que ça engage** : ce qui serait coûteux à défaire.
 **Non vérifié par l'auteur** : ...
 **Si personne ne répond, je fais quoi ?** : (« je continue pareil » = pas de bloc)
