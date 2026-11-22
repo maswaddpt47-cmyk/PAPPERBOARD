@@ -344,7 +344,9 @@ function api_screen(): void
 {
     $s = api_public_session(api_code($_GET));
     // Une fois par minute, la projection recompte les téléphones actifs.
-    wl_json_etag('s' . $s['version'] . wl_time_tag($s) . '-' . intdiv(time(), 60), fn() => match (true) {
+    wl_json_etag('s' . $s['version'] . wl_time_tag($s) . '-' . intdiv(time(), 60), fn() => [
+        'currentQuestionId' => wl_current_question($s)['id'] ?? 'welcome',
+    ] + match (true) {
         ($s['board'] ?? -1) >= 0 => ['ok' => true] + wl_board_view($s),
         in_array($s['show'] ?? '', ['asks', 'podium'], true) => ['ok' => true] + wl_show_view($s),
         $s['ended'] => api_ended_view($s),
@@ -941,6 +943,14 @@ function api_control(array $b): void
     $qr = $op === 'qr_hide' || $op === 'qr_show' || $op === 'signals_clear';
     $show = in_array($op, ['show_asks', 'show_podium', 'show_off'], true);
     wl_update(api_code($b), function (array &$s) use ($op, $b, $board, $qr, $show) {
+        if (in_array($op, ['open', 'close', 'show', 'hide', 'reset', 'next', 'prev'], true)) {
+            if (!is_string($b['expect'] ?? null) || $b['expect'] === '') {
+                throw new WlError('Page ancienne : rechargez-la.', 409);
+            }
+            if ($b['expect'] !== (wl_current_question($s)['id'] ?? 'welcome')) {
+                throw new WlError('La question a changé. Vérifiez l’écran avant de réessayer.', 409);
+            }
+        }
         if ($op === 'signals_clear') {
             $s['signals'] = [];
             return;

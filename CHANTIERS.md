@@ -5,7 +5,7 @@
 **En ligne** sur https://wooclight.alwaysdata.net (déploiement automatique vert à chaque mise à jour de `main`, vérifications après déploiement comprises).
 `config.php` créé (CONFIG OK). Tests verts en CI (e2e, charge, configurer, archivage, protect).
 
-**Reprise des incidents de concurrence (22/11/2026).** Les acquittements ne retirent que la réponse qu’ils concernent ; une reconnexion après 403 conserve la réponse la plus récente. Le rafraîchissement ignore les anciennes requêtes et celles terminées après l’arrêt. Syntaxe JS et six scénarios à requêtes simulées vérifiés localement ; trois mutations rejetées. Les préconditions des commandes d’animation restent à arbitrer.
+**Reprise des incidents de concurrence (22/11/2026).** Les acquittements ne retirent que la réponse qu’ils concernent ; une reconnexion après 403 conserve la réponse la plus récente. Le rafraîchissement ignore les anciennes requêtes et celles terminées après l’arrêt. Syntaxe JS et six scénarios à requêtes simulées vérifiés localement ; trois mutations rejetées. Classement des commandes validé par l’utilisateur : ouvrir, fermer, afficher, masquer, réinitialiser, avancer et reculer exigent la question affichée (ou l’accueil). Un refus 409 indique la cause et rafraîchit l’écran, sans rejouer la commande. Tests à deux animateurs et sur les deux écrans ajoutés à la CI.
 
 ## Restant, par priorité — tout côté utilisateur
 

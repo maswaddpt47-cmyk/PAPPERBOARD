@@ -799,8 +799,16 @@
 
   $('bilan-screen').addEventListener('click', function () { control(data.board ? 'board_off' : 'board'); });
 
-  function control(op, extra) {
-    return act('control', Object.assign({ op: op }, extra));
+  function control(op, extra, expect) {
+    var q = data && data.questions[data.current];
+    var body = Object.assign({ s: code }, WL.controlBody(op, expect || (q ? q.id : 'welcome')), extra);
+    return post('control', body).then(function () {
+      poller.refresh();
+      return true;
+    }, function (r) {
+      if (r.status === 409 && body.expect !== undefined) poller.refresh();
+      return false;
+    });
   }
 
   function render(d) {
@@ -1089,7 +1097,7 @@
     var request;
     if (op === 'reopen_vote') {
       request = q && q.showResults && q.type !== 'wall' && q.type !== 'postit'
-        ? control('hide').then(function () { return control('open'); }) : control('open');
+        ? control('hide', null, q.id).then(function (ok) { if (ok) return control('open', null, q.id); }) : control('open');
     } else request = control(op);
     request.then(function () { animationBusy = false; }, function () { animationBusy = false; });
   }

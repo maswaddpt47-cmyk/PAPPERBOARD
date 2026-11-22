@@ -147,7 +147,7 @@ async function historySearch(admin, post) {
     await projection.goto(base+'screen.php?s='+sessionCode);
     for (const question of state.questions) {
       await post('control',{s:sessionCode,op:'goto',qid:question.id});
-      await post('control',{s:sessionCode,op:'show'});
+      await post('control',{s:sessionCode,op:'show', expect: question.id});
       await projection.waitForFunction(text => document.getElementById('s-text').textContent===text && document.body.classList.contains('s-live'), question.text);
       for (const [width,height] of [[1920,1080],[1280,720],[1024,768],[390,844]]) {
         await projection.setViewportSize({width,height}); await projection.waitForTimeout(80);

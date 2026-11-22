@@ -40,7 +40,7 @@ function zip(bytes){let e=bytes.length-22;while(e>=0&&bytes.readUInt32LE(e)!==0x
   check(legacy.status()===409,'ancien écran animateur invité à recharger pour conserver les styles');
   const oldWrite=await request.post(BASE+'api.php?action=question_save',{headers:{'X-WL':'1','X-CSRF-Token':csrf,'X-WL-Features':'info-v1'},data:{s:code,question:{...info,rich:undefined}}});
   check(oldWrite.status()===409,'ancien enregistrement refusé au lieu de perdre la mise en forme');
-  await post('control',{s:code,op:'next'});
+  await post('control',{s:code,op:'next', expect: 'welcome'});
   const screen=await context.newPage();screen.on('pageerror',e=>errors.push(e.message));await screen.goto(BASE+'screen.php?s='+code);await screen.waitForSelector('#s-results .wl-rich-bullet');
   check(await screen.locator('#s-text .wl-rich-title').count()===1&&await screen.locator('#s-results .wl-rich-bullet').count()===2,'projection : mise en forme visible');
   check(await screen.evaluate(()=>{const n=document.querySelector('#s-text .wl-rich-title');return parseFloat(getComputedStyle(n).fontSize)>parseFloat(getComputedStyle(n.parentElement).fontSize);}), 'le choix Titre agrandit effectivement la police');
@@ -58,13 +58,13 @@ function zip(bytes){let e=bytes.length-22;while(e>=0&&bytes.readUInt32LE(e)!==0x
   check(await admin.isChecked('#qf-correct input[value="0"]'),'mettre les choix en gras conserve la bonne réponse');
   await input('qf-explain').fill('CORRECTION PRIVÉE : choisir la prudence.');await bold('qf-explain');await admin.click('#qf-save');await admin.waitForSelector('#q-dialog:not([open])',{state:'attached'});
   data=await state();const quiz=data.questions[1];check(quiz.correct[0]===0&&quiz.rich.options[0][0].runs[0].bold&&quiz.rich.explain.length,'choix, correction et explication enregistrés avec leurs styles');
-  await post('control',{s:code,op:'next'});await phone.bringToFront();await phone.waitForSelector('#answer-form .checks');
+  await post('control',{s:code,op:'next', expect: info.id});await phone.bringToFront();await phone.waitForSelector('#answer-form .checks');
   let pub=await(await phone.request.get(BASE+'api.php?action=state&s='+code,{headers:{'X-WL-Features':'info-v1, rich-v1'}})).json();
   check(pub.question.id===quiz.id&&pub.question.type==='mcq'&&!JSON.stringify(pub).includes('CORRECTION PRIVÉE'),'vraie question QCM : aucun texte de correction dans les métadonnées avant affichage');
   check(await phone.locator('#answer-form .check-big strong').count()===2,'choix en gras sur l’écran participant');
   check((await phone.locator('#answer-form .check-big').nth(1).textContent()).includes('2. Choix risqué'),'les choix numérotés continuent à 2 au lieu de repartir à 1');
   await phone.check('#answer-form input[value="0"]');await phone.getByRole('button',{name:/Envoyer/}).click();await phone.waitForTimeout(100);
-  await post('control',{s:code,op:'close'});await post('control',{s:code,op:'show'});await phone.waitForSelector('#my-result .explain strong');
+  await post('control',{s:code,op:'close', expect: quiz.id});await post('control',{s:code,op:'show', expect: quiz.id});await phone.waitForSelector('#my-result .explain strong');
   check((await phone.textContent('#my-result')).includes('CORRECTION PRIVÉE'),'explication mise en forme révélée au moment choisi');
   const stateUrl=BASE+'api.php?action=state&s='+code,condition={'X-WL-Features':'info-v1, rich-v1'},initial=await phone.request.get(stateUrl,{headers:condition});condition['If-None-Match']=initial.headers().etag;
   const polls=await Promise.all(Array.from({length:30},()=>phone.request.get(stateUrl,{headers:condition}))),lengths=await Promise.all(polls.map(r=>r.body().then(b=>b.length)));
@@ -88,7 +88,7 @@ function zip(bytes){let e=bytes.length-22;while(e>=0&&bytes.readUInt32LE(e)!==0x
   check(await input('qf-variants').isVisible(),'éditeur des variantes ouvert sur la question réellement importée');
   await bold('qf-variants');await admin.click('#qf-save');await admin.waitForSelector('#q-dialog:not([open])',{state:'attached'});
   check((await state()).questions[2].rich.variants.every(b=>b.runs.every(r=>r.bold)),'mise en forme des variantes conservée après une édition réelle');
-  await post('control',{s:code,op:'next'});await screen.bringToFront();await screen.waitForFunction(()=>document.querySelector('#s-text').textContent==='Code fictif');
+  await post('control',{s:code,op:'next', expect: quiz.id});await screen.bringToFront();await screen.waitForFunction(()=>document.querySelector('#s-text').textContent==='Code fictif');
   check((await screen.textContent('#s-results')).includes(literal)&&await screen.locator('#s-results img').count()===0&&!await screen.evaluate(()=>window.richFailure),'code HTML littéral : texte projeté sans élément actif');
   await phone.bringToFront();await phone.getByRole('button',{name:'Windows',exact:true}).click();await phone.waitForSelector('#answer-form .step-detail strong');
   check((await phone.textContent('#answer-form')).includes(literal)&&await phone.locator('#answer-form img').count()===0&&!await phone.evaluate(()=>window.richFailure),'variante Windows : instruction formatée inerte côté participant');

@@ -51,6 +51,10 @@ var WL = (function () {
     });
   }
 
+  function controlBody(op, expect) {
+    return /^(open|close|show|hide|reset|next|prev)$/.test(op) ? { op: op, expect: expect } : { op: op };
+  }
+
   /** Rafraîchit une ressource toutes les pollMs (2 s par défaut) avec ETag :
    *  le serveur répond 304 sans corps tant que rien n'a changé. Pause quand
    *  l'onglet est masqué ; reprise espacée (jusqu'à 15 s) si le réseau tombe. */
@@ -625,7 +629,7 @@ var WL = (function () {
   }
 
   return {
-    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
+    el: el, $: $, clear: clear, memory: memory, keep: keep, show: show, api: api, controlBody: controlBody, Poller: Poller, qr: qr, fitResults: fitResults, screenLimit: screenLimit, typeLabel: typeLabel, noteColor: noteColor, renderRecap: renderRecap,
     TYPES: TYPES, plural: plural, renderResults: renderResults, renderInformation: renderInformation, renderText: renderText, richText: richText, richOffset: richOffset, variantDocs: variantDocs, compareText: compareText, linkHost: linkHost,
     remaining: remaining, formatTime: formatTime, animationGuide: animationGuide, renderAnimationGuide: renderAnimationGuide
   };

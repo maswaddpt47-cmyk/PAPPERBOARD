@@ -247,7 +247,43 @@ function check(cond, label) {
   await early.waitForFunction(() => document.getElementById('p-step') && document.getElementById('p-step').textContent === 'Clore les réponses');
   await early.click('#p-step');
   check(/confirmer/.test(await early.textContent('#p-step')), 'projection : un second appui demandé pour fermer sans réponse');
+
+  const pilotApi = admin.context().request;
+  const pilotCsrf = (await (await pilotApi.get(BASE + 'api.php?action=me')).json()).csrf;
+  const pilotState = await (await pilotApi.get(BASE + 'api.php?action=admin_state&s=' + code)).json();
+  const previousQuestion = pilotState.questions[pilotState.current];
+  const followingQuestion = pilotState.questions[pilotState.current + 1];
+  const controlUrl = BASE + 'api.php?action=control';
+  async function goToQuestion(question) {
+    const response = await pilotApi.post(controlUrl, {
+      headers: { 'X-WL': '1', 'X-CSRF-Token': pilotCsrf },
+      data: { s: code, op: 'goto', qid: question.id }
+    });
+    if (!response.ok()) throw new Error('Impossible de changer de question pendant le test.');
+  }
+  for (const [page, button, message, questionLabel, label] of [
+    [admin, '#live [data-op="next"]', '#banner', '#live-text', 'administration'],
+    [early, '#p-next', '#screen-error', '#s-text', 'projection']
+  ]) {
+    await page.bringToFront();
+    await page.waitForFunction(({ questionLabel, text }) => document.querySelector(questionLabel).textContent.includes(text),
+      { questionLabel, text: previousQuestion.text });
+    await page.route(controlUrl, async route => {
+      await goToQuestion(followingQuestion);
+      await route.continue();
+    }, { times: 1 });
+    const refused = page.waitForResponse(r => r.url() === controlUrl && r.request().method() === 'POST');
+    await page.click(button);
+    const response = await refused;
+    check(response.status() === 409 && response.request().postDataJSON().expect === previousQuestion.id, label + ' : commande périmée refusée');
+    await page.waitForFunction(({ questionLabel, text }) => document.querySelector(questionLabel).textContent.includes(text),
+      { questionLabel, text: followingQuestion.text });
+    check(/La question a changé/.test(await page.textContent(message)), label + ' : le message reste visible après le rafraîchissement');
+    await goToQuestion(previousQuestion);
+  }
   await early.close();
+  await phone.bringToFront();
+  await phone.waitForSelector('.btn-choice >> text=Vrai');
   votes.length = 0;
   await phone.click('.btn-choice >> text=Vrai');
   await phone.waitForFunction(() => /Réponse enregistrée/.test(document.getElementById('answer-status').textContent));
@@ -519,7 +555,7 @@ function check(cond, label) {
   check(await lens.evaluate(() => !document.body.classList.contains('s-qr-big')), 'projection : un clic à côté ferme le QR agrandi');
   // Afficher puis masquer les graphes et réponses, même sans réponse reçue : une seule commande visible à la fois.
   const lq = (await (await api.get(BASE + 'api.php?action=admin_state&s=' + ds)).json());
-  await post('control', { s: ds, op: 'show' });
+  await post('control', { s: ds, op: 'show', expect: lq.questions[lq.current].id });
   await lens.waitForFunction(() => /^Masquer /.test(document.getElementById('p-hide').textContent));
   check(!/Afficher/.test(await lens.textContent('#p-step')) && await lens.locator('#p-prev').isVisible() && await lens.locator('#p-next').isVisible(),
     'projection : résultats affichés, « Masquer » présent, Précédente / Suivante toujours là');
