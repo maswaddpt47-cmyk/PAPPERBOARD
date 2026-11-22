@@ -116,6 +116,16 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : livrer une préparation explicitement indicative ; garder la relecture et le choix des éléments ; montrer séparément exercices reçus, sélection et étapes ; ne pas présenter une autoévaluation comme un résultat vérifié sur l'appareil.
 **Où regarder** : `assets/practical.js:6` (plan), `assets/practical.js:21` (recomptage), `assets/admin.js:1514` (prompt), `assets/admin.js:1553` (aperçu), `admin.php:650` (préparation), `tests/practical.js:1` (calcul et parcours réel).
 
+## AG-013 — Sélectionner les exercices pratiques par blocs — ouvert le 22/11/2026
+**Auteur** : Codex — branche `codex/exercices-recherche-20261122` — lu sur `d465d6f`.
+**Proposition** : regrouper dans l’aperçu une tâche Oui/Non et la méthode qui la suit ; le retour libre reste facultatif. Une case conserve ou retire l’exercice avec sa méthode, la conclusion reste séparée. La recherche par titre filtre les listes sans modifier leurs compteurs globaux.
+**Critère déclencheur** : 7 — sélection des éléments et nombre d’exercices affiché ; la recherche ne change aucun calcul.
+**Contradicteur** : Claude (Codex auteur ; aucune auto-réponse).
+**Ce que ça engage** : décisions utilisateur du 22/11 (« OK pour les 2 »). Déduire les blocs de l’ordre existant `yesno` sans correction → `info` → éventuel `text`, sans réordonner ni inventer. Signaler et empêcher l’import d’un bloc sélectionné incomplet ; les éléments exclus restent hors de la sélection. Aucun format stocké ni décompte de résultats modifié, retours hors décompte et conclusion indépendante.
+**Non vérifié par l’auteur** : retour utilisateur, enchaînements atypiques issus d’une IA et rendu après regroupement ; contrôles ciblés et mutations à exécuter avant publication.
+**Si personne ne répond, je fais quoi ?** : conserver les formats existants et les retours facultatifs ; refuser un exercice sélectionné sans méthode plutôt que fabriquer l’association. L’utilisateur reste libre de retenir les blocs complets.
+**Où regarder** : `assets/practical.js` (analyse des blocs), `assets/admin.js` (aperçu et sélection), `tests/practical.js` (parcours réel et calcul).
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
