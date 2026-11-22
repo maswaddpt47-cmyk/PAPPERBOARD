@@ -75,6 +75,14 @@ if(process.argv.includes('--plan-only')){console.log('Plan pratique : '+ok+' OK,
   check(await page.isDisabled('#gen-save')&&(await page.textContent('#gen-list')).includes('Exercice incomplet')&&(await page.textContent('#gen-list')).includes('Méthode isolée'),'ordre incohérent signalé et bloqué malgré des nombres de tâches/méthodes égaux');
   await page.locator('#gen-list input[value="0"]').uncheck();await page.locator('#gen-list input[value="2"]').uncheck();
   check(await page.isEnabled('#gen-save')&&(await page.textContent('#gen-practical-summary')).includes('1 exercices, 1 méthodes'),'écarter les éléments incomplets permet de garder le seul exercice complet');
+  await page.fill('#gen-count','4');
+  await upload([...raw.slice(0,4),raw[4],...raw.slice(6,8),{type:'conclusion',text:'Conclusion fictive.'}],5);
+  let incompleteSummary=await page.textContent('#gen-practical-summary');
+  check(incompleteSummary.includes('4 exercices demandés · 3 exercices reçus, 1 incomplet')&&incompleteSummary.includes('Le nombre fourni par l’IA ne correspond pas')&&await page.isDisabled('#gen-save'),'une tâche sans méthode est distincte des trois exercices reçus et signale le manque pour quatre demandés');
+  await page.locator('#gen-list input[value="4"]').uncheck();
+  incompleteSummary=await page.textContent('#gen-practical-summary');
+  check(incompleteSummary.includes('3 exercices reçus, 1 incomplet')&&incompleteSummary.includes('Sélection : 3 exercices, 3 méthodes')&&incompleteSummary.includes('Le nombre fourni par l’IA ne correspond pas')&&await page.isEnabled('#gen-save'),'écarter la tâche incomplète autorise les trois paires sans masquer l’écart à la demande');
+  await page.fill('#gen-count','8');
   await upload([...raw,{type:'conclusion',text:'Un geste à la fois.'}],9);await page.locator('#gen-exercise-0').uncheck();await page.click('#gen-save');await page.waitForSelector('#editor:not([hidden])');
   const code=(await page.textContent('#ed-code')).trim(),state=await(await context.request.get(base+'api.php?action=admin_state&s='+code,{headers:{'X-WL-Features':'info-v1, rich-v1'}})).json();
   check(state.questions.filter(q=>q.type==='yesno').length===7&&state.questions.filter(q=>q.type==='info').length===7&&state.questions[0].text===raw[2].text&&state.questions[1].text===raw[3].text&&state.questions.every(q=>q.type!=='text')&&state.conclusion==='Un geste à la fois.','vraie sauvegarde : exercice retiré avec sa méthode, 7 paires dans l’ordre source et conclusion indépendante');

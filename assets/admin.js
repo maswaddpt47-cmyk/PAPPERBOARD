@@ -1694,8 +1694,11 @@
       : (keep.length ? '' : 'Cochez au moins une question.');
     if (practical && ready) {
       var received = WL.Practical.counts(genItems), plan = genPlan(), summary = $('gen-practical-summary');
-      var mismatch = !plan.error && received.exercises !== plan.count;
-      summary.textContent = (plan.error ? '' : plan.count + ' exercices demandés · ') + received.exercises + ' exercices reçus. '
+      var complete = genBlocks.filter(function (block) { return block.kind === 'exercise'; }).length;
+      var incomplete = received.exercises - complete;
+      var mismatch = !plan.error && complete !== plan.count;
+      summary.textContent = (plan.error ? '' : plan.count + ' exercices demandés · ') + complete + ' exercices reçus'
+        + (incomplete ? ', ' + WL.plural(incomplete, 'incomplet') : '') + '. '
         + 'Sélection : ' + counts.exercises + ' exercices, ' + counts.methods + ' méthodes, ' + counts.feedback + ' retours libres, ' + counts.conclusions + ' conclusion(s). '
         + (mismatch ? 'Le nombre fourni par l’IA ne correspond pas à la demande : faites compléter sa réponse ou choisissez explicitement une sélection plus courte. ' : '')
         + (counts.methods !== counts.exercises ? 'Vérifiez que chaque exercice conserve sa méthode. ' : '')

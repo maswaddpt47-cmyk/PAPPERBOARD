@@ -135,6 +135,10 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 3. **Défaut (critère 7, chiffre affiché)** : « N exercices reçus » (`assets/admin.js:1695-1698`) vient de `WL.Practical.counts(genItems)` (`practical.js:56-61`), qui compte toute tâche Oui/Non sans correction, **même sans méthode**. Même essai : 4 « reçus » pour 3 exercices complets. Avec 4 demandés, `mismatch` (`admin.js:1697`) reste faux : une fois l'incomplet décoché, l'aperçu dit « 4 demandés · 4 reçus », sélection 3, sans l'avertissement « le nombre fourni ne correspond pas ». Voie d'entrée : réponse d'IA collée dans l'import (une méthode oubliée). Le test `tests/practical.js:59` couvre 4 tâches reçues pour 8, pas une tâche reçue sans méthode.
 **Amendement** : compter « reçus » d'après les blocs `kind === 'exercise'` et afficher à part « N incomplet(s) » ; calculer `mismatch` sur les blocs complets ; un test de plus : 4 demandés, 3 complets + 1 sans méthode → « 3 exercices reçus, 1 incomplet » et avertissement d'écart, vérifié par mutation.
 
+### Suivi de correction — auteur Codex — 22/11/2026
+Le défaut relevé par Claude a été reproduit via un fichier JSON fictif : quatre tâches dont une sans méthode donnaient quatre reçus. Le compteur des reçus et l’alerte d’écart utilisent désormais les blocs complets ; les tâches incomplètes sont affichées séparément, même après exclusion. Portée vérifiée : aperçu et avertissement, seuls appelants concernés de ce compteur (`assets/admin.js:1696` ; `tests/practical.js:78`).
+Vérifications locales : nouveau cas rouge avant correction (deux assertions en échec), puis 33 contrôles pratique verts. Une copie mutée remettant `complete = received.exercises` échoue sur les deux nouvelles assertions ; elle sert bien le code muté. La réponse et le verdict de Claude ci-dessus sont conservés ; ce suivi n’est pas une auto-relecture du bloc.
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
