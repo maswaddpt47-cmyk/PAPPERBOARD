@@ -34,6 +34,7 @@
 
   var code = null, csrf = store.get('csrf'), poller = null;
   var state = null, renderKey = '', offset = 0, timer = null, sending = false;
+  var pendingSequence = 0;
   var previewMode = false; // index.php?s=CODE&apercu=I : voir « Prévisualiser » en bas
 
   function headers() {
@@ -623,7 +624,7 @@
       $('answer-status').textContent = 'Prévisualisation : réponse non envoyée.';
       return;
     }
-    pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value, at: Date.now() }));
+    pendingStore.set('pending', JSON.stringify({ code: code, qid: q.id, value: value, at: Date.now(), seq: ++pendingSequence }));
     $('answer-status').textContent = 'Envoi…';
     flushPending();
   }
@@ -635,17 +636,30 @@
     sending = true;
     WL.api('vote', { body: { s: p.code, qid: p.qid, value: p.value }, headers: headers() }).then(function (r) {
       sending = false;
+      var pending = readPending();
+      if (code !== p.code || !pending) {
+        flushPending();
+        return;
+      }
+      var same = pending.code === p.code && pending.qid === p.qid && pending.at === p.at && pending.seq === p.seq;
+      if (r.status === 403 && /Rejoignez/.test(r.data.error)) {
+        // La connexion doit être renouvelée avant de renvoyer la réponse en attente.
+        sending = true;
+        join(code).then(function () { sending = false; });
+        return;
+      }
+      if (!same) {
+        flushPending();
+        return;
+      }
       pendingStore.del('pending');
       if (r.status === 200) {
-        state.mine = r.data.mine;
-        if (state.question && state.question.id === p.qid && r.data.correct && r.data.correct.length) {
-          state.question.correct = r.data.correct; // correction immédiate
+        if (state && state.question && state.question.id === p.qid) {
+          state.mine = r.data.mine;
+          if (r.data.correct && r.data.correct.length) state.question.correct = r.data.correct;
+          renderKey = '';
+          onState(state);
         }
-        renderKey = '';
-        if (state.question && state.question.id === p.qid) onState(state);
-      } else if (r.status === 403 && /Rejoignez/.test(r.data.error)) {
-        pendingStore.set('pending', JSON.stringify(p));
-        join(code);
       } else {
         $('answer-status').textContent = r.data.error || 'Réponse refusée.';
       }
