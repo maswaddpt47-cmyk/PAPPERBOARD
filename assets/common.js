@@ -64,6 +64,7 @@ var WL = (function () {
     this.failures = 0;
     this.timer = null;
     this.stopped = false;
+    this.request = 0;
     var self = this;
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && !self.stopped) self.now();
@@ -88,9 +89,12 @@ var WL = (function () {
   };
   Poller.prototype.tick = function () {
     var self = this;
-    if (document.hidden) return; // reprise au retour sur l'onglet
+    if (this.stopped || document.hidden) return; // reprise au retour sur l'onglet
+    var request = ++this.request;
     api(this.action, { query: this.query, etag: this.etag }).then(function (r) {
+      if (self.stopped || request !== self.request) return;
       if (self.failures) self.onStatus('online');
+      if (self.stopped || request !== self.request) return;
       self.failures = 0;
       if (r.status === 200) {
         self.etag = r.etag;
@@ -99,11 +103,12 @@ var WL = (function () {
       } else if (r.status !== 304) {
         self.onStatus('error', r);
       }
-      self.schedule(self.delay);
+      if (request === self.request) self.schedule(self.delay);
     }, function () {
+      if (self.stopped || request !== self.request) return;
       self.failures++;
       self.onStatus('offline');
-      self.schedule(Math.min(15000, self.delay * Math.pow(2, self.failures - 1)));
+      if (request === self.request) self.schedule(Math.min(15000, self.delay * Math.pow(2, self.failures - 1)));
     });
   };
 
