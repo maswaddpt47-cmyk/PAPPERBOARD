@@ -126,6 +126,52 @@
   var endedCount = { sessions: 0, archives: 0 };
   function showEndedCount() { $('ended-count').textContent = '(' + (endedCount.sessions + endedCount.archives) + ')'; }
 
+  // Filtre de confort local : seuls les titres sont lus, aucun appel ni stockage à la frappe.
+  function historyTitle(value) {
+    return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  function filterHistory() {
+    var query = historyTitle($('history-search').value);
+    WL.show($('history-search-clear'), $('history-search').value.length > 0);
+    var lists = {
+      'session-list': 'Aucun atelier ouvert ne correspond à cette recherche.',
+      'ended-list': 'Aucun atelier terminé récent ne correspond à cette recherche.',
+      'archive-list': 'Aucune archive ne correspond à cette recherche.',
+      'demo-list': 'Aucune démo ne correspond à cette recherche.',
+      'partner-list': 'Aucun atelier rangé chez un partenaire ne correspond à cette recherche.'
+    };
+    Object.keys(lists).forEach(function (id) {
+      var list = $(id), found = false;
+      [].forEach.call(list.querySelectorAll('[data-history-title]'), function (row) {
+        row.hidden = !!query && historyTitle(row.dataset.historyTitle).indexOf(query) === -1;
+        if (!row.hidden) found = true;
+      });
+      [].forEach.call(list.querySelectorAll('.workshop-empty'), function (empty) { empty.hidden = !!query; });
+      if (id === 'partner-list') [].forEach.call(list.querySelectorAll('.partner-group'), function (group) {
+        var matching = !!group.querySelector('[data-history-title]:not([hidden])');
+        group.hidden = !!query && !matching;
+        var body = group.querySelector('.partner-body'), toggle = group.querySelector('.partner-toggle');
+        var folded = !query && !!partnerFolded()[group.dataset.historyPartner];
+        body.hidden = folded;
+        toggle.setAttribute('aria-expanded', String(!folded));
+        toggle.disabled = !!query;
+        toggle.title = query ? 'Les ateliers trouvés sont dépliés pendant la recherche.' : 'Afficher ou masquer les ateliers de ce partenaire';
+      });
+      var emptySearch = list.querySelector('.history-search-empty');
+      if (!emptySearch) {
+        emptySearch = el('p', { class: 'history-search-empty muted', role: 'status' }, lists[id]);
+        list.appendChild(emptySearch);
+      }
+      emptySearch.hidden = !query || found;
+    });
+  }
+  $('history-search').addEventListener('input', filterHistory);
+  $('history-search-clear').addEventListener('click', function () {
+    $('history-search').value = '';
+    filterHistory();
+    $('history-search').focus();
+  });
+
   function showSessions(name) {
     if (poller) poller.stop();
     code = null;
@@ -155,7 +201,7 @@
       $('demo-delete').lastChild.textContent = 'Supprimer ' + (demos > 1 ? 'les ' + demos + ' démos' : 'la démo');
       sessionsList.forEach(function (s) {
         if (s.partner) return;
-        lists[tabOf(s)].appendChild(el('div', { class: 'prep-item workshop-row' },
+        lists[tabOf(s)].appendChild(el('div', { class: 'prep-item workshop-row', 'data-history-title': s.title },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, s.title), s.demo ? el('span', { class: 'badge neutral' }, s.ended ? 'Démo terminée' : 'Démo') : null,
             el('p', { class: 'muted' }, WL.plural(s.questions, s.hasInfo ? 'étape' : 'question') + ' · ' + lastAction(s))),
@@ -182,6 +228,7 @@
               }
             })))));
       });
+      filterHistory();
     });
   }
 
@@ -222,7 +269,7 @@
           body.hidden = !open;
           setPartnerFolded(p.id, !open);
         } }, ico('chevron-right'), p.name); // numéro de cycle interne seulement, jamais affiché (choix du 15/11/2026)
-      list.appendChild(el('section', { class: 'partner-group' },
+      list.appendChild(el('section', { class: 'partner-group', 'data-history-partner': p.id },
         el('div', { class: 'prep-item workshop-row' },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('users')),
           el('div', { class: 'grow' }, el('h3', null, toggle),
@@ -250,7 +297,7 @@
             'clos le ' + day(c.at) + ' (' + WL.plural(c.ateliers, 'atelier') + ', ' + WL.plural(c.participations, 'participation') + ') — CSV'));
         }))));
       body.appendChild(el.apply(null, ['div', { class: 'history-list partner-workshops' }].concat(mine.map(function (s) {
-          return el('div', { class: 'prep-item workshop-row' },
+          return el('div', { class: 'prep-item workshop-row', 'data-history-title': s.title },
             el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
             el('div', { class: 'grow' }, el('h3', null, s.title),
               el('p', { class: 'muted' }, WL.plural(s.questions, s.hasInfo ? 'étape' : 'question') + ' · ' + WL.plural(s.participants, 'participant') + ' · rangé le ' + day(s.filed))),
@@ -328,7 +375,7 @@
       showEndedCount();
       if (!r.data.archives.length) list.appendChild(el('p', { class: 'workshop-empty muted' }, 'Aucune archive.'));
       r.data.archives.forEach(function (a) {
-        list.appendChild(el('div', { class: 'prep-item workshop-row' },
+        list.appendChild(el('div', { class: 'prep-item workshop-row', 'data-history-title': a.title },
           el('span', { class: 'number-bubble', 'aria-hidden': 'true' }, ico('book')),
           el('div', { class: 'grow' }, el('h3', null, a.title), el('span', { class: 'badge neutral' }, 'Archivé · chiffres seuls'),
             el('p', { class: 'muted' }, WL.plural(a.questions, a.hasInfo ? 'étape' : 'question'))),
@@ -341,6 +388,7 @@
               if (confirm('Supprimer définitivement l\'archive « ' + a.title + ' » ?')) post('archive_delete', { id: a.id }).then(showSessions);
             }))));
       });
+      filterHistory();
     });
   }
 

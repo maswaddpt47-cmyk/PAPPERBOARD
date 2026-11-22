@@ -192,6 +192,14 @@ header('Cache-Control: no-store');
           <button id="create-btn-history" class="btn btn-primary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Créer un atelier</button>
         </div>
       </div>
+      <section class="card content-card" aria-label="Recherche dans Mes ateliers">
+        <label for="history-search">Rechercher par titre</label>
+        <div class="row wrap">
+          <input id="history-search" class="grow" type="search" maxlength="120" autocomplete="off" aria-describedby="history-search-help" placeholder="Ex. temps d’écran">
+          <button id="history-search-clear" class="btn" type="button" hidden>Effacer la recherche</button>
+        </div>
+        <p id="history-search-help" class="meta">La recherche s’applique aux titres dans chaque onglet, archives comprises. Les nombres des onglets restent les totaux.</p>
+      </section>
       <div class="tabs view-tabs" id="history-tabs" role="tablist" aria-label="Classement des ateliers">
         <button class="tab" role="tab" type="button" id="ht-open" aria-controls="hist-open" data-tab="open" title="Ateliers où les participants peuvent répondre"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Ouverts <span id="open-count" class="tab-count"></span></button>
         <button class="tab" role="tab" type="button" id="ht-ended" aria-controls="hist-ended" data-tab="ended" title="Ateliers terminés : récents complets, puis archivés (chiffres seuls)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Terminés <span id="ended-count" class="tab-count"></span></button>

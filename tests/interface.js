@@ -4,6 +4,72 @@ const assert = require('assert/strict');
 const base = process.env.WL_BASE;
 let checks = 0;
 function check(value, message) { checks++; assert(value, message); }
+async function historySearch(admin, post) {
+  // Recherche réelle par titre : mêmes mots accentués dans chaque catégorie, autre sujet masqué.
+  const searchDemo = await post('session_demo',{});
+  await post('session_rename',{s:searchDemo.code,title:'Été démo fictive'});
+  const searchSessions = {};
+  for (const [kind,title] of Object.entries({open:'Été ouvert fictif',ended:'Été récent fictif',archive:'Été archivé fictif',filed:'Été rangé fictif',other:'Autre sujet fictif'})) {
+    const made = await post('session_create',{title}); searchSessions[kind] = made.code;
+    await post('question_save',{s:made.code,question:{type:'poll',text:'Question fictive de recherche ?',options:['Oui','Non']}});
+    if (kind === 'ended' || kind === 'filed' || kind === 'other') await post('control',{s:made.code,op:'end'});
+    if (kind === 'archive') await post('session_archive',{s:made.code});
+  }
+  const searchPartner = await post('session_file',{s:searchSessions.filed,name:'Centre témoin recherche'});
+  await post('session_file',{s:searchSessions.other,partner:searchPartner.partner});
+  await admin.reload(); await admin.locator('#sessions:not([hidden])').waitFor();
+  await admin.locator('.nav-item[data-nav="history"]').click();
+  await admin.locator('#ht-partners').click();
+  const searchGroup = admin.locator('#partner-list .partner-group').filter({has:admin.getByRole('button',{name:'Centre témoin recherche',exact:true})});
+  const searchToggle = searchGroup.getByRole('button',{name:'Centre témoin recherche',exact:true});
+  await searchToggle.waitFor();
+  if (await searchToggle.getAttribute('aria-expanded') === 'true') await searchToggle.click();
+  const foldedBeforeSearch = await admin.evaluate(() => localStorage.getItem('wl_partners_folded'));
+  await admin.locator('#ht-open').click();
+  await admin.locator('#session-list [data-history-title="Été ouvert fictif"]').waitFor();
+  await admin.locator('#ht-ended').click();
+  await admin.locator('#archive-list [data-history-title="Été archivé fictif"]').waitFor();
+  const countsBeforeSearch = await admin.locator('#history-tabs .tab-count').allTextContents();
+  const searchRequests = [], readSearchRequest = request => { if (request.url().includes('api.php?')) searchRequests.push(request.url()); };
+  admin.on('request',readSearchRequest);
+  await admin.getByRole('searchbox',{name:'Rechercher par titre'}).fill('  eTE  ');
+  for (const width of [390,1280]) {
+    await admin.setViewportSize({width,height:720});
+    check(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth
+      && document.getElementById('history-search').getBoundingClientRect().right <= innerWidth
+      && document.getElementById('history-search-clear').getBoundingClientRect().right <= innerWidth), 'Recherche : champ et effacement sans débordement à '+width+' px');
+  }
+  await admin.locator('#ht-open').click();
+  check(await admin.locator('#session-list [data-history-title="Été ouvert fictif"]').isVisible(), 'Recherche : accents, casse et espaces ignorés');
+  await admin.locator('#ht-ended').click();
+  check(await admin.locator('#ended-list [data-history-title="Été récent fictif"]').isVisible()
+    && await admin.locator('#archive-list [data-history-title="Été archivé fictif"]').isVisible(), 'Recherche : terminés récents et archives restent dans leurs sous-sections');
+  await admin.locator('#ht-partners').click();
+  check(await searchGroup.locator('[data-history-title="Été rangé fictif"]').isVisible()
+    && await searchGroup.locator('[data-history-title="Autre sujet fictif"]').isHidden()
+    && await searchToggle.getAttribute('aria-expanded') === 'true', 'Recherche : partenaire replié révélé, seuls les titres correspondants visibles');
+  check(JSON.stringify(await admin.locator('#history-tabs .tab-count').allTextContents()) === JSON.stringify(countsBeforeSearch), 'Recherche : les compteurs des onglets restent globaux');
+  await admin.getByRole('searchbox',{name:'Rechercher par titre'}).fill('Centre témoin recherche');
+  check(await searchGroup.isHidden() && await admin.locator('#partner-list .history-search-empty').isVisible(), 'Recherche : un nom de partenaire seul ne correspond pas à un titre');
+  await admin.locator('#ht-demo').click();
+  await admin.getByRole('searchbox',{name:'Rechercher par titre'}).fill('  ete DEMO fictive  ');
+  check(await admin.locator('#demo-list [data-history-title="Été démo fictive"]').isVisible(), 'Recherche : démos incluses');
+  await admin.getByRole('searchbox',{name:'Rechercher par titre'}).fill('Titre introuvable fictif');
+  check(await admin.locator('#demo-list .history-search-empty').isVisible()
+    && await admin.locator('#demo-list [data-history-title="Été démo fictive"]').isHidden(), 'Recherche : aucun résultat annoncé dans l’onglet concerné');
+  // Effacer restaure les listes et le choix de repli, sans stocker la recherche ni faire d’appel.
+  await admin.getByRole('button',{name:'Effacer la recherche',exact:true}).click();
+  check(await admin.locator('#demo-list [data-history-title="Été démo fictive"]').isVisible()
+    && await admin.locator('#history-search').inputValue() === '', 'Effacer : la liste des démos revient et le champ est vide');
+  await admin.locator('#ht-partners').click();
+  check(await searchGroup.isVisible() && await searchGroup.locator('.partner-body').isHidden()
+    && await admin.evaluate(() => localStorage.getItem('wl_partners_folded')) === foldedBeforeSearch, 'Effacer : repli initial du partenaire préservé');
+  await searchToggle.click();
+  check(await searchGroup.locator('[data-history-title="Été rangé fictif"]').isVisible()
+    && await searchGroup.locator('[data-history-title="Autre sujet fictif"]').isVisible(), 'Effacer : tous les ateliers du partenaire reviennent');
+  check(searchRequests.length === 0, 'Recherche : aucune requête API à la frappe, aux onglets ou à l’effacement');
+  admin.off('request',readSearchRequest);
+}
 (async function () {
   const browser = await chromium.launch(process.env.WL_CHROMIUM ? {executablePath: process.env.WL_CHROMIUM} : {});
   try {
@@ -15,6 +81,17 @@ function check(value, message) { checks++; assert(value, message); }
     await admin.locator('#password').fill(process.env.WL_PASSWORD);
     await admin.locator('#login-form button').click();
     await admin.locator('#sessions:not([hidden])').waitFor();
+    const me = await (await context.request.get(base+'api.php?action=me')).json();
+    const post = async (action,body) => {
+      const response = await context.request.post(base+'api.php?action='+action,{headers:{'X-WL':'1','X-CSRF-Token':me.csrf},data:body});
+      check(response.ok(), 'Écriture de vérification refusée : '+action); return response.json();
+    };
+    if (process.env.WL_SEARCH_ONLY) {
+      await historySearch(admin, post);
+      check(errors.length === 0, 'Erreurs JS : '+errors.join(' ; '));
+      console.log('Recherche Mes ateliers : '+checks+' contrôles réussis sur des ateliers fictifs.');
+      return;
+    }
     await admin.locator('#create-btn').click();
     await admin.locator('#create-demo').check();
     await admin.locator('#create-ok').click();
@@ -63,13 +140,8 @@ function check(value, message) { checks++; assert(value, message); }
       }
     }
     check(differences.length === 0, 'Écarts visuels :\n' + differences.join('\n'));
-    const me = await (await context.request.get(base+'api.php?action=me')).json();
     const sessionCode = await admin.locator('#ed-code').textContent();
     const state = await (await context.request.get(base+'api.php?action=admin_state&s='+sessionCode)).json();
-    const post = async (action,body) => {
-      const response = await context.request.post(base+'api.php?action='+action,{headers:{'X-WL':'1','X-CSRF-Token':me.csrf},data:body});
-      check(response.ok(), 'Écriture de vérification refusée : '+action); return response.json();
-    };
     const projection = await context.newPage();
     projection.on('pageerror', error => errors.push(error.message));
     await projection.goto(base+'screen.php?s='+sessionCode);
@@ -185,6 +257,7 @@ function check(value, message) { checks++; assert(value, message); }
     admin.once('dialog', dialog => dialog.accept());
     await admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'}).getByRole('button',{name:'Supprimer',exact:true}).click();
     await admin.locator('#archive-list .workshop-row').filter({hasText:'Archive de contrôle'}).waitFor({state:'detached'});
+    await historySearch(admin, post);
     check(errors.length === 0, 'Erreurs JS : '+errors.join(' ; '));
     console.log('Interface PHP : '+checks+' contrôles réussis, comparaison avec la référence et actions réelles.');
   } finally { await browser.close(); }
