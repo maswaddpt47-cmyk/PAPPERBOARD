@@ -1481,8 +1481,12 @@
     if (practical && !plan.error) note.textContent += ' Soit ' + plan.steps + ' étapes, puis la conclusion. Le décompte porte sur les exercices ; méthodes et retours sont des étapes supplémentaires, dans la capacité disponible.';
     genSaveState();
   }
-  ['gen-public', 'gen-level', 'gen-mode-count', 'gen-mode-duration', 'gen-defi', 'gen-qcm', 'gen-format', 'gen-devices'].forEach(function (id) {
+  ['gen-public', 'gen-level', 'gen-mode-count', 'gen-mode-duration', 'gen-defi', 'gen-qcm', 'gen-devices'].forEach(function (id) {
     $(id).addEventListener('change', syncGenSize);
+  });
+  $('gen-format').addEventListener('change', function () {
+    if (!$('gen-preview').hidden) genRender(genChecked());
+    syncGenSize();
   });
   $('gen-feedback').addEventListener('change', function () {
     $('gen-list').querySelectorAll('input[type=checkbox]').forEach(function (input) {
@@ -1575,7 +1579,7 @@
     ].filter(function (line) { return line !== null; }).join('\n');
   }
 
-  var genItems = [];
+  var genItems = [], genBlocks = [], genRenderedPractical = false;
 
   function practicalRequirements(plan) {
     return 'Atelier pratique guidé ; appareils : ' + $('gen-devices').value + '. '
@@ -1616,6 +1620,8 @@
 
   function genReset() {
     genItems = [];
+    genBlocks = [];
+    genRenderedPractical = genPractical();
     WL.clear($('gen-list'));
     WL.show($('gen-preview'), false);
     WL.show($('gen-preview-wait'), true);
@@ -1626,14 +1632,18 @@
   /** Bouton d'ajout inactif tant que l'aperçu n'est pas affiché : la raison est écrite à côté. */
   function genSaveState() {
     var ready = !$('gen-preview').hidden;
-    var selected = (genItems || []).filter(function (_, i) { return genChecked().indexOf(i) !== -1; });
+    $('gen-list').querySelectorAll('[data-practical-feedback]').forEach(function (input) {
+      input.disabled = !$('gen-exercise-' + input.dataset.practicalFeedback).checked;
+    });
+    var selection = genSelection(), keep = selection.keep;
+    var selected = (genItems || []).filter(function (_, i) { return keep.indexOf(i) !== -1; });
     var practical = genPractical(), counts = WL.Practical.counts(selected);
-    $('gen-save').disabled = !ready || !genChecked().length;
-    if (practical && (!counts.exercises || counts.invalid)) $('gen-save').disabled = true;
+    $('gen-save').disabled = !ready || !keep.length;
+    if (practical && (!counts.exercises || counts.invalid || selection.invalid)) $('gen-save').disabled = true;
     $('gen-save').textContent = practical ? (genCreate ? 'Créer l’atelier' : genReplace ? 'Remplacer la sélection' : 'Ajouter la sélection') + ' (' + WL.plural(counts.exercises, 'exercice') + ')'
       : genCreate ? 'Créer l\'atelier avec les questions cochées' : genReplace ? 'Remplacer les questions par les cochées' : genDefiOnly ? 'Ajouter le défi' : 'Ajouter les questions cochées';
     $('gen-save-hint').textContent = $('gen-error').textContent ? '' : !ready ? 'Cliquez d\'abord « Vérifier la réponse ».'
-      : (genChecked().length ? '' : 'Cochez au moins une question.');
+      : (keep.length ? '' : 'Cochez au moins une question.');
     if (practical && ready) {
       var received = WL.Practical.counts(genItems), plan = genPlan(), summary = $('gen-practical-summary');
       var mismatch = !plan.error && received.exercises !== plan.count;
@@ -1641,17 +1651,20 @@
         + 'Sélection : ' + counts.exercises + ' exercices, ' + counts.methods + ' méthodes, ' + counts.feedback + ' retours libres, ' + counts.conclusions + ' conclusion(s). '
         + (mismatch ? 'Le nombre fourni par l’IA ne correspond pas à la demande : faites compléter sa réponse ou choisissez explicitement une sélection plus courte. ' : '')
         + (counts.methods !== counts.exercises ? 'Vérifiez que chaque exercice conserve sa méthode. ' : '')
+        + (selection.invalid ? 'Un élément sélectionné est isolé ou incomplet : décochez-le ou faites corriger la réponse. ' : '')
         + (counts.invalid ? 'Type incompatible ou Oui/Non avec correction : retirez ces éléments ou faites-les corriger. ' : '')
         + (!$('gen-feedback').checked && received.feedback ? 'Les retours libres non demandés sont décochés initialement. ' : '')
         + (!counts.conclusions ? 'Aucune conclusion sélectionnée.' : '');
-      summary.classList.toggle('error', mismatch || !!counts.invalid || counts.methods !== counts.exercises);
+      summary.classList.toggle('error', mismatch || !!counts.invalid || !!selection.invalid || counts.methods !== counts.exercises);
     }
     WL.show($('gen-practical-summary'), practical && ready);
   }
 
-  function genChecked() {
-    return [].map.call($('gen-list').querySelectorAll('input:checked'), function (c) { return Number(c.value); });
+  function genSelection() {
+    var checked = [].map.call($('gen-list').querySelectorAll('input:checked'), function (c) { return Number(c.value); });
+    return genRenderedPractical ? WL.Practical.selection(genBlocks, checked) : { keep: checked, invalid: 0 };
   }
+  function genChecked() { return genSelection().keep; }
 
   /** Détail d'une question de l'aperçu : choix (bonne réponse marquée ✓), échelle, source. */
   function genDetail(q) {
@@ -1665,9 +1678,20 @@
     return opts.join(' · ');
   }
 
-  function genRender() {
+  function genRender(keep) {
     var list = WL.clear($('gen-list'));
-    genItems.forEach(function (it, i) {
+    genRenderedPractical = genPractical();
+    genBlocks = genRenderedPractical ? WL.Practical.blocks(genItems) : genItems.map(function (_, i) { return { indices: [i] }; });
+    var checked = function (i) {
+      return keep ? keep.indexOf(i) !== -1 : !genRenderedPractical || genItems[i].type !== 'text' || $('gen-feedback').checked;
+    };
+    var exercise = 0;
+    genBlocks.forEach(function (block) {
+      var i = block.indices[0], it = genItems[i];
+      if (block.kind === 'exercise') {
+        list.appendChild(genExercise(block, ++exercise, checked));
+        return;
+      }
       if (it.error) {
         list.appendChild(el('li', { class: 'list-item' }, el('div', { class: 'grow' },
           el('p', { class: 'error' }, 'Question ' + (i + 1) + ' écartée : ' + it.error))));
@@ -1675,19 +1699,20 @@
       }
       if (it.conclusion !== undefined) {
         list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
-          el('input', { type: 'checkbox', value: i, checked: true }),
+          el('input', { type: 'checkbox', value: i, checked: checked(i) }),
           el('span', null, el('strong', null, 'Conclusion de l\'atelier'), el('span', { class: 'meta gen-detail' }, WL.richText(it.conclusion, it.conclusionRich))))));
         return;
       }
       var detail = genDetail(it);
       list.appendChild(el('li', { class: 'list-item' }, el('label', { class: 'check grow' },
-        el('input', { type: 'checkbox', value: i, checked: !genPractical() || it.type !== 'text' || $('gen-feedback').checked }),
+        el('input', { type: 'checkbox', value: i, checked: checked(i) }),
         el('span', null, el('strong', null, WL.richText(it.text, it.rich && it.rich.text)),
           el('span', { class: 'meta' }, ' — ' + WL.TYPES[it.type]),
           detail ? el('span', { class: 'meta gen-detail' }, genFormattedDetail(it, detail)) : null,
           it.explain ? el('span', { class: 'meta gen-detail' }, WL.richText(it.explain, it.rich && it.rich.explain)) : null,
           it.type === 'info' && it.illustration ? el('img', { class: 'info-illustration', src: it.illustration, alt: 'Illustration à relire avec la diapositive' }) : null,
-          it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null))));
+          it.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + it.warning) : null,
+          block.error ? el('span', { class: 'error gen-detail' }, block.error) : null))));
     });
     WL.show($('gen-preview'), true);
     WL.show($('gen-preview-wait'), false);
@@ -1695,6 +1720,33 @@
     // Les coches sont sous la réponse collée : la fenêtre y descend seule, sans défilement à faire.
     $('gen-preview-title').scrollIntoView({ block: 'start', behavior: 'smooth' });
     $('gen-preview-title').focus({ preventScroll: true });
+  }
+
+  function genExercise(block, number, checked) {
+    var task = genItems[block.indices[0]], method = genItems[block.indices[1]], index = block.indices[0];
+    var selected = block.indices.every(checked);
+    var box = el('div', { class: 'grow' },
+      el('label', { class: 'check' },
+        el('input', { type: 'checkbox', id: 'gen-exercise-' + index, value: index, checked: selected, 'data-practical-exercise': true }),
+        el('span', null, el('strong', null, 'Exercice ' + number + ' — ', WL.richText(task.text, task.rich && task.rich.text)),
+          el('span', { class: 'meta gen-detail' }, 'Conserver la tâche et sa méthode ensemble.'))),
+      el('p', { class: 'meta gen-detail' }, 'Tâche · Oui/Non',
+        task.explain ? el('span', null, ' — ', WL.richText(task.explain, task.rich && task.rich.explain)) : null),
+      task.warning ? el('p', { class: 'error' }, '⚠️ Attention : ' + task.warning) : null,
+      el('p', { class: 'gen-detail' }, el('strong', null, 'Méthode — ', WL.richText(method.text, method.rich && method.rich.text))),
+      el('div', { class: 'meta gen-detail' }, WL.richText(method.content || 'Illustration', method.rich && method.rich.content)),
+      method.explain ? el('p', { class: 'meta gen-detail' }, WL.richText(method.explain, method.rich && method.rich.explain)) : null,
+      method.illustration ? el('img', { class: 'info-illustration', src: method.illustration, alt: 'Illustration à relire avec la méthode' }) : null,
+      method.warning ? el('p', { class: 'error' }, '⚠️ Attention : ' + method.warning) : null);
+    if (block.feedback !== null) {
+      var feedback = genItems[block.feedback];
+      box.appendChild(el('label', { class: 'check' },
+        el('input', { type: 'checkbox', value: block.feedback, checked: checked(block.feedback), disabled: !selected, 'data-practical-feedback': index }),
+        el('span', null, 'Conserver le retour libre (facultatif) : ', WL.richText(feedback.text, feedback.rich && feedback.rich.text),
+          feedback.explain ? el('span', { class: 'meta gen-detail' }, WL.richText(feedback.explain, feedback.rich && feedback.rich.explain)) : null,
+          feedback.warning ? el('span', { class: 'error gen-detail' }, '⚠️ Attention : ' + feedback.warning) : null)));
+    }
+    return el('li', { class: 'list-item gen-exercise' }, box);
   }
 
   function genFormattedDetail(q, detail) {
@@ -1983,6 +2035,7 @@
 
   $('gen-form').addEventListener('submit', function (e) {
     e.preventDefault();
+    if (genPractical() && genSelection().invalid) { genSaveState(); return; }
     var raw = $('gen-raw').value, keep = genChecked(), headers = { 'X-CSRF-Token': csrf };
     var fail = function (r) {
       if (r.status === 401) { $('gen-dialog').close(); showLogin('Session expirée : reconnectez-vous.'); return true; }

@@ -18,6 +18,41 @@
       return { mode: 'duration', count: count, duration: o.duration, perQuestion: o.per,
         steps: count * steps, max: max, defi: 0, margin: o.duration - 10 - count * o.per, capped: estimate > max };
     },
+    // Les voisins seuls forment un exercice ; ne jamais sauter un élément
+    // invalide pour associer une tâche à une méthode située plus loin.
+    blocks: function (items) {
+      var blocks = [];
+      for (var i = 0; i < items.length; i++) {
+        var q = items[i], block = { indices: [i], feedback: null, kind: 'invalid', error: '' };
+        if (q.error) block.kind = 'error';
+        else if (q.conclusion !== undefined) block.kind = 'conclusion';
+        else if (q.type === 'yesno' && !(q.correct || []).length) {
+          var method = items[i + 1];
+          if (method && !method.error && method.conclusion === undefined && method.type === 'info') {
+            block.kind = 'exercise';
+            block.indices.push(++i);
+            var feedback = items[i + 1];
+            if (feedback && !feedback.error && feedback.conclusion === undefined && feedback.type === 'text') block.feedback = ++i;
+          } else block.error = 'Exercice incomplet : sa méthode doit le suivre immédiatement.';
+        } else block.error = q.type === 'info' ? 'Méthode isolée : aucune tâche Oui/Non juste avant.'
+          : q.type === 'text' ? 'Retour libre isolé : aucun exercice complet juste avant.'
+          : 'Type incompatible ou Oui/Non avec correction : faites corriger cet élément.';
+        blocks.push(block);
+      }
+      return blocks;
+    },
+    // Les valeurs des cases restent les indices de la réponse source. Le retour
+    // peut rester coché quand son exercice est retiré, sans être importé seul.
+    selection: function (blocks, checked) {
+      var keep = [], invalid = 0;
+      blocks.forEach(function (block) {
+        if (block.kind === 'error' || checked.indexOf(block.indices[0]) === -1) return;
+        keep = keep.concat(block.indices);
+        if (block.feedback !== null && checked.indexOf(block.feedback) !== -1) keep.push(block.feedback);
+        if (block.error) invalid++;
+      });
+      return { keep: keep, invalid: invalid };
+    },
     counts: function (items) {
       var c = { exercises: 0, methods: 0, feedback: 0, conclusions: 0, invalid: 0 };
       items.forEach(function (q) {
