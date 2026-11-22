@@ -100,41 +100,61 @@ $acc = $admin->get("api.php?action=screen&s=$code")['json'];
 check(preg_match('#^https?://[^/?]+(/[^?]*)?/' . $code . '$#', $acc['shortUrl'] ?? '') === 1
     && substr($acc['shortUrl'], 0, -strlen($code)) . '?s=' . $code === $acc['joinUrl'],
     'adresse courte : même dossier que le lien, code dans le chemin (servie par .htaccess)');
-expect_status($admin->post('control', ['s' => $code, 'op' => 'next']), 200, 'première question');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'next', 'expect' => 'welcome']), 200, 'première question');
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check($st['question']['id'] === $qid['yesno'] && $st['question']['state'] === 'open', 'question suivante jamais ouverte : vote ouvert automatiquement');
 check($st['question']['correct'] === [], 'bonne réponse cachée avant affichage');
+$otherAdmin = new Client($base);
+$secondLogin = $otherAdmin->post('login', ['password' => getenv('WL_PASSWORD')]);
+expect_status($secondLogin, 200, 'connexion du second animateur');
+$otherAdmin->csrf = $secondLogin['json']['csrf'];
+$staleQuestion = $otherAdmin->get("api.php?action=screen&s=$code")['json']['currentQuestionId'];
+check($staleQuestion === $qid['yesno'], 'le second animateur a affiché la première question');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'next', 'expect' => $qid['yesno']]), 200, 'le premier animateur avance');
+foreach (['close', 'next', 'prev'] as $op) {
+    expect_status($otherAdmin->post('control', ['s' => $code, 'op' => $op, 'expect' => $staleQuestion]), 409, "commande périmée $op refusée");
+    $current = $admin->get("api.php?action=screen&s=$code")['json']['question'];
+    check($current['id'] === $qid['truefalse'] && $current['state'] === 'open', "la question suivante reste ouverte après $op");
+}
+$legacyControl = $otherAdmin->post('control', ['s' => $code, 'op' => 'close']);
+expect_status($legacyControl, 409, 'commande d’une ancienne page refusée');
+check(str_contains($legacyControl['json']['error'] ?? '', 'rechargez'), 'l’ancienne page invite à recharger');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'hide', 'expect' => $qid['truefalse']]), 200, 'masquer avant de rouvrir');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['truefalse']]), 200, 'rouvrir la même question');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'end']), 200, 'terminer sans précondition');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'reopen']), 200, 'rouvrir l’atelier sans précondition');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['yesno']]), 200, 'aller à une question sans précondition');
 expect_status($admin->post('control', ['s' => $code, 'op' => 'welcome']), 200, 'retour à l\'accueil');
 check($admin->get("api.php?action=screen&s=$code")['json']['question'] === null
     && $p[0]->get("api.php?action=state&s=$code")['json']['question'] === null, 'accueil : projection et appareils sans question');
-$admin->post('control', ['s' => $code, 'op' => 'next']);
+$admin->post('control', ['s' => $code, 'op' => 'next', 'expect' => 'welcome']);
 check(($p[0]->get("api.php?action=state&s=$code")['json']['question']['state'] ?? '') === 'open', 'après l\'accueil, « Suivante » reprend la première question, vote ouvert');
 
 /** Ouvre une question, fait voter, ferme, affiche ; renvoie les résultats. */
 function play(Client $admin, array $p, string $code, string $qid, array $votes): array
 {
     expect_status($admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid]), 200, 'aller à la question');
-    $admin->post('control', ['s' => $code, 'op' => 'reset']); // brouillon : vote fermé
+    $admin->post('control', ['s' => $code, 'op' => 'reset', 'expect' => $qid]); // brouillon : vote fermé
     expect_status($p[0]->vote($code, $qid, $votes[0]), 409, 'vote avant ouverture refusé');
-    expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'ouvrir le vote');
+    expect_status($admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid]), 200, 'ouvrir le vote');
     foreach ($votes as $i => $v) {
         expect_status($p[$i]->vote($code, $qid, $v), 200, "vote du participant $i");
     }
-    expect_status($admin->post('control', ['s' => $code, 'op' => 'close']), 200, 'fermer le vote');
+    expect_status($admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid]), 200, 'fermer le vote');
     expect_status($p[0]->vote($code, $qid, $votes[0]), 409, 'vote après fermeture refusé');
-    expect_status($admin->post('control', ['s' => $code, 'op' => 'show']), 200, 'afficher les résultats');
+    expect_status($admin->post('control', ['s' => $code, 'op' => 'show', 'expect' => $qid]), 200, 'afficher les résultats');
     return $admin->get("api.php?action=screen&s=$code")['json']['results'] ?? [];
 }
 
 // Oui / Non, modification interdite.
 check(($admin->get("api.php?action=screen&s=$code")['json']['question']['explain'] ?? null) === '', 'explication cachée avant les résultats');
-expect_status($admin->post('control', ['s' => $code, 'op' => 'open']), 200, 'rouvrir oui/non (sans effet)');
+expect_status($admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['yesno']]), 200, 'rouvrir oui/non (sans effet)');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'vote oui');
 expect_status($p[0]->vote($code, $qid['yesno'], 0), 200, 'même vote renvoyé (reprise réseau) accepté');
 expect_status($p[0]->vote($code, $qid['yesno'], 1), 409, 'double vote différent refusé');
 expect_status($p[1]->request('POST', 'api.php?action=vote', ['s' => $code, 'qid' => $qid['yesno'], 'value' => 1]), 403, 'vote sans CSRF refusé');
 expect_status($p[1]->vote($code, $qid['yesno'], 5), 400, 'réponse hors liste refusée');
-$admin->post('control', ['s' => $code, 'op' => 'close']);
+$admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid['yesno']]);
 $res = play($admin, $p, $code, $qid['yesno'], [0, 1, 0]);
 check($res['counts'] === [2, 1] && $res['total'] === 3, 'résultats oui/non');
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
@@ -143,9 +163,9 @@ check(($st['question']['explain'] ?? '') === 'Oui : 9 sur 10.', 'explication vis
 
 // Vrai / Faux, modification autorisée.
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['truefalse']]);
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['truefalse']]);
 $p[2]->vote($code, $qid['truefalse'], 0);
-$admin->post('control', ['s' => $code, 'op' => 'close']);
+$admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid['truefalse']]);
 $res = play($admin, $p, $code, $qid['truefalse'], [1, 1, 1]);
 check($res['counts'] === [0, 3], 'vrai/faux : réponse modifiée prise en compte');
 
@@ -160,7 +180,7 @@ check($res['counts'] === [1, 0, 2], 'sondage');
 
 $res = play($admin, $p, $code, $qid['wordcloud'], ['Écran', 'ecran', ' ÉCRAN  ']);
 check(count($res['words']) === 1 && $res['words'][0]['n'] === 3, 'nuage : regroupement sans casse ni accents');
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['wordcloud']]);
 expect_status($p[0]->vote($code, $qid['wordcloud'], 'zut alors'), 400, 'mot interdit refusé');
 expect_status($p[0]->vote($code, $qid['wordcloud'], str_repeat('a', 81)), 400, 'réponse de 81 caractères refusée');
 expect_status($p[0]->vote($code, $qid['wordcloud'], '   '), 400, 'réponse vide refusée');
@@ -180,16 +200,16 @@ check(str_contains($screen['body'], '<script>'), 'texte renvoyé brut en JSON (�
 
 $res = play($admin, $p, $code, $qid['scale'], [10, 7, 1]);
 check($res['average'] === 6 && $res['counts'][9] === 1, 'échelle : moyenne et répartition');
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['scale']]);
 expect_status($p[0]->vote($code, $qid['scale'], 11), 400, 'note hors échelle refusée');
 expect_status($p[0]->vote($code, $qid['scale'], 0), 400, 'note 0 refusée');
 
 $res = play($admin, $p, $code, $qid['points'], [[5, 5, 0], [10, 0, 0], [0, 3, 2]]);
 check($res['counts'] === [15, 8, 2], 'classement par points');
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['points']]);
 expect_status($p[0]->vote($code, $qid['points'], [8, 8, 0]), 400, 'dépassement du budget refusé');
 expect_status($p[0]->vote($code, $qid['points'], [0, 0, 0]), 400, 'aucun point refusé');
-$admin->post('control', ['s' => $code, 'op' => 'close']);
+$admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid['points']]);
 
 // --- Modifier une question qui a des votes ---------------------------------
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'text' => 'Votre usage ? (renommé)'] + $questions['poll']]);
@@ -201,18 +221,18 @@ check($adm['questions'][3]['results']['total'] === 0 && $adm['questions'][3]['st
 expect_status($admin->get("api.php?action=export&s=$code"), 200, 'export après modification');
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll']] + $questions['poll']]);
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['poll']]);
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'options' => ['Peu', 'Moyen', 'Beaucoup', 'Énormément']] + $questions['poll']]);
 $adm = $admin->get("api.php?action=admin_state&s=$code")['json'];
 check($adm['questions'][3]['state'] === 'open', 'choix modifiés pendant le vote : réponses effacées, vote toujours ouvert');
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll']] + $questions['poll']]);
-$admin->post('control', ['s' => $code, 'op' => 'close']);
+$admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid['poll']]);
 
 // --- Durée : vote refusé une fois le temps écoulé ----------------------------
 $admin->post('question_save', ['s' => $code, 'question' => ['id' => $qid['poll'], 'duration' => 30] + $questions['poll']]);
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
-$admin->post('control', ['s' => $code, 'op' => 'reset']);
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'reset', 'expect' => $qid['poll']]);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['poll']]);
 $st = $p[0]->get("api.php?action=state&s=$code")['json'];
 check(abs($st['question']['closesAt'] - $st['now'] - 30) <= 1, 'compte à rebours de 30 s (à une seconde près : l\'horloge peut changer entre les deux lectures)');
 expect_status($p[0]->vote($code, $qid['poll'], 1), 200, 'vote dans le temps');
@@ -221,7 +241,7 @@ $json = json_decode(file_get_contents($file), true);
 $json['questions'][3]['closesAt'] = time() - 1;
 file_put_contents($file, json_encode($json));
 expect_status($p[1]->vote($code, $qid['poll'], 1), 409, 'vote après la fin du compte à rebours refusé');
-$admin->post('control', ['s' => $code, 'op' => 'close']);
+$admin->post('control', ['s' => $code, 'op' => 'close', 'expect' => $qid['poll']]);
 
 // --- Mur collaboratif, post-it collectif, gommettes -----------------------------
 $save = fn(array $q) => $admin->post('question_save', ['s' => $code, 'question' => $q])['json']['id'] ?? '';
@@ -247,7 +267,7 @@ check(($sc['answered'] ?? 0) === 6 && ($sc['contributors'] ?? 0) === 2, 'mur : 6
 expect_status($p[0]->vote($code, $wallId, 0), 400, 'mur : pas de vote simple');
 check(count($wstate($p[1])['posts']) === 1, 'mur non publié : chacun ne voit que ses messages');
 expect_status($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId]), 409, 'aimer avant publication refusé');
-$admin->post('control', ['s' => $code, 'op' => 'show']);
+$admin->post('control', ['s' => $code, 'op' => 'show', 'expect' => $wallId]);
 check(count($wstate($p[1])['posts']) === 6, 'mur publié : tous les messages visibles');
 check(($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId])['json']['liked'] ?? null) === true, 'j\'aime');
 check(($p[1]->post('like', ['s' => $code, 'qid' => $wallId, 'pid' => $mineId])['json']['liked'] ?? null) === false, 'j\'aime retiré');
@@ -278,7 +298,7 @@ expect_status($p[0]->post('post', ['s' => $code, 'qid' => $postitId, 'text' => '
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
 check($wstate($p[0])['items'] === [], 'gommettes : idées d\'un post-it non publié invisibles');
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $postitId]);
-$admin->post('control', ['s' => $code, 'op' => 'show']); // publier la source
+$admin->post('control', ['s' => $code, 'op' => 'show', 'expect' => $postitId]); // publier la source
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $dotsId]);
 $st = $wstate($p[0]);
 check(count($st['items']) === 2 && in_array('Identifiants oubliés', array_merge(...array_column($st['items'], 'grouped')), true), 'gommettes : idées principales, regroupées dessous');
@@ -292,7 +312,7 @@ expect_status($p[0]->vote($code, $dotsId, [$b => 2, $a => 1]), 200, 'coller 3 go
 expect_status($p[1]->vote($code, $dotsId, [$b => 4]), 400, 'plus de gommettes que permis refusé');
 expect_status($p[1]->vote($code, $dotsId, ['nzzzz' => 1]), 400, 'idée inconnue refusée');
 expect_status($p[1]->vote($code, $dotsId, [$b => 1]), 200, 'une seule gommette acceptée');
-$admin->post('control', ['s' => $code, 'op' => 'show']);
+$admin->post('control', ['s' => $code, 'op' => 'show', 'expect' => $dotsId]);
 $res = $admin->get("api.php?action=screen&s=$code")['json']['results'];
 check($res['items'][0]['id'] === $b && $res['items'][0]['n'] === 3 && $res['total'] === 2, 'gommettes : classement');
 
@@ -344,19 +364,19 @@ for ($i = 0; $i < 30; $i++) { // 2 thèmes déjà là : le 29e ajout est le dern
 check($notModified === 30 && $bodies === 0, "30 rafraîchissements sans changement : $notModified × 304, $bodies octets");
 $p[0]->poll("api.php?action=screen&s=$code");
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['wordcloud']]);
-$admin->post('control', ['s' => $code, 'op' => 'hide']);
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'hide', 'expect' => $qid['wordcloud']]);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['wordcloud']]);
 $p[0]->poll($path);
 $p[1]->vote($code, $qid['wordcloud'], 'partage');
 check($p[0]->poll($path)['status'] === 304, 'le vote d\'un autre ne réveille pas les téléphones');
 check($p[0]->poll("api.php?action=screen&s=$code")['status'] === 200, 'le vote d\'un autre rafraîchit la projection');
-$admin->post('control', ['s' => $code, 'op' => 'next']);
+$admin->post('control', ['s' => $code, 'op' => 'next', 'expect' => $qid['wordcloud']]);
 check($p[0]->poll($path)['status'] === 200, 'question suivante : les téléphones se mettent à jour');
 
 // --- Limite de taux par participant --------------------------------------------
 $admin->post('control', ['s' => $code, 'op' => 'goto', 'qid' => $qid['poll']]);
-$admin->post('control', ['s' => $code, 'op' => 'reset']);
-$admin->post('control', ['s' => $code, 'op' => 'open']);
+$admin->post('control', ['s' => $code, 'op' => 'reset', 'expect' => $qid['poll']]);
+$admin->post('control', ['s' => $code, 'op' => 'open', 'expect' => $qid['poll']]);
 $codes = [];
 // 110 votes : la fenêtre est d'une minute, un changement de minute en cours de route en coupe deux, dont une dépasse 50.
 for ($i = 0; $i < 110; $i++) {
@@ -563,7 +583,7 @@ check(empty($st['question']['showResults']) && !isset($st['results']) && empty($
 // intermittent, trouvée le 15/10/2026).
 foreach ([[$off, 'nuage sans direct'], [$quiz, 'quiz (correction)']] as [$id, $label]) {
     $admin->post('control', ['s' => $dir, 'op' => 'goto', 'qid' => $id]);
-    $admin->post('control', ['s' => $dir, 'op' => 'open']);
+    $admin->post('control', ['s' => $dir, 'op' => 'open', 'expect' => $id]);
     check($screenRes() === null, "direct : $label pas projeté avant « Afficher »");
 }
 
@@ -581,7 +601,7 @@ $admin->post('control', ['s' => $dir, 'op' => 'board_next']);
 $b = $slide();
 check(($b['board']['position'] ?? 0) === 3 && $b['results'] === null && ($b['question']['correct'] ?? null) === [],
     'bilan projeté : rien de plus que pendant l\'atelier (quiz non affiché : ni résultats ni correction)');
-$admin->post('control', ['s' => $dir, 'op' => 'show']);
+$admin->post('control', ['s' => $dir, 'op' => 'show', 'expect' => $quiz]);
 check(!isset($slide()['board']), 'bilan projeté : piloter une question reprend la projection normale');
 $viewer->poll($phone);
 $admin->post('control', ['s' => $dir, 'op' => 'qr_hide']);
@@ -692,10 +712,10 @@ $cmpGo = fn(string $qid) => $admin->post('control', ['s' => $cmp, 'op' => 'goto'
 $cmpGo($beforeId);
 $cl[0]->vote($cmp, $beforeId, 1);
 $cl[1]->vote($cmp, $beforeId, 0);
-$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$admin->post('control', ['s' => $cmp, 'op' => 'close', 'expect' => $beforeId]);
 $cmpGo($afterId);
 foreach ($cl as $c) { expect_status($c->vote($cmp, $afterId, 0), 200, 'avant/après : vote'); }
-$admin->post('control', ['s' => $cmp, 'op' => 'show']);
+$admin->post('control', ['s' => $cmp, 'op' => 'show', 'expect' => $afterId]);
 $cq = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'] ?? [];
 $cr = $cq[1]['results']['compare'] ?? [];
 check(($cr['kind'] ?? '') === 'correct' && ($cr['before'] ?? -1) === 50 && ($cr['after'] ?? -1) === 100, 'avant/après : 50 % puis 100 % de bonnes réponses');
@@ -704,7 +724,7 @@ check(($cl[0]->get("api.php?action=screen&s=$cmp")['json']['results']['compare']
 $cmpGo($sc1);
 $cl[0]->vote($cmp, $sc1, 2);
 $cl[1]->vote($cmp, $sc1, 4);
-$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$admin->post('control', ['s' => $cmp, 'op' => 'close', 'expect' => $sc1]);
 $cmpGo($sc2);
 $cl[0]->vote($cmp, $sc2, 4);
 $cl[1]->vote($cmp, $sc2, 5);
@@ -717,7 +737,7 @@ $g = [new Client($base), new Client($base), new Client($base), new Client($base)
 foreach ($g as $c) { $c->join($cmp); }
 $cmpGo($b2);
 $g[0]->vote($cmp, $b2, 1); $g[1]->vote($cmp, $b2, 1); $g[2]->vote($cmp, $b2, 0);
-$admin->post('control', ['s' => $cmp, 'op' => 'close']);
+$admin->post('control', ['s' => $cmp, 'op' => 'close', 'expect' => $b2]);
 $cmpGo($a2);
 $g[0]->vote($cmp, $a2, 0); $g[1]->vote($cmp, $a2, 0); $g[2]->vote($cmp, $a2, 0); $g[3]->vote($cmp, $a2, 1);
 $cr = $admin->get("api.php?action=admin_state&s=$cmp")['json']['questions'][5]['results']['compare'] ?? [];
@@ -944,8 +964,8 @@ check(!isset($scr()['asks']), 'piloter une question quitte la projection d\'« O
 $el[0]->vote($ws, $quiz, 0);
 $el[1]->vote($ws, $quiz, 1);
 check(($st($el[0])['score']['n'] ?? -1) === 0, 'score : rien avant la correction');
-$admin->post('control', ['s' => $ws, 'op' => 'close']);
-$admin->post('control', ['s' => $ws, 'op' => 'show']);
+$admin->post('control', ['s' => $ws, 'op' => 'close', 'expect' => $quiz]);
+$admin->post('control', ['s' => $ws, 'op' => 'show', 'expect' => $quiz]);
 check(($st($el[0])['score'] ?? null) === ['n' => 1, 'of' => 1], 'score du participant après la correction');
 $admin->post('control', ['s' => $ws, 'op' => 'show_podium']);
 $pod = $scr()['podium'] ?? [];

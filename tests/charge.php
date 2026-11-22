@@ -16,7 +16,7 @@ $code = $admin->post('session_create', ['title' => 'Charge'])['json']['code'];
 $qid = $admin->post('question_save', ['s' => $code, 'question' => [
     'type' => 'poll', 'text' => 'Charge', 'options' => ['A', 'B', 'C'],
 ]])['json']['id'];
-$admin->post('control', ['s' => $code, 'op' => 'next']); // ouvre le vote
+$admin->post('control', ['s' => $code, 'op' => 'next', 'expect' => 'welcome']); // ouvre le vote
 
 /** Lance toutes les requêtes en parallèle (curl_multi) et renvoie les réponses. */
 function parallel(array $clients, callable $make): array

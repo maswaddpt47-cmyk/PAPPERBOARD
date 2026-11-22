@@ -7,6 +7,7 @@
   var code = (new URLSearchParams(location.search).get('s') || '').toUpperCase();
   var apercu = new URLSearchParams(location.search).get('apercu'), preview = apercu !== null;
   var qrDone = false, offset = 0, timer = null, last = null;
+  var controlConflict = '';
 
   // Même calcul que la simulation : mesurer le contenu naturel avant chaque
   // mise à l'échelle, pour ne jamais rétrécir à nouveau une vue déjà ajustée.
@@ -87,7 +88,7 @@
     // Dénominateur des « x / n » : téléphones actifs (signe de vie < 3 min).
     d.present = d.active === undefined ? d.participants : d.active;
     offset = d.now - Date.now() / 1000;
-    error('');
+    error(controlConflict);
     document.title = d.title + ' — WoocLight';
     $('s-title').textContent = d.title;
     $('s-count').textContent = WL.plural(d.participants, 'participant');
@@ -372,15 +373,21 @@
 
   var csrf = '', busy = false;
 
-  function control(op, after) {
+  function control(op, after, expect) {
     if (busy) return;
     $('p-options').open = false;
     busy = true;
-    WL.api('control', { body: { s: code, op: op }, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
+    controlConflict = '';
+    var body = Object.assign({ s: code }, WL.controlBody(op, expect || (last && last.currentQuestionId) || ''));
+    WL.api('control', { body: body, headers: { 'X-CSRF-Token': csrf } }).then(function (r) {
       busy = false;
       // Message d'abord, sans rafraîchir : l'affichage suivant l'effacerait aussitôt.
       if (r.status === 401 || r.status === 403) error('Reconnectez-vous dans l\'espace animateur pour piloter.');
-      else if (!r.data.ok) error(r.data.error || 'Commande refusée.');
+      else if (r.status === 409 && body.expect !== undefined) {
+        controlConflict = r.data.error || 'Commande refusée.';
+        error(controlConflict);
+        poller.now();
+      } else if (!r.data.ok) error(r.data.error || 'Commande refusée.');
       else { poller.now(); if (after) after(); }
     }, function () { busy = false; });
   }
@@ -392,7 +399,10 @@
     var q = last && last.question;
     if (!q) return;
     var post = q.type === 'wall' || q.type === 'postit';
-    if (q.showResults && !post) control('hide', function () { control('open'); });
+    if (q.showResults && !post) {
+      var expect = last.currentQuestionId;
+      control('hide', function () { control('open', null, expect); }, expect);
+    }
     else control('open');
   }
 

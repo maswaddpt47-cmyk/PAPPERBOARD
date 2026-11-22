@@ -65,7 +65,7 @@ function zipEntries(bytes) {
   await admin.check('#menti-reviewed');admin.once('dialog',d=>d.accept());await admin.click('#menti-continue');
   await admin.waitForSelector('#gen-preview:not([hidden])');await admin.click('#gen-save');await admin.waitForSelector('#gen-dialog:not([open])',{state:'attached'});
   check((await state()).questions.length===2,'ajout depuis un PDF dans l’atelier existant');
-  await admin.click('#t-live'); await post('control',{s:code,op:'next'});
+  await admin.click('#t-live'); await post('control',{s:code,op:'next', expect: 'welcome'});
   await admin.waitForSelector('#live-results .information-slide');
   check(await admin.isHidden('#show-btn')&&await admin.isHidden('#reopen-btn'),'Animer : aucune commande de vote ou de résultats pour la diapositive');
   const projection=await admin.context().newPage();projection.on('pageerror',e=>errors.push(e.message));
@@ -85,9 +85,9 @@ function zipEntries(bytes) {
    await projection.setViewportSize(size); await projection.bringToFront(); await projection.waitForTimeout(100);
    check(await projection.evaluate(()=>{const r=document.querySelector('#s-results').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&r.bottom<=innerHeight+1;}),'information projetée sans débordement à '+size.width+' px');
   }
-  await post('control',{s:code,op:'next'}); await projection.waitForFunction(()=>!document.querySelector('.information-slide'));
+  await post('control',{s:code,op:'next', expect: q.id}); await projection.waitForFunction(()=>!document.querySelector('.information-slide'));
   await phone.bringToFront(); await phone.waitForSelector('#answer-form .btn-choice');
-  await post('control',{s:code,op:'prev'}); await projection.bringToFront(); await projection.waitForSelector('.information-slide');
+  await post('control',{s:code,op:'prev', expect: (await state()).questions[1].id}); await projection.bringToFront(); await projection.waitForSelector('.information-slide');
   check((await projection.textContent('#s-results')).includes('Faire une pause.'),'retour depuis une question : contenu d’information réaffiché');
   await admin.bringToFront();await admin.click('#t-prep');await admin.locator('#q-list .list-item').first().getByRole('button',{name:'Modifier',exact:true}).click();
   check(await admin.isVisible('[data-rich-input="qf-content"]')&&await admin.isHidden('#qf-reveal'),'édition : champs de contenu et d’illustration, aucune correction de vote');
