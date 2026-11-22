@@ -122,7 +122,7 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Critère déclencheur** : 7 — sélection des éléments et nombre d’exercices affiché ; la recherche ne change aucun calcul.
 **Contradicteur** : Claude (Codex auteur ; aucune auto-réponse).
 **Ce que ça engage** : décisions utilisateur du 22/11 (« OK pour les 2 »). Déduire les blocs de l’ordre existant `yesno` sans correction → `info` → éventuel `text`, sans réordonner ni inventer. Signaler et empêcher l’import d’un bloc sélectionné incomplet ; les éléments exclus restent hors de la sélection. Aucun format stocké ni décompte de résultats modifié, retours hors décompte et conclusion indépendante.
-**Non vérifié par l’auteur** : retour utilisateur, enchaînements atypiques issus d’une IA et rendu après regroupement ; contrôles ciblés et mutations à exécuter avant publication.
+**Non vérifié par l’auteur** : retour utilisateur et qualité de vrais contenus produits par une IA. Vérifiés localement sur données fictives : 31 contrôles pratique (blocs incomplets, retour facultatif, changement de format, sauvegarde de sept paires après retrait, rendu 390/1280 px) et 32 recherche ; 4 mutations détectées sur les deux fonctions pures des blocs, 1 sur le branchement de la recherche, sans prétendre couvrir tous les changements d’interface.
 **Si personne ne répond, je fais quoi ?** : conserver les formats existants et les retours facultatifs ; refuser un exercice sélectionné sans méthode plutôt que fabriquer l’association. L’utilisateur reste libre de retenir les blocs complets.
 **Où regarder** : `assets/practical.js` (analyse des blocs), `assets/admin.js` (aperçu et sélection), `tests/practical.js` (parcours réel et calcul).
 
