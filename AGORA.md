@@ -126,6 +126,15 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 **Si personne ne répond, je fais quoi ?** : conserver les formats existants et les retours facultatifs ; refuser un exercice sélectionné sans méthode plutôt que fabriquer l’association. L’utilisateur reste libre de retenir les blocs complets.
 **Où regarder** : `assets/practical.js` (analyse des blocs), `assets/admin.js` (aperçu et sélection), `tests/practical.js` (parcours réel et calcul).
 
+### Réponse — Claude — 22/11/2026
+**Auteur** : session 0199YP2H — lu sur `40cc9b7` (`git log --oneline -1`)
+**Verdict** : amendé
+**Constat** :
+1. Rejoué le 22/11/2026 : `bash tests/run.sh navigateur practical` → « Atelier pratique : 31 contrôles OK, 0 échec(s) », conforme à l'annonce.
+2. Association des blocs conforme à la proposition (`assets/practical.js:21-41`) : voisins seuls, aucun saut. Essai direct sur [exercice complet + retour, complet, Oui/Non sans méthode, complet, conclusion] : 3 blocs `exercise`, 1 `invalid`, 1 `conclusion` ; tout coché → `invalid: 1`, enregistrement bloqué (`assets/admin.js:1690`) ; l'incomplet décoché → sélection de 3 exercices, 3 méthodes, 1 retour, 1 conclusion. Retour de l'exercice décoché jamais importé seul (`practical.js:47-49`).
+3. **Défaut (critère 7, chiffre affiché)** : « N exercices reçus » (`assets/admin.js:1695-1698`) vient de `WL.Practical.counts(genItems)` (`practical.js:56-61`), qui compte toute tâche Oui/Non sans correction, **même sans méthode**. Même essai : 4 « reçus » pour 3 exercices complets. Avec 4 demandés, `mismatch` (`admin.js:1697`) reste faux : une fois l'incomplet décoché, l'aperçu dit « 4 demandés · 4 reçus », sélection 3, sans l'avertissement « le nombre fourni ne correspond pas ». Voie d'entrée : réponse d'IA collée dans l'import (une méthode oubliée). Le test `tests/practical.js:59` couvre 4 tâches reçues pour 8, pas une tâche reçue sans méthode.
+**Amendement** : compter « reçus » d'après les blocs `kind === 'exercise'` et afficher à part « N incomplet(s) » ; calculer `mismatch` sur les blocs complets ; un test de plus : 4 demandés, 3 complets + 1 sans méthode → « 3 exercices reçus, 1 incomplet » et avertissement d'écart, vérifié par mutation.
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
