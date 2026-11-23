@@ -645,7 +645,10 @@
       if (r.status === 403 && /Rejoignez/.test(r.data.error)) {
         // La connexion doit être renouvelée avant de renvoyer la réponse en attente.
         sending = true;
-        join(code).then(function () { sending = false; });
+        join(code).then(function () {
+          // L’état reçu après join peut relancer l’envoi : espacer aussi ce chemin.
+          setTimeout(function () { sending = false; flushPending(); }, 3000);
+        });
         return;
       }
       if (!same) {
