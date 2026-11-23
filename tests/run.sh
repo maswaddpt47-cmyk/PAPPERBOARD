@@ -1,12 +1,12 @@
 #!/bin/bash
 # Suite complète : syntaxe PHP et JS, bout en bout, charge.
 # Usage : bash tests/run.sh [tout|php|navigateur [script…]]   (port libre 8765)
-# La CI lance « php » et trois groupes de « navigateur » en parallèle ; sans
+# La CI lance « php » et les groupes de « navigateur » en parallèle ; sans
 # argument : tout. « navigateur » sans liste : tous les parcours.
 set -u
 PARTIE=${1:-tout}
 shift 2>/dev/null || true
-PARCOURS=${*:-pdf-import information editor practical navigateur interface galerie}
+PARCOURS=${*:-pdf-import information editor practical navigateur interface galerie concurrence}
 case "$PARTIE" in tout|php|navigateur) ;; *) echo "Partie inconnue : $PARTIE (tout, php ou navigateur)"; exit 2 ;; esac
 cd "$(dirname "$0")/.."
 

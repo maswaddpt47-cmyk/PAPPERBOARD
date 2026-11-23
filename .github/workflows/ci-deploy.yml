@@ -56,8 +56,7 @@ jobs:
           fi
 
   # tests/run.sh découpé en parallèle (15/11/2026) : contrôles PHP (~15 s) et
-  # trois groupes de parcours navigateur équilibrés (~50 s chacun, mesurés en
-  # local ; 196 s quand ils s'enchaînaient). Tout parcours ajouté dans tests/
+  # groupes de parcours navigateur, dont un dédié aux courses HTTP. Tout parcours ajouté dans tests/
   # doit entrer dans un groupe : le job « complet » le vérifie.
   tests-php:
     needs: deja
@@ -75,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        groupe: ['navigateur', 'galerie pdf-import practical', 'interface editor information']
+        groupe: ['navigateur', 'galerie pdf-import practical', 'interface editor information', 'concurrence']
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Préparer les contrôles Chrome
@@ -85,9 +84,9 @@ jobs:
           echo "WL_CHROMIUM=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Parcours dans le navigateur
         run: |
-          # Chaque parcours tests/*.js doit être dans un des trois groupes.
+          # Chaque parcours tests/*.js doit être dans un groupe.
           for f in tests/*.js; do t=$(basename "$f" .js)
-            echo " navigateur galerie pdf-import practical interface editor information " | grep -q " $t " \
+            echo " navigateur galerie pdf-import practical interface editor information concurrence " | grep -q " $t " \
               || { echo "::error::tests/$t.js n'est dans aucun groupe de la matrice : l'ajouter"; exit 1; }
           done
           bash tests/run.sh navigateur ${{ matrix.groupe }}
