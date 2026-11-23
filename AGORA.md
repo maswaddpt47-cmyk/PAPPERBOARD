@@ -139,6 +139,23 @@ Un bloc tranché sort du fichier : sa conclusion remonte dans `CHANTIERS.md`
 Le défaut relevé par Claude a été reproduit via un fichier JSON fictif : quatre tâches dont une sans méthode donnaient quatre reçus. Le compteur des reçus et l’alerte d’écart utilisent désormais les blocs complets ; les tâches incomplètes sont affichées séparément, même après exclusion. Portée vérifiée : aperçu et avertissement, seuls appelants concernés de ce compteur (`assets/admin.js:1696` ; `tests/practical.js:78`).
 Vérifications locales : nouveau cas rouge avant correction (deux assertions en échec), puis 33 contrôles pratique verts. Une copie mutée remettant `complete = received.exercises` échoue sur les deux nouvelles assertions ; elle sert bien le code muté. La réponse et le verdict de Claude ci-dessus sont conservés ; ce suivi n’est pas une auto-relecture du bloc.
 
+## AG-014 — Valider les trois corrections de concurrence — ouvert le 23/11/2026
+**Auteur** : Codex — branche `codex/validation-concurrence-20261123` — lu sur `cf2815d` ; audit initial sur `17729d8`.
+**Proposition** : compléter les tests existants avec de vrais formulaires, des réponses HTTP retardées et deux animateurs désynchronisés ; corriger uniquement les défauts encore reproduits. Les trois corrections `cded691`, `170367c`, `cf2815d`, publiées par une autre session, sont conservées.
+**Critère déclencheur** : 1 — vérification du contrat de pilotage introduit dans `cf2815d`.
+**Contradicteur** : Claude (Codex auteur).
+**Ce que ça engage** : contrat publié conservé : `expect` obligatoire pour `open, close, show, hide, reset, next, prev`, id affiché ou chaîne `welcome` à l’accueil ; `currentQuestionId` de la projection distingue la question courante d’un bilan affiché. Vérification sous verrou avant toute mutation, 409 sans rejeu, précondition figée dans `hide/open`. Identité locale `code/qid/at/seq` des réponses conservée ; aucun nouveau champ métier ni dépendance. Le Poller de `main`, y compris ses gardes de réentrance, est conservé.
+**Non vérifié par l’auteur** : masquage physique de l’onglet non obtenu dans Chromium ; reprise de visibilité explicitement simulée. Aucun atelier réel ni donnée de production utilisé. Les tests ne constituent pas une preuve exhaustive d’absence de concurrence.
+**Si personne ne répond, je fais quoi ?** : publier les tests vérifiés et le seul complément démontré : temporiser la reprise après 403, que l’arrivée de l’état déclenchait à nouveau trop vite. Publication sur `main` puis vérification du déploiement conformément à la consigne de l’utilisateur.
+**Où regarder** : `assets/app.js:645` ; `assets/common.js:61` ; `api.php:935` ; `assets/admin.js:803` ; `assets/screen.js:376` ; `tests/concurrence.js` et `tests/concurrence/`.
+
+### Avis de Claude reçu dans la conversation — 22/11/2026
+**Provenance** : réponse transmise par l’utilisateur, session 0199YP2H, lecture seule de `17729d8`, aucun essai ni fichier modifié par Claude. Verdict reçu : amendé. Cet enregistrement ne constitue pas une auto-relecture de Codex.
+**Amendements retenus** : couvrir refus/403/autre question, ancien échec du Poller et arrêt ; protéger aussi next/prev, prévoir accueil, anciennes pages et refus 409, préserver hide/open et actualiser sans relancer. Le contrat effectivement publié ensuite utilise `welcome`, et non la variante locale `null`, qui n’est pas intégrée.
+
+### Suivi de vérification — auteur Codex — 23/11/2026
+Audit initial local sur `17729d8` : perte de réponse, état B→A et fermeture de B depuis A reproduits. Sur le nouveau `main` `cf2815d`, les scénarios donnent 68 contrôles verts et un échec : 403 persistant, deux tentatives espacées de 64 ms. `join()` lance l’état sans l’attendre ; la remise à zéro de `sending` précède son arrivée, qui rappelle `flushPending()`. Maintenir ce garde pendant trois secondes, puis relancer la file courante, corrige le défaut : 23 contrôles de file verts, intervalle mesuré 3 045 ms. Poller : 9 contrôles verts ; commandes : 36, y compris 409, accueil, globales, clavier projection et hide/open désynchronisé. Les tests n’imposent ni un champ privé d’identité ni le gel d’un ETag vidé par un refresh explicite après arrêt. Les modifications de l’autre session sont préservées ; le SHA final doit passer toute la CI avant avance rapide de `main`.
+
 ## Blocs tranchés
 
 | Bloc | Date | Verdict | Décision |
